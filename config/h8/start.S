@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -137,4 +137,30 @@ start_4:
 	 */
 start_6:
 	jmp	@_kernel_start
+
+
+/*
+ *  HEWのI/Oシミュレーション機能の呼び出し
+ *  
+ *  本来は、sys_support.Sに記述すべきだが、
+ *  リンク後の_hew_io_sim_bodyのアドレスを
+ *  アプリケーションによらず、一定にするため、
+ *  スタートアップルーチンの直後に配置している。
+ *  
+ *  このアドレスに分岐することで、HEWのI/Oシミュレーション機能が
+ *  作動するトリガとなる。
+ *  
+ *  　以下の状態で呼ばれる。
+ *  　　r0：機能コード(2バイト)
+ *  　　er1：パラメータブロックへのポインタ（4バイト）
+ */
+#ifdef HEW_SIMULATOR
+
+    .section .text
+    .align 2
+    .global _hew_io_sim
+_hew_io_sim:
+    rts
+
+#endif	/*  HEW_SIMULATOR  */
 

@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -62,7 +62,7 @@ current_sr(void)
 Inline void
 set_sr(UW sr)
 {
-	Asm("ldc %0, sr" : : "r"(sr) );
+	Asm("ldc %0, sr" : : "r"(sr) : "memory", "t");
 }
 
 /*

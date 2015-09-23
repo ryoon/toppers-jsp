@@ -1,15 +1,15 @@
 [PROJECT]
 ProjectName=Jsp14sample1
-WorkingDirectory=D:\usr\TOPPERS\jsp-1.4\tools\M16C-RENESAS
+WorkingDirectory=C:\home\work\jsp-1.4.4\tools\M16C-RENESAS
 OutputDirectory=.
-ProjectFile=D:\usr\TOPPERS\jsp-1.4\tools\M16C-RENESAS\Jsp14sample1.tmk
-ProjectInfoFile=D:\usr\TOPPERS\jsp-1.4\tools\M16C-RENESAS\Jsp14sample1.tmi
+ProjectFile=C:\home\work\jsp-1.4.4\tools\M16C-RENESAS\Jsp14sample1.tmk
+ProjectInfoFile=C:\home\work\jsp-1.4.4\tools\M16C-RENESAS\Jsp14sample1.tmi
 TargetName=M16C Family
 Type=1
-GoalFile=D:\usr\TOPPERS\jsp-1.4\tools\M16C-RENESAS\Jsp14sample1.x30
+GoalFile=C:\home\work\jsp-1.4.4\tools\M16C-RENESAS\Jsp14sample1.x30
 [NC]
 Name=NC30WA
-Version=V.4.00 Release 2
+Version=V.5.45 Release 01
 [MEMBER]
 Count=0
 [DOCUMENTFILE]

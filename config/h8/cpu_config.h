@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -148,6 +148,8 @@ Inline void
 t_lock_cpu(void)
 {
         disint();
+    	/* クリティカルセクションの前後でメモリが書き換わる可能性がある */
+    	Asm("":::"memory");
         iscpulocked = TRUE;
 }
 
@@ -155,6 +157,8 @@ Inline void
 t_unlock_cpu(void)
 {
         iscpulocked = FALSE;
+    	/* クリティカルセクションの前後でメモリが書き換わる可能性がある */
+    	Asm("":::"memory");
 #ifdef SUPPORT_CHG_IPM
         /*
          *  t_unlock_cpu が呼び出されるのは CPUロック状態のみであるため、
@@ -183,6 +187,8 @@ i_lock_cpu(void)
          */
 
         disint();
+    	/* クリティカルセクションの前後でメモリが書き換わる可能性がある */
+    	Asm("":::"memory");
         int_intmask = intmask;
         iscpulocked = TRUE;
 }
@@ -191,6 +197,8 @@ Inline void
 i_unlock_cpu(void)
 {
         iscpulocked = FALSE;
+    	/* クリティカルセクションの前後でメモリが書き換わる可能性がある */
+    	Asm("":::"memory");
         set_intmask(int_intmask);
 }
 

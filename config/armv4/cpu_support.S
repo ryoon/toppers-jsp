@@ -48,11 +48,11 @@
 /*
  *  タスクディスパッチャ
  *
- *  dispatchは，
- *  dispatch は，システムモード・割込み禁止状態で呼び出さなければならな
- *  い．_exit_and_dispatch も，システムモード・割込み禁止状態で呼び出す
+ *  dispatch は，スーパーバイザーモード・割込み禁止状態で呼び出さなければ
+ *  ならない．
+ *  _exit_and_dispatch も，スーパーバイザーモード・割込み禁止状態で呼び出す
  *  のが原則であるが，カーネル起動時に対応するため，IRQモードで呼び出した
- *    場合にも対応している．
+ *  場合にも対応している．
  */
 
         .text
@@ -67,8 +67,8 @@ dispatch:
         adr   r2, dispatch_r
         str   r2, [r1,#TCB_pc]      /* 実行再開番地を保存 */
         ldr   r6, =interrupt_count  /* r6 <-interrupt_count */
-        mov   r5, #(CPSR_SVC|CPSR_IRQ_BIT)  /* 割り込み禁止(システムモード) */
-        mov   r4, #(CPSR_SVC)               /* 割り込み許可(システムモード) */
+        mov   r5, #(CPSR_SVC|CPSR_IRQ_BIT)  /* 割り込み禁止(スーパーバイザーモード) */
+        mov   r4, #(CPSR_SVC)               /* 割り込み許可(スーパーバイザーモード) */
         b     dispatcher_1
 
 dispatch_r:
@@ -96,15 +96,15 @@ exit_and_dispatch:
         /*
          *  FIQは常に禁止する．
          */
-        mov   r5, #(CPSR_SVC|CPSR_IRQ_BIT) /* 割り込み禁止(システムモード) */
-        mov   r4, #(CPSR_SVC)              /* 割り込み許可(システムモード) */
+        mov   r5, #(CPSR_SVC|CPSR_IRQ_BIT) /* 割り込み禁止(スーパーバイザーモード) */
+        mov   r4, #(CPSR_SVC)              /* 割り込み許可(スーパーバイザーモード) */
         mrs   r0, cpsr                     /* FIQを継承            */
         and   r0, r0, #CPSR_FIQ_BIT
         orr   r0, r0, r5
-        msr   cpsr, r0          /* システムモード */
+        msr   cpsr, r0          /* スーパーバイザーモード */
 dispatcher_1:
         /*
-         *  ここではシステムモード・割込み禁止状態でなければならない．
+         *  ここではスーパーバイザーモード・割込み禁止状態でなければならない．
          */
         ldr   r0, =schedtsk   /* schedtsk を読み込む */
         ldr   r1, [r0]
@@ -141,7 +141,7 @@ dispatcher_2:
         .text
         .globl activate_r
 activate_r:
-        mov   r1,#(CPSR_SVC|CPSR_FIQ_BIT) /* 割り込み許可(システムモード) */
+        mov   r1,#(CPSR_SVC|CPSR_FIQ_BIT) /* 割り込み許可(スーパーバイザーモード) */
         mrs   r2, cpsr         /* FIQを継承   */
         and   r2, r2, #CPSR_FIQ_BIT
         orr   r1, r1, r2            
@@ -154,7 +154,7 @@ activate_r:
 /*
  *  割込みハンドラ／CPU例外ハンドラ出口処理
  *
- *  ret_int はシステムモード・IRQ割込み禁止状態で呼び出す．
+ *  ret_int はスーパーバイザーモード・IRQ割込み禁止状態で呼び出す．
  */
         .text
         .globl ret_int
@@ -162,7 +162,7 @@ activate_r:
 ret_int:
 ret_exc:                
         /*
-         *   システムモードで来ること
+         *   スーパーバイザーモードで来ること
          */
         ldr   r2, =runtsk       /* runtsk を読み込む */
         ldr   r1, [r2]

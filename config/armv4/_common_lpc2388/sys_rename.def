@@ -1,0 +1,11 @@
+IRQ_Handler
+init_vector
+init_IRQ
+init_uart0
+vector_table
+undef_interrupt
+swi_exception
+irq_exception
+frq_exception
+data_abort_exception
+prefetch_exception

@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -185,8 +185,12 @@ SCI_putready(SIOPCB *pcb)
 Inline BOOL
 SCI_getready(SIOPCB *pcb)
 {
+#ifndef HEW_SIMULATOR
 	UB ssr = sil_reb_mem((VP)(pcb->inib->base + H8SSR));
 	return ((ssr & H8SSR_RDRF) != 0);
+#else /* HEW_SIMULATOR */
+	return TRUE;
+#endif /* HEW_SIMULATOR */
 }
 
 /*
@@ -240,9 +244,23 @@ extern void	sio_dis_cbr(SIOPCB *pcb, UINT cbrtn);	/* シリアル I/O からのコールバ
 /*
  *  関数シミュレーションマクロ
  */
+												/* SCI からの文字受信			*/
+#ifdef HEW_SIMULATOR
+extern BOOL hew_io_sim_snd_chr(char c);
+#define sio_snd_chr(siopcb, c) hew_io_sim_snd_chr(c)
 
-#define sio_snd_chr(p,c)	SCI_snd_chr(p,c)	/* SCI からの文字受信			*/
-#define sio_rcv_chr(p)		SCI_rcv_chr(p)		/* SCI からの文字受信			*/
+#else	/* HEW_SIMULATOR */
+#define sio_snd_chr(p,c)	SCI_snd_chr(p,c)
+#endif	/* HEW_SIMULATOR */
+												/* SCI からの文字受信			*/
+#ifdef HEW_SIMULATOR
+extern INT hew_io_sim_rcv_chr(void);
+#define sio_rcv_chr(siopcb) hew_io_sim_rcv_chr( )
+
+#else	/* HEW_SIMULATOR */
+#define sio_rcv_chr(p)		SCI_rcv_chr(p)
+#endif	/* HEW_SIMULATOR */
+
 #define sio_ierdy_snd(e)	SCI_ierdy_snd(e)	/* シリアル I/O からの送信可能コールバック	*/
 #define sio_ierdy_rcv(e)	SCI_ierdy_rcv(e)	/* シリアル I/O からの受信通知コールバック	*/
 
@@ -280,6 +298,7 @@ sio_cls_por(SIOPCB *pcb)
  *  sio_snd_chr -- 文字送信
  */
 
+#ifndef HEW_SIMULATOR
 Inline BOOL
 sio_snd_chr(SIOPCB *pcb, INT chr)
 {
@@ -290,11 +309,13 @@ sio_snd_chr(SIOPCB *pcb, INT chr)
 		return FALSE;
 	}
 }
+#endif	/* HEW_SIMULATOR */
 
 /*
  *  sio_rcv_chr -- 文字受信
  */
 
+#ifndef HEW_SIMULATOR
 Inline INT
 sio_rcv_chr(SIOPCB *pcb)
 {
@@ -304,6 +325,7 @@ sio_rcv_chr(SIOPCB *pcb)
 		return -1;
 	}
 }
+#endif	/* HEW_SIMULATOR */
 
 #endif	/* of #ifndef _MACRO_ONLY */
 

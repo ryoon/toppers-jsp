@@ -55,6 +55,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <cstring>
 
 class Directory : public std::map<std::string, Directory *>
 {

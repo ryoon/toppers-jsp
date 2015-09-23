@@ -64,6 +64,7 @@ endif
 #  ソースファイルのディレクトリの定義
 #
 SRCDIR = @(SRCDIR)
+CONFIGDIR ?= $(SRCDIR)/config
 
 #
 #  オブジェクトファイル名の拡張子の設定
@@ -87,14 +88,14 @@ KERNEL_LIB = @(KERNEL_LIB)
 #
 ifdef TOOL
     ifdef SYS
-        include $(SRCDIR)/config/$(CPU)-$(TOOL)/$(SYS)/Makefile.config
+        include $(CONFIGDIR)/$(CPU)-$(TOOL)/$(SYS)/Makefile.config
     endif
-    include $(SRCDIR)/config/$(CPU)-$(TOOL)/Makefile.config
+    include $(CONFIGDIR)/$(CPU)-$(TOOL)/Makefile.config
 else
     ifdef SYS
-        include $(SRCDIR)/config/$(CPU)/$(SYS)/Makefile.config
+        include $(CONFIGDIR)/$(CPU)/$(SYS)/Makefile.config
     endif
-    include $(SRCDIR)/config/$(CPU)/Makefile.config
+    include $(CONFIGDIR)/$(CPU)/Makefile.config
 endif
 
 #
@@ -252,7 +253,7 @@ ifdef DATA_START_ADDRESS
     LDFLAGS := $(LDFLAGS) -Wl,-Tdata,$(DATA_START_ADDRESS)
 endif
 ifdef LDSCRIPT
-    LDFLAGS := $(LDFLAGS) -T $(SRCDIR)/config/$(LDSCRIPT)
+    LDFLAGS := $(LDFLAGS) -T $(CONFIGDIR)/$(LDSCRIPT)
 endif
 
 #
@@ -271,6 +272,7 @@ $(OBJFILE): Makefile.depend $(ALL_OBJS) $(MAKE_KERNEL) $(OBJNAME).chk
 			$(START_OBJS) $(TASK_OBJS) $(ALL_LIBS) $(END_OBJS)
 	$(NM) $(OBJFILE) > $(OBJNAME).syms
 	$(OBJCOPY) -O srec -S $(OBJFILE) $(OBJNAME).srec
+	$(OBJCOPY) -O ihex -S $(OBJFILE) $(OBJNAME).hex
 	$(SRCDIR)/cfg/chk -m $(OBJNAME).syms,$(OBJNAME).srec \
 			-obj -cs $(OBJNAME).chk -cpu $(CPU) -system $(SYS)
 

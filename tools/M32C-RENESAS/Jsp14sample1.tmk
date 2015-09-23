@@ -6,7 +6,7 @@
 # RENESAS SOLUTIONS CORPORATION ALL RIGHTS RESERVED
 #
 #	Notice	:	Don't edit.
-#	Date	:	2004 08(August) 05(Thursday) AM.11.28
+#	Date	:	2010 12(December) 28(Tuesday) PM.01.14
 #	Project	:	Jsp14sample1
 ####################################################################
 
@@ -21,20 +21,20 @@ AS	=	as308
 OUTDIR	=	.
 MKDIR	=	@-mkdir
 LIBFLAGS	=	
-CPP	=	\MTOOL\LIB308\CPP308
+CPP	=	C:\Hew\Tools\Renesas\nc308wa\v542r00\LIB308\CPP308
 ABSFILE	=	$(PROJECT).x30
 LMC_USER	=	LMC308
 PRJDIR_USER	=	C:\usr\TOPPERS\jsp-1.4\tools\M32C-RENESAS
 ODINCMD	=	$(OUTDIR)
 LBFILE	=	$(PROJECT).lib
 AS_USER	=	AS308
-TARGET	=	$(ABSFILE)
 LN	=	ln308
+TARGET	=	$(ABSFILE)
 ECHO	=	@-echo
 MKFILE	=	$(PROJECT).tmk
 @(SRCDIR)	=	..
-PROJECT	=	Jsp14sample1
 TYPE	=	@-type
+PROJECT	=	Jsp14sample1
 LFLAGS	=	-MS -L nc308lib -. -G -M82 -NOSTOP -O $(OUTDIR)\$(TARGET) -ORDER data_NE=0400,data_NO,bss_NE,bss_NO,program=0f80000,rom_FE,rom_FO,data_NEI,data_NOI
 CFLAGS	=	-c -I../../config/m32c-renesas -I../../config/m32c-renesas/oaks32 -I../../kernel -I../../include -I../../sample -I. -silent -dir $(OUTDIR) -g -DNEED_API -M82
 LMCFLAGS	=	-L
@@ -46,49 +46,49 @@ all: \
 		$(OUTDIR)\Jsp14sample1.mot 
 .PHONY: clean
 clean: 
-		$(DELETE) $(OUTDIR)\$(TARGET)
-		$(DELETE) $(ODINCMD)\$(LNLIST)
-		$(DELETE) $(OUTDIR)\kernel_cfg.c
-		$(DELETE) $(OUTDIR)\kernel_id.h
-		$(DELETE) $(OUTDIR)\m16cvec.inc
-		$(DELETE) $(OUTDIR)\start.r30
-		$(DELETE) $(OUTDIR)\sys_config.r30
-		$(DELETE) $(OUTDIR)\sfruart.r30
-		$(DELETE) $(OUTDIR)\cpu_config.r30
-		$(DELETE) $(OUTDIR)\cpu_support.r30
-		$(DELETE) $(OUTDIR)\startup.r30
-		$(DELETE) $(OUTDIR)\banner.r30
-		$(DELETE) $(OUTDIR)\exception.r30
-		$(DELETE) $(OUTDIR)\interrupt.r30
-		$(DELETE) $(OUTDIR)\sys_manage.r30
-		$(DELETE) $(OUTDIR)\task_manage.r30
-		$(DELETE) $(OUTDIR)\time_manage.r30
-		$(DELETE) $(OUTDIR)\task.r30
-		$(DELETE) $(OUTDIR)\wait.r30
-		$(DELETE) $(OUTDIR)\task_except.r30
-		$(DELETE) $(OUTDIR)\task_sync.r30
-		$(DELETE) $(OUTDIR)\time_event.r30
-		$(DELETE) $(OUTDIR)\cyclic.r30
-		$(DELETE) $(OUTDIR)\dataqueue.r30
-		$(DELETE) $(OUTDIR)\eventflag.r30
-		$(DELETE) $(OUTDIR)\mailbox.r30
-		$(DELETE) $(OUTDIR)\mempfix.r30
-		$(DELETE) $(OUTDIR)\semaphore.r30
-		$(DELETE) $(OUTDIR)\syslog.r30
-		$(DELETE) $(OUTDIR)\logtask.r30
-		$(DELETE) $(OUTDIR)\serial.r30
-		$(DELETE) $(OUTDIR)\timer.r30
-		$(DELETE) $(OUTDIR)\log_output.r30
-		$(DELETE) $(OUTDIR)\strerror.r30
-		$(DELETE) $(OUTDIR)\t_perror.r30
-		$(DELETE) $(OUTDIR)\vasyslog.r30
-		$(DELETE) $(OUTDIR)\kernel_cfg.r30
-		$(DELETE) $(OUTDIR)\sample1.r30
-		$(DELETE) $(OUTDIR)\sample1.cfg.i
-		$(DELETE) $(OUTDIR)\start.lst
-		$(DELETE) $(OUTDIR)\cpu_support.lst
-		$(DELETE) $(OUTDIR)\makeoffset.a30
-		$(DELETE) $(OUTDIR)\Jsp14sample1.map
+	$(DELETE) $(OUTDIR)\$(TARGET)
+	$(DELETE) $(ODINCMD)\$(LNLIST)
+	$(DELETE) $(OUTDIR)\kernel_cfg.c
+	$(DELETE) $(OUTDIR)\kernel_id.h
+	$(DELETE) $(OUTDIR)\m16cvec.inc
+	$(DELETE) $(OUTDIR)\start.r30
+	$(DELETE) $(OUTDIR)\sys_config.r30
+	$(DELETE) $(OUTDIR)\sfruart.r30
+	$(DELETE) $(OUTDIR)\cpu_config.r30
+	$(DELETE) $(OUTDIR)\cpu_support.r30
+	$(DELETE) $(OUTDIR)\startup.r30
+	$(DELETE) $(OUTDIR)\banner.r30
+	$(DELETE) $(OUTDIR)\exception.r30
+	$(DELETE) $(OUTDIR)\interrupt.r30
+	$(DELETE) $(OUTDIR)\sys_manage.r30
+	$(DELETE) $(OUTDIR)\task_manage.r30
+	$(DELETE) $(OUTDIR)\time_manage.r30
+	$(DELETE) $(OUTDIR)\task.r30
+	$(DELETE) $(OUTDIR)\wait.r30
+	$(DELETE) $(OUTDIR)\task_except.r30
+	$(DELETE) $(OUTDIR)\task_sync.r30
+	$(DELETE) $(OUTDIR)\time_event.r30
+	$(DELETE) $(OUTDIR)\cyclic.r30
+	$(DELETE) $(OUTDIR)\dataqueue.r30
+	$(DELETE) $(OUTDIR)\eventflag.r30
+	$(DELETE) $(OUTDIR)\mailbox.r30
+	$(DELETE) $(OUTDIR)\mempfix.r30
+	$(DELETE) $(OUTDIR)\semaphore.r30
+	$(DELETE) $(OUTDIR)\syslog.r30
+	$(DELETE) $(OUTDIR)\logtask.r30
+	$(DELETE) $(OUTDIR)\serial.r30
+	$(DELETE) $(OUTDIR)\timer.r30
+	$(DELETE) $(OUTDIR)\log_output.r30
+	$(DELETE) $(OUTDIR)\strerror.r30
+	$(DELETE) $(OUTDIR)\t_perror.r30
+	$(DELETE) $(OUTDIR)\vasyslog.r30
+	$(DELETE) $(OUTDIR)\kernel_cfg.r30
+	$(DELETE) $(OUTDIR)\sample1.r30
+	$(DELETE) $(OUTDIR)\sample1.cfg.i
+	$(DELETE) $(OUTDIR)\start.lst
+	$(DELETE) $(OUTDIR)\cpu_support.lst
+	$(DELETE) $(OUTDIR)\makeoffset.a30
+	$(DELETE) $(OUTDIR)\Jsp14sample1.map
 $(ODINCMD)\$(LNLIST): \
 		.\$(MKFILE) 
 	$(ECHO)\$(MRLFLAGS) $(LFLAGS) >	$(ODINCMD)\$(LNLIST)

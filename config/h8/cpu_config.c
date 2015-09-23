@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -267,17 +267,70 @@ void cpu_experr(EXCSTACK *sp)
     	;
 }
 
+
+/*
+ *   HEWのI/Oシミュレーション
+ *   　要検討：アドレス幅に依存。現状は24ビットアドレスを想定して実装
+ */
+#ifdef HEW_SIMULATOR
+
+/*  機能コード（2バイト）  */
+#define GETC	0x0111
+#define PUTC	0x0112
+
+/*  HEWのI/Oシミュレーション機能呼び出し  */
+void hew_io_sim(UH code, void *adr);
+
+void hew_io_sim_putc(char c)
+{
+	UB buf = (UB)c;			/*  バッファ  */
+	UB *parmblk = &buf;		/*  パラメータブロック  */
+	UB **p = &parmblk;		/*  　　・その先頭アドレス  */
+	UH code = PUTC;			/*  機能コード  */
+	
+	hew_io_sim(code, p);
+}
+
+extern BOOL hew_io_sim_snd_chr(char c);
+
+BOOL hew_io_sim_snd_chr(char c)
+{
+	hew_io_sim_putc(c);
+	return TRUE;
+}
+
+extern INT hew_io_sim_rcv_chr(void);
+
+INT hew_io_sim_rcv_chr(void) {
+	UB buf;					/*  バッファ  */
+	UB *parmblk = &buf;		/*  パラメータブロック  */
+	UB **p = &parmblk;		/*  　　・その先頭アドレス  */
+	UH code = GETC;			/*  機能コード  */
+	
+	hew_io_sim(code, p);
+	return(buf);
+}
+
+#endif /* HEW_SIMULATOR */
+
 /*
  *   システム文字出力先の指定
  */
+#ifdef HEW_SIMULATOR
+#define CPU_PUT_CHAR(c) hew_io_sim_putc(c)
+
+#else	/* HEW_SIMULATOR */
+#define CPU_PUT_CHAR(c) SCI_wait_putchar(SYSTEM_SCI, c)
+
+#endif	/* HEW_SIMULATOR */
 
 void
 cpu_putc(char c)
 {
     if (c == '\n') {
-        SCI_wait_putchar(SYSTEM_SCI, '\r');
+        CPU_PUT_CHAR('\r');
     }
-    SCI_wait_putchar(SYSTEM_SCI, c);
+    CPU_PUT_CHAR(c);
 }
 
 /*

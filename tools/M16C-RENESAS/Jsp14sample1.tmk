@@ -1,37 +1,37 @@
 ####################################################################
-# Makefile for TM V.3.20
-# Copyright 1998-2002 MITSUBISHI ELECTRIC CORPORATION
-# AND MITSUBISHI ELECTRIC SEMICONDUCTOR APPLICATION ENGINEERING CORPORATION
-# All Rights Reserved.
+# Makefile for TM V.3.20A
+# COPYRIGHT(C) 1998(1998-2003)
+# RENESAS TECHNOLOGY CORPORATION ALL RIGHTS RESERVED
+# AND
+# RENESAS SOLUTIONS CORPORATION ALL RIGHTS RESERVED
 #
 #	Notice	:	Don't edit.
-#	Date	:	2004 01(January) 30(Friday) PM.10.48
+#	Date	:	2010 12(December) 28(Tuesday) AM.10.16
 #	Project	:	Jsp14sample1
 ####################################################################
 
 DELETE	=	@-del
 LNLIST	=	$(PROJECT).cmd
-PRJDIR	=	D:\usr\TOPPERS\jsp-1.4\tools\M16C-RENESAS
 LMC	=	LMC30
 CC	=	NC30
 AS	=	AS30
 OUTDIR	=	.
 MKDIR	=	@-mkdir
-CPP	=	\MTOOL\LIB30\CPP30
+CPP	=	C:\Hew\Tools\Renesas\nc30wa\v545r01\lib30\cpp30
 ABSFILE	=	$(PROJECT).x30
 ODINCMD	=	$(OUTDIR)
-LN	=	LN30
 TARGET	=	$(ABSFILE)
+LN	=	LN30
 ECHO	=	@-echo
 MKFILE	=	$(PROJECT).tmk
 @(SRCDIR)	=	..
-PROJECT	=	Jsp14sample1
 TYPE	=	@-type
+PROJECT	=	Jsp14sample1
 LFLAGS	=	-MS -L nc30lib -G -O $(OUTDIR)\$(TARGET) -ORDER data_NE=400,data_NO,bss_NE,bss_NO,program=0E0000,rom_FE,rom_FO,data_NEI,data_NOI
 CFLAGS	=	-c -I../../config/m16c-renesas -I../../config/m16c-renesas/oaks16 -I../../kernel -I../../include -I../../sample -I. -dir $(OUTDIR) -g -DNEED_API
 LMCFLAGS	=	-L
 AFLAGS	=	-LM -DRAMEND=02c00h:MON=0 -I. -O$(OUTDIR)
-.SUFFIXES: .a30 .r30 .c .x30
+.SUFFIXES: .a30 .r30 .c .x30 .lib
 .PHONY: all
 all: \
 		$(OUTDIR)\$(TARGET) \
@@ -277,8 +277,9 @@ $(OUTDIR)\wait.r30: \
 		..\..\kernel\wait.c 
 	$(CC) $(MRCFLAGS) $(CFLAGS) ..\..\kernel\wait.c
 ####################################################################
-# End of makefile for TM V.3.20
-# Copyright 1998-2002 MITSUBISHI ELECTRIC CORPORATION
-# AND MITSUBISHI ELECTRIC SEMICONDUCTOR APPLICATION ENGINEERING CORPORATION
-# All Rights Reserved.
+# End of makefile for TM V.3.20A
+# COPYRIGHT(C) 1998(1998-2003)
+# RENESAS TECHNOLOGY CORPORATION ALL RIGHTS RESERVED
+# AND
+# RENESAS SOLUTIONS CORPORATION ALL RIGHTS RESERVED
 ####################################################################

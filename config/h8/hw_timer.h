@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -126,7 +126,7 @@ hw_timer_initialize(void)
     sil_wrb_mem((VP)SYSTEM_TIMER_TCR, SYSTEM_TIMER_TCR_BIT);
 
     /*  GRAコンペアマッチによる割込み要求を許可 */
-    sil_wrb_mem((VP)SYSTEM_TIMER_IER, SYSTEM_TIMER_IE);
+    bitset((UB *)SYSTEM_TIMER_IER, SYSTEM_TIMER_IE_BIT);
 
     /*  GRAコンペアマッチによる端子出力禁止 */
     sil_wrb_mem((VP)SYSTEM_TIMER_TIOR, SYSTEM_TIMER_TIOR_BIT);

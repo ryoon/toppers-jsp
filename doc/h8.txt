@@ -1,7 +1,7 @@
                ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                             （H8 ターゲット依存部）
    
-               （Release 1.4.3対応，最終更新: 08-Mar-2007）
+               （Release 1.4.3対応，最終更新: 15-Dec-2010）
    
    ------------------------------------------------------------------- 
     TOPPERS/JSP Kernel
@@ -11,7 +11,7 @@
    
     Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
                                 Toyohashi Univ. of Technology, JAPAN
-    Copyright (C) 2001-2007 by Industrial Technology Institute,
+    Copyright (C) 2001-2010 by Industrial Technology Institute,
                                 Miyagi Prefectural Government, JAPAN
     Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
                      Tomakomai National College of Technology, JAPAN
@@ -79,7 +79,7 @@
 がモード 5 の内蔵 ROM有効拡張 1M バイトモード、 H8/3052F がモード 6 の
 内蔵 ROM 有効拡張 16Mバイトモード、 H8/3069F がモード 5 の内蔵ROM有効
 拡張 16M バイトモードを想定している。
-  開発環境は、 Windows 2000上の cygwin の開発環境を用いた。また、デ
+  開発環境は、 Windows XP上の cygwin の開発環境を用いた。また、デ
 バッグモードとリリースモードでモジュールの実行方法が異なっている。デ
 バッグモードでは (株)秋月電気通商製モニタデバッカ (以下、秋月モニタ)、
 または苫小牧高専情報学科製簡易モニタ (以下、 簡易モニタ)、を H8 の内蔵
@@ -525,19 +525,19 @@ TNUM_PORT により何本使用するか指定できる。
 
    (1)   デバッグ時
 
-         0x00000 - 0x1ffff  内蔵 ROM、秋月モニタ
-         0x20000 - 0x3ffff  外部 RAM、.text、.rodata、.data、.bss
-         0xfef10 - 0xfefff  内蔵 RAM、秋月モニタ
-         0xff000 - 0xff0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
-         0xff100 - 0xfff0f  内蔵 RAM、非タスクコンテキスト用スタック
-         0xfff1c - 0xfffff  内蔵 I/O レジスタ
+         0x00000 - 0x1ffff  内蔵ROM、秋月モニタ
+         0x20000 - 0x3ffff  外部RAM、.text、.rodata、.data、.bss
+         0xfef10 - 0xfefff  内蔵RAM、秋月モニタ
+         0xff000 - 0xff0ff  内蔵RAM、仮想割込みベクタ領域 (.vectors)
+         0xff100 - 0xfff0f  内蔵RAM、非タスクコンテキスト用スタック
+         0xfff1c - 0xfffff  内部I/Oレジスタ
 
    (2)   リリース時
 
-         0x00000 - 0x1ffff  内蔵 ROM、.vectors、.text、.rodata
-         0x20000 - 0xfef0f  外部 RAM、.data、.bss
-         0xfef10 - 0xfff0f  内蔵 RAM、非タスクコンテキスト用スタック
-         0xfff1c - 0xfffff  内蔵 I/O レジスタ
+         0x00000 - 0x1ffff  内蔵ROM、.vectors、.text、.rodata
+         0x20000 - 0xfef0f  外部RAM、.data、.bss
+         0xfef10 - 0xfff0f  内蔵RAM、非タスクコンテキスト用スタック
+         0xfff1c - 0xfffff  内部I/Oレジスタ
 
 3. 4. 2  H8/3052F のメモリマップ
 
@@ -548,19 +548,19 @@ AKI-H8-USB ボードにある 128K バイトの RAM を利用している。このため、外
 
    (1)   デバッグ時
 
-         0x000000 - 0x07ffff  内蔵 ROM、簡易モニタ
-         0x220000 - 0x23ffff  外部 RAM、.text、.rodata、.data、.bss
-         0xffdf10 - 0xffdfff  外部 RAM、簡易モニタ
-         0xffe000 - 0xffe0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
-         0xffe100 - 0xffff0f  内蔵 RAM、非タスクコンテキスト用スタック
-         0xffff1c - 0xffffff  内蔵 I/O レジスタ
+         0x000000 - 0x07ffff  内蔵ROM、簡易モニタ
+         0x220000 - 0x23ffff  外部RAM、.text、.rodata、.data、.bss
+         0xffdf10 - 0xffdfff  内蔵RAM、簡易モニタ
+         0xffe000 - 0xffe0ff  内蔵RAM、仮想割込みベクタ領域 (.vectors)
+         0xffe100 - 0xffff0f  内蔵RAM、非タスクコンテキスト用スタック
+         0xffff1c - 0xffffff  内部I/Oレジスタ
 
    (2)   リリース時
 
-         0x000000 - 0x05ffff  内蔵 ROM、.vectors、.text、.rodata
-         0x220000 - 0x23ffff  外部 RAM、.data、.bss
-         0xffef10 - 0xffff0f  内蔵 RAM、非タスクコンテキスト用スタック
-         0xffff1c - 0xffffff  内蔵 I/O レジスタ
+         0x000000 - 0x07ffff  内蔵ROM、.vectors、.text、.rodata
+         0x220000 - 0x23ffff  外部RAM、.data、.bss
+         0xffef10 - 0xffff0f  内蔵RAM、非タスクコンテキスト用スタック
+         0xffff1c - 0xffffff  内部I/Oレジスタ
 
 
 3. 4. 3  H8/3069F のメモリマップ
@@ -570,30 +570,31 @@ AKI-H8-USB ボードにある 128K バイトの RAM を利用している。このため、外
 
    (1)   デバッグ時 (簡易モニタ使用時)
 
-         0x000000 - 0x07ffff  内蔵 ROM、簡易モニタ
-         0x400000 - 0x4fffff  外部 RAM、.text、.rodata
-         0x500000 - 0x5fffff  外部 RAM、.data、.bss
-         0xee0000 - 0xee00ff  内蔵 I/O レジスタ(1)
-         0xffbf20 - 0xffbfff  外部 RAM、簡易モニタ
-         0xffc000 - 0xffc0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
-         0xffc100 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
-         0xffff20 - 0xffffe9  内蔵 I/O レジスタ(2)
+         0x000000 - 0x07ffff  内蔵ROM、簡易モニタ
+         0x400000 - 0x4fffff  外部RAM、.text、.rodata
+         0x500000 - 0x5fffff  外部RAM、.data、.bss
+         0xfee000 - 0xfee0ff  内部I/Oレジスタ(1)
+         0xffbf20 - 0xffbfff  外部RAM、簡易モニタ
+         0xffc000 - 0xffc0ff  内蔵RAM、仮想割込みベクタ領域 (.vectors)
+         0xffc100 - 0xffff1f  内蔵RAM、非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内部I/Oレジスタ(2)
 
    (2)   リリース時（外部RAM使用）
 
-         0x000000 - 0x07ffff  内蔵 ROM、.vectors、.text、.rodata
-         0x400000 - 0x5fffff  外部 RAM、.data、.bss
-         0xee0000 - 0xee00ff  内蔵 I/O レジスタ(1)
-         0xffbf20 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
-         0xffff20 - 0xffffe9  内蔵 I/O レジスタ(2)
+         0x000000 - 0x07ffff  内蔵ROM、.vectors、.text、.rodata
+         0x400000 - 0x5fffff  外部RAM、.data、.bss
+         0xfee000 - 0xfee0ff  内部I/Oレジスタ(1)
+         0xffbf20 - 0xffff1f  内蔵RAM、非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内部I/Oレジスタ(2)
 
    (3)   リリース時（外部RAM未使用）
 
-         0x000000 - 0x07ffff  内蔵 ROM、.vectors、.text、.rodata
-         0xee0000 - 0xee00ff  内蔵 I/O レジスタ(1)
-         0xffbf20 - 0xffff1f  内蔵 RAM、.data、.bss、
-         　　　　　　　　　　　　　　　　非タスクコンテキスト用スタック
-         0xffff20 - 0xffffe9  内蔵 I/O レジスタ(2)
+         0x000000 - 0x07ffff  内蔵ROM、.vectors、.text、.rodata
+         0xfee000 - 0xfee0ff  内部I/Oレジスタ(1)
+         0xffbf20 - 0xfffb1f  内蔵RAM(1)、.data、.bss
+         0xfffb20 - 0xffff1f  内蔵RAM(2)、
+         								非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内部I/Oレジスタ(2)
 
 
 3. 4. 4  H8/3069F(NKEV-010H8) のメモリマップ
@@ -603,49 +604,49 @@ AKI-H8-USB ボードにある 128K バイトの RAM を利用している。このため、外
 
    (1)   デバッグ時 (簡易モニタ使用時)
 
-         0x000000 - 0x07ffff  内蔵 ROM、簡易モニタ
-         0x400000 - 0x43ffff  外部 RAM、.text、.rodata
-         0x440000 - 0x47ffff  外部 RAM、.data、.bss
-         0xee0000 - 0xee00ff  内蔵 I/O レジスタ(1)
-         0xffbf20 - 0xffbfff  外部 RAM、簡易モニタ
-         0xffc000 - 0xffc0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
-         0xffc100 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
-         0xffff20 - 0xffffe9  内蔵 I/O レジスタ(2)
+         0x000000 - 0x07ffff  内蔵ROM、簡易モニタ
+         0x400000 - 0x43ffff  外部RAM、.text、.rodata
+         0x440000 - 0x47ffff  外部RAM、.data、.bss
+         0xfee000 - 0xfee0ff  内部I/Oレジスタ(1)
+         0xffbf20 - 0xffbfff  内蔵RAM、簡易モニタ
+         0xffc000 - 0xffc0ff  内蔵RAM、仮想割込みベクタ領域 (.vectors)
+         0xffc100 - 0xffff1f  内蔵RAM、非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内部I/Oレジスタ(2)
 
    (2)   デバッグ時 (GDB STUB使用時)
 
-         0x000000 - 0x07ffff  内蔵 ROM、GDB STUB
-         0x400000 - 0x4000ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
-         0x400100 - 0x43ffff  外部 RAM、.text、.rodata
-         0x440000 - 0x47bfff  外部 RAM、.data、.bss
-         0x47c100 - 0x47ff1f  外部 RAM、非タスクコンテキスト用スタック
-         0xee0000 - 0xee00ff  内蔵 I/O レジスタ(1)
-         0xffbf20 - 0xffbfff  内部 RAM、GDB STUB
-         0xffff20 - 0xffffe9  内蔵 I/O レジスタ(2)
+         0x000000 - 0x07ffff  内蔵ROM、GDB STUB
+         0x400000 - 0x4000ff  内蔵RAM、仮想割込みベクタ領域 (.vectors)
+         0x400100 - 0x43ffff  外部RAM、.text、.rodata
+         0x440000 - 0x47bfff  外部RAM、.data、.bss
+         0x47c100 - 0x47ff1f  外部RAM、非タスクコンテキスト用スタック
+         0xfee000 - 0xfee0ff  内蔵I/O レジスタ(1)
+         0xffbf20 - 0xffbfff  内蔵RAM、GDB STUB
+         0xffff20 - 0xffffe9  内部I/Oレジスタ(2)
 
    (3)   リリース時（外部RAM使用）
 
-         0x000000 - 0x07ffff  内蔵 ROM、.vectors、.text、.rodata
-         0x400000 - 0x47ffff  外部 RAM、.data、.bss
-         0xee0000 - 0xee00ff  内蔵 I/O レジスタ(1)
-         0xffbf20 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
-         0xffff20 - 0xffffe9  内蔵 I/O レジスタ(2)
+         0x000000 - 0x07ffff  内蔵ROM、.vectors、.text、.rodata
+         0x400000 - 0x47ffff  外部RAM、.data、.bss
+         0xfee000 - 0xfee0ff  内部I/Oレジスタ(1)
+         0xffbf20 - 0xffff1f  内蔵RAM、非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内部I/Oレジスタ(2)
 
    (4)   リリース時（外部RAM未使用）
 
-         0x000000 - 0x07ffff  内蔵 ROM、.vectors、.text、.rodata
-         0xee0000 - 0xee00ff  内蔵 I/O レジスタ(1)
-         0xffbf20 - 0xffff1f  内蔵 RAM、.data、.bss、
+         0x000000 - 0x07ffff  内蔵ROM、.vectors、.text、.rodata
+         0xfee000 - 0xfee0ff  内部I/Oレジスタ(1)
+         0xffbf20 - 0xffff1f  内蔵RAM、.data、.bss、
          　　　　　　　　　　　　　　　　非タスクコンテキスト用スタック
-         0xffff20 - 0xffffe9  内蔵 I/O レジスタ(2)
+         0xffff20 - 0xffffe9  内部I/Oレジスタ(2)
 
 
 4.  開発
 
 4. 1  開発環境の構築
 
-  開発環境は、 Windows 2000上の cygwin の開発環境を用いた。本実装に用
-いたバージョンを以下に示す。 
+  開発環境は、 Windows XP上の cygwin の開発環境を用いた。本実装に用い
+たバージョンを以下に示す。 
 
    binutils-2.11.2
    gcc-2.95.3
@@ -933,6 +934,57 @@ CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
     　　・モニタによりアクセスできる状態にある外部RAM
 
 　　設定ファイル：sys_config.h
+
+(4) HEW_SIMULATOR （akih8_3069f固有の拡張）
+　　この変数をtrueに設定するとマクロHEW_SIMULATORが定義され、
+　　シリアルドライバがHEWのI/Oシミュレーションに対応したコードに置き
+　　換わる。（シリアル送信はすべてポーリングになる。）
+　　シリアル送信はHEWのI/Oシミュレーション・ウィンドウに表示され（すべ
+　　てポーリングになる）、シリアル受信はHEWのI/Oシミュレーションの擬似
+　　割込み機能により再現する。
+　　受信するキャラクタは、HEWのI/Oシミュレーション・ウィンドウにカーソ
+　　ルを一番下の行に移動してから入力することにより指定する。（詳細は
+　　HEWのシミュレータ／デバッガのユーザーズ・マニュアルを参照のこと）
+　　HEWのI/Oシミュレーション機能を利用するには、start.Sのラベル
+　　_hew_io_simをHEWに登録する必要がある。
+　　（ターゲットakih8_3069fにおける動作確認時には0x0160番地を登録し
+　　　た。）
+    
+    設定箇所
+    　基本設定メニュー
+    　　　シミュレータ
+    　　　　システム
+    　　　　　「システム」タブ
+    　　　　　　　I/Oシミュレーション・アドレス
+    　　　　　　　（「有効」チェックボックスで有効を指定する）
+
+　　
+　　設定ファイル：h8/akih8_3069f/Makefile.config
+
+　・備考１
+　　　HEWのH8/300用シミュレータでは、タイマがサポートされていないため、
+　　　この拡張は参考実装扱いである。
+　　　（HEWのシミュレータにおいて、ブレークポイントのブレーク種別を
+　　　　ブレークサイクルとし、ブレーク動作を割込みにすれば、擬似的に
+　　　　タイマ割込みを発生することができる。ただし、この方法では割込
+　　　　みマスクは考慮されない。）
+　　　
+　　　HEWでは、擬似ベクタテーブルを用意していないため、ROM化した状態
+　　　のメモリマップでないと割込みベクタテーブルの読み取りが正常に動
+　　　作しない。
+　　　従って、HEW_SIMULATOR=trueとする際には、DBGENV=ROM または
+　　　DBGENV=INMEM_ONLYとすること
+　　　（DBGENV=TNCT_MONITORの場合でも、苫小牧高専製 簡易モニタを
+　　　　いっしょにダウンロードすれば、動作可能と思われるが未確認で
+　　　　ある。）
+
+　・備考２
+　　　HEWのシミュレータは、sleep命令の実行でブレークする仕様になってい
+　　　る。（割込み待ちにならない。）これでは、時間経過によるタイマ割
+　　　込みがシミュレートできないので、マクロHEW_SIMULATORが定義される
+　　　場合は、マクロNO_SLEEPも定義し、cpu_support.Sのラベル
+　　　dispatcher_2_enable_interrupt付近のsleep命令を実行しないように
+　　　している。
 
 6.1.1 シリアルドライバのカスタマイズ方法
 
@@ -1584,7 +1636,7 @@ NKEV-010H8 対応 GDB STUB は製品添付の CD-ROM に納められて配布される。
 　　　・シリアルポートのフロー制御の設定を追記
 　　　・開発環境のバージョンを変更
 
-'07/03/xx  Release1.4.3
+'07/06/01  Release1.4.3
 　ターゲットシステムの変更
 　　・NKEV-010H8のサポートを中止
 　　・AKI-H8/3048Fのサポートを中止
@@ -1613,3 +1665,41 @@ NKEV-010H8 対応 GDB STUB は製品添付の CD-ROM に納められて配布される。
 　・Redboot対応
 　　　・Redbootが使用する割込みベクタを上書きしてしまう問題を修正
 　　　・マニュアルh8.txtの9.1節を追記
+
+'10/02/15 
+　修正
+　・コンパイラの最適化により、クリティカルセクションの前後で命令の
+　　順番が入れ替わってしまう問題を修正
+
+
+'10/02/16 
+　修正
+　・h8_3069f.h
+　　・Timer Interrupt Status Register B (TISRB)
+　  　　スペルミスを修正（A→B）
+　  ・レジスタ定義を追加
+　・hw_timer.h
+　　・hw_timer_initialize( )
+　　　　割込み許可時に他のchのビットを上書きしていた不具合を修正
+　・内蔵RAMのアドレスマッピングの誤りを修正
+
+'10/06/15 
+　修正
+　　・シリアルドライバをHEWのI/Oシミュレーションに対応
+　　　（akih8_3069f固有の拡張）
+　　・ドキュメント内にある内部I/Oレジスタのアドレスマッピングの
+　　　記載ミスを修正
+
+'10/12/01 
+　修正
+　　・関数sil_dly_nseをh8_sil.cからcpu_support.Sに移動
+　　　　インラインアセンブラから通常のアセンブラ言語記述に変更
+　　・akih8_3069f
+　　　 ・バスのウェイトとアクセスステートが設定されていなかった問題を修正
+　　　 　　「(toppers-users 3087) [H8]バス初期化について」への対応
+　　　 ・関数sil_dly_nseのパラメータSIL_DLY_TIM1,2の値を調整
+
+'10/12/15 
+　修正
+　　・シリアル受信割込みハンドラ内のエラーチェック処理をコメントアウト
+　　　（レアケースなため）

@@ -117,7 +117,7 @@
 #define OMIT_VGET_TIM			/* vxget_tim()は非サポート */
 #define LOOP_REF 	4000L		/* 速度計測用のループ回数 */
 #define STACK_SIZE	256		/* タスクのスタックサイズ */
-#define TASK_PORTID	2		/* SIOはポート2を用いる */
+#define TASK_PORTID	1		/* SIOはポート1を用いる */
 
 #elif defined(MIPS3) || defined(MIPS64)
 
@@ -175,6 +175,13 @@
 #define STACK_SIZE  512     /* タスクのスタックサイズ */
 #define TASK_PORTID 1       /* 文字入力するシリアルポートID */
 #define OMIT_VGET_TIM
+
+#elif defined(__lm32__)
+
+#define CPUEXC1              5 
+#define RAISE_CPU_EXCEPTION  syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0)
+#define STACK_SIZE           512 
+#define LOOP_REF	         500000
 
 #endif
 

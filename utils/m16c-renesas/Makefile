@@ -7,6 +7,8 @@
 #                              Toyohashi Univ. of Technology, JAPAN
 #  Copyright (C) 2003-2004 by Platform Development Center
 #                                          RIOCH COMPANY,LTD. JAPAN
+#  Copyright (C) 2010 by Naoki Saito
+#             Nagoya Municipal Industrial Research Institute, JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
 #  によって公表されている GNU General Public License の Version 2 に記
@@ -45,23 +47,18 @@ CFLAGS = -g -O2 -Wall
 INCLUDES = -I.
 
 #
-#  MinGWを使用しているときには、次のコメントを外す
-#
-#CFLAGS := $(CFLAGS) -D__MINGW__
-
-#
 #  リンク時に追加するライブラリ
 #
-#LIBS = -lstdc++
+LIBS =
 
 #
 #  オブジェクトファイル名の定義
 #
-COMMON_OBJS = StdAfx.o
+COMMON_OBJS = 
 OFF_OBJS = m16coffset.o $(COMMON_OBJS)
 VEC_OBJS = m16cvec.o  $(COMMON_OBJS)
 
-VPATH = ./m16cvec ./m16coffset
+VPATH = .
 
 #
 #  ターゲットファイル
@@ -71,7 +68,7 @@ all: m16coffset m16cvec
 #
 #  ソースファイルのあるディレクトリに関する定義
 #
-vpath %.cpp $(VPATH)
+vpath %.c $(VPATH)
 
 #
 #  m16coffset のリンク
@@ -110,16 +107,16 @@ depend: cleandep $(OFF_OBJS:.o=.d) $(VEC_OBJS:.o=.d)
 #
 #  コンパイラドライバの定義
 #
-CC = g++
+CC = gcc
 
 #
 #  デフォルトのコンパイルルールの定義
 #
-%.o: %.cpp
+%.o: %.c
 	$(CC) -c $(CFLAGS) $(INCLUDES) $<
 
 #
 #  デフォルトの依存関係作成ルールの定義
 #
-%.d: %.cpp
+%.d: %.c
 	$(CC) -M $(CFLAGS) $(INCLUDES) $< >> Makefile.depend

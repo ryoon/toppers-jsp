@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2002-2004 by Hokkaido Industrial Research Institute, JAPAN
  * 
@@ -63,7 +63,7 @@ current_sr(void)
 Inline void
 set_sr(UW sr)
 {
-	Asm("ldc %0, sr" : : "r"(sr) );
+	Asm("ldc %0, sr" : : "r"(sr) : "memory", "t");
 }
 
 /*
@@ -71,7 +71,7 @@ set_sr(UW sr)
  *  　（カーネルが管理する割込みのみ禁止）
  */
 Inline void
-disint()
+disint(void)
 {
     set_sr((current_sr() & ~0x000000f0u) |  (MAX_IPM << 4) );
 }

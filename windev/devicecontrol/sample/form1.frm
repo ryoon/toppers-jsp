@@ -1,7 +1,7 @@
 VERSION 5.00
 Object = "{194B359F-594E-4EE4-A804-84723D1CF1C4}#1.0#0"; "ATLDevice.dll"
 Begin VB.Form Form1 
-   BorderStyle     =   3  'ŒÅ’èƒ_ƒCƒAƒƒO
+   BorderStyle     =   3  '¸ÇÄê¥À¥¤¥¢¥í¥°
    Caption         =   "Form1"
    ClientHeight    =   1140
    ClientLeft      =   45
@@ -13,7 +13,7 @@ Begin VB.Form Form1
    ScaleHeight     =   1140
    ScaleWidth      =   3045
    ShowInTaskbar   =   0   'False
-   StartUpPosition =   3  'Windows ‚ÌŠù’è’l
+   StartUpPosition =   3  'Windows ¤Î´ûÄêÃÍ
    Begin ATLDEVICELibCtl.DeviceControl DeviceControl1 
       Height          =   375
       Left            =   2400
@@ -24,7 +24,7 @@ Begin VB.Form Form1
       Width           =   495
    End
    Begin VB.Label Label1 
-      Alignment       =   2  '’†‰›‘µ‚¦
+      Alignment       =   2  'Ãæ±ûÂ·¤¨
       Caption         =   "Label1"
       Height          =   255
       Index           =   4
@@ -34,7 +34,7 @@ Begin VB.Form Form1
       Width           =   975
    End
    Begin VB.Label Label1 
-      Alignment       =   2  '’†‰›‘µ‚¦
+      Alignment       =   2  'Ãæ±ûÂ·¤¨
       Caption         =   "Label1"
       Height          =   255
       Index           =   3
@@ -44,7 +44,7 @@ Begin VB.Form Form1
       Width           =   975
    End
    Begin VB.Label Label1 
-      Alignment       =   2  '’†‰›‘µ‚¦
+      Alignment       =   2  'Ãæ±ûÂ·¤¨
       Caption         =   "Label1"
       Height          =   255
       Index           =   2
@@ -54,7 +54,7 @@ Begin VB.Form Form1
       Width           =   975
    End
    Begin VB.Label Label1 
-      Alignment       =   2  '’†‰›‘µ‚¦
+      Alignment       =   2  'Ãæ±ûÂ·¤¨
       Caption         =   "Label1"
       Height          =   255
       Index           =   1
@@ -64,7 +64,7 @@ Begin VB.Form Form1
       Width           =   975
    End
    Begin VB.Label Label1 
-      Alignment       =   2  '’†‰›‘µ‚¦
+      Alignment       =   2  'Ãæ±ûÂ·¤¨
       Caption         =   "Label1"
       Height          =   255
       Index           =   0
@@ -89,32 +89,32 @@ Option Explicit
 '  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
 '                              Toyohashi Univ. of Technology, JAPAN
 ' 
-'  ã‹L’˜ìŒ Ò‚ÍCˆÈ‰º‚Ì (1)`(4) ‚ÌğŒ‚©CFree Software Foundation 
-'  ‚É‚æ‚Á‚ÄŒö•\‚³‚ê‚Ä‚¢‚é GNU General Public License ‚Ì Version 2 ‚É‹L
-'  q‚³‚ê‚Ä‚¢‚éğŒ‚ğ–‚½‚·ê‡‚ÉŒÀ‚èC–{ƒ\ƒtƒgƒEƒFƒAi–{ƒ\ƒtƒgƒEƒFƒA
-'  ‚ğ‰ü•Ï‚µ‚½‚à‚Ì‚ğŠÜ‚ŞDˆÈ‰º“¯‚¶j‚ğg—pE•¡»E‰ü•ÏEÄ”z•ziˆÈ‰ºC
-'  —˜—p‚ÆŒÄ‚Ôj‚·‚é‚±‚Æ‚ğ–³‚Å‹–‘ø‚·‚éD
-'  (1) –{ƒ\ƒtƒgƒEƒFƒA‚ğƒ\[ƒXƒR[ƒh‚ÌŒ`‚Å—˜—p‚·‚éê‡‚É‚ÍCã‹L‚Ì’˜ì
-'      Œ •\¦C‚±‚Ì—˜—pğŒ‚¨‚æ‚Ñ‰º‹L‚Ì–³•ÛØ‹K’è‚ªC‚»‚Ì‚Ü‚Ü‚ÌŒ`‚Åƒ\[
-'      ƒXƒR[ƒh’†‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚é‚±‚ÆD
-'  (2) –{ƒ\ƒtƒgƒEƒFƒA‚ğCƒ‰ƒCƒuƒ‰ƒŠŒ`®‚È‚ÇC‘¼‚Ìƒ\ƒtƒgƒEƒFƒAŠJ”­‚Ég
-'      —p‚Å‚«‚éŒ`‚ÅÄ”z•z‚·‚éê‡‚É‚ÍCÄ”z•z‚É”º‚¤ƒhƒLƒ…ƒƒ“ƒgi—˜—p
-'      Òƒ}ƒjƒ…ƒAƒ‹‚È‚Çj‚ÉCã‹L‚Ì’˜ìŒ •\¦C‚±‚Ì—˜—pğŒ‚¨‚æ‚Ñ‰º‹L
-'      ‚Ì–³•ÛØ‹K’è‚ğŒfÚ‚·‚é‚±‚ÆD
-'  (3) –{ƒ\ƒtƒgƒEƒFƒA‚ğC‹@Ší‚É‘g‚İ‚Ş‚È‚ÇC‘¼‚Ìƒ\ƒtƒgƒEƒFƒAŠJ”­‚Ég
-'      —p‚Å‚«‚È‚¢Œ`‚ÅÄ”z•z‚·‚éê‡‚É‚ÍCŸ‚Ì‚¢‚¸‚ê‚©‚ÌğŒ‚ğ–‚½‚·‚±
-'      ‚ÆD
-'    (a) Ä”z•z‚É”º‚¤ƒhƒLƒ…ƒƒ“ƒgi—˜—pÒƒ}ƒjƒ…ƒAƒ‹‚È‚Çj‚ÉCã‹L‚Ì’˜
-'        ìŒ •\¦C‚±‚Ì—˜—pğŒ‚¨‚æ‚Ñ‰º‹L‚Ì–³•ÛØ‹K’è‚ğŒfÚ‚·‚é‚±‚ÆD
-'    (b) Ä”z•z‚ÌŒ`‘Ô‚ğC•Ê‚É’è‚ß‚é•û–@‚É‚æ‚Á‚ÄCTOPPERSƒvƒƒWƒFƒNƒg‚É
-'        •ñ‚·‚é‚±‚ÆD
-'  (4) –{ƒ\ƒtƒgƒEƒFƒA‚Ì—˜—p‚É‚æ‚è’¼Ú“I‚Ü‚½‚ÍŠÔÚ“I‚É¶‚¶‚é‚¢‚©‚È‚é‘¹
-'      ŠQ‚©‚ç‚àCã‹L’˜ìŒ Ò‚¨‚æ‚ÑTOPPERSƒvƒƒWƒFƒNƒg‚ğ–ÆÓ‚·‚é‚±‚ÆD
+'  ¾åµ­Ãøºî¸¢¼Ô¤Ï¡¤°Ê²¼¤Î (1)¡Á(4) ¤Î¾ò·ï¤«¡¤Free Software Foundation 
+'  ¤Ë¤è¤Ã¤Æ¸øÉ½¤µ¤ì¤Æ¤¤¤ë GNU General Public License ¤Î Version 2 ¤Ëµ­
+'  ½Ò¤µ¤ì¤Æ¤¤¤ë¾ò·ï¤òËş¤¿¤¹¾ì¹ç¤Ë¸Â¤ê¡¤ËÜ¥½¥Õ¥È¥¦¥§¥¢¡ÊËÜ¥½¥Õ¥È¥¦¥§¥¢
+'  ¤ò²şÊÑ¤·¤¿¤â¤Î¤ò´Ş¤à¡¥°Ê²¼Æ±¤¸¡Ë¤ò»ÈÍÑ¡¦Ê£À½¡¦²şÊÑ¡¦ºÆÇÛÉÛ¡Ê°Ê²¼¡¤
+'  ÍøÍÑ¤È¸Æ¤Ö¡Ë¤¹¤ë¤³¤È¤òÌµ½ş¤ÇµöÂú¤¹¤ë¡¥
+'  (1) ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ò¥½¡¼¥¹¥³¡¼¥É¤Î·Á¤ÇÍøÍÑ¤¹¤ë¾ì¹ç¤Ë¤Ï¡¤¾åµ­¤ÎÃøºî
+'      ¸¢É½¼¨¡¤¤³¤ÎÍøÍÑ¾ò·ï¤ª¤è¤Ó²¼µ­¤ÎÌµÊİ¾Úµ¬Äê¤¬¡¤¤½¤Î¤Ş¤Ş¤Î·Á¤Ç¥½¡¼
+'      ¥¹¥³¡¼¥ÉÃæ¤Ë´Ş¤Ş¤ì¤Æ¤¤¤ë¤³¤È¡¥
+'  (2) ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ò¡¤¥é¥¤¥Ö¥é¥ê·Á¼°¤Ê¤É¡¤Â¾¤Î¥½¥Õ¥È¥¦¥§¥¢³«È¯¤Ë»È
+'      ÍÑ¤Ç¤­¤ë·Á¤ÇºÆÇÛÉÛ¤¹¤ë¾ì¹ç¤Ë¤Ï¡¤ºÆÇÛÉÛ¤ËÈ¼¤¦¥É¥­¥å¥á¥ó¥È¡ÊÍøÍÑ
+'      ¼Ô¥Ş¥Ë¥å¥¢¥ë¤Ê¤É¡Ë¤Ë¡¤¾åµ­¤ÎÃøºî¸¢É½¼¨¡¤¤³¤ÎÍøÍÑ¾ò·ï¤ª¤è¤Ó²¼µ­
+'      ¤ÎÌµÊİ¾Úµ¬Äê¤ò·ÇºÜ¤¹¤ë¤³¤È¡¥
+'  (3) ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ò¡¤µ¡´ï¤ËÁÈ¤ß¹ş¤à¤Ê¤É¡¤Â¾¤Î¥½¥Õ¥È¥¦¥§¥¢³«È¯¤Ë»È
+'      ÍÑ¤Ç¤­¤Ê¤¤·Á¤ÇºÆÇÛÉÛ¤¹¤ë¾ì¹ç¤Ë¤Ï¡¤¼¡¤Î¤¤¤º¤ì¤«¤Î¾ò·ï¤òËş¤¿¤¹¤³
+'      ¤È¡¥
+'    (a) ºÆÇÛÉÛ¤ËÈ¼¤¦¥É¥­¥å¥á¥ó¥È¡ÊÍøÍÑ¼Ô¥Ş¥Ë¥å¥¢¥ë¤Ê¤É¡Ë¤Ë¡¤¾åµ­¤ÎÃø
+'        ºî¸¢É½¼¨¡¤¤³¤ÎÍøÍÑ¾ò·ï¤ª¤è¤Ó²¼µ­¤ÎÌµÊİ¾Úµ¬Äê¤ò·ÇºÜ¤¹¤ë¤³¤È¡¥
+'    (b) ºÆÇÛÉÛ¤Î·ÁÂÖ¤ò¡¤ÊÌ¤ËÄê¤á¤ëÊıË¡¤Ë¤è¤Ã¤Æ¡¤TOPPERS¥×¥í¥¸¥§¥¯¥È¤Ë
+'        Êó¹ğ¤¹¤ë¤³¤È¡¥
+'  (4) ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ÎÍøÍÑ¤Ë¤è¤êÄ¾ÀÜÅª¤Ş¤¿¤Ï´ÖÀÜÅª¤ËÀ¸¤¸¤ë¤¤¤«¤Ê¤ëÂ»
+'      ³²¤«¤é¤â¡¤¾åµ­Ãøºî¸¢¼Ô¤ª¤è¤ÓTOPPERS¥×¥í¥¸¥§¥¯¥È¤òÌÈÀÕ¤¹¤ë¤³¤È¡¥
 ' 
-'  –{ƒ\ƒtƒgƒEƒFƒA‚ÍC–³•ÛØ‚Å’ñ‹Ÿ‚³‚ê‚Ä‚¢‚é‚à‚Ì‚Å‚ ‚éDã‹L’˜ìŒ Ò‚¨
-'  ‚æ‚ÑTOPPERSƒvƒƒWƒFƒNƒg‚ÍC–{ƒ\ƒtƒgƒEƒFƒA‚ÉŠÖ‚µ‚ÄC‚»‚Ì“K—p‰Â”\«‚à
-'  ŠÜ‚ß‚ÄC‚¢‚©‚È‚é•ÛØ‚às‚í‚È‚¢D‚Ü‚½C–{ƒ\ƒtƒgƒEƒFƒA‚Ì—˜—p‚É‚æ‚è’¼
-'  Ú“I‚Ü‚½‚ÍŠÔÚ“I‚É¶‚¶‚½‚¢‚©‚È‚é‘¹ŠQ‚ÉŠÖ‚µ‚Ä‚àC‚»‚ÌÓ”C‚ğ•‰‚í‚È‚¢D
+'  ËÜ¥½¥Õ¥È¥¦¥§¥¢¤Ï¡¤ÌµÊİ¾Ú¤ÇÄó¶¡¤µ¤ì¤Æ¤¤¤ë¤â¤Î¤Ç¤¢¤ë¡¥¾åµ­Ãøºî¸¢¼Ô¤ª
+'  ¤è¤ÓTOPPERS¥×¥í¥¸¥§¥¯¥È¤Ï¡¤ËÜ¥½¥Õ¥È¥¦¥§¥¢¤Ë´Ø¤·¤Æ¡¤¤½¤ÎÅ¬ÍÑ²ÄÇ½À­¤â
+'  ´Ş¤á¤Æ¡¤¤¤¤«¤Ê¤ëÊİ¾Ú¤â¹Ô¤ï¤Ê¤¤¡¥¤Ş¤¿¡¤ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ÎÍøÍÑ¤Ë¤è¤êÄ¾
+'  ÀÜÅª¤Ş¤¿¤Ï´ÖÀÜÅª¤ËÀ¸¤¸¤¿¤¤¤«¤Ê¤ëÂ»³²¤Ë´Ø¤·¤Æ¤â¡¤¤½¤ÎÀÕÇ¤¤òÉé¤ï¤Ê¤¤¡¥
 '
 '  @(#) $Id: form1.frm,v 1.5 2004/09/09 03:40:51 honda Exp $
 '
@@ -128,7 +128,7 @@ Private Sub DeviceControl1_OnKernelExit()
     Dim i As Integer
     
     For i = 0 To 4
-        SetLabelString i, "I—¹", vbBlue
+        SetLabelString i, "½ªÎ»", vbBlue
     Next i
     
 End Sub
@@ -137,7 +137,7 @@ Private Sub DeviceControl1_OnKernelStart()
     Dim i As Integer
     
     For i = 0 To 4
-        SetLabelString i, "æ“¾‘Ò‚¿", vbBlack
+        SetLabelString i, "¼èÆÀÂÔ¤Á", vbBlack
     Next i
 End Sub
 
@@ -149,11 +149,11 @@ Private Sub DeviceControl1_OnWrite(ByVal address As Long, ByVal sz As Long)
         
     Select Case (work And &HF0)
     Case &H10
-        SetLabelString i, "æ“¾‘Ò‚¿", vbBlack
+        SetLabelString i, "¼èÆÀÂÔ¤Á", vbBlack
     Case &H20
-        SetLabelString i, "H–", vbRed
+        SetLabelString i, "¿©»ö", vbRed
     Case &H40
-        SetLabelString i, "‹xŒe", vbBlack
+        SetLabelString i, "µÙ·Æ", vbBlack
     End Select
 
 End Sub
@@ -162,7 +162,7 @@ Private Sub Form_Load()
     Dim i As Integer
     
     For i = 0 To 4
-        SetLabelString i, "I—¹", vbBlue
+        SetLabelString i, "½ªÎ»", vbBlue
     Next i
     
     DeviceControl1.Connect

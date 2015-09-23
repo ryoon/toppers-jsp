@@ -37,20 +37,25 @@
 # 
 
 #
+#  コンパイラドライバの定義
+#
+CXX = g++
+
+#
 #  コンパイルオプションの定義
 #
-CFLAGS = -g -O2 -Wall
+CXXFLAGS = -g -O2 -Wall
 INCLUDES = -I.
 
 #
 #  MinGWを使用しているときには、次のコメントを外す
 #
-#CFLAGS := $(CFLAGS) -D__MINGW__
+#CXXFLAGS := $(CXXFLAGS) -D__MINGW__
 
 #
 #  Filecontainerが使用する実装種別
 #
-CFLAGS := $(CFLAGS) -DFILECONTAINER_BINUTILS
+CXXFLAGS := $(CXXFLAGS) -DFILECONTAINER_BINUTILS
 #CFLAGS := $(CFLAGS) -DFILECONTAINER_WINDOWS
 
 #
@@ -88,13 +93,13 @@ vpath %.cpp $(VPATH)
 #  cfg のリンク
 #
 cfg: $(CFG_OBJS)
-	$(CC) $(CFLAGS) -o cfg $(CFG_OBJS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o cfg $(CFG_OBJS) $(LIBS)
 
 #
 #  chk のリンク
 #
 chk: $(CHK_OBJS)
-	$(CC) $(CFLAGS) -o chk $(CHK_OBJS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o chk $(CHK_OBJS) $(LIBS)
 
 #
 #  コンパイル結果の消去
@@ -122,18 +127,13 @@ depend: cleandep $(CFG_OBJS:.o=.d) $(CHK_OBJS:.o=.d)
 -include Makefile.depend
 
 #
-#  コンパイラドライバの定義
-#
-CC = g++
-
-#
 #  デフォルトのコンパイルルールの定義
 #
 %.o: %.cpp
-	$(CC) -c $(CFLAGS) $(INCLUDES) $<
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $<
 
 #
 #  デフォルトの依存関係作成ルールの定義
 #
 %.d: %.cpp
-	$(CC) -M $(CFLAGS) $(INCLUDES) $< >> Makefile.depend
+	$(CXX) -M $(CXXFLAGS) $(INCLUDES) $< >> Makefile.depend

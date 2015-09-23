@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -73,7 +73,11 @@
 #define	STACK_SIZE	1024
 #endif	/* of #ifdef REDBOOT */
 
-#define LOOP_REF	100000		/* 速度計測用のループ回数 */
+#ifdef HEW_SIMULATOR
+#define TASK_LOOP	100000	/* 時間待ちのループ回数 */
+#endif	/*  HEW_SIMULATOR  */
+
+#define LOOP_REF	100000	/* 速度計測用のループ回数 */
 #define	TASK_PORTID	1		/* 文字入力するシリアルポートID */
 
 

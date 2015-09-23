@@ -152,8 +152,15 @@ cpu_initialize()
 void
 cpu_terminate()
 {
+
+	/*
+	 * LPC2388はリセット時に使用するモニタを持っていないので、cpu_terminateでは何もしない。
+	 * 本来以下の処理はシステム依存部にあるべきだと思われる。
+	 */
+#ifndef _COMMON_LPC2388
     UW i;
     /*  ベクタテーブルを元に戻す．*/
     for(i = 0; i <=7; i++)
         *arm_vector_add[i] = arm_handler_add[i];
+#endif
 }

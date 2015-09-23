@@ -80,6 +80,12 @@ static const SPINIB spinib_table[TNUM_PORT] = {
 #if TNUM_PORT >= 3
 	,{ SERIAL_RCV_SEM3, SERIAL_SND_SEM3 }
 #endif
+#if TNUM_PORT >= 4
+        ,{ SERIAL_RCV_SEM4, SERIAL_SND_SEM4 }
+#endif
+#if TNUM_PORT >= 5
+        ,{ SERIAL_RCV_SEM5, SERIAL_SND_SEM5 }
+#endif
 };
 
 /*

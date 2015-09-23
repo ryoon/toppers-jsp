@@ -172,20 +172,20 @@ Makefile 中のそのコマンドを呼び出している部分を変更する必要がある．GNU
 含める必要がある．
 
     GNU開発環境を用いる場合
-        INCLUDES := -I$(SRCDIR)/config/$(CPU)
+        INCLUDES := -I$(CONFIGDIR)/$(CPU)
 
     その他の開発環境を用いる場合
-        INCLUDES := -I$(SRCDIR)/config/$(CPU)-$(TOOL) -I$(SRCDIR)/config/$(CPU)
+        INCLUDES := -I$(CONFIGDIR)/$(CPU)-$(TOOL) -I$(CONFIGDIR)/$(CPU)
 
 また，システム依存部の Makefile.config には以下の記述を含める必要があ
 る．
 
     GNU開発環境を用いる場合
-        INCLUDES := $(INCLUDES) -I$(SRCDIR)/config/$(CPU)/$(SYS)
+        INCLUDES := $(INCLUDES) -I$(CONFIGDIR)/$(CPU)/$(SYS)
 
     その他の開発環境を用いる場合
-        INCLUDES := $(INCLUDES) -I$(SRCDIR)/config/$(CPU)-$(TOOL)/$(SYS) \
-                                -I$(SRCDIR)/config/$(CPU)/$(SYS)
+        INCLUDES := $(INCLUDES) -I$(CONFIGDIR)/$(CPU)-$(TOOL)/$(SYS) \
+                                -I$(CONFIGDIR)/$(CPU)/$(SYS)
 
 また，アセンブリ言語レベルの識別名が，C言語レベルの識別名の先頭に "_" 
 が付いたものになる場合には，いずれかの Makefile.config で CDEFS に 
@@ -221,13 +221,13 @@ Makefile 中のそのコマンドを呼び出している部分を変更する必要がある．GNU
 含める必要がある．
 
     GNU開発環境を用いる場合
-        KERNEL_DIR := $(KERNEL_DIR):$(SRCDIR)/config/$(CPU)
+        KERNEL_DIR := $(KERNEL_DIR):$(CONFIGDIR)/$(CPU)
         KERNEL_ASMOBJS := $(KERNEL_ASMOBJS) cpu_support.o
         KERNEL_COBJS := $(KERNEL_COBJS) cpu_config.o
 
     その他の開発環境を用いる場合
-        KERNEL_DIR := $(KERNEL_DIR):$(SRCDIR)/config/$(CPU)-$(TOOL)
-        KERNEL_DIR := $(KERNEL_DIR):$(SRCDIR)/config/$(CPU)
+        KERNEL_DIR := $(KERNEL_DIR):$(CONFIGDIR)/$(CPU)-$(TOOL)
+        KERNEL_DIR := $(KERNEL_DIR):$(CONFIGDIR)/$(CPU)
         KERNEL_ASMOBJS := $(KERNEL_ASMOBJS) cpu_support.o
         KERNEL_COBJS := $(KERNEL_COBJS) cpu_config.o
 
@@ -235,13 +235,13 @@ Makefile 中のそのコマンドを呼び出している部分を変更する必要がある．GNU
 める必要がある．
 
     GNU開発環境を用いる場合
-        KERNEL_DIR := $(KERNEL_DIR):$(SRCDIR)/config/$(CPU)/$(SYS)
+        KERNEL_DIR := $(KERNEL_DIR):$(CONFIGDIR)/$(CPU)/$(SYS)
         KERNEL_ASMOBJS := $(KERNEL_ASMOBJS) sys_support.o
         KERNEL_COBJS := $(KERNEL_COBJS) sys_config.o
 
     その他の開発環境を用いる場合
-        KERNEL_DIR := $(KERNEL_DIR):$(SRCDIR)/config/$(CPU)-$(TOOL)/$(SYS)
-        KERNEL_DIR := $(KERNEL_DIR):$(SRCDIR)/config/$(CPU)/$(SYS)
+        KERNEL_DIR := $(KERNEL_DIR):$(CONFIGDIR)/$(CPU)-$(TOOL)/$(SYS)
+        KERNEL_DIR := $(KERNEL_DIR):$(CONFIGDIR)/$(CPU)/$(SYS)
         KERNEL_ASMOBJS := $(KERNEL_ASMOBJS) sys_support.o
         KERNEL_COBJS := $(KERNEL_COBJS) sys_config.o
 

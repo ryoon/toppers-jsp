@@ -3,7 +3,7 @@ VERSION=0000
 TYPE=TIDE_WSP
 [Builder]
 LinkProject=1
-Composition=Release
+Composition=Debug
 LinkProject0=Zup-F16-ex.abs;
 LinkProject1=Zup-F16-ex.abs;
 [PROJECT]

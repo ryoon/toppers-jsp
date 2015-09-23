@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -51,11 +51,11 @@ MEMORY {
 	/* use 512k - 100 for .text and .rodata  */
 	rom		: o = 0x000100, l = 0x07ff00
 
-	/* use 1M for .data and .bss  */
-	ex_ram		: o = 0xffbf20, l = 0x003c00
+	/* use 15k for .data and .bss  */
+	in_ram1		: o = 0xffbf20, l = 0x003c00
 
-	/* use 16k for .stack  */
-	in_ram		: o = 0xfffb20, l = 0x000400
+	/* use 1k for .stack  */
+	in_ram2		: o = 0xfffb20, l = 0x000400
 
 	}
 
@@ -98,7 +98,7 @@ SECTIONS {
 	{
 		__data_start = . ;
 		*(.data)
-	} >ex_ram
+	} >in_ram1
 	__idata_end = __idata_start + SIZEOF(.data);
 	_edata  =  . ;
 	PROVIDE (edata = .);
@@ -109,7 +109,7 @@ SECTIONS {
 	{
 		*(.bss)
 		*(COMMON)
-	} >ex_ram
+	} >in_ram1
 	_end = .		;
 	PROVIDE (end = .)	;
 

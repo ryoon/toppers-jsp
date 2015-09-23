@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation
@@ -70,22 +70,6 @@ static const VP ddr_adr[] = {
 	(VP)H8P6DDR, (VP)H8P8DDR, (VP)H8P9DDR, (VP)H8PADDR, (VP)H8PBDDR
 };
 
-
-/*
- *  微少時間待ち
- *  　プロトタイプ宣言はsil.h内にある
- */
-void sil_dly_nse(UINT dlytim) {
-	/* er0 = dlytim */
-	Asm("		sub.l	%0, er0" :: "g"(SIL_DLY_TIM1) );
-	Asm("		ble	sil_dly_nse_2");
-				/* dlytim < SIL_DLY_TIM1 ならループ終了 */
-	Asm("	sil_dly_nse_1:");
-	Asm("		sub.l	%0, er0" :: "g"(SIL_DLY_TIM2) );
-	Asm("		bgt	sil_dly_nse_1");
-				/* dlytim > SIL_DLY_TIM2 ならループ続行 */
-	Asm("	sil_dly_nse_2:");
-}
 
 /*
  *      DDRの読み出し

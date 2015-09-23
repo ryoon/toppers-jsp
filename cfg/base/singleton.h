@@ -51,6 +51,7 @@
 
 #include <new>
 #include <stdexcept>
+#include <cstdlib>
 
 /*
  *  シングルトンパターン 実装

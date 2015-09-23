@@ -86,6 +86,7 @@ $defsym_unrename = "_".$NAME."_UNRENAME_H_";
 open(INFILE, $infile) || die "Cannot open $infile";
 while ($line = <INFILE>) {
 	chomp $line;
+#	$line =~ s/\s+//g;
 	@syms = (@syms, $line);
 }
 close(INFILE);

@@ -6,23 +6,22 @@
 # RENESAS SOLUTIONS CORPORATION ALL RIGHTS RESERVED
 #
 #	Notice	:	Don't edit.
-#	Date	:	2006 05(May) 13(Saturday) AM.02.14
-#	Project	:	Jsp14sample1
+#	Date	:	2010 12(December) 28(Tuesday) AM.10.18
+#	Project	:	Jsp14sample1_m3029
 ####################################################################
 
 DELETE	=	@-del
 LNLIST	=	$(PROJECT).cmd
-PRJDIR	=	C:\home\nexcess\new_board\jsp_142\obj_m3029\hoge
-INCLUDES	=	-I$(SRCDIR)/config/m16c-renesas -I$(SRCDIR)/config/m16c-renesas/$(TARGET_SYS) -I$(SRCDIR)/kernel -I$(SRCDIR)/include  -I../../sample -I.
+INCLUDES	=	-I$(CONFIGDIR)/m16c-renesas -I$(CONFIGDIR)/m16c-renesas/$(TARGET_SYS) -I$(SRCDIR)/kernel -I$(SRCDIR)/include  -I../../sample -I.
 LMC	=	LMC30
 CC	=	NC30
 TARGET_SYS	=	m3029
+CONFIGDIR	=	$(SRCDIR)/config
 SRCDIR	=	../..
 AS	=	AS30
 OUTDIR	=	.
 MKDIR	=	@-mkdir
-#CPP	=	C:\tools\rtool\NC30WA\V530R02\LIB30\CPP30
-CPP	=	C:\tools\rtool\NC30WA\V530R02\LIB30\CPP30
+CPP	=	C:\Hew\Tools\Renesas\nc30wa\v545r01\lib30\CPP30
 ABSFILE	=	$(PROJECT).x30
 ODINCMD	=	$(OUTDIR)
 LN	=	LN30
@@ -35,7 +34,7 @@ LFLAGS	=	-MS -L nc30lib -G -O $(OUTDIR)\$(TARGET) -ORDER data_NE=400,data_NO,bss
 CFLAGS	=	-c $(INCLUDES) -dir $(OUTDIR) -g -DNEED_API
 LMCFLAGS	=	-ID\#0 -L
 AFLAGS	=	-LM -DRAMEND=03000h:MON=0:M3029=1 -I. -O$(OUTDIR)
-.SUFFIXES: .a30 .r30 .c .x30
+.SUFFIXES: .a30 .r30 .c .x30 .lib
 .PHONY: all
 all: \
 		$(OUTDIR)\$(TARGET) \
@@ -174,9 +173,7 @@ $(OUTDIR)\banner.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -196,9 +193,7 @@ $(OUTDIR)\cpu_config.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -226,9 +221,7 @@ $(OUTDIR)\cyclic.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -252,9 +245,7 @@ $(OUTDIR)\dataqueue.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -280,9 +271,7 @@ $(OUTDIR)\eventflag.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -308,9 +297,7 @@ $(OUTDIR)\exception.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -334,9 +321,7 @@ $(OUTDIR)\interrupt.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -367,9 +352,7 @@ $(OUTDIR)\log_output.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -381,9 +364,7 @@ $(OUTDIR)\logtask.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -409,9 +390,7 @@ $(OUTDIR)\mailbox.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -437,9 +416,7 @@ $(OUTDIR)\mempfix.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -472,9 +449,7 @@ $(OUTDIR)\semaphore.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -499,9 +474,7 @@ $(OUTDIR)\serial.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -526,9 +499,7 @@ $(OUTDIR)\sfruart.r30: \
 		..\..\include\sil.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -555,9 +526,7 @@ $(OUTDIR)\startup.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -578,9 +547,7 @@ $(OUTDIR)\strerror.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -593,9 +560,7 @@ $(OUTDIR)\sys_config.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -617,9 +582,7 @@ $(OUTDIR)\sys_manage.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -643,9 +606,7 @@ $(OUTDIR)\syslog.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -666,9 +627,7 @@ $(OUTDIR)\t_perror.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -681,9 +640,7 @@ $(OUTDIR)\task.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -707,9 +664,7 @@ $(OUTDIR)\task_except.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -733,9 +688,7 @@ $(OUTDIR)\task_manage.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -760,9 +713,7 @@ $(OUTDIR)\task_sync.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -787,9 +738,7 @@ $(OUTDIR)\time_event.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -811,9 +760,7 @@ $(OUTDIR)\time_manage.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -838,9 +785,7 @@ $(OUTDIR)\timer.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
@@ -865,14 +810,11 @@ $(OUTDIR)\vasyslog.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \
-		..\..\include\serial.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stdarg.h 
+		..\..\include\serial.h 
 	$(CC) $(MRCFLAGS) $(CFLAGS) ..\..\library\vasyslog.c
 $(OUTDIR)\wait.r30: \
 		..\..\kernel\wait.c \
@@ -881,9 +823,7 @@ $(OUTDIR)\wait.r30: \
 		..\..\include\kernel.h \
 		..\..\include\t_stddef.h \
 		..\..\config\m16c-renesas\tool_defs.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\limits.h \
 		..\..\include\itron.h \
-		..\..\..\..\..\..\tools\rtool\NC30WA\V530R02\INC30\stddef.h \
 		..\..\config\m16c-renesas\m3029\sys_defs.h \
 		..\..\config\m16c-renesas\cpu_defs.h \
 		..\..\include\t_syslog.h \

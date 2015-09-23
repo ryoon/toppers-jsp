@@ -6,7 +6,7 @@
 # 
 #  Copyright (C) 2001-2003 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
-#  Copyright (C) 2003-2004 by Naoki Saito
+#  Copyright (C) 2003-2004,2010 by Naoki Saito
 #             Nagoya Municipal Industrial Research Institute, JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -70,7 +70,7 @@ require "getopt.pl";
 #
 #  オプションの処理
 #
-do Getopt("CSTAULDPpld");
+Getopt("CSTAULDPpld");
 
 $cpu = $opt_C ? $opt_C : "m16c";
 $sys = $opt_S ? $opt_S : "oaks16";
@@ -90,7 +90,7 @@ sub get_objext {
 	local(@uname);
 
 	use POSIX;
-	@uname = do uname();
+	@uname = uname();
 	if ($uname[0] =~ /^cygwin/i) {
 		return("exe");
 	}
@@ -158,26 +158,26 @@ sub generate {
 	if ($sys) {
 		$path = $sampledir.$file.".".$cpu."-".$sys;
 		if (-f $path) {
-			do convert($path, $file);
+			convert($path, $file);
 			return;
 		}
 
 		$path = $sampledir.$file.".".$sys;
 		if (-f $path) {
-			do convert($path, $file);
+			convert($path, $file);
 			return;
 		}
 	}	
 
 	$path = $sampledir.$file.".".$cpu;
 	if (-f $path) {
-		do convert($path, $file);
+		convert($path, $file);
 		return;
 	}	
 
 	$path = $sampledir.$file;
 	if ($mandatory || -f $path) {
-		do convert($path, $file);
+		convert($path, $file);
 	}	
 }
 
@@ -219,7 +219,7 @@ $vartable{"KERNEL_LIB"} = $kernel_lib;
 $vartable{"SRCDIR"} = $srcdir;
 $vartable{"SRCABSDIR"} = $srcabsdir;
 $vartable{"PREFIX"} = $prefix;
-$vartable{"OBJEXT"} = do get_objext();
+$vartable{"OBJEXT"} = get_objext();
 $vartable{"PERL"} = $perl;
 $vartable{"LANG"} = $lang;
 
@@ -248,8 +248,8 @@ if ($tool && $sys && ! -d $srcdir."\\config\\".$cpu."-".$tool."\\".$sys) {
 #  Makefile とアプリケーションファイルの生成
 #
 
-do generate("Makefile", 1);
-do generate($uname.".c", 0);
-do generate($uname.".cpp", 0);
-do generate($uname.".h", 0);
-do generate($uname.".cfg", 0);
+generate("Makefile", 1);
+generate($uname.".c", 0);
+generate($uname.".cpp", 0);
+generate($uname.".h", 0);
+generate($uname.".cfg", 0);

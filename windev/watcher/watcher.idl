@@ -18,18 +18,18 @@ import "ocidl.idl";
 	]
 	interface IKernelLogControl : IDispatch
 	{
-		[id(1), helpstring("ﾒｿｯﾄﾞ Open")] HRESULT Open();
-		[id(2), helpstring("ﾒｿｯﾄﾞ Close")] HRESULT Close();
-		[propget, id(3), helpstring("ﾌﾟﾛﾊﾟﾃｨ Type")] HRESULT Type([out, retval] long *pVal);
-		[propget, id(4), helpstring("ﾌﾟﾛﾊﾟﾃｨ Logtim")] HRESULT Logtim([out, retval] long *pVal);
-		[propget, id(5), helpstring("ﾌﾟﾛﾊﾟﾃｨ isValid")] HRESULT isValid([out, retval] BOOL *pVal);
-		[propget, id(6), helpstring("ﾌﾟﾛﾊﾟﾃｨ Param")] HRESULT Param(long index, [out, retval] long *pVal);
+		[id(1), helpstring("メソッド Open")] HRESULT Open();
+		[id(2), helpstring("メソッド Close")] HRESULT Close();
+		[propget, id(3), helpstring("プロパティ Type")] HRESULT Type([out, retval] long *pVal);
+		[propget, id(4), helpstring("プロパティ Logtim")] HRESULT Logtim([out, retval] long *pVal);
+		[propget, id(5), helpstring("プロパティ isValid")] HRESULT isValid([out, retval] BOOL *pVal);
+		[propget, id(6), helpstring("プロパティ Param")] HRESULT Param(long index, [out, retval] long *pVal);
 	};
 
 [
 	uuid(A242E427-5E2F-4447-AC87-0C7CC382CBFE),
 	version(1.0),
-	helpstring("watcher 1.0 ﾀｲﾌﾟ ﾗｲﾌﾞﾗﾘ")
+	helpstring("watcher 1.0 タイプ ライブラリ")
 ]
 library WATCHERLib
 {
@@ -44,9 +44,9 @@ library WATCHERLib
 	{
 		properties:
 		methods:
-		[id(1), helpstring("ﾒｿｯﾄﾞ OnKernelStart")] HRESULT OnKernelStart();
-		[id(2), helpstring("ﾒｿｯﾄﾞ OnKernelExit")] HRESULT OnKernelExit();
-		[id(3), helpstring("ﾒｿｯﾄﾞ OnLogEvent")] HRESULT OnLogEvent([in] int type);
+		[id(1), helpstring("メソッド OnKernelStart")] HRESULT OnKernelStart();
+		[id(2), helpstring("メソッド OnKernelExit")] HRESULT OnKernelExit();
+		[id(3), helpstring("メソッド OnLogEvent")] HRESULT OnLogEvent([in] int type);
 	};
 	
 
@@ -59,10 +59,10 @@ library WATCHERLib
 	]
 	interface IDirectoryMap : IDispatch
 	{
-		[propget, id(1), helpstring("ﾌﾟﾛﾊﾟﾃｨ Path")] HRESULT Path([out, retval] BSTR *pVal);
-		[propput, id(1), helpstring("ﾌﾟﾛﾊﾟﾃｨ Path")] HRESULT Path([in] BSTR newVal);
-		[propget, id(2), helpstring("ﾌﾟﾛﾊﾟﾃｨ Valid")] HRESULT Valid([out, retval] BOOL *pVal);
-		[id(3), helpstring("ﾒｿｯﾄﾞ Load")] HRESULT Load(BSTR filename);
+		[propget, id(1), helpstring("プロパティ Path")] HRESULT Path([out, retval] BSTR *pVal);
+		[propput, id(1), helpstring("プロパティ Path")] HRESULT Path([in] BSTR newVal);
+		[propget, id(2), helpstring("プロパティ Valid")] HRESULT Valid([out, retval] BOOL *pVal);
+		[id(3), helpstring("メソッド Load")] HRESULT Load(BSTR filename);
 	};
 	
 

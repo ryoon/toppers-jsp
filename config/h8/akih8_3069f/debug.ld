@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -54,8 +54,9 @@ MEMORY {
 	/* use 1M for .data and .bss  */
 	ex_ram5		: o = 0x500000, l = 0x100000
 
-	/* use 16k for .stack  */
-	in_ram		: o = 0xffbf20, l = 0x004000
+	/* use 15.5k for .stack  */
+	/*  (in back of vectors) */
+	in_ram		: o = 0xffc100, l = 0x003e20
 
 	}
 

@@ -54,6 +54,7 @@ TOOL = @(TOOL)
 #  ソースファイルのディレクトリの定義
 #
 SRCDIR = @(SRCDIR)
+CONFIGDIR ?= $(SRCDIR)/config
 
 #
 #  オブジェクトファイル名の拡張子の設定

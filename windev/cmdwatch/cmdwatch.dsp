@@ -1,25 +1,25 @@
 # Microsoft Developer Studio Project File - Name="cmdwatch" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** Х╥ПWВ╡В╚ВвВ┼ВнВ╛В│Вв **
+# ** ╩╘╜╕д╖д╩ддд╟дпд└д╡дд **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
 
 CFG=cmdwatch - Win32 Debug
-!MESSAGE В▒ВъВ═ЧLМ°В╚╥▓╕╠з▓┘В┼В═ВаВшВ▄В╣ВёБB В▒В╠╠▀█╝▐к╕─ВЁ╦▐┘─▐В╖ВщВ╜В▀В╔В═ NMAKE ВЁОgЧpВ╡В─ВнВ╛В│ВвБB
-!MESSAGE [╥▓╕╠з▓┘В╠┤╕╜╬▀░─] ║╧▌─▐ВЁОgЧpВ╡В─О└НsВ╡В─ВнВ╛В│Вв
+!MESSAGE д│дьд╧═н╕·д╩еседепе╒ебедеыд╟д╧двдъд▐д╗дєбг д│д╬е╫еэе╕езепе╚дЄе╙еые╔д╣дыд┐дсд╦д╧ NMAKE дЄ╗╚═╤д╖д╞дпд└д╡ддбг
+!MESSAGE [еседепе╒ебедеыд╬еиепе╣е▌б╝е╚] е│е▐еєе╔дЄ╗╚═╤д╖д╞╝┬╣╘д╖д╞дпд└д╡дд
 !MESSAGE 
 !MESSAGE NMAKE /f "cmdwatch.mak".
 !MESSAGE 
-!MESSAGE NMAKE В╠О└НsОЮВ╔Н\РмВЁОwТшВ┼ВлВ▄В╖
-!MESSAGE ║╧▌─▐ ╫▓▌ПуВ┼╧╕█В╠Р▌ТшВЁТшЛ`В╡В▄В╖БBЧс:
+!MESSAGE NMAKE д╬╝┬╣╘╗■д╦╣╜└одЄ╗╪─ъд╟днд▐д╣
+!MESSAGE е│е▐еєе╔ ещедеє╛хд╟е▐епеэд╬└▀─ъдЄ─ъ╡┴д╖д▐д╣бг╬у:
 !MESSAGE 
 !MESSAGE NMAKE /f "cmdwatch.mak" CFG="cmdwatch - Win32 Debug"
 !MESSAGE 
-!MESSAGE СIСЁЙ┬Ф\В╚╦▐┘─▐ ╙░─▐:
+!MESSAGE ┴к┬Є▓─╟╜д╩е╙еые╔ етб╝е╔:
 !MESSAGE 
-!MESSAGE "cmdwatch - Win32 Release" ("Win32 (x86) Console Application" Чp)
-!MESSAGE "cmdwatch - Win32 Debug" ("Win32 (x86) Console Application" Чp)
-!MESSAGE "cmdwatch - Win32 Unicode Release MinDependency" ("Win32 (x86) Console Application" Чp)
+!MESSAGE "cmdwatch - Win32 Release" ("Win32 (x86) Console Application" ═╤)
+!MESSAGE "cmdwatch - Win32 Debug" ("Win32 (x86) Console Application" ═╤)
+!MESSAGE "cmdwatch - Win32 Unicode Release MinDependency" ("Win32 (x86) Console Application" ═╤)
 !MESSAGE 
 
 # Begin Project

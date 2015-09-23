@@ -1,7 +1,7 @@
                ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                   （H8Sターゲット依存部 (H8C(HEW)対応版)）
    
-               （Release 1.4.3対応，最終更新: 08-Mar-2007）
+               （Release 1.4.4対応，最終更新: 29-Dec-2010）
    
    ------------------------------------------------------------------------ 
     TOPPERS/JSP Kernel
@@ -479,8 +479,13 @@ user_config.h に定義している TNUM_PORT により何本使用するか指定できる。
    ・統合開発環境 HEW4.02.00.022
 
 また、他にも下記のツールが必要になる。
-   ・Visual C++6.0またはVisual C++ .NET
-   　　コンフィギュレータをビルドするために必要となる。
+   ・MinGW
+       コンフィギュレータをビルドするために必要となる。
+       通常は既にコンパイル済みのものが用意されているため，そちらを
+       利用すればよい．
+       MinGW (Minimalist GNU for Windows)
+       http://www.mingw.org/
+       http://sourceforge.net/projects/mingw/  (インストーラの入手先)
 
    ・Windowsのコマンド・プロンプトで動作するPerl
    　　下記の4.3 (1)の作業で使用する。
@@ -489,13 +494,7 @@ user_config.h に定義している TNUM_PORT により何本使用するか指定できる。
 
 4. 2  コンフィギュレータのビルド
 
-jsp/cfgディレクトリ以下のにあるコンフィギュレータをビルドする。
-ビルド方法
-　jsp/cfg/vc_project/make.vbsを実行する。
-　途中でVisual C++用かCygwin用か選択肢があるので、Visual C++用を
-　選択する。
-
-詳しくはjsp/doc/windows.txtを参照。
+user.txt を参照のこと。
 
 4. 3  サンプルプログラムのビルド
 (1) 環境設定

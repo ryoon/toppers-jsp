@@ -285,7 +285,7 @@ extern BOOL	vsns_ini(void) throw();
 #define	TKERNEL_MAKER	0x0118u		/* カーネルのメーカーコード */
 #define	TKERNEL_PRID	0x0001u		/* カーネルの識別番号 */
 #define	TKERNEL_SPVER	0x5402u		/* ITRON仕様のバージョン番号 */
-#define	TKERNEL_PRVER	0x1043u		/* カーネルのバージョン番号 */
+#define	TKERNEL_PRVER	0x1044u		/* カーネルのバージョン番号 */
 
 /*
  *  キューイング／ネスト回数の最大値

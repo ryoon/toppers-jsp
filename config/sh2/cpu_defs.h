@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2002-2004 by Hokkaido Industrial Research Institute, JAPAN
  * 
@@ -110,13 +110,13 @@ extern ER	get_ipm(IPM *p_ipm) throw();
  *  　具体的にはGDB stubのシリアル受信割込みの扱いが異なる。
  */
 Inline void
-_disint_()
+_disint_(void)
 {
 	UW sr;
 
 	Asm("stc  sr,%0" : "=r"(sr));
 	sr |= 0x000000f0u;
-	Asm("ldc %0, sr" : : "r"(sr) );
+	Asm("ldc %0, sr" : : "r"(sr) : "memory", "t");
 }
 
 

@@ -1,0 +1,388 @@
+
+       == TOPPERS/JSP カーネル ユーザズマニュアル ==
+              (LatticeMico32 ターゲット依存部)
+
+       (Release 1.4.3 対応, 最終更新: 7-Mar-2008)
+------------------------------------------------------------------------ 
+ TOPPERS/JSP Kernel
+     Toyohashi Open Platform for Embedded Real-Time Systems/
+     Just Standard Profile Kernel
+
+ Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+                            Toyohashi Univ. of Technology, JAPAN
+
+ 上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ によって公表されている GNU General Public License の Version 2 に記
+ 述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ 利用と呼ぶ）することを無償で許諾する．
+ (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
+     権表示，この利用条件および下記の無保証規定が，そのままの形でソー
+     スコード中に含まれていること．
+ (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+     用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+     者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+     の無保証規定を掲載すること．
+ (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+     用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+     と．
+   (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+       作権表示，この利用条件および下記の無保証規定を掲載すること．
+   (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+       報告すること．
+ (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+     害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
+
+ 本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ 含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ 接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
+
+------------------------------------------------------------------------
+
+1. LatticeMico32 (lm32) ターゲット依存部の概要
+
+ 1.1 ターゲットシステムと開発環境
+　　LatticeMico32 プロセッサのターゲットシステムは Lattice FPGA 搭載の次の
+　開発・評価ボードをサポートしている。
+
+  ・Lattice 社提供; LatticeECP2 LatticeMico32/DSP 開発ボード
+     (FPGA LatticeECP2-50 搭載)
+
+　　開発環境には、GCC などの GNU 開発環境を用い、オブジェクトファイルフォー
+　マットは ELF を標準とする。
+
+
+ 1.2 サポート機能の概要
+　　LatticeMico32 依存の機能として、割込みの禁止と許可(dis_int、ena_int)や
+　システム時刻参照機能(get_tim)、割込みマスクの変更・参照(chg_ixx、get_ixx)
+　をサポートしている。詳細なサポート関数については本マニュアルの末尾に一覧
+　でまとめている。
+
+
+ 1.3 システム構成
+　　LatticeMico32 は FPGA を対象としているため、そのプロセッサ/ペリフェラル
+　構成に対する自由度が大きい。従って JSP カーネルを動作させるために必要な
+　共通なプロセッサ依存部が /lm32 下に、ターゲットシステム依存部は、上述の
+　評価ボードの場合に関して /lm32/ECP2 下にある。
+　　なお、FPGA は電源投入後にユーザの論理回路を作り込むプロセス（コンフィグ
+　レーション）が一般に必要である。 LatticeECP2 もそうしたタイプである。
+　システムとしては、何らかの不揮発性メモリ内にこのコンフィグレーション用デ
+　ータを保持しておく必要がある。
+
+　　ターゲットシステムで JSP カーネルを動作させるための、コアペリフェラル
+　最小構成を以下に示す。JTAG デバッグポートは任意である。
+  　・タイマ
+  　・UART
+  　・ストレージ・コンポーネント（内部 RAM、外部 SRAM、外部フラッシュメモリ）
+
+　ストレージ・コンポーネントの構成（ブート方法）としては 2 つの選択肢がある。
+　内部 RAM からのブート；
+　　カーネルイメージに対応することができる程度に FPGA の内部 RAM が大きい
+　　場合、ストレージ・コンポーネントとしては内部 RAM のみとしても構成可能で
+　　ある。スタック領域を内部に持つか外部 SRAM に持つかは、やはり内部 RAM の
+　　規模や設計方針に依存する。
+　　　本ブート方法は、FPGA をコンフィグレーションする際に、内部 RAM もカーネ
+　　ルイメージで同時に初期化するものである。ブートローダを必要とすることなく、
+　　リセット後直ちにリセットベクタアドレスからイメージを実行する。
+
+　外部フラッシュメモリからのブート；
+ 　　イメージを外部フラッシュに格納し、外部 SRAM（或いは内部 RAM）でイメージ
+　を実行する場合、ストレージ・コンポーネントとしては外部 SRAM とフラッシュ
+　メモリの構成になる。リセット後、フラッシュメモリ内のブートローダがまず起動
+　し、各データセクションを適切に処理後、実行を開始する。
+
+　なお FPGA に作り込む論理回路（ハードウェアプラットフォーム）の作成、FPGA
+　コンフィグレーション用ファイルの生成に関する詳細については以下の資料など
+　を参照されたい。
+　・LatticeMico32 Software Developer User Guide
+　・LatticeMico32 Development Kit User's Guide for LatticeECP2
+　・ispLEVER マニュアル（日本語）
+
+　各資料は以下 URL から入手可能
+　・http://www.latticesemi.com/dynamic/index.cfm?fuseaction=view_documents&document_type=35&sloc=01-01-08-11-48-02
+　・http://www.latticesemi.co.jp/docs/index.cfm
+
+
+ 1.4 システムコンフィグレーション
+　　JSP カーネルを新規開発システムで実行するためには、適切なターゲット依存
+　ファイルの一部をそのシステム特有の内容に書き換える。確認・編集すべきパラ
+　メータは以下の通りである。
+
+　lm32/Makefile.config
+     COPTS        : コンパイルオプション
+     LDFLAGS     : リンカオプション
+
+　lm32/sys_defs.h
+     TIC_NUME    : タイムティック周期の分子
+     TIC_DENO    : タイムティック周期の分母
+     TIMER_CLOCK : タイマークロック値。MICO32_CPU_CLOCK_HZ に依存
+ 
+　lm32/ECP2/lm32.h
+     MICO32_CPU_CLOCK_HZ  : CPU クロック周波数 [Hz]、デフォルトは 25MHz
+     DEFAULT_UART_BOARDRATE ：UART のデフォルト・ボーレート(Baud Rate) [bps]
+     TIMER_BASE_REG      : TIMER のベースアドレス
+     UART0_BASE_REG     : UART 0 のベースアドレス
+     UART1_BASE_REG     : UART 1 のベースアドレス
+     INHNO_TIMER        : TIMER の割り込み ID
+     INHNO_SIO1          : UART 0 の割り込み ID     
+     INHNO_SIO2          : UART 1 の割り込み ID（UART 2 系統使用の場合）
+
+　lm32/ECP2/lm32elf.ld（リンカースクリプト）
+     _fstack : 初期スタックアドレス（通常外部 SRAM の ORIGIN と LENGTH）
+
+
+　注1 ；コンパイルオプション（COPTS）に関して
+　　Mico32 は CPU コアのオプションとして命令実行アシスト用ロジックの使用
+　　可否を MSB にて設定できる (RTL は MSB が生成）。この設定に合わせてコン
+　　パイルオプションを付加する。
+　　　-mmultiply-enabled　　　 ：乗算器
+　　　-mbarrel-shift-enabled　  ：バレルシフタ
+　　　-mdivide-enabled　　　　：除算器
+　　　-msign-extend-enabled　  ：符号拡張
+　
+　注2 ；リンカースクリプト（lm32elf.ld）に関して
+　　上述のスタックに関する定義以外に、ブートローダやブートメモリの指定など
+　　も行うが、CPU やメモリの構成に自由度があるので、本リンカースクリプトの
+　　編集には注意されたい。参考として、lm32/ECP2/ サブフォルダには以下の
+　　サンプルスクリプト例が含まれている。なお、有効なリンカースクリプト名
+　　は lm32elf.ld である。
+  　lm32elf_ebr.ld　；
+　　　FPGA コンフィグレーション後、或いは CPU リセット後、内部メモリから
+　　　ブート。スタックは外部 ASRAM
+　  lm32elf_flash.ld　；
+　　　FPGA コンフィグレーション後、或いは CPU リセット後、外部フラッシュ
+　　　からブート。スタックは外部 ASRAM
+
+
+ 1.5 他のターゲットへのポーティング
+　　LatticeMico32 プロセッサは以下の Lattice 社製各 FPGA デバイス・ファミリを
+　サポートしている。
+   　・LatticeECP2/ECP2M、LatticeSC/SCM、LatticeEC/ECP
+　ただし、実装する論理回路の RTL はオープンソースの方針である。基本的に対象
+　デバイスとしての制約はないので、技術的にはこれ以外のデバイスへの実装も可
+　能である。
+
+
+ 1.6 GDB スタブ
+　　LatticeMico32 開発ツール(MSB, SDK)では GDB スタブはサポートしていない。
+
+
+2. LatticeMico32 プロセッサ依存部の機能
+
+　　ここでは、カーネルおよびシステムサービスの機能の中で，LatticeMico32
+　依存部について述べる。
+
+ 2.1 データ型
+　　signed int 型および unsigned int 型は 32 ビット幅である。
+
+ 2.2 割込み管理機能と割込みハンドラ
+　　DEF_INH で指定する割込みハンドラ番号は、"lm32.h" 内で指定した割込み番号
+　を表し、そのデータ型は unsigned int（UINT）として定義されている。
+　　DEF_INH で無効の割込み優先度や、実際の割込み優先度と異なる値を指定した
+　場合の動作は保証されない。
+
+　なおタスク例外ハンドラの登録はコンフィグレーション・ファイル .cfg 内に
+　以下の定義を加えることによって行う。
+
+　　DEF_TEX(TASK_ID, { TA_HLNG, tsk_exc_routine });
+　　　TASK_ID　　　　: 登録するタスクの ID
+　　　tsk_exc_routine　: C ファイルで記述するタスク例外ハンドラ名
+
+
+ 2.3 スタートアップモジュールの処理内容
+　　スタートアップモジュール "start.S" では以下の初期化処理を行う。
+
+　(i) キャッシュの初期化
+　　命令キャッシュやデータキャッシュを実装している場合、初期化を行う。
+
+　(ii) スタックポインタとグローバルポインターの初期化
+　　スタックポインタとグローバルポインターを初期値に設定する。
+
+　(iii) 例外ハンドラの登録
+　　リセット、バスエラー、システムコール、割り込みなどの例外ハンドラを
+　それぞれ登録する。
+
+　(iv) bss セクションの初期化
+　　bss セクションをクリアする。
+
+　(v) カーネルの起動
+　　カーネルを起動する。kernel_start からリターンすることはない。
+
+
+3. ソフトウェア開発環境と手順例
+
+ 3.1 カーネル構築の環境
+　　アプリケーションをビルドする前に、カーネル環境を準備する必要がある。以下に
+　そのチェック事項・手順を示す。
+
+　A. LatticeMico32 開発ツール (Mico32 System Builder; MSB) をインストールする
+
+　B. TOPPERS/JSP ソースコードを入手、解凍し、Mico32 MSB インストール・ディレク
+　　トリ下に置く
+
+　C. LatticeMico32 のターゲット依存コード（lm32）をJSPパッケージ内 "jsp\config”
+　　というサブディレクトリ下にあることを確認する
+
+　D. JSP パッケージ内 "user.txt" 7.3章に記述されているように、GCC などのツール
+　　を導入し、コンフィグレータをビルドする。完了すると、ファイル "cfg.exe" と
+　　"chk.exe" がディレクトリ“jsp/cfg" 下に生成される。
+　　　なお、Mico32 MSBに組み込まれている Cygwin シェル(Mico32 SDK) はこの目的
+　　には使用しない。
+
+　MSB は下記 URL から無償でダウンロード可能（ライセンスアグリーメントに同意の
+　ボタンをクリックする必要がある）
+　・http://www.latticesemi.com/dynamic/index.cfm?fuseaction=view_documents&document_type=65&sloc=01-01-08-11-48
+
+
+ 3.2 アプリケーションのビルド例
+　　LatticeECP2 FPGA をターゲットデバイスとするアプリケーション名を"hello_world"
+　とした場合の例についてビルド手順を以下に示す。
+
+  A. 拡張子のみが異なる同名の3つのファイル、hello_world.c、hello_world.h、および
+　　hello_world.cfg を用意する
+
+  B. "/jsp" ディレクトリ下に作業ディレクトリ lm32_hworld（例）を作成し、これら
+　　ファイルをコピーする
+
+  C. Mico32 MSB (SDK)でシェルを開き /jsp/lm32_hworld に移動した後、以下を実行
+　する。Makefile が生成される
+　　> ../configure -C lm32 -S ECP2 -A hello_world
+
+  D. 生成される Makefile 内のオブジェクトファイル拡張子名（71 行目）を編集する
+　（任意）
+　　　[元] OBJEXT=exe
+　　　[新] OBJEXT=elf
+
+  E. 次のコマンドを実行しカーネルを構築する
+　　> make depend
+
+  F. 次のコマンドを実行する。目的とするお婦じぇくとファイル jsp.elf (又は jsp.exe)
+　が生成される
+　　> make
+　　> make jsp.bin
+　（> make; make jsp.bin としても同じ）
+
+  (G. ソースファイルの変更が生じた場合は E, F を繰り返す)
+
+
+ 3.3 デバッグ方法
+　　以下にアプリケーションプログラムのデバッグ方法例を示す。
+
+  A. Mico32 SDK シェルを開き、次のコマンドを実行する
+    > TCP2JTAGVC2
+
+  B. Mico32 SDK シェルをもう一つ開き /jsp/lm32_hworld に移動後、次コマンドを実行
+　　して GDB デバッグ環境に入る
+    > lm32-elf-gdb
+
+  C. GDB にて次のコマンドでターゲットにリンクする
+    (gdb) target remote localhost:1000
+
+  D. 次のコマンドを実行し、イメージをロードする
+    (gdb) load jsp.elf
+　　
+　（3.2 F にて生成したオブジェクトファイル名が jsp.exe の場合は load jsp.exe）
+
+  E. GDB 各コマンドを使用してデバッグする。実行する場合は
+    (gdb) cont
+
+
+4. その他
+
+ 4.1 ディレクトリ/ファイル構成 
+　　LatticeMico32 プロセッサ依存部、ターゲット依存部の各ファイルの概要は次の
+　通り
+
+  lm32/
+    Makefile.config    Makefile の LatticeMico32 依存定義
+    cpu_rename.def     カーネルの内部識別名のリネーム定義
+    cpu_rename.h       カーネルの内部識別名のリネーム
+    cpu_unrename.h     カーネルの内部識別名のリネーム解除
+    cpu_config.h       プロセッサ依存部の構成定義
+    cpu_config.c       プロセッサ依存部の関数
+    cpu_context.h      コンテキスト操作
+    cpu_defs.h         プロセッサ依存部のアプリケーション用定義
+    cpu_insn.h         低レベルのプロセッサ操作ルーチン
+    cpu_support.S      プロセッサ依存部のサブルーチン
+    makeoffset.c       offset.h 生成サポートプログラム
+    tool_defs.h        開発環境依存部のアプリケーション用定義（GNU 開発環境用)
+    tool_config.h      開発環境依存部の構成定義（GNU 開発環境用）
+    start.S            スタートアップモジュール
+
+  lm32/ECP2
+    Makefile.config    Makefile の LatticeECP2 LatticeMico32/DSP ボード依存定義
+    lm32.h             LatticeMico32 の定義
+    lm32.c             LatticeMico32 用コード
+    sys_config.h       システム依存部の構成定義
+    sys_config.c       システム依存部の関数
+    sys_defs.h         システム依存部のアプリケーション用定義
+    sys_rename.def     カーネルの内部識別名のリネーム定義
+    sys_rename.h       カーネルの内部識別名のリネーム
+    sys_unrename.h     カーネルの内部識別名のリネーム解除
+    sys_support.S      システム依存部のサブルーチン
+    hw_serial.h        SIO ドライバ
+    hw_serial.cfg      SIO ドライバのコンフィギュレーションファイル
+    hw_timer.h         タイマ操作ルーチン
+    lm32elf.ld         フラッシュブートで外部 SRAM 実行のリンカスクリプト例
+
+
+ 4.2 システム関数
+　サポートする JSP システム関数は以下の通り。C ライブラリは実装されていない。
+
+ 4.2.1 タスク管理関数
+    CRE_TSK, act_tsk, iact_tsk, can_act, ext_tsk, ter_tsk,
+    chg_pri, get_pri
+
+ 4.2.2 タスク依存同期関数
+    stp_tsk, tslp_tsk, wup_tsk, iwup_tsk, can_wup, rel_wai,
+    irel_wai, sus_tsk, rsm_tsk, frsm_tsk, dly_tsk
+
+ 4.2.3 タスク例外ハンドリング関数
+    DEF_TEX, ras_tex, iras_tex, dis_tex, ena_tex, sns_tex
+
+ 4.2.4 同期および通信関数
+  セマフォ
+    CRE_SEM, sig_sem, isig_sem, wai_sem, pol_sem, twai_sem
+
+  イベントフラグ
+    CRE_FLG, set_flg, iset_flg, clr_flg, wai_flg, pol_flag,
+    twai_flag
+
+  データキュー
+    CRE_DTQ, snd_dtq, psnd_dtq, ipsnd_dtq, tsnd_dtq, fsnd_dtq, 
+    ifsnd_dtq, rcv_dtq, prcv_dtq, trcv_dtq
+
+  メイルボックス
+    CRE_MBX, snd_mbx, rcv_mbx, prcv_mbx, trcv_mbx
+
+ 4.2.5 メモリプール管理関数
+  固定サイズ・メモリプール
+    CRE_MPF, get_mpf, pget_mpf, tget_mpf, rel_mpf
+
+ 4.2.6 時間管理関数
+  システムタイム管理
+    set_tim, get_tim, isig_tim
+
+  サイクリックハンドラー
+    CRE_CYC, sta_cyc, stp_cyc
+
+ 4.2.7 システム状態管理関数
+    rot_rdq, irot_rdq, get_tid,  iget_tid, loc_cpu, iloc_cpu, 
+    unl_cpu, iunl_cpu, dis_dsp, ena_dsp, sns_ctx, sns_loc, 
+    sns_dsp, sns_dpn
+
+ 4.2.8 割り込み管理関数
+    DEF_INF, dis_int, ena_int, chg_ixx, get_ixx
+
+ 4.2.9 システムコンフィグレーション管理関数
+    DEF_EXC, ATT_INI
+
+
+ 4.3 サポート
+　バグ等を発見した場合は toppers-users の ML に報告もしくは Mico32 依存部
+　担当者の以下のメールアドレスに連絡して頂きたい
+
+　　xxxxxx@yyyy.jp
+
+(-- 以上 --)

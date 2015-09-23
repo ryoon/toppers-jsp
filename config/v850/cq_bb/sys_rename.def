@@ -1,0 +1,4 @@
+sys_initialize
+sys_exit
+hardware_init_hook
+sys_putc

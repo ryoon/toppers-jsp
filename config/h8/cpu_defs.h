@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -57,7 +57,7 @@
 
 /* カーネル起動時のメッセージ */
 #define COPYRIGHT_CPU \
-"Copyright (C) 2001-2007 by Industrial Technology Institute,\n" \
+"Copyright (C) 2001-2010 by Industrial Technology Institute,\n" \
 "                            Miyagi Prefectural Government, JAPAN\n" \
 "Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering\n" \
 "                 Tomakomai National College of Technology, JAPAN\n" \

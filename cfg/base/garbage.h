@@ -49,7 +49,7 @@
 
 #include "base/testsuite.h"
 #include <list>
-
+#include <cstddef>
 
     //動的に生成したオブジェクトをちゃんと破棄するためのゴミ箱ルーチン
 class TrashBox

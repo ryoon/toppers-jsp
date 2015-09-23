@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -609,10 +609,9 @@
 /*
  *  内蔵メモリの定義
  */
-
 #define H8IN_ROM_BASE		0x000000
 #define H8IN_ROM_SIZE		0x020000
-#define H8IN_RAM_BASE		0xffef10
-#define H8IN_RAM_SIZE		0x001000
+#define H8IN_RAM_BASE		0xffdf10
+#define H8IN_RAM_SIZE		0x002000
 
 #endif /* _H8_3052F_H_ */

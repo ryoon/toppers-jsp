@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tlcs900offset", "tlcs900offset\tlcs900offset.vcxproj", "{5BA3EF6B-A0C7-8475-7C5F-D4F97B1A11D1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tlcs900vec", "tlcs900vec\tlcs900vec.vcxproj", "{BFC25B1D-6D2B-F1C7-162B-877554D08DBC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5BA3EF6B-A0C7-8475-7C5F-D4F97B1A11D1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5BA3EF6B-A0C7-8475-7C5F-D4F97B1A11D1}.Debug|Win32.Build.0 = Debug|Win32
+		{5BA3EF6B-A0C7-8475-7C5F-D4F97B1A11D1}.Release|Win32.ActiveCfg = Release|Win32
+		{5BA3EF6B-A0C7-8475-7C5F-D4F97B1A11D1}.Release|Win32.Build.0 = Release|Win32
+		{BFC25B1D-6D2B-F1C7-162B-877554D08DBC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BFC25B1D-6D2B-F1C7-162B-877554D08DBC}.Debug|Win32.Build.0 = Debug|Win32
+		{BFC25B1D-6D2B-F1C7-162B-877554D08DBC}.Release|Win32.ActiveCfg = Release|Win32
+		{BFC25B1D-6D2B-F1C7-162B-877554D08DBC}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

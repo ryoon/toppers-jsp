@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -182,7 +182,7 @@ sys_putc(char c)
 
 #if TNUM_PORT >= 2
 
-#define USER_SCI		H8SCI0
+#define USER_SCI			H8SCI0
 
 #define USER_SCI_IPR		H8IPRB
 #define USER_SCI_IP_BIT		H8IPR_SCI0_BIT
@@ -199,7 +199,7 @@ sys_putc(char c)
 
 #define	USER_PORTID		2
 
-#define INHNO_SERIAL2_IN		IRQ_RXI0
+#define INHNO_SERIAL2_IN	IRQ_RXI0
 #define INHNO_SERIAL2_OUT	IRQ_TXI0
 #define INHNO_SERIAL2_ERR	IRQ_ERI0
 
@@ -208,10 +208,10 @@ sys_putc(char c)
 
 #if TNUM_PORT >= 3
 
-#define USER2_SCI		H8SCI2
+#define USER2_SCI			H8SCI2
 
 #define USER2_SCI_IPR		H8IPRB
-#define USER2_SCI_IP_BIT		H8IPR_SCI2_BIT
+#define USER2_SCI_IP_BIT	H8IPR_SCI2_BIT
 
 #define USER2_SCI_SMR		0
 			/* 送受信フォーマット			*/
@@ -225,7 +225,7 @@ sys_putc(char c)
 
 #define	USER2_PORTID		3
 
-#define INHNO_SERIAL3_IN		IRQ_RXI2
+#define INHNO_SERIAL3_IN	IRQ_RXI2
 #define INHNO_SERIAL3_OUT	IRQ_TXI2
 #define INHNO_SERIAL3_ERR	IRQ_ERI2
 
@@ -352,20 +352,20 @@ sys_putc(char c)
 #if defined(ROM)
 
 /*  ROM化（外部RAM使用）  */
-#define	SIL_DLY_TIM1	 6880
-#define	SIL_DLY_TIM2	  546
+#define	SIL_DLY_TIM1	 2350
+#define	SIL_DLY_TIM2	  530
 
 #elif defined(INMEM_ONLY)
 
 /*  ROM化（内蔵メモリのみ使用） */
-#define	SIL_DLY_TIM1	 2800
-#define	SIL_DLY_TIM2	  521
+#define	SIL_DLY_TIM1	 1668
+#define	SIL_DLY_TIM2	  519
 
 #else	/* of #if defined(ROM) */
 
 /*  簡易モニタ（ユーザープログラムは外部RAM上にダウンロード）  */
-#define	SIL_DLY_TIM1	16150
-#define	SIL_DLY_TIM2	 3161
+#define	SIL_DLY_TIM1	3914
+#define	SIL_DLY_TIM2	1110
 
 #endif	/* of #if defined(ROM) */
 

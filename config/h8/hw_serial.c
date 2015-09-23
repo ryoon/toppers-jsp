@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -163,7 +163,7 @@ SCI_initialize (ID sioid)
          *  プライオリティレベルの設定
          *      本当は割込みコントローラ依存部分を分離すべき
          */
-        define_int_plevel(&(inib->irc));
+	define_int_plevel(&(inib->irc));
 
 	/* 受信割り込みと送信割込みの許可はシリアル I/O で行う */
 	/* 送受信許可 */
@@ -177,12 +177,14 @@ SCI_initialize (ID sioid)
 void
 SCI_cls_por (UW base)
 {
+#ifndef HEW_SIMULATOR
 	/* TDRE が 1 になるまで待つ */
 	while ((sil_reb_mem((VP)(base + H8SSR)) & H8SSR_TDRE) == 0)
 		;
 
 	/* 11ビット送信分待つ。*/
 	sil_dly_nse(11*BAUD_TO_NSEC(H8_MIN_BAUD_RATE));
+#endif	/* HEW_SIMULATOR */
 					/* 送受信停止		*/
 	h8_anb_reg((UB *)(base + H8SCR),
 	           (UB)~(H8SCR_TIE | H8SCR_RIE | H8SCR_TE | H8SCR_RE));
@@ -196,27 +198,44 @@ void
 SCI_in_handler(ID sioid)
 {
 	SIOPCB	*pcb;
+	VP	p_ssr;
 	UB	status;
 	
 	pcb = get_siopcb(sioid);
-	status = sil_reb_mem((VP)(pcb->inib->base + H8SSR));
+	p_ssr = (VP)(pcb->inib->base + H8SSR);
+	status = sil_reb_mem(p_ssr);
 	
+#if 0	/*  コメントアウト  */
+	/*
+	 *  SIOエラー割込みサービスルーチンだけでなく
+	 *  ここでもエラーチェックを行っている理由は
+	 *  以下のシーケンスを想定しているため。
+	 *  （レアケースのため、コメントアウトしている。）
+	 *  
+	 *  １．シリアル受信割込み（正常）が発生し、割込みハンドラが起動される。
+	 *  ２．割込み処理中に多重割込みが入り、シリアル受信処理が保留される。
+	 *  　　　例：タイマ割込み
+	 *  ３．さらにデータを受信し、例えば、オーバランエラーが発生
+	 *  ４．２の割込み処理が終了し、１の割込み処理に戻る。
+	 *  　　この際、シリアルのエラーフラグが立った状態で、
+	 *  　　正常ケースの受信割込みの割込みハンドラが実行される。
+	 */
 	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
 
 		/* エラー処理		*/
 
 	    	/* エラーフラグをクリア	*/
-		sil_wrb_mem((VP)(pcb->inib->base + H8SSR),
+		sil_wrb_mem(p_ssr,
 		            status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
 	}
+#endif
 
 	if (status & H8SSR_RDRF) {
 		if (pcb->openflag) {
 			/* 受信可能コールバックルーチンを呼出す。*/
 			SCI_ierdy_rcv(pcb->exinf);
 		} else {
-			sil_wrb_mem((VP)(pcb->inib->base + H8SSR), 
-			             status & ~H8SSR_RDRF);
+			sil_wrb_mem(p_ssr, status & ~H8SSR_RDRF);
 		}
 	}
 }
@@ -247,16 +266,18 @@ void
 SCI_err_handler(ID sioid)
 {
 	SIOPCB	*pcb;
+	VP	p_ssr;
 	UB	status;
 
 	pcb = get_siopcb(sioid);
-	status = sil_reb_mem((VP)(pcb->inib->base + H8SSR));
+	p_ssr = (VP)(pcb->inib->base + H8SSR);
+	status = sil_reb_mem(p_ssr);
 	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
 
 		/* エラー処理		*/
 
 	    	/* エラーフラグをクリア	*/
-		sil_wrb_mem((VP)(pcb->inib->base + H8SSR),
+		sil_wrb_mem(p_ssr,
 		            status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
 	}
 }

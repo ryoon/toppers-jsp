@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -103,8 +103,8 @@ dispatch_r_1:
 	.global	_exit_and_dispatch
 _exit_and_dispatch:
 	/* 割り込み禁止で呼ばれる */
-        mov.b   #0, r0l         	/* 割込みネストカウンタをクリア	*/
-        mov.b   r0l, @_intnest
+	mov.b   #0, r0l         	/* 割込みネストカウンタをクリア	*/
+	mov.b   r0l, @_intnest
 
 /*  
  *　ディスパッテャ本体
@@ -144,9 +144,9 @@ dispatcher:
 dispatcher_1:
 	    			/* スタックを割り込みスタックに切替え	*/
 	mov.l	#STACKTOP, sp
-				/*  割込みネストカウンタを１にする	*/
-        mov.b   #1, r0l
-        mov.b   r0l, @_intnest
+					/*  割込みネストカウンタを１にする	*/
+	mov.b   #1, r0l
+	mov.b   r0l, @_intnest
 
 	/*
 	 * r1l：割込み許可時にccrに設定する値
@@ -154,29 +154,33 @@ dispatcher_1:
 	 *　　　task_intmaskは1回読み込んでおけば、OK
 	 */
 #ifdef SUPPORT_CHG_IPM
-        mov.b     @_task_intmask, r1l
+	mov.b     @_task_intmask, r1l
 #else	/* SUPPORT_CHG_IPM */
-        mov.b     #H8INT_ENA_ALL, r1l
+	mov.b     #H8INT_ENA_ALL, r1l
 #endif	/* SUPPORT_CHG_IPM */
 
 	/* CPUロックフラグをクリア */
 	sub.l	er0, er0
-        mov.l   er0, @_iscpulocked
+	mov.l   er0, @_iscpulocked
 
 
 dispatcher_2_enable_interrupt:
-        /*
-         *　ldc命令直後は割込み禁止であり、割込み要求があっても
-         *　次の命令が実行される。
-         *　（割込みから戻ってきてsleepするケースはない）
-         */
-        ldc.b     r1l, ccr              /* 割り込み許可 */
-        sleep                           /* 割込み待ち */
-        DISINT                          /* 割り込み禁止 */
+	/*
+	 *　ldc命令直後は割込み禁止であり、割込み要求があっても
+	 *　次の命令が実行される。
+	 *　（割込みから戻ってきてsleepするケースはない）
+	 */
+	ldc.b     r1l, ccr              /* 割り込み許可 */
+#ifndef NO_SLEEP
+	sleep                           /* 割込み待ち */
+#else /* NO_SLEEP */
+	nop
+#endif /* NO_SLEEP */
+	DISINT                          /* 割り込み禁止 */
 
 	mov.l   @_reqflg, er0           /* reqflgのチェック */
 			/* reqflgはBOOL型 -> int型(32bits) */
-		/*  reqflg==NULLならば、もう1度割込み待ち  */
+			/*  reqflg==NULLならば、もう1度割込み待ち  */
 	beq     dispatcher_2_enable_interrupt
 	sub.l	er0, er0
 	mov.l   er0, @_reqflg		/* reqflgのクリア */
@@ -196,72 +200,72 @@ dispatcher_2_enable_interrupt:
  *　　　　　・er2：C言語ルーチンの先頭アドレス
  *　　　　　・r3l：割込み許可時に割込みマスクに設定する値
  */
-        .global _common_interrupt_process
+	.global _common_interrupt_process
 _common_interrupt_process:
 	push.l	er4			/*  最適化対策でer4も退避  */
-        mov.b   @_intnest, r0l          /* 割込みネストカウンタのチェック */
-        bne     _interrupt_from_int     /*  intnetが0でなければ、*/
-        				/*  多重割込みの処理へ  */
+	mov.b   @_intnest, r0l          /* 割込みネストカウンタのチェック */
+	bne     _interrupt_from_int     /*  intnetが0でなければ、*/
+									/*  多重割込みの処理へ  */
 
-        /*
-         *　初段の割込みの場合
-         */
-        mov.b   #1, r1l                 /* 割込みネストカウンタ←１ */
-        mov.b   r1l, @_intnest
-        mov.l   sp, er0
-        mov.l   #STACKTOP, sp           /* スタック切替 */
-        push.l  er0                     /* タスクスタックポインタの退避 */
-        ldc.b   r3l, ccr                /* 割込み許可 */
-        jsr     @er2                    /* C言語ルーチン呼び出し */
-        DISINT                          /* 割込み禁止 */
-        mov.b   #0, r0l                 /* 割込みネストカウンタのクリア */
-        mov.b   r0l, @_intnest
-        mov.l   @sp, sp                 /* スタック切替 */
-        mov.l   @_reqflg, er0           /* reqflgのチェック */
-        beq     _ret_to_task_int        /* reqflgがFALSEなら */
-        				/* ret_to_task_intに飛ぶ */
-        sub.l	er0, er0
-        mov.l   er0, @_reqflg           /* reqflgをクリア */
-        bra     ret_int                 /* 出口処理へジャンプ */
+	/*
+	 *　初段の割込みの場合
+	 */
+	mov.b   #1, r1l                 /* 割込みネストカウンタ←１ */
+	mov.b   r1l, @_intnest
+	mov.l   sp, er0
+	mov.l   #STACKTOP, sp           /* スタック切替 */
+	push.l  er0                     /* タスクスタックポインタの退避 */
+	ldc.b   r3l, ccr                /* 割込み許可 */
+	jsr     @er2                    /* C言語ルーチン呼び出し */
+	DISINT                          /* 割込み禁止 */
+	mov.b   #0, r0l                 /* 割込みネストカウンタのクリア */
+	mov.b   r0l, @_intnest
+	mov.l   @sp, sp                 /* スタック切替 */
+	mov.l   @_reqflg, er0           /* reqflgのチェック */
+	beq     _ret_to_task_int        /* reqflgがFALSEなら */
+									/* ret_to_task_intに飛ぶ */
+	sub.l	er0, er0
+	mov.l   er0, @_reqflg           /* reqflgをクリア */
+	bra     ret_int                 /* 出口処理へジャンプ */
 
-        /*
-         *　多重割込みの場合
-         *　　割込み禁止でここにやってくる
-         *
-         *　　割込みネストカウンタのインクリメントは以下の理由で
-         *　　省略している
-         *　　　・割込みが2レベルしかない
-         *　　　・CPU例外をサポートしない
-         *　　　　　exc_sense_context()のことを考慮しなくても良い
-         */
+	/*
+	 *　多重割込みの場合
+	 *　　割込み禁止でここにやってくる
+	 *
+	 *　　割込みネストカウンタのインクリメントは以下の理由で
+	 *　　省略している
+	 *　　　・割込みが2レベルしかない
+	 *　　　・CPU例外をサポートしない
+	 *　　　　　exc_sense_context()のことを考慮しなくても良い
+	 */
 _interrupt_from_int:
-        /* 割込みネストカウンタのインクリメントは省略 */
-        ldc.b   r3l, ccr                /* 割込み許可 */
-        jsr     @er2                    /* C言語ルーチン呼び出し */
-        DISINT                          /* 割込み禁止 */
-        /* 割込みネストカウンタのディクリメントは省略 */
+	/* 割込みネストカウンタのインクリメントは省略 */
+	ldc.b   r3l, ccr                /* 割込み許可 */
+	jsr     @er2                    /* C言語ルーチン呼び出し */
+	DISINT                          /* 割込み禁止 */
+	/* 割込みネストカウンタのディクリメントは省略 */
 
-        /*
-         *　本来はここで戻り先が、割込み待ちのsleep命令かどうかのチェッ
-         *　クが必要である。（もし、割込みハンドラ内でreqflg=TRUEにして
-         *　もディスパッチャが呼ばれない＝タスクが実行されない）
-         *　H8の場合、sleep命令の直前にある割込み許可のldc命令の実行直
-         *　後は割込み禁止であり、割込み要求があったとしても割込みは受
-         *　け付けないで、sleep命令が実行される。そのため、割込みから
-         *　戻った直後にsleep命令が実行されるケースは考慮しなくて良い。
-         */
+	/*
+	 *　本来はここで戻り先が、割込み待ちのsleep命令かどうかのチェッ
+	 *　クが必要である。（もし、割込みハンドラ内でreqflg=TRUEにして
+	 *　もディスパッチャが呼ばれない＝タスクが実行されない）
+	 *　H8の場合、sleep命令の直前にある割込み許可のldc命令の実行直
+	 *　後は割込み禁止であり、割込み要求があったとしても割込みは受
+	 *　け付けないで、sleep命令が実行される。そのため、割込みから
+	 *　戻った直後にsleep命令が実行されるケースは考慮しなくて良い。
+	 */
 
-        /*
-         *　ディスパッチャを呼ばずに、割込み元に戻る場合
-         */
+	/*
+	 *　ディスパッチャを呼ばずに、割込み元に戻る場合
+	 */
 _ret_to_task_int:
 					/* レジスタを復元 */
 	pop.l	er4			/*  er4は最適化対策  */
-        pop.l   er3
-        pop.l   er2
-        pop.l   er1
-        pop.l   er0
-        rte                             /* 割込み元へリターン */
+	pop.l   er3
+	pop.l   er2
+	pop.l   er1
+	pop.l   er0
+	rte                             /* 割込み元へリターン */
 
 /*
  * 出口処理においてスタックポインタが指している番地からCCRレジスタが
@@ -291,13 +295,13 @@ ret_int:
 
 	mov.l	@_runtsk, er0		/* er0 <- runtsk		*/
 	mov.l	@_schedtsk, er1		/* er1 <- schedtsk		*/
-	cmp.l	er0, er1		/* runtsk と schedtsk を比較	*/
-	beq	ret_int_1		/* 同じならret_int_1へ		*/
+	cmp.l	er0, er1			/* runtsk と schedtsk を比較	*/
+	beq	ret_int_1				/* 同じならret_int_1へ		*/
 
-        push.l  er5                     /* レジスタ退避 */
-        push.l  er6
+	push.l  er5					/* レジスタ退避 */
+	push.l  er6
 
-	mov.l	sp, @(TCB_sp, e0)	/* タスクスタックポインタを保存	*/
+	mov.l	sp, @(TCB_sp, er0)	/* タスクスタックポインタを保存	*/
 	mov.l	#ret_int_r, er1  	/* 実行再開番地			*/
 	mov.l	er1, @(TCB_pc, er0)
 	bra	dispatcher:16
@@ -307,12 +311,12 @@ ret_int:
  *  割込みの出口でディスパッチャからここに戻ってくる
  */
 ret_int_r:
-        pop.l   er6                     /* レジスタ復元 */
-        pop.l   er5
+	pop.l   er6                     /* レジスタ復元 */
+	pop.l   er5
 
-        /*
-         *　タスクスイッチしない場合はここから合流する
-         */
+	/*
+	 *　タスクスイッチしない場合はここから合流する
+	 */
 ret_int_1:
 					/*  タスク例外許可状態のチェック */
 	mov.l	@_runtsk, er0
@@ -326,29 +330,29 @@ ret_int_1:
 	jsr	@_call_texrtn		/* タスク例外処理ルーチン起動	*/
 
 ret_int_2:
-        /* CPUロックフラグをクリア */
-        sub.l   er0, er0
-        mov.l   er0, @_iscpulocked
+	/* CPUロックフラグをクリア */
+	sub.l   er0, er0
+	mov.l   er0, @_iscpulocked
 
 #ifdef SUPPORT_CHG_IPM
-        /*
-         *  スタックに積んであるccr（戻り先の割込みマスク）を
-         *　task_intmaskにする。（下記参照）
-         */
-        mov.b   @(OFFSET_CCR, sp), r0l
-        mov.b   @_task_intmask, r1l
-        and.b   #H8INT_ENA_ALL, r0l
-        or.b    r1l, r0l
-        mov.b   r0l, @(OFFSET_CCR, sp)
+	/*
+	 *  スタックに積んであるccr（戻り先の割込みマスク）を
+	 *　task_intmaskにする。（下記参照）
+	 */
+	mov.b   @(OFFSET_CCR, sp), r0l
+	mov.b   @_task_intmask, r1l
+	and.b   #H8INT_ENA_ALL, r0l
+	or.b    r1l, r0l
+	mov.b   r0l, @(OFFSET_CCR, sp)
 #endif 	/* SUPPORT_CHG_IPM */
-                                        /* レジスタを復元 */
-        pop.l   er4                     /* 　 +0:er4 */
-        pop.l   er3                     /* 　 +4:er3 */
-        pop.l   er2                     /* 　 +8:er2 */
-        pop.l   er1                     /* 　+12:er1 */
-        pop.l   er0                     /* 　+16:er0 */
-                                        /*   +20:ccr ←ここを書き換える */
-        rte
+	                                /* レジスタを復元 */
+	pop.l   er4                     /* 　 +0:er4 */
+	pop.l   er3                     /* 　 +4:er3 */
+	pop.l   er2                     /* 　 +8:er2 */
+	pop.l   er1                     /* 　+12:er1 */
+	pop.l   er0                     /* 　+16:er0 */
+	                                /*   +20:ccr ←ここを書き換える */
+	rte
 
 
 /*
@@ -357,16 +361,16 @@ ret_int_2:
 
 	.globl _activate_r
 _activate_r:
-        /* CPUロックフラグをクリア */
-        sub.l   er0, er0
-        mov.l   er0, @_iscpulocked
+	/* CPUロックフラグをクリア */
+	sub.l   er0, er0
+	mov.l   er0, @_iscpulocked
 
 	/*  割込み許可  */
 #ifdef SUPPORT_CHG_IPM
-        mov.b   @_task_intmask, r0l
-        ldc.b   r0l, ccr
+	mov.b   @_task_intmask, r0l
+	ldc.b   r0l, ccr
 #else 	/* SUPPORT_CHG_IPM */
-        ENAINT
+	ENAINT
 #endif 	/* SUPPORT_CHG_IPM */
 
 	mov.l	#_ext_tsk, er2
@@ -377,6 +381,25 @@ _activate_r:
 					/*  拡張情報（タスクへの引数）	*/
 	mov.l	@(TINIB_exinf, er2), er0
 	jmp	@er1
+
+
+/*
+ *  微少時間待ち
+ *  　プロトタイプ宣言はsil.h内にある
+ *  　  void sil_dly_nse(UINT dlytim);
+ */
+	.globl _sil_dly_nse
+_sil_dly_nse:
+	/* er0 = dlytim */
+	sub.l	#SIL_DLY_TIM1, er0
+	ble		sil_dly_nse_2
+				/* dlytim < SIL_DLY_TIM1 ならループ終了 */
+sil_dly_nse_1:
+	sub.l	#SIL_DLY_TIM2, er0
+	bgt		sil_dly_nse_1
+	/* dlytim > SIL_DLY_TIM2 ならループ続行 */
+sil_dly_nse_2:
+	rts
 
 
 /**************************************************************
@@ -413,6 +436,6 @@ _no_reg_exception:
 	push.l	er0
 
 	mov.l	sp, er0		/*  引数設定				*/
-				/*  SP は +32 で、発生時点の値		*/
+						/*  SP は +32 で、発生時点の値		*/
 	jsr	@_cpu_experr	/*  cpu_experr()の呼び出し		*/
 

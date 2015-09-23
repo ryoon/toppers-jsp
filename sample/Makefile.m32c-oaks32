@@ -5,7 +5,7 @@
 # 
 #  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
-#  Copyright (C) 2003-2004 by Naoki Saito
+#  Copyright (C) 2003-2004, 2010 by Naoki Saito
 #             Nagoya Municipal Industrial Research Institute, JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -67,7 +67,7 @@ ROM_START_ADR = 0f80000
 #
 # ツールのインストール先ディレクトリ
 #
-TOOLDIR = \mtool
+TOOLDIR = C:\Hew\Tools\Renesas\nc308wa\v542r00
 
 #  タスクモニタを使用するか（しない場合は0に、使用する場合は1に）
 MON = 0
@@ -82,6 +82,7 @@ USE_KD3083 = 1
 #  ソースファイルのディレクトリの定義
 #
 SRCDIR = @(SRCDIR)
+CONFIGDIR ?= $(SRCDIR)\config
 
 #
 #  カーネルライブラリ（libkernel.lib）のディレクトリ名
@@ -97,8 +98,8 @@ COPTS = -dir . -silent -g	# -O2		## -O2はエントリー版では未サポート
 ifndef USE_LB308
 	CDEFS = -DNEED_API
 endif
-INCLUDES = -I. -I$(SRCDIR)\include -I$(SRCDIR)\config\$(CPU)-$(TOOL) \
-			-I$(SRCDIR)\config\$(CPU)-$(TOOL)\$(SYS)
+INCLUDES = -I. -I$(SRCDIR)\include -I$(CONFIGDIR)\$(CPU)-$(TOOL) \
+			-I$(CONFIGDIR)\$(CPU)-$(TOOL)\$(SYS)
 CFLAGS = $(COPTS) $(CDEFS) $(INCLUDES)
 LDFLAGS = -. -MSL -M82 -G
 LIBS = nc382lib
@@ -143,7 +144,7 @@ STASK_LIBS =
 #		     イル．
 #
 KERNEL = $(SRCDIR)\kernel
-KERNEL_DIR = $(KERNEL):$(SRCDIR)\config\$(CPU)-$(TOOL):$(SRCDIR)\config\$(CPU)-$(TOOL)\$(SYS)
+KERNEL_DIR = $(KERNEL):$(CONFIGDIR)\$(CPU)-$(TOOL):$(CONFIGDIR)\$(CPU)-$(TOOL)\$(SYS)
 
 KERNEL_ASMOBJS = cpu_support.r30
 KERNEL_COBJS = startup.r30 banner.r30 cpu_config.r30 sys_config.r30
@@ -214,7 +215,7 @@ endif
 #
 #  カーネルのファイル構成の定義
 #
-include $(SRCDIR)\config\$(CPU)-$(TOOL)\$(SYS)\Makefile.kernel
+include $(CONFIGDIR)\$(CPU)-$(TOOL)\$(SYS)\Makefile.kernel
 
 #
 #  ソースファイルのあるディレクトリに関する定義

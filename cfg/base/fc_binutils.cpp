@@ -50,6 +50,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 #define _isspace(x)  isspace(x)
 #define _isprint(x)  isprint(x)

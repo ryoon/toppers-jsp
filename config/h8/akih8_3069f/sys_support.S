@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2007 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2010 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -123,5 +123,26 @@ _hw_init_hock_1:
 
 #endif	/*  #ifdef ROM  */
 
+	/*
+	 *  バスのウェイト設定
+	 *  　バス・ウェイト・コントロール・レジスタ
+	 *
+	 *  CS1(RTL8019AS):	2WAIT
+	 *  CS2(DRAM):		NOWAIT
+	 *  CS3(増設DRAM):	NOWAIT
+	 *  OTHER		3WAIT
+	 */
+	mov.b	#0xff, r0h
+	mov.b	r0h, @H8WCRH
+
+	mov.b	#(H8WCRL_W3_NOWAIT | H8WCRL_W2_NOWAIT | H8WCRL_W1_2WAIT | H8WCRL_W0_3WAIT), r0h
+	mov.b	r0h, @H8WCRL
+
+	/*
+	 * バスのアクセスステートの設定
+	 * 　バス・アクセス・ステート・コントロール・レジスタ
+	 */
+	mov.b	#~(H8ASTCR_AST3 | H8ASTCR_AST2):8, r0h
+	mov.b	r0h, @H8ASTCR	
 	rts
 

@@ -135,7 +135,7 @@ start_2:
          *  コピーする
          */
 start_3:
-#if 0
+#ifndef __RUN_ON_SRAM
         ldr  r1, =__idata_start
         ldr  r3, =__idata_end
         cmp  r1, r3

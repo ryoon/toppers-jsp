@@ -1,25 +1,25 @@
 # Microsoft Developer Studio Project File - Name="devicemanager" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** •ÒW‚µ‚È‚¢‚Å‚­‚¾‚³‚¢ **
+# ** ÊÔ½¸¤·¤Ê¤¤¤Ç¤¯¤À¤µ¤¤ **
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
 CFG=devicemanager - Win32 Debug
-!MESSAGE ‚±‚ê‚Í—LŒø‚ÈÒ²¸Ì§²Ù‚Å‚Í‚ ‚è‚Ü‚¹‚ñB ‚±‚ÌÌßÛ¼Şª¸Ä‚ğËŞÙÄŞ‚·‚é‚½‚ß‚É‚Í NMAKE ‚ğg—p‚µ‚Ä‚­‚¾‚³‚¢B
-!MESSAGE [Ò²¸Ì§²Ù‚Ì´¸½Îß°Ä] ºÏİÄŞ‚ğg—p‚µ‚ÄÀs‚µ‚Ä‚­‚¾‚³‚¢
+!MESSAGE ¤³¤ì¤ÏÍ­¸ú¤Ê¥á¥¤¥¯¥Õ¥¡¥¤¥ë¤Ç¤Ï¤¢¤ê¤Ş¤»¤ó¡£ ¤³¤Î¥×¥í¥¸¥§¥¯¥È¤ò¥Ó¥ë¥É¤¹¤ë¤¿¤á¤Ë¤Ï NMAKE ¤ò»ÈÍÑ¤·¤Æ¤¯¤À¤µ¤¤¡£
+!MESSAGE [¥á¥¤¥¯¥Õ¥¡¥¤¥ë¤Î¥¨¥¯¥¹¥İ¡¼¥È] ¥³¥Ş¥ó¥É¤ò»ÈÍÑ¤·¤Æ¼Â¹Ô¤·¤Æ¤¯¤À¤µ¤¤
 !MESSAGE 
 !MESSAGE NMAKE /f "devicemanager.mak".
 !MESSAGE 
-!MESSAGE NMAKE ‚ÌÀs‚É\¬‚ğw’è‚Å‚«‚Ü‚·
-!MESSAGE ºÏİÄŞ ×²İã‚ÅÏ¸Û‚Ìİ’è‚ğ’è‹`‚µ‚Ü‚·B—á:
+!MESSAGE NMAKE ¤Î¼Â¹Ô»ş¤Ë¹½À®¤ò»ØÄê¤Ç¤­¤Ş¤¹
+!MESSAGE ¥³¥Ş¥ó¥É ¥é¥¤¥ó¾å¤Ç¥Ş¥¯¥í¤ÎÀßÄê¤òÄêµÁ¤·¤Ş¤¹¡£Îã:
 !MESSAGE 
 !MESSAGE NMAKE /f "devicemanager.mak" CFG="devicemanager - Win32 Debug"
 !MESSAGE 
-!MESSAGE ‘I‘ğ‰Â”\‚ÈËŞÙÄŞ Ó°ÄŞ:
+!MESSAGE ÁªÂò²ÄÇ½¤Ê¥Ó¥ë¥É ¥â¡¼¥É:
 !MESSAGE 
-!MESSAGE "devicemanager - Win32 Debug" ("Win32 (x86) Application" —p)
-!MESSAGE "devicemanager - Win32 Unicode Debug" ("Win32 (x86) Application" —p)
-!MESSAGE "devicemanager - Win32 Unicode Release MinDependency" ("Win32 (x86) Application" —p)
+!MESSAGE "devicemanager - Win32 Debug" ("Win32 (x86) Application" ÍÑ)
+!MESSAGE "devicemanager - Win32 Unicode Debug" ("Win32 (x86) Application" ÍÑ)
+!MESSAGE "devicemanager - Win32 Unicode Release MinDependency" ("Win32 (x86) Application" ÍÑ)
 !MESSAGE 
 
 # Begin Project
@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# Begin Custom Build - “o˜^‚ğs‚Á‚Ä‚¢‚Ü‚·
+# Begin Custom Build - ÅĞÏ¿¤ò¹Ô¤Ã¤Æ¤¤¤Ş¤¹
 OutDir=.\Debug
 TargetPath=.\Debug\devicemanager.exe
 InputPath=.\Debug\devicemanager.exe
@@ -62,11 +62,11 @@ SOURCE="$(InputPath)"
 BuildCmds= \
 	"$(TargetPath)" /RegServer \
 	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" \
-	echo »°ÊŞ°“o˜^‚ªŠ®—¹‚µ‚Ü‚µ‚½! \
-	echo ƒvƒƒLƒV/ƒXƒ^ƒu‚ğ¶¬‚µ‚Ä‚¢‚Ü‚· \
+	echo ¥µ¡¼¥Ğ¡¼ÅĞÏ¿¤¬´°Î»¤·¤Ş¤·¤¿! \
+	echo ¥×¥í¥­¥·/¥¹¥¿¥Ö¤òÀ¸À®¤·¤Æ¤¤¤Ş¤¹ \
 	nmake devicemanagerps.mk \
 	regsvr32 /s devicemanagerps.dll \
-	echo I—¹‚µ‚Ü‚µ‚½ \
+	echo ½ªÎ»¤·¤Ş¤·¤¿ \
 	
 
 "$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -99,7 +99,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /entry:"wWinMainCRTStartup" /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# Begin Custom Build - “o˜^‚ğs‚Á‚Ä‚¢‚Ü‚·
+# Begin Custom Build - ÅĞÏ¿¤ò¹Ô¤Ã¤Æ¤¤¤Ş¤¹
 OutDir=.\DebugU
 TargetPath=.\DebugU\devicemanager.exe
 InputPath=.\DebugU\devicemanager.exe
@@ -108,11 +108,11 @@ SOURCE="$(InputPath)"
 BuildCmds= \
 	"$(TargetPath)" /RegServer \
 	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" \
-	echo »°ÊŞ°“o˜^‚ªŠ®—¹‚µ‚Ü‚µ‚½! \
-	echo ƒvƒƒLƒV/ƒXƒ^ƒu‚ğ¶¬‚µ‚Ä‚¢‚Ü‚· \
+	echo ¥µ¡¼¥Ğ¡¼ÅĞÏ¿¤¬´°Î»¤·¤Ş¤·¤¿! \
+	echo ¥×¥í¥­¥·/¥¹¥¿¥Ö¤òÀ¸À®¤·¤Æ¤¤¤Ş¤¹ \
 	nmake devicemanagerps.mk \
 	regsvr32 /s devicemanagerps.dll \
-	echo I—¹‚µ‚Ü‚µ‚½ \
+	echo ½ªÎ»¤·¤Ş¤·¤¿ \
 	
 
 "$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -145,7 +145,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# Begin Custom Build - “o˜^‚ğs‚Á‚Ä‚¢‚Ü‚·
+# Begin Custom Build - ÅĞÏ¿¤ò¹Ô¤Ã¤Æ¤¤¤Ş¤¹
 OutDir=.\ReleaseUMinDependency
 TargetPath=.\ReleaseUMinDependency\devicemanager.exe
 InputPath=.\ReleaseUMinDependency\devicemanager.exe
@@ -154,11 +154,11 @@ SOURCE="$(InputPath)"
 BuildCmds= \
 	"$(TargetPath)" /RegServer \
 	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" \
-	echo »°ÊŞ°“o˜^‚ªŠ®—¹‚µ‚Ü‚µ‚½! \
-	echo ƒvƒƒLƒV/ƒXƒ^ƒu‚ğ¶¬‚µ‚Ä‚¢‚Ü‚· \
+	echo ¥µ¡¼¥Ğ¡¼ÅĞÏ¿¤¬´°Î»¤·¤Ş¤·¤¿! \
+	echo ¥×¥í¥­¥·/¥¹¥¿¥Ö¤òÀ¸À®¤·¤Æ¤¤¤Ş¤¹ \
 	nmake devicemanagerps.mk \
 	regsvr32 /s devicemanagerps.dll \
-	echo I—¹‚µ‚Ü‚µ‚½ \
+	echo ½ªÎ»¤·¤Ş¤·¤¿ \
 	
 
 "$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
