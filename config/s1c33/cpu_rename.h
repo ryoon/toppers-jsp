@@ -6,7 +6,6 @@
 /*
  * cpu_config.c
  */
-#define cpu_initialize		_kernel_cpu_initialize
 #define cpu_terminate		_kernel_cpu_terminate
 #define activate_r		_kernel_activate_r
 #define dispatch		_kernel_dispatch
@@ -25,7 +24,6 @@
 /*
  * cpu_config.c
  */
-#define _cpu_initialize		__kernel_cpu_initialize
 #define _cpu_terminate		__kernel_cpu_terminate
 #define _activate_r		__kernel_activate_r
 #define _dispatch		__kernel_dispatch

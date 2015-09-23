@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.12 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.15 2005/11/07 01:15:43 honda Exp $
  */
 
 /*
@@ -71,11 +71,11 @@
  * 等の符号拡張を含む命令は期待通りに動作しない
  */
 #if (TCB_pc > 127) || (TCB_sp > 127)
- ここでアセンブルエラー
+#error TCB offset is limited 127.
 #endif
 
 #if !CHECK_IMMEDIATE_ADDRESSING(TCB_texptn)
- ここでアセンブルエラー
+#error immediate addressing TCB_texptn.
 #endif
 
 /*
@@ -115,6 +115,10 @@ _dispatch:
 	mov.l  r13,@-r15
 	mov.l  r14,@-r15
 	sts.l  pr,@-r15
+#ifdef SAVE_MACL_IN_DISPATCH
+	sts.l  mach,@-r15
+	sts.l  macl,@-r15
+#endif /*  SAVE_MACL_IN_DISPATCH  */
 	mov.l  _runtsk_dis,r2   /* r0 <- runtsk                          */
 	mov.l  @r2,r0
 	/*
@@ -153,7 +157,12 @@ _dispatch:
 	 * 
 	 */
 dispatch_r:
-	lds.l  @r15+,pr			/* レジスタを復帰               */
+					/* レジスタを復帰               */
+#ifdef SAVE_MACL_IN_DISPATCH
+	lds.l  @r15+,macl
+	lds.l  @r15+,mach
+#endif /*  SAVE_MACL_IN_DISPATCH  */
+	lds.l  @r15+,pr
 	mov.l  @r15+,r14
 	mov.l  @r15+,r13
 	mov.l  @r15+,r12
@@ -207,7 +216,7 @@ dispatcher:
 	 * 　　　　（dispatcher_1以降の割込み待ちで割込みが入り、その中で
 	 * 　　　　　iget_tid()がコールされたときに正しくTSK_NONEを返すため
 	 * 　　　　　には、実行状態のタスクがない時に、runtskをNULLにして
-	 * 　　　　　おる必要がある。）
+	 * 　　　　　おく必要がある。）
 	 */
 	mov.l  r7,@r2               /* runtsk←schedtsk　               */
 
@@ -366,6 +375,22 @@ _task_intmask_dis:		/* タスクコンテキストの割込みマスク   	*/
  */
 
 /*
+ *  gccのメジャーバージョンによる動作の切替
+ *　　　　
+ *　　　gcc2.x：割込みの出口でタスクスイッチするときのみ、
+ *　　　　　　　macレジスタを保存／退避する
+ *　　　gcc3.x以降：割込みの出入口でmacレジスタを保存／退避する
+ *　　　　　　　（タスクスイッチの有無に依らない）
+ *　　　　
+ *　　　これにより、スタック先頭からPC,SRへのオフセットが異なるので
+ *　　　注意。
+ */
+#if defined(__GNUC__) && (__GNUC__  > 2)
+#define SAVE_MACL_BEFORE_INTERRUPT_HANDLER
+#define SAVE_MACL_IN_DISPATCH
+#endif 	/*  __GNUC__  */
+
+/*
  *  割込み／CPU例外の際のスタックポインタが指し示す位置から
  *　SR,PCのコピーがある場所までのオフセット
  *　　　　
@@ -374,8 +399,13 @@ _task_intmask_dis:		/* タスクコンテキストの割込みマスク   	*/
  *　　　SRはスタック先頭から40バイト下に、PCは36バイト下に積まれて
  *　　　いる。　　（ret_int_3を参照）
  */
+#ifdef SAVE_MACL_BEFORE_INTERRUPT_HANDLER
+#define	SP_SR_OFFSET	(40+8)
+#define	SP_PC_OFFSET	(36+8)
+#else /*  SAVE_MACL_BEFORE_INTERRUPT_HANDLER  */
 #define	SP_SR_OFFSET	40
 #define	SP_PC_OFFSET	36
+#endif /*  SAVE_MACL_BEFORE_INTERRUPT_HANDLER  */
 
 /*
  *  CPU例外の入口処理の続き
@@ -513,6 +543,11 @@ _interrupt_entry:
 	mov.l	r6,@-r15
 	mov.l	r7,@-r15
 	sts.l	pr,@-r15
+#ifdef SAVE_MACL_BEFORE_INTERRUPT_HANDLER
+	sts.l  mach,@-r15
+	sts.l  macl,@-r15
+#endif 	/*  SAVE_MACL_BEFORE_INTERRUPT_HANDLER  */
+
 			/*  割込み／CPU例外ネストカウンタのチェック 	*/
 	mov.l	_intnest_int, r5
 	mov.l	@r5,r6
@@ -612,7 +647,12 @@ _ret_to_exc:
 #endif	/*  OMIT_POWER_CONTROL  */
 
 _ret_to_int_1:
-	lds.l	@r15+,pr    	/*  レジスタ復元  			*/
+				/*  レジスタ復元  			*/
+#ifdef SAVE_MACL_BEFORE_INTERRUPT_HANDLER
+	lds.l  @r15+,macl
+	lds.l  @r15+,mach
+#endif 	/*  SAVE_MACL_BEFORE_INTERRUPT_HANDLER  */
+	lds.l	@r15+,pr
 	mov.l	@r15+,r7
 	mov.l	@r15+,r6
 	mov.l	@r15+,r5
@@ -748,8 +788,14 @@ ret_exc:
         mov.l  r12,@-r15
         mov.l  r13,@-r15
         mov.l  r14,@-r15
+#ifndef SAVE_MACL_BEFORE_INTERRUPT_HANDLER
+	/*
+	 *　タスクスイッチするときのみ、
+	 *　macレジスタを保存する
+	 */
 	sts.l  mach,@-r15
 	sts.l  macl,@-r15
+#endif  /*  SAVE_MACL_BEFORE_INTERRUPT_HANDLER  */
 	stc.l  gbr,@-r15
 	/*
 	 * タスクコントロールブロックTCB中のsp,pcが先頭から60バイトの
@@ -779,8 +825,10 @@ ret_exc:
  */
 ret_int_r:
 	ldc.l  @r15+,gbr       /* レジスタを復帰                  */
+#ifndef SAVE_MACL_BEFORE_INTERRUPT_HANDLER
 	lds.l  @r15+,macl
 	lds.l  @r15+,mach
+#endif  /*  SAVE_MACL_BEFORE_INTERRUPT_HANDLER  */
 	mov.l  @r15+,r14
 	mov.l  @r15+,r13
 	mov.l  @r15+,r12
@@ -846,6 +894,10 @@ ret_to_task_int:
 ret_to_task_exc:
 				/* pr,スクラッチレジスタを復帰 		*/
 				/*  スタックの先頭からのオフセット  	*/
+#ifdef SAVE_MACL_BEFORE_INTERRUPT_HANDLER
+	lds.l  @r15+,macl	/*   +0:MACL  */
+	lds.l  @r15+,mach	/*   +4:MACH  */
+#endif /*  SAVE_MACL_BEFORE_INTERRUPT_HANDLER */
 	lds.l  @r15+,pr		/*   +0:PR  */
 	mov.l  @r15+,r7		/*   +4:r7  */
 	mov.l  @r15+,r6		/*   +8:r6  */

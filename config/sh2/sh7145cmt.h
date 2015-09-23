@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sh7145cmt.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: sh7145cmt.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -114,7 +114,6 @@ sh2_timer_stop ()
 	sil_wrh_mem (CMSTR, sil_reh_mem (CMSTR) & ~0x0001);
 }
 
-extern int timercheck;
 /*
  *  タイマ割込み要求のクリア
  *	TCRレジスタのIMFAビットは1回読み出した後に０を書き込む
@@ -139,7 +138,7 @@ sh2_timer_initialize ()
 	CLOCK cyc = TO_CLOCK (TIC_NUME, TIC_DENO);
 
 
-	sil_wrh_mem (MSTCR2, (VH)((VH)sil_reh_mem(MSTCR2)& ~0x0100));
+	sil_wrh_mem (MSTCR2, (sil_reh_mem(MSTCR2)& ~0x0100));
 	/*
 	 *  タイマ関連の設定
 	 */
@@ -153,7 +152,7 @@ sh2_timer_initialize ()
 	sil_wrh_mem (CMCOR_0,(VH)CLOCK_PER_TICK);
 	/* カウンタをクリア             */
 	sil_wrh_mem (CMCNT_0,0x0000);
-	sil_wrh_mem (CMCSR_0, sil_reh_mem(CMCSR_0) | 0x0040);	//割り込み許可
+	sil_wrh_mem (CMCSR_0, sil_reh_mem(CMCSR_0) | 0x0040);	/* 割り込み許可 */
 }
 
 /*
@@ -170,7 +169,7 @@ sh2_timer_terminate ()
 	sil_wrh_mem (CMCSR_0, sil_reh_mem(CMCSR_0) & ~0x0040);	//割り込み不許可
 	sil_wrh_mem (CMCNT_0,0x0000);
 	sil_wrh_mem (CMCOR_0,0x0000);
-	sil_wrh_mem (MSTCR2, (VH)((VH)sil_reh_mem(MSTCR2) | 0x0100));
+	sil_wrh_mem (MSTCR2, (sil_reh_mem(MSTCR2) | 0x0100));
 }
 
 /*
@@ -180,13 +179,16 @@ sh2_timer_terminate ()
 Inline CLOCK
 sh2_timer_get_current ()
 {
+	CLOCK	clk;
 /* SH1と同じ */
 	sh2_timer_stop ();			/*  タイマ停止  */
 
 	/*  本来は待ち時間を入れるべき  */
 
-	return (CLOCK_PER_TICK - (CLOCK) sil_reh_mem (CMCNT_0));
-
+	clk = sil_reh_mem(CMCNT_0);
+	sh2_timer_start();			/*  タイマスタート  */
+	
+	return(clk);
 }
 
 /*

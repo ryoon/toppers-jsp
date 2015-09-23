@@ -35,11 +35,14 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.7 2004/09/04 16:52:27 honda Exp $
+ *  @(#) $Id: tool_config.h,v 1.14 2005/11/15 10:50:59 honda Exp $
  */
 
 /*
  *	開発環境依存モジュール
+ *
+ *  このインクルードファイルは，t_config.h のみからインクルードされる．
+ *  他のファイルから直接インクルードしてはならない．
  */
 
 #ifndef _TOOL_CONFIG_H_
@@ -62,11 +65,11 @@
  */
 #ifndef _MACRO_ONLY
 
-Inline void
-call_atexit()
-{
-	extern void	software_term_hook(void);
+extern void	software_term_hook(void);
 
+Inline void
+call_atexit(void)
+{
 	if (software_term_hook != 0) {
 		software_term_hook();
 	}
@@ -75,12 +78,9 @@ call_atexit()
 #endif /* _MACRO_ONLY */
 
 /*
- *  システムタスクが使用するライブラリに関する定義
- */
-#define NEWLIB              /* newlib を用いる */
-
-/*
  *  トレースログの設定
+ *　　コメントに「プロセッサ依存部」とあるマクロは、
+ *　　機種依存部で展開すること。
  */
 
 #define	LOG_INH_ENTER(inhno)		/* プロセッサ依存部 */
@@ -92,6 +92,7 @@ call_atexit()
 #define	LOG_CYC_ENTER(cyccb)
 #define	LOG_CYC_LEAVE(cyccb)
 
+	/*  H8依存部では不要だが、互換性のため、残している。  */
 #define	LOG_EXC_ENTER(excno)		/* プロセッサ依存部 */
 #define	LOG_EXC_LEAVE(excno)		/* プロセッサ依存部 */
 
@@ -100,8 +101,14 @@ call_atexit()
 
 #define	LOG_TSKSTAT(tcb)
 
+	/*  H8依存部では不要だが、互換性のため、残している。  */
 #define	LOG_DSP_ENTER(tcb)		/* プロセッサ依存部 */
 #define	LOG_DSP_LEAVE(tcb)		/* プロセッサ依存部 */
+
+#define	LOG_CHG_IPM_ENTER(ipm)		/* プロセッサ依存部 */
+#define	LOG_CHG_IPM_LEAVE(ercd)		/* プロセッサ依存部 */
+#define	LOG_GET_IPM_ENTER(p_ipm)	/* プロセッサ依存部 */
+#define	LOG_GET_IPM_LEAVE(ercd, ipm)	/* プロセッサ依存部 */
 
 #define	LOG_ACT_TSK_ENTER(tskid)
 #define	LOG_ACT_TSK_LEAVE(ercd)
@@ -242,6 +249,8 @@ call_atexit()
 #define	LOG_SNS_DSP_LEAVE(state)
 #define	LOG_SNS_DPN_ENTER()
 #define	LOG_SNS_DPN_LEAVE(state)
+#define	LOG_VSNS_INI_ENTER()
+#define	LOG_VSNS_INI_LEAVE(state)
 #define	LOG_VXSNS_CTX_ENTER(p_excinf)
 #define	LOG_VXSNS_CTX_LEAVE(state)
 #define	LOG_VXSNS_LOC_ENTER(p_excinf)
@@ -254,10 +263,5 @@ call_atexit()
 #define	LOG_VXSNS_TEX_LEAVE(state)
 #define	LOG_VXGET_TIM_ENTER(p_sysutim)
 #define	LOG_VXGET_TIM_LEAVE(ercd, sysutim)
-
-#define	LOG_CHG_IPM_ENTER(ipm)
-#define	LOG_CHG_IPM_LEAVE(ercd)
-#define	LOG_GET_IPM_ENTER(p_ipm)
-#define	LOG_GET_IPM_LEAVE(ercd, ipm)
 
 #endif /* _TOOL_CONFIG_H_ */

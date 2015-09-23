@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: h8.h,v 1.5 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: h8.h,v 1.10 2005/11/07 01:49:53 honda Exp $
  */
 
 #ifndef _H8_H_
@@ -74,22 +74,30 @@
 #define H8CCR_V			(1<<H8CCR_V_BIT)
 #define H8CCR_C			(1<<H8CCR_C_BIT)
 
-/* CCR の UI ビットを割り込みマスクビットとして使用する。*/
+/* CCR の IビットとUIビットを割り込みマスクビットとして使用する。*/
 
-#define H8INT_MASK_ALL		H8CCR_UI
+#define H8INT_MASK_ALL		(H8CCR_I | H8CCR_UI)
 
 #define H8INT_DIS_ALL		H8INT_MASK_ALL
-#define H8INT_ENA_ALL		(~(H8INT_MASK_ALL))
+#define H8INT_ENA_ALL		(0xff & ~(H8INT_MASK_ALL))
 
 #define str_H8INT_DIS_ALL	_TO_STRING(H8INT_DIS_ALL)
 #define str_H8INT_ENA_ALL	_TO_STRING(H8INT_ENA_ALL)
 
 /*
- *  SCI 共通定数、マクロ
+ *  レベル０　すべての割込みを受け付ける
  */
+#define IPM_LEVEL0      0
 
-#define H8BRR_RATE(b)		((b)>38400?((UB)(((CPU_CLOCK+(16*(b)))/(32*(b)))-1))\
-				          :((UB)((CPU_CLOCK/(32*(b)))-1)))
-#define SCI_SETUP_COUNT(b)	((CPU_CLOCK)/(b)/5)
+/*
+ *  レベル１　NMIおよびプライオリティレベル１の割込みのみを受け付ける
+ */
+#define IPM_LEVEL1      H8CCR_I
+
+/*
+ *  レベル２　NMI以外の割込みを受け付けない
+ */
+#define IPM_LEVEL2      (H8CCR_I | H8CCR_UI)
+
 
 #endif /* _H8_H_ */

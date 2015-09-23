@@ -168,21 +168,28 @@ ret_int(void)
 	}
 
 	if ((enadsp != FALSE) && (task != schedtsk)) {
+#ifndef	__c33adv
 		Asm("pushn %r1");
+#endif	/* __c33adv */
 		task->tskctxb.sp = get_sp();
 		task->tskctxb.pc = && ret_int_2;/* gcc拡張機能を使用 */
 						/* ディスパッチ処理へジャンプ */
 		Asm("xjp _kernel_exit_and_dispatch");
 ret_int_2:
+#ifndef	__c33adv
 		Asm("popn %r1");
+#endif	/* __c33adv */
 	}
 	task = (TCB * volatile) runtsk;
 	if ((task->enatex != FALSE) && (task->texptn != 0)) {
 		call_texrtn();			/* 例外ハンドラ起動	*/
 	}
-
+#ifdef	__c33adv
+	Asm("pops %sor");
+#else	/* __c33adv */
 	Asm("ld.w %alr, %r1");
 	Asm("ld.w %ahr, %r0");
+#endif	/* __c33adv */
 
 #if TPS_DAREA_CNT == 4				/* データエリアポインタ数に	*/
 	Asm("popn %r11");			/* 応じたpop処理を行う		*/
@@ -304,6 +311,11 @@ clr_int(INTNO intno)
 	if(iOffset == E_PAR || iBitFlag == E_PAR){
 		return (E_PAR);
 	}
+#ifdef	__c33adv
+	if(intno > S1C33_INHNO_SERIAL3TX){		/* 許可/禁止レジスタと要因    */
+		iOffset -= 0x0d;			/* フラグレジスタのオフセット */
+	}						/* 位置が一致しないため       */
+#endif /* __c33adv */
 							/* 割り込み要因をクリアする */
 	(*(s1c33Intc_t *) S1C33_INTC_BASE).bIntFactor[iOffset] = ((UB)iBitFlag);
 

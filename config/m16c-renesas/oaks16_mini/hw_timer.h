@@ -34,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_timer.h,v 1.1 2004/05/27 12:04:18 honda Exp $
+ *  @(#) $Id: hw_timer.h,v 1.3 2005/11/24 12:41:23 honda Exp $
  */
 
 /*
@@ -93,7 +93,7 @@ typedef UH	CLOCK;
  *  タイマを初期化し，周期的なタイマ割込み要求を発生させる．
  */
 Inline void
-hw_timer_initialize()
+hw_timer_initialize(void)
 {
 		/* タイマ初期化 */
 	sil_wrb_mem((VP)TADR_SFR_UDF, 0x00);		/* ダウンカウント設定				*/
@@ -109,7 +109,7 @@ hw_timer_initialize()
  *  タイマ割込み要求のクリア
  */
 Inline void
-hw_timer_int_clear()
+hw_timer_int_clear(void)
 {
 }
 
@@ -119,7 +119,7 @@ hw_timer_int_clear()
  *  タイマの動作を停止させる．
  */
 Inline void
-hw_timer_terminate()
+hw_timer_terminate(void)
 {
 	VB  c;
 

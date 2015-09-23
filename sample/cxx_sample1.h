@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cxx_sample1.h,v 1.6 2004/09/17 09:11:34 honda Exp $
+ *  @(#) $Id: cxx_sample1.h,v 1.7 2005/07/06 01:16:44 honda Exp $
  */
 
 /*
@@ -119,7 +119,7 @@
 #define STACK_SIZE	256		/* タスクのスタックサイズ */
 #define TASK_PORTID	2		/* SIOはポート2を用いる */
 
-#elif defined(MIPS3)
+#elif defined(MIPS3) || defined(MIPS64)
 
 #define CPUEXC1     Bp      /* ブレークポイント例外（ゼロ除算時に発生） */
 #define RAISE_CPU_EXCEPTION   syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0)

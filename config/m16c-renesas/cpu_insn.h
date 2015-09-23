@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_insn.h,v 1.1 2004/05/27 12:04:18 honda Exp $
+ *  @(#) $Id: cpu_insn.h,v 1.3 2005/11/24 12:41:23 honda Exp $
  */
 
 /*
@@ -66,7 +66,7 @@ Inline void enaint(void);
  */
 
 Inline volatile unsigned short
-current_flgreg()
+current_flgreg(void)
 {
 	volatile unsigned short flg;
 	asm("	stc flg, $$[FB]", flg);
@@ -77,7 +77,7 @@ current_flgreg()
  *  外部割込み全禁止
  */
 Inline void
-disint()
+disint(void)
 {
 	asm("	fclr	i");
 }
@@ -86,7 +86,7 @@ disint()
  *  外部割込み全禁止解除
  */
 Inline void
-enaint()
+enaint(void)
 {
 	asm("	fset	i");
 }

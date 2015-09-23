@@ -35,7 +35,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: sh7145.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: sh7145.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 #ifndef _SH7145_H_
@@ -47,16 +47,16 @@
  *  割込みのベクタ番号定義
  */
 
-#ifdef GDB_STUB
-#define ERI	128				/*  SCI0    */
-#define RXI	129				/*  SCI0    */
-#define TXI	130				/*  SCI0    */
-#else	/*  GDB_STUB  */
-#define ERI	132				/*  SCI1    */
-#define RXI	133				/*  SCI1    */
-#define TXI	134				/*  SCI1    */
-#endif	/*  GDB_STUB  */
+#define ERI0	128				/*  SCI0    */
+#define RXI0	129				/*  SCI0    */
+#define TXI0	130				/*  SCI0    */
+#define ERI1	132				/*  SCI1    */
+#define RXI1	133				/*  SCI1    */
+#define TXI1	134				/*  SCI1    */
 #define CMI0	144				/*  CMT    */
+#define ERI2	168				/*  SCI2    */
+#define RXI2	169				/*  SCI2    */
+#define TXI2	170				/*  SCI2    */
 
 #ifndef _MACRO_ONLY
 
@@ -96,6 +96,8 @@
 #define IPRF    ((VH *)0xffff8352)
 #define IPRG    ((VH *)0xffff8354)
 #define IPRH    ((VH *)0xffff8356)
+#define IPRI    ((VH *)0xffff835c)
+#define IPRJ    ((VH *)0xffff835e)
 
 /*
  * 割り込みコントローラの初期化
@@ -110,6 +112,8 @@ Inline void sh2_init_intcontorller(void)
 	sil_wrh_mem (IPRF, 0x0000);
 	sil_wrh_mem (IPRG, 0x0000);
 	sil_wrh_mem (IPRH, 0x0000);
+	sil_wrh_mem (IPRI, 0x0000);
+	sil_wrh_mem (IPRJ, 0x0000);
 }
 #endif /* _MACRO_ONLY */
 

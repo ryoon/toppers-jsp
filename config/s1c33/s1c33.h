@@ -151,6 +151,35 @@
 #define S1C33_INHNO_PINT5		0x45
 #define S1C33_INHNO_PINT6		0x46
 #define S1C33_INHNO_PINT7		0x47
+#define S1C33_INHNO_P8TIMER4		0x48
+#define S1C33_INHNO_P8TIMER5		0x49
+#define S1C33_INHNO_SERIAL2ERR		0x4c
+#define S1C33_INHNO_SERIAL2RX		0x4d
+#define S1C33_INHNO_SERIAL2TX		0x4e
+#define S1C33_INHNO_SERIAL3ERR		0x50
+#define S1C33_INHNO_SERIAL3RX		0x51
+#define S1C33_INHNO_SERIAL3TX		0x52
+
+/*
+ *  アドバンストマクロ固有の割り込みベクタ
+ */
+#define S1C33_INHNO_PINT8		0x54
+#define S1C33_INHNO_PINT9		0x55
+#define S1C33_INHNO_PINT10		0x56
+#define S1C33_INHNO_PINT11		0x57
+#define S1C33_INHNO_PINT12		0x58
+#define S1C33_INHNO_PINT13		0x59
+#define S1C33_INHNO_PINT14		0x5a
+#define S1C33_INHNO_PINT15		0x5b
+#define S1C33_INHNO_P16TIMER6B		0x5e
+#define S1C33_INHNO_P16TIMER6A		0x5f
+#define S1C33_INHNO_P16TIMER7B		0x62
+#define S1C33_INHNO_P16TIMER7A		0x63
+#define S1C33_INHNO_P16TIMER8B		0x66
+#define S1C33_INHNO_P16TIMER8A		0x67
+#define S1C33_INHNO_P16TIMER9B		0x6a
+#define S1C33_INHNO_P16TIMER9A		0x6b
+
 
 #ifndef _MACRO_ONLY
 
@@ -185,7 +214,7 @@ typedef struct {
 		IOREG bIrDA;
 	} stChannel01[2];
 
-	IOREG Dummy[6];
+	IOREG Dummy0[6];
 
 	struct {
 		IOREG bTxd;
@@ -194,6 +223,10 @@ typedef struct {
 		IOREG bControl;
 		IOREG bIrDA;
 	} stChannel23[2];
+#ifdef	__c33adv
+	IOREG Dummy1[5];
+	IOREG bSioAdv;
+#endif	// __c33adv
 } s1c33Serial_t;
 
 /*

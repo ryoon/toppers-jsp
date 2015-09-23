@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,11 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_insn.h,v 1.9 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: cpu_insn.h,v 1.15 2005/11/07 01:49:53 honda Exp $
+ */
+
+/*
+ *	プロセッサの特殊命令のインライン関数定義（H8用）
  */
 
 #ifndef	_CPU_INSN_H_
@@ -80,16 +84,16 @@ disint(void)
  *  すべての割込みを許可
  */
 Inline void
-enaint()
+enaint(void)
 {
     Asm("andc #"str_H8INT_ENA_ALL",ccr");
 }
 
 /*
- * ビットをクリアー
+ * ビットをクリア
  */
 Inline void
-bitclr (UW addr, UB bit)
+bitclr (UB *addr, UB bit)
 {
     Asm("bclr %1l, @%0" : : "r"(addr), "r"(bit));
 }
@@ -98,7 +102,7 @@ bitclr (UW addr, UB bit)
  * ビットをセット
  */
 Inline void
-bitset (UW addr, UB bit)
+bitset (UB *addr, UB bit)
 {
     Asm("bset %1l, @%0" : : "r"(addr), "r"(bit));
 }

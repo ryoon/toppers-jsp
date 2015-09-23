@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -38,11 +38,16 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.5 2004/09/03 15:39:08 honda Exp $
+ *  @(#) $Id: sys_defs.h,v 1.12 2005/11/24 12:03:40 honda Exp $
  */
 
 /*
- *  システムに依存する定義
+ *　ターゲットシステムに依存する定義
+ *
+ *  このインクルードファイルは，kernel.h と sil.h でインクルードされる．
+ *  他のファイルから直接インクルードすることはない．このファイルをイン
+ *  クルードする前に，t_stddef.h と itron.h がインクルードされるので，
+ *  それらに依存してもよい．
  */
 
 #ifndef _SYS_DEFS_H_
@@ -53,5 +58,17 @@
  */
 
 #define H8_3069F
+
+/**************************************************************
+ * サンプルプログラム用の定義
+ *
+ *　　本来はsample1.hに記述すべきだが、sample1.hの管理が煩雑になる
+ *　　ため、便宜的にこのファイルに記述している。
+ **************************************************************/
+
+#define	STACK_SIZE	1024		/* タスクのスタックサイズ */
+#define LOOP_REF	100000		/* 速度計測用のループ回数 */
+#define	TASK_PORTID	1		/* 文字入力するシリアルポートID */
+
 
 #endif /* of #ifndef _SYS_DEFS_H_ */

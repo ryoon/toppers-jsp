@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: makeoffset.c,v 1.1 2004/05/27 12:04:18 honda Exp $
+ *  @(#) $Id: makeoffset.c,v 1.3 2005/11/24 12:41:23 honda Exp $
  */
 
 
@@ -84,7 +84,7 @@
 void makeoffset(void);
 
 void
-makeoffset()
+makeoffset(void)
 {
 	asm("! BEGIN TCB_texptn\n");
 	(INT)(((TCB *)0)->texptn) |= 1;

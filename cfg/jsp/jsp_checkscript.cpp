@@ -33,10 +33,10 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: jsp_checkscript.cpp,v 1.17 2004/02/06 09:21:16 takayuki Exp $
+ *  @(#) $Id: jsp_checkscript.cpp,v 1.18 2005/07/27 10:26:30 honda Exp $
  */
 
-// $Header: /home/CVS/configurator/jsp/jsp_checkscript.cpp,v 1.17 2004/02/06 09:21:16 takayuki Exp $
+// $Header: /home/CVS/configurator/jsp/jsp_checkscript.cpp,v 1.18 2005/07/27 10:26:30 honda Exp $
 
 #include "jsp/jsp_defs.h"
 #include "jsp/jsp_common.h"
@@ -159,7 +159,7 @@ void CheckScriptGenerator::insertMagic(void) throw(Exception)
         out->movePart("others");
         out->createPart("checkscript");
         (*out) << Message("\t/* Variables for kernel checker */\n", "\t/* カーネルチェッカ用変数 */\n");
-        (*out) << "static const UW _checker_magic_number = 0x01234567;\n\n";
+        (*out) << "const UW _checker_magic_number = 0x01234567;\n\n";
     }
 }
 

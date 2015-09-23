@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.15 2003/12/20 07:37:51 hiro Exp $
+ *  @(#) $Id: cpu_support.S,v 1.16 2005/11/12 14:58:46 hiro Exp $
  */
 
 /*
@@ -119,6 +119,10 @@ dispatcher_1:
 	.text
 	.globl activate_r
 activate_r:
+	/*
+	 *  タスク起動直後はタスク例外処理が禁止されているため，ここでタ
+	 *  スク例外処理ルーチンを呼び出す条件は成り立たない．
+	 */
 #ifdef SUPPORT_CHG_IPM			/* t_unlock_cpu 相当の処理 */
 	move.w %sr, %d0			/* 割込みマスクを task_intmask に */
 	and.w #~0x0700, %d0

@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.10 2003/12/15 07:19:22 takayuki Exp $
+ *  @(#) $Id: tool_config.h,v 1.11 2005/07/27 11:18:14 honda Exp $
  */
 
 /*
@@ -270,6 +270,9 @@
 #define	LOG_SNS_DSP_LEAVE(state)	LOG_SVC_LEAVE((TFN_SNS_DSP, state, address))
 #define	LOG_SNS_DPN_ENTER()			LOG_SVC_ENTER((TFN_SNS_DPN, 0, address))
 #define	LOG_SNS_DPN_LEAVE(state)	LOG_SVC_LEAVE((TFN_SNS_DPN, state, address))
+
+#define	LOG_VSNS_INI_ENTER()        LOG_SVC_ENTER((TFN_VSNS_INI, 0, address))
+#define	LOG_VSNS_INI_LEAVE(state)   LOG_SVC_LEAVE((TFN_VSNS_INI, state, address))
 
 #define	LOG_VXSNS_CTX_ENTER(p_excinf)	    LOG_SVC_ENTER((TFN_VXSNS_CTX, 1, p_excinf, address))
 #define	LOG_VXSNS_CTX_LEAVE(state)		    LOG_SVC_LEAVE((TFN_VXSNS_CTX, state, address))

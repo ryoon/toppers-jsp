@@ -34,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: syslog_mini.c,v 1.1 2004/05/27 12:04:18 honda Exp $
+ *  @(#) $Id: syslog_mini.c,v 1.3 2005/11/24 12:41:23 honda Exp $
  */
 
 /*
@@ -55,7 +55,7 @@ static UINT	syslog_lowmask;		/* 低レベル出力すべき重要度 */
 /*
  *  システムログ機能の初期化
  */
-void syslog_initialize()
+void syslog_initialize(void)
 {
 	syslog_logmask = LOG_UPTO(LOG_NOTICE);
 	syslog_lowmask = LOG_UPTO(LOG_NOTICE);
@@ -98,7 +98,7 @@ vmsk_log(UINT logmask, UINT lowmask)
  *  る．
  */
 void
-syslog_terminate(){}
+syslog_terminate(void){}
 
 /*
  *  数値を文字列に変換

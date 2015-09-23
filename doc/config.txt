@@ -1,7 +1,7 @@
 
        ＝ JSPカーネル ターゲット依存部 ポーティングガイド ＝
 
-             （Release 1.4.1対応，最終更新: 6-Sep-2004）
+             （Release 1.4.2対応，最終更新: 12-Nov-2005）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
@@ -10,7 +10,7 @@
 
  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
- Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2004-2005 by Embedded and Real-Time Systems Laboratory
              Graduate School of Information Science, Nagoya Univ., JAPAN
 
  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -40,7 +40,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: config.txt,v 1.37 2004/09/06 14:40:39 hiro Exp $
+ @(#) $Id: config.txt,v 1.38 2005/11/12 14:59:43 hiro Exp $
 ------------------------------------------------------------------------
 
 

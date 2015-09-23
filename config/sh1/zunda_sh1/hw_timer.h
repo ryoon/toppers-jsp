@@ -7,8 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD.
- *   51 Tateminami, Watari-cyo, Watari-gun, Miyagi-ken 989-2361, JAPAN
+ *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD. JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -83,7 +82,7 @@
  *  タイマを初期化し，周期的なタイマ割込み要求を発生させる．
  */
 Inline void
-hw_timer_initialize()
+hw_timer_initialize(void)
 {
 	/*
 	 *  タイマデバイス自体の初期化

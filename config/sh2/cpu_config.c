@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -48,6 +48,7 @@
 #include "jsp_kernel.h"
 #include "check.h"
 #include "task.h"
+#include <sh2.h>
 #include <sil.h>
 
 /*

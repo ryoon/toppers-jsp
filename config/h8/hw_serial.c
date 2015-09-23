@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.c,v 1.6 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: hw_serial.c,v 1.11 2005/11/07 01:49:53 honda Exp $
  */
 
 /*
@@ -52,6 +52,19 @@
 
 #include "jsp_kernel.h"
 #include <hw_serial.h>
+#include <h8_sil.h>
+
+/*
+ *  ボーレートを1ビット分の時間[nsec]に変換するマクロ
+ *  　演算の途中でオーバーフローしないようlong型定数を用いている
+ */
+#define BAUD_TO_NSEC(b)       (UINT)(((1000000ul / (b)) + 1ul) * 1000ul)
+
+/*
+ *  ボーレートをBRRの値にに変換するマクロ
+ */
+#define H8BRR_RATE(b)	((b)>38400?((UB)(((CPU_CLOCK+(16*(b)))/(32*(b)))-1))\
+			          :((UB)((CPU_CLOCK/(32*(b)))-1)))
 
 /*
  *  シリアルポートの初期化ブロック
@@ -60,29 +73,41 @@
 const SIOPINIB siopinib_table[TNUM_PORT] = {
 
 #if TNUM_PORT == 1
-
 	{
 		SYSTEM_SCI,
 		SYSTEM_BAUD_RATE,
 		SYSTEM_SCI_SMR,
-		},
+                {
+                        (UB*)SYSTEM_SCI_IPR,
+                        SYSTEM_SCI_IP_BIT,
+                        SYSTEM_SCI_IPM
+                }
+	}
 
 #elif TNUM_PORT == 2	/* of #if TNUM_PORT == 1 */
-
 	{
 		USER_SCI,
 		USER_BAUD_RATE,
 		USER_SCI_SMR,
-		},
-	{
+                {
+                        (UB*)USER_SCI_IPR,
+                        USER_SCI_IP_BIT,
+                        USER_SCI_IPM
+                }
+	}
+	,{
 		SYSTEM_SCI,
 		SYSTEM_BAUD_RATE,
 		SYSTEM_SCI_SMR,
-		},
-
+                {
+                        (UB*)SYSTEM_SCI_IPR,
+                        SYSTEM_SCI_IP_BIT,
+                        SYSTEM_SCI_IPM
+                }
+	}
 #endif	/* of #if TNUM_PORT == 1 */
 
-	};
+};
 
 
 /*
@@ -105,38 +130,44 @@ void
 SCI_initialize (ID sioid)
 {
 	const SIOPINIB	*inib;
-	int		i;
 
 	inib = get_siopinib(sioid);
-
 	SCI_cls_por(inib->base);
-
+			/*
+			 *　モード設定
+			 *　　・調歩同期式
+			 *　　・キャラクタ長
+			 *　　・パリティ
+			 *　　・ストップビット長
+			 *　　・クロック選択
+			 */
 	sil_wrb_mem((VP)(inib->base + H8SMR), inib->smr_init);
 
 					/*  ボーレート設定  	*/
 	sil_wrb_mem((VP)(inib->base + H8BRR), H8BRR_RATE(inib->baudrate));
 
 			/* 割込み禁止とクロックソースの選択	*/
-	sil_wrb_mem((VP)(inib->base + H8SCR),
-	            sil_reb_mem((VP)(inib->base + H8SCR)) & ~(H8SCR_TIE  | H8SCR_RIE  |
-	                                                      H8SCR_MPIE | H8SCR_TEIE |
-	                                                      H8SCR_CKE1 | H8SCR_CKE0 ));
+	h8_anb_reg((UB *)(inib->base + H8SCR),
+            	    (UB)~(H8SCR_TIE  | H8SCR_RIE  | H8SCR_MPIE |
+            	          H8SCR_TEIE | H8SCR_CKE1 | H8SCR_CKE0 ));
 
 	/* ボーレートの設定後、1ビット分待たなければならない。*/
-	for(i = SCI_SETUP_COUNT(inib->baudrate); i -- > 0; )
-		;
+	sil_dly_nse(BAUD_TO_NSEC(inib->baudrate));
 
 					/* エラーフラグをクリア		*/
-	sil_wrb_mem((VP)(inib->base + H8SSR),
-	            sil_reb_mem((VP)(inib->base + H8SSR)) &
-	                        ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+	h8_anb_reg((UB *)(inib->base + H8SSR),
+	            ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+
+        /*
+         *  プライオリティレベルの設定
+         *      本当は割込みコントローラ依存部分を分離すべき
+         */
+        define_int_plevel(&(inib->irc));
 
 	/* 受信割り込みと送信割込みの許可はシリアル I/O で行う */
 	/* 送受信許可 */
-
-	sil_wrb_mem((VP)(inib->base + H8SCR),
-	            sil_reb_mem((VP)(inib->base + H8SCR)) | (H8SCR_TE | H8SCR_RE));
-	}
+	h8_orb_reg((VP)(inib->base + H8SCR), (H8SCR_TE | H8SCR_RE));
+}
 
 /*
  *  SCI のクローズ
@@ -145,20 +176,16 @@ SCI_initialize (ID sioid)
 void
 SCI_cls_por (UW base)
 {
-	int i;
-
 	/* TDRE が 1 になるまで待つ */
 	while ((sil_reb_mem((VP)(base + H8SSR)) & H8SSR_TDRE) == 0)
 		;
 
 	/* 11ビット送信分待つ。*/
-	for(i = SCI_SETUP_COUNT(H8_MIN_BAUD_RATE) * 11; i -- > 0; )
-		;
+	sil_dly_nse(11*BAUD_TO_NSEC(H8_MIN_BAUD_RATE));
 					/* 送受信停止		*/
-	sil_wrb_mem((VP)(base + H8SCR),
-	            sil_reb_mem((VP)(base + H8SCR)) &
-	                        ~(H8SCR_TIE | H8SCR_RIE | H8SCR_TE | H8SCR_RE));
-	}
+	h8_anb_reg((UB *)(base + H8SCR),
+	           (UB)~(H8SCR_TIE | H8SCR_RIE | H8SCR_TE | H8SCR_RE));
+}
 
 /*
  *  SCI_in_handler -- SCI 入力割込みハンドラ
@@ -169,7 +196,7 @@ SCI_in_handler(ID sioid)
 {
 	SIOPCB	*pcb;
 	UB	status;
-
+	
 	pcb = get_siopcb(sioid);
 	status = sil_reb_mem((VP)(pcb->inib->base + H8SSR));
 	
@@ -180,16 +207,18 @@ SCI_in_handler(ID sioid)
 	    	/* エラーフラグをクリア	*/
 		sil_wrb_mem((VP)(pcb->inib->base + H8SSR),
 		            status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
-		}
+	}
 
 	if (status & H8SSR_RDRF) {
-		if (pcb->openflag)
+		if (pcb->openflag) {
 			/* 受信可能コールバックルーチンを呼出す。*/
 			SCI_ierdy_rcv(pcb->exinf);
-		else
-			sil_wrb_mem((VP)(pcb->inib->base + H8SSR), status & ~H8SSR_RDRF);
+		} else {
+			sil_wrb_mem((VP)(pcb->inib->base + H8SSR), 
+			             status & ~H8SSR_RDRF);
 		}
 	}
+}
 
 /*
  *  SCI_out_handler -- SCI 出力割込みハンドラ
@@ -204,8 +233,8 @@ SCI_out_handler(ID sioid)
 	if (pcb->openflag) {
 		/* 送信可能コールバックルーチンを呼出す。*/
 		SCI_ierdy_snd(pcb->exinf);
-		}
 	}
+}
 
 #ifdef H8_CFG_SCI_ERR_HANDLER
 
@@ -228,8 +257,8 @@ SCI_err_handler(ID sioid)
 	    	/* エラーフラグをクリア	*/
 		sil_wrb_mem((VP)(pcb->inib->base + H8SSR),
 		            status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
-		}
 	}
+}
 
 #endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
 
@@ -246,8 +275,8 @@ sio_initialize (void)
 	for (ix = TNUM_PORT; ix -- > 0; ) {
 		siopcb_table[ix].inib     = &siopinib_table[ix];
 		siopcb_table[ix].openflag = FALSE;
-		}
 	}
+}
 
 /*
  *  sio_ena_cbr -- シリアル I/O からのコールバックの許可
@@ -263,8 +292,8 @@ sio_ena_cbr(SIOPCB *pcb, UINT cbrtn)
 	case SIO_ERDY_RCV:
 		SCI_enable_recv(pcb);
 		break;
-		}
 	}
+}
 
 /*
  *  sio_dis_cbr -- シリアル I/O からのコールバックの禁止
@@ -280,8 +309,8 @@ sio_dis_cbr(SIOPCB *pcb, UINT cbrtn)
 	case SIO_ERDY_RCV:
 		SCI_disable_recv(pcb);
 		break;
-		}
 	}
+}
 
 /*
  *  SCI 割り込み
@@ -291,13 +320,13 @@ void
 sio_in_handler (void)
 {
 	SCI_in_handler(1);
-	}
+}
 
 void
 sio_out_handler (void)
 {
 	SCI_out_handler(1);
-	}
+}
 
 #ifdef H8_CFG_SCI_ERR_HANDLER
 
@@ -305,7 +334,7 @@ void
 sio_err_handler (void)
 {
 	SCI_err_handler(1);
-	}
+}
 
 #endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
 
@@ -315,13 +344,13 @@ void
 sio_in2_handler (void)
 {
 	SCI_in_handler(2);
-	}
+}
 
 void
 sio_out2_handler (void)
 {
 	SCI_out_handler(2);
-	}
+}
 
 #ifdef H8_CFG_SCI_ERR_HANDLER
 
@@ -329,8 +358,9 @@ void
 sio_err2_handler (void)
 {
 	SCI_err_handler(2);
-	}
+}
 
 #endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
 
 #endif	/* of #if TNUM_PORT >= 2 */
+

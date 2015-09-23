@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.2 2004/09/03 17:32:25 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.3 2005/07/06 01:48:21 honda Exp $
  */
 
 
@@ -256,7 +256,7 @@ extern void     no_reg_exception(void);
 #endif /* _MACRO_ONLY_ */
 
 /*
- *  vgxet_tim をサポートするかどうかの定義
+ *  vxget_tim をサポートするかどうかの定義
  */
 #define    SUPPORT_VXGET_TIM
 

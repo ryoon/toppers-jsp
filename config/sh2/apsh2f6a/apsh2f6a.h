@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: apsh2f6a.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: apsh2f6a.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -55,44 +55,41 @@
 #define sh2_exit	gdb_stub_exit
 #define sh2_putc	gdb_stub_putc
 
-extern void	sh2sci_putc_pol(char c);	/*  sh7145sci.c  */
+extern void sh2sci_putc_pol (ID portid, char c);	/*  sh7145sci.c  */
 
 Inline void
-gdb_stub_exit(void)
+gdb_stub_exit (void)
 {
 	/* テストしていない */
-	Asm("trapa #0x20"::);
+	Asm ("trapa #0x20"::);
 }
 
 /*
  *  gdb stubによる出力
  */
 Inline int
-gdb_stub_putc(int c)
+gdb_stub_putc (ID portid, int c)
 {
-	sh2sci_putc_pol (c);
-	return(c);
+	sh2sci_putc_pol (portid, c);
+	return (c);
 }
-
 #else /* GDB_STUB */
 /*
  *  ROM化の場合
  */
 
 Inline void
-sh2_exit()
+sh2_exit ()
 {
-	while(1);
+	while (1);
 }
 
-extern void	sh2sci_putc_pol(char c);	/*  sh7145sci.c  */
-
-Inline void 
-sh2_putc(char c)
+extern void sh2sci_putc_pol (ID portid, char c);	/*  sh7145sci.c  */
+Inline void
+sh2_putc (ID portid, char c)
 {
-	sh2sci_putc_pol(c);
+	sh2sci_putc_pol (portid, c);
 }
-
 #endif /* GDB_STUB */
 #endif /* _MACRO_ONLY */
 #endif /* _APSH2F6A_H_ */

@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.4 2003/12/13 05:09:00 hiro Exp $
+ *  @(#) $Id: tool_config.h,v 1.5 2005/07/27 11:18:14 honda Exp $
  */
 
 /*
@@ -235,6 +235,8 @@ call_atexit()
 #define	LOG_SNS_DSP_LEAVE(state)
 #define	LOG_SNS_DPN_ENTER()
 #define	LOG_SNS_DPN_LEAVE(state)
+#define	LOG_VSNS_INI_ENTER()
+#define	LOG_VSNS_INI_LEAVE(state)
 #define	LOG_VXSNS_CTX_ENTER(p_excinf)
 #define	LOG_VXSNS_CTX_LEAVE(state)
 #define	LOG_VXSNS_LOC_ENTER(p_excinf)

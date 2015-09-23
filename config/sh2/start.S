@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: start.S,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -45,8 +45,6 @@
 
 #define	_MACRO_ONLY
 #include <t_config.h>
-
-
 
 /*
  *　　例外ベクタの定義（SH1/2用）
@@ -91,7 +89,7 @@ _start:
 	ldc   r0,sr
 	/*
 	 * 非タスクコンテストのスタックをSTACKTOPに初期化する
-	 * STACKTOPは、sys_config.hで定義
+	 * STACKTOPは、user_config.hで定義
 	 */
 	mov.l  _stack_k, r15
 
@@ -108,7 +106,7 @@ _start:
 start_0:
 	/*
 	 *  プロセッサ内蔵RAMが利用できる場合はそのアドレスを
-	 *  INNER_RAM_ADDRESSマクロとしてsys_config.hまたは
+	 *  INNER_RAM_ADDRESSマクロとしてuser_config.hまたは
 	 *  コンパイラ・オプションで定義する。
 	 *　（内蔵RAMの先頭アドレスではなく、スタックの底で
 	 *　　ある点に注意）
@@ -214,6 +212,7 @@ _init_sr:
 	.long	MAX_IPM << 4
 _stack_k:
 	.long   STACKTOP
+
 
 #ifdef INNER_RAM_ADDRESS
 _inner_ram_address_k:

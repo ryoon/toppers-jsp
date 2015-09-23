@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.1 2004/05/27 12:15:35 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.3 2005/11/24 12:41:23 honda Exp $
  */
 
 /*
@@ -57,7 +57,7 @@ char	intnest;
  *  プロセッサ依存の初期化
  */
 void
-cpu_initialize()
+cpu_initialize(void)
 {
 	/* 割込みネストカウント初期化(タスクコンテキスト) */
 	intnest = 0;
@@ -67,7 +67,7 @@ cpu_initialize()
  *  プロセッサ依存の終了処理
  */
 void
-cpu_terminate()
+cpu_terminate(void)
 {
 }
 

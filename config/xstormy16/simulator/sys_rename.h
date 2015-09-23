@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2005 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -40,13 +40,9 @@
 #ifndef _SYS_RENAME_H_
 #define _SYS_RENAME_H_
 
-#define sys_initialize		_kernel_sys_initialize
-#define sys_exit		_kernel_sys_exit
 
 #ifdef LABEL_ASM
 
-#define _sys_initialize		__kernel_sys_initialize
-#define _sys_exit		__kernel_sys_exit
 
 #endif /* LABEL_ASM */
 #endif /* _SYS_RENAME_H_ */

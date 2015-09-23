@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -38,7 +38,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.10 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.17 2005/11/15 10:50:59 honda Exp $
  */
 
 #include "jsp_kernel.h"
@@ -51,36 +51,63 @@
  *  プロセッサ依存モジュール（H8用）
  */
 
+#ifdef SUPPORT_CHG_IPM
+/*
+ *  タスクコンテキストでの割込みマスク
+ */
+volatile UB task_intmask = 0;
+#endif /* SUPPORT_CHG_IPM */
+
 /*
  *  非タスクコンテキストでの割込みマスク
  */
 
-UB	int_intmask = 0;
+volatile UB int_intmask = 0;
 
 /*
  *  割込みネストカウンタ
  */
 
-UW	intnest = 0;
+volatile UB intnest = 0;
+
+/*
+ *  CPUロック状態を表すフラグ
+ *　　TRUE ：CPUロック状態
+ *　　FALSE：CPUロック解除状態
+ */
+volatile BOOL iscpulocked = TRUE;
+
+/*
+ *  タイマのプライオリティレベル設定用のデータ
+ *      本来はhw_timer.hに記述するべきだが、そうすると
+ *      hw_timer.hをインクルードしたファイルですべて実体化されて
+ *　　　メモリ領域を占有してしまうため、実体はここに記述する。
+ */
+const IRC TIMER_IRC = {(UB*)SYSTEM_TIMER_IPR,
+                        SYSTEM_TIMER_IP_BIT,
+                        SYSTEM_TIMER_IPM
+                      };
 
 /*
  *  ベクタテーブルの初期化（for RedBoot）
  */
 #ifdef REDBOOT
-#define VECTOR_TABLE_ADDR 	0x00fffd20
-#define JMP_OPECODE		0x5a000000
-extern void	vectors(void);
+
+/*  VECTOR_TABLE_ADDRはsys_config.hで定義する  */
+extern void	vector(void);
 
 static void
 vector_table_copy(void)
 {
-	unsigned int n = 0x100/sizeof(unsigned int);		/* ベクタテーブルサイズ */
-	unsigned int *o = (unsigned int *)VECTOR_TABLE_ADDR;	/* ベクタテーブルコピー先 */
-	unsigned int *i = (unsigned int *)vectors;		/* ベクタテーブルコピー元 */
+	UW n;
+	UW *dst = (UW *)VECTOR_TABLE_ADDR;	/* ベクタテーブルコピー先 */
+	UW *src = (UW *)vector;			/* ベクタテーブルコピー元 */
 
-    while (n -- > 0)
-        *o ++ = JMP_OPECODE | (*i ++);		/* jmp命令の付加 */
-
+	for (n = 0; n < VECTOR_SIZE; n++) {
+		*dst = JMP_OPECODE | (*src);	/* jmp命令の付加 */
+		++dst;
+		++src;
+	}
 }
 #endif	/* of #ifdef REDBOOT */
 
@@ -89,35 +116,134 @@ vector_table_copy(void)
  */
 
 void
-cpu_initialize()
+cpu_initialize(void)
 {
+	/* 
+	 *　CCR のUIビットを割り込みマスクビットとして使用する。
+	 *　　SYSCR.UE←0
+	 */
+	bitclr((UB*)H8SYSCR, H8SYSCR_UE_BIT);
+	
+	/* すべての割込みプライオリティをレベル０にする。*/
+	sil_wrb_mem((VP)H8IPRA, 0x0);
+	sil_wrb_mem((VP)H8IPRB, 0x0);
+	
 	SCI_initialize(SYSTEM_PORTID);
 
 #ifdef REDBOOT
 	vector_table_copy();
 #endif	/* of #ifdef REDBOOT */
-	}
+}
 
 /*
  *  プロセッサ依存の終了処理
  */
 
 void
-cpu_terminate()
+cpu_terminate(void)
 {
 }
 
+#ifdef SUPPORT_CHG_IPM
 /*
- * 登録されていない割り込みが発生すると呼び出される
+ *  割込みマスクの変更
+ *
+ *　IPMに設定できる値としてIPM_LEVEL0、IPM_LEVEL1、IPM_LEVEL2がマクロ
+ *　定義されている。
+ *
+ *
+ *　IPM_LEVEL0：レベル０　すべての割込みを受け付ける
+ *　IPM_LEVEL1：レベル１　NMIおよびプライオリティレベル１の割込みのみを
+ *　　　　　　　　　　　　受け付ける
+ *　IPM_LEVEL2：レベル２　NMI以外の割込みを受け付けない
+ *
+ *  IPM がレベル0以外の時にも，タスクディスパッチは保留されない．IPM は，
+ *  タスクディスパッチによって，新しく実行状態になったタスクへ引き継が
+ *  れる．そのため，タスクが実行中に，別のタスクによって IPM が変更さ
+ *  れる場合がある．JSPカーネルでは，IPM の変更はタスク例外処理ルーチ
+ *  ンによっても起こるので，別のタスクによって IPM が変更されることに
+ *  よって，扱いが難しくなる状況は少ないと思われる．IPM の値によってタ
+ *  スクディスパッチを禁止したい場合には，dis_dsp を併用すればよい．
  */
+SYSCALL ER
+chg_ipm(IPM ipm)
+{
+        ER      ercd = E_OK;
+
+        LOG_CHG_IPM_ENTER(ipm);
+        CHECK_TSKCTX_UNL();
+        CHECK_PAR( (ipm == IPM_LEVEL0) || (ipm == IPM_LEVEL1) || (ipm == IPM_LEVEL2) );
+
+        t_lock_cpu();
+        task_intmask = ipm;
+        t_unlock_cpu();
+        
+    exit:
+        LOG_CHG_IPM_LEAVE(ercd)
+        return(ercd);
+}
+
+/*
+ *  割込みマスクの参照
+ */
+SYSCALL ER
+get_ipm(IPM *p_ipm)
+{
+        ER      ercd = E_OK;
+
+        LOG_GET_IPM_ENTER(p_ipm);
+        CHECK_TSKCTX_UNL();
+
+        t_lock_cpu();
+        *p_ipm = task_intmask;
+        t_unlock_cpu();
+
+    exit:
+        LOG_GET_IPM_LEAVE(ercd, *p_ipm);
+        return(ercd);
+}
+
+#endif /* SUPPORT_CHG_IPM */
+
+/*****以下、共通部とのインターフェースに含まれない部分*********/
+
+/*
+ * 未定義割込み発生時のエラー出力
+ * 　　登録されていない割込みが発生すると呼び出される
+ * 
+ * 　スタック構造
+ *　　 +0:er0
+ *　　 +4:er1
+ *　　 +8:er2
+ *　　+12:er3
+ *　　+16:er4
+ *　　+20:er5
+ *　　+24:er6
+ *　　+28:crr
+ *　　+29:pc
+ *　　+32〜:割込み前に使用されていたスタック領域
+ */
+
+/*
+ * 割込み発生直前のスタックポインタまでのオフセット
+ */
+#define OFFSET_SP	32
 
 void cpu_experr(EXCSTACK *sp)
 {
+    UW sp2, pc, ccr, tmp;
+    
+    sp2 = (UW)sp + OFFSET_SP;
+    tmp = sp->pc;
+    ccr = (tmp >> 24U) & 0xff;	/*  上位1バイト  */
+    pc = tmp & 0x00ffffffU;	/*  下位3バイト  */
+    
     syslog(LOG_EMERG, "Unexpected interrupt.");
-    syslog(LOG_EMERG, "PC  = %08x SP  = %08x", sp->pc, sp - 32);
-    syslog(LOG_EMERG, "ER0 = %08x ER1 = %08x ER2 = %08x ER3 = %08x",
+    syslog(LOG_EMERG, "PC  = 0x%08x SP  = 0x%08x CCR  = 0x%02x",
+                       pc, sp2, ccr);
+    syslog(LOG_EMERG, "ER0 = 0x%08x ER1 = 0x%08x ER2 = 0x%08x ER3 = 0x%08x",
                        sp->er0, sp->er1, sp->er2, sp->er3);
-    syslog(LOG_EMERG, "ER4 = %08x ER5 = %08x ER6 = %08x",
+    syslog(LOG_EMERG, "ER4 = 0x%08x ER5 = 0x%08x ER6 = 0x%08x",
                        sp->er4, sp->er5, sp->er6);
     while(1)
     	;
@@ -154,7 +280,9 @@ local_memcpy (void *out, const void *in, unsigned int n)
     char *o = out;
     const char *i = in;
 
-    while (n -- > 0)
+    while (n -- > 0) {
         *o ++ = *i ++;
+    }
     return out;
 }
+

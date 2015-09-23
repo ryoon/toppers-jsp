@@ -39,7 +39,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: makeoffset.c,v 1.12 2004/09/06 16:00:19 hiro Exp $
+ *  @(#) $Id: makeoffset.c,v 1.15 2005/11/07 01:49:53 honda Exp $
  */
 
 #include "jsp_kernel.h"
@@ -60,7 +60,7 @@
 	  : "g"(offsetof(TYPE, FIELD)))
 
 void
-makeoffset()
+makeoffset(void)
 {
         OFFSET_DEF (TCB, tinib);
 	OFFSET_DEF2(TCB, tskctxb.sp, sp);

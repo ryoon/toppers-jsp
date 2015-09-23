@@ -7,8 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD.
- *   51 Tateminami, Watari-cyo, Watari-gun, Miyagi-ken 989-2361, JAPAN
+ *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD. JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -78,7 +77,9 @@
 #define AD_DRDH		((VH *)0x5fffee6)	/* A/D データ･レジスタＤ H（ﾋﾞｯﾄ9〜2）*/
 #define AD_DRDL		((VH *)0x5fffee7)	/* A/D データ･レジスタＤ L（ﾋﾞｯﾄ1〜0）*/
 #define AD_CSR		((VH *)0x5fffee8)	/* A/D コントロール／ステータス･レジスタ */
-#define AD_CR		((VH *)0x5fffee9)	/* A/D コントロール･レジスタ 		  */
+#define AD_CR		((VH *)0x5fffee9)	/* A/D コントロール･レジスタ 		 */
+#define	ADF			0x80		/* ADF				*/
+#define	ADST			0x20		/* A/D start			*/
 
 #if 0 /* sh1itu.hに定義されている */
 /* ＩＴＵ共通 */
@@ -325,7 +326,7 @@ gdb_stub_putc(int c)
 #else /* GDB_STUB */
 
 Inline void
-zunda_sh1_exit()
+zunda_sh1_exit(void)
 {
 	while(1);
 }

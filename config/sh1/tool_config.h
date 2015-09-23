@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.5 2004/10/07 17:13:56 honda Exp $
+ *  @(#) $Id: tool_config.h,v 1.6 2005/11/14 08:00:44 honda Exp $
  */
 
 /*
@@ -75,7 +75,7 @@
 #ifndef _MACRO_ONLY
 
 Inline void
-call_atexit()
+call_atexit(void)
 {
 	extern void	software_term_hook(void);
 

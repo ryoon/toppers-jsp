@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2005 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -40,25 +40,15 @@
 #ifndef _CPU_RENAME_H_
 #define _CPU_RENAME_H_
 
-#define cpu_initialize		_kernel_cpu_initialize
-#define cpu_terminate		_kernel_cpu_terminate
 #define define_inh		_kernel_define_inh
 #define define_exc		_kernel_define_exc
-#define sys_putc		_kernel_sys_putc
-#define dispatch		_kernel_dispatch
-#define exit_and_dispatch	_kernel_exit_and_dispatch
 #define create_context		_kernel_create_context
 #define activate_context	_kernel_activate_context
 
 #ifdef LABEL_ASM
 
-#define _cpu_initialize		__kernel_cpu_initialize
-#define _cpu_terminate		__kernel_cpu_terminate
 #define _define_inh		__kernel_define_inh
 #define _define_exc		__kernel_define_exc
-#define _sys_putc		__kernel_sys_putc
-#define _dispatch		__kernel_dispatch
-#define _exit_and_dispatch	__kernel_exit_and_dispatch
 #define _create_context		__kernel_create_context
 #define _activate_context	__kernel_activate_context
 

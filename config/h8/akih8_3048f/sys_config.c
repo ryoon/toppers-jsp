@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,9 +37,12 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.7 2004/09/03 15:39:08 honda Exp $
+ *  @(#) $Id: sys_config.c,v 1.12 2005/11/07 01:49:53 honda Exp $
  */
 
+/*
+ *	ターゲットシステム依存モジュール
+ */
 
 #include "jsp_kernel.h"
 
@@ -48,7 +51,7 @@
  */
 
 void
-sys_initialize()
+sys_initialize(void)
 {
 }
 

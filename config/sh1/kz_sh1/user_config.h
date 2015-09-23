@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: user_config.h,v 1.1 2004/10/04 12:20:25 honda Exp $
+ *  @(#) $Id: user_config.h,v 1.4 2005/11/07 01:15:43 honda Exp $
  */
 
 /*
@@ -63,31 +63,41 @@
  *  割込みの出口処理で戻り先がCPU例外の入口処理であるかの
  *　チェックを行うどうかの定義
  */
-//#define	SUPPORT_CPU_EXC_ENTRY_CHECK
+#if 0
+#define	SUPPORT_CPU_EXC_ENTRY_CHECK
+#endif
 
 /*
  *  実行すべきタスクがない場合の割込み待ちで省電力モードに移行しないか
  *　どうかの定義（フルICE向け）
  */
-//#define	OMIT_POWER_CONTROL
+#if 0
+#define	OMIT_POWER_CONTROL
+#endif
 
 /*
  *  スタートアップルーチンで非タスクコンテキストのスタック領域を0で
  *　初期化するどうかの定義
  */
-//#define	FILL_STACK_WITH_0
+#if 0
+#define	FILL_STACK_WITH_0
+#endif
 
 /*
  *  スタートアップルーチンでdataセクションのコピーを省略するか
  *　どうかの定義
  */
-//#define	OMIT_DATA_SECTION_COPY
+#if 0
+#define	OMIT_DATA_SECTION_COPY
+#endif
 
 /*
  *  SRAMメモリ実装タイプをラージタイプとするかどうかの定義
  *　（中央製作所製 SH1CPUボード固有なので、本機種では未使用）
  */
-//#define	LARGE_TYPE
+#if 0
+#define	LARGE_TYPE
+#endif
 
 
 /*
@@ -115,8 +125,10 @@
  *　　　・ソフィアシステムズ製MultiSTAC-SH1       20MHz
  */
 #define	CONFIG_20MHZ
-//#define	CONFIG_19MHZ	/*  19.6608MHz  */
-//#define	CONFIG_16MHZ
+#if 0
+#define	CONFIG_19MHZ	/*  19.6608MHz  */
+#define	CONFIG_16MHZ
+#endif
 
 /*
  *  シリアルポート数の定義
@@ -150,8 +162,11 @@
  *  シリアル通信のボーレート
  *　　9600, 19200, 38400[bps]のいずれかを数値で定義する。
  */
-//#define	CONFIG_BAUD	9600
-//#define	CONFIG_BAUD	19200
+#if 0
+#define	CONFIG_BAUD	9600
+#define	CONFIG_BAUD	19200
+#endif
+
 #define	CONFIG_BAUD	38400
 
 /*
@@ -177,15 +192,18 @@
 /*
  *  上記のチェック対象となるCPU例外の数
  */
-//#define	NUM_EXC
+#if 0
+#define	NUM_EXC
+#endif
 
 /*
  *  内部RAMの最終アドレス
  *　　hardware_init_hookをC言語の関数で記述するため
  *  　スタックポインタの初期値として使用される。
  */
-//#define	INNER_RAM_ADDRESS
-/*  本機種は内蔵RAMを持たない  */
+#if 0	/*  本機種は内蔵RAMを持たない  */
+#define	INNER_RAM_ADDRESS
+#endif
 
 
 /*
@@ -195,19 +213,29 @@
  */
 
 /*  一般不当命令  */
-//#define GII_VECTOR
+#if 0
+#define GII_VECTOR
+#endif
 
 /*  スロット不当命令  */
-//#define SII_VECTOR
+#if 0
+#define SII_VECTOR
+#endif
 
 /*  CPUアドレスエラー  */
-//#define CAE_VECTOR
+#if 0
+#define CAE_VECTOR
+#endif
 
 /*  DMAアドレスエラー  */
-//#define DAE_VECTOR
+#if 0
+#define DAE_VECTOR
+#endif
 
 /*  NMI  */
-//#define NMI_VECTOR
+#if 0
+#define NMI_VECTOR
+#endif
 
 
 #endif /* _USER_CONFIG_H_ */

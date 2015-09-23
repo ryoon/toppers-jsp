@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2005 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -37,30 +37,20 @@
 
 /* This file is generated from cpu_rename.def by genrename. */
 
-#ifdef _CPU_RENAME_H_
-#undef _CPU_RENAME_H_
+#ifdef _CPU_UNRENAME_H_
+#undef _CPU_UNRENAME_H_
 
-#undef cpu_initialize
-#undef cpu_terminate
 #undef define_inh
 #undef define_exc
-#undef sys_putc
-#undef dispatch
-#undef exit_and_dispatch
 #undef create_context
 #undef activate_context
 
 #ifdef LABEL_ASM
 
-#undef _cpu_initialize
-#undef _cpu_terminate
 #undef _define_inh
 #undef _define_exc
-#undef _sys_putc
-#undef _dispatch
-#undef _exit_and_dispatch
 #undef _create_context
 #undef _activate_context
 
 #endif /* LABEL_ASM */
-#endif /* _CPU_RENAME_H_ */
+#endif /* _CPU_UNRENAME_H_ */

@@ -1,9 +1,4 @@
-cpu_initialize
-cpu_terminate
 define_inh
 define_exc
-sys_putc
-dispatch
-exit_and_dispatch
 create_context
 activate_context

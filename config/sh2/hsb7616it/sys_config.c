@@ -36,48 +36,47 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: sys_config.c,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 #include "jsp_kernel.h"
 #include <sil.h>
-#ifndef GDB_STUB
-#include "sh7615scif1.h"
-#else	/*  GDB_STUB  */
-#include "sh7615scif2.h"
-#endif	/*  GDB_STUB  */
-#include "hsb7616it.h"
-
-/*
- *  シリアルI/Oポートの初期化 banner出力のためカーネルの初期化と無関係に行う
- */
-Inline void
-Sci_Initialize ()
-{
-	sil_wrh_mem (SCIF_SCSCR,
-				 sil_reh_mem (SCIF_SCSCR) & ~(SCSCR_TE | SCSCR_RE));
-#ifndef GDB_STUB
-	sil_wrh_mem (PBCR, sil_reh_mem (PBCR) | (PFC_TXD | PFC_RXD));
-#else	/*  GDB_STUB  */
-	sil_wrh_mem (PBCR2, sil_reh_mem (PBCR2) | (PFC_TXD | PFC_RXD));
-#endif	/*  GDB_STUB  */
-	sil_wrb_mem (SCIF_SCFCR, (VB) (SCFCR_TFRST | SCFCR_RFRST));
-	sil_wrb_mem (SCIF_SCSMR, 0x00);
-	sil_wrb_mem (SCIF_SCBRR, (VB) SCI_BRR);
-	sil_dly_nse (sh2scif_DELAY);
-	sil_wrb_mem (SCIF_SCFCR, 0x00);
-	sil_wrh_mem (SCIF_SC1SSR, sil_reh_mem (SCIF_SC1SSR) & ~SC1SSR_ER);
-	sil_wrb_mem (SCIF_SCSCR, (VB) (SCSCR_RIE | SCSCR_TE | SCSCR_RE));
-}
-
+#include <s_services.h>
+#include "sh7615scif.h"
 /*
  *  ターゲットシステム依存の初期化
  */
+/* 入出力ポートの設定はsys_config.c */
+/* 割込みベクタ番号の設定はhw_serial.h */
+/* 管理ブロックの設定はsh7615scif.c */
 void
 sys_initialize ()
 {
-	//バナーを出力するためシリアルポートを初期化しておく
-	Sci_Initialize ();
+	SIOPCB *siopcb;
+
+	/* 使用する周辺機器はここで有効にしておく。 */
+	/*  SCIFデータ入出力ポートの設定  */
+#ifndef GDB_STUB
+
+	/* SCIF1 */
+	sil_wrh_mem (PBCR, sil_reh_mem (PBCR) | (0x0800 | 0x2000));
+#if TNUM_PORT >= 2
+	/* SCIF2 */
+	sil_wrh_mem (PBCR2, sil_reh_mem (PBCR2) | (0x0200 | 0x0800));
+#endif /* TNUM_PORT >= 2 */
+
+#else	/*  GDB_STUB  */
+
+	/* SCIF2 */
+	sil_wrh_mem (PBCR2, sil_reh_mem (PBCR2) | (0x0200 | 0x0800));
+
+#endif	/*  GDB_STUB  */
+	/*
+	 *  デバイス依存のオープン処理．
+	 */
+	/*バナー出力するため */
+	sh2scif_initialize();
+	siopcb = sh2scif_opn_por (LOGTASK_PORTID, 0);
 
 #ifndef GDB_STUB
 	/* ベクタ番号の初期化 */
@@ -126,9 +125,9 @@ void
 sys_putc(char c)
 {
 	if (c == '\n') {
-		sh2_putc('\r');
+		sh2_putc (LOGTASK_PORTID, '\r');
 	}
-	sh2_putc(c);
+	sh2_putc (LOGTASK_PORTID, c);
 }
 
 /* ハードウェアの設定 */

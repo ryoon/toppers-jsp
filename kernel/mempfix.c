@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: mempfix.c,v 1.10 2003/06/04 01:46:16 hiro Exp $
+ *  @(#) $Id: mempfix.c,v 1.12 2005/11/12 14:55:23 hiro Exp $
  */
 
 /*
@@ -121,7 +123,7 @@ mempfix_get_block(MPFCB *mpfcb, VP *p_blk)
 	}
 	else if (mpfcb->unused < mpfcb->mpfinib->limit) {
 		*p_blk = mpfcb->unused;
-		mpfcb->unused = (VP)((SIZE)(mpfcb->unused)
+		mpfcb->unused = (VP)((char *)(mpfcb->unused)
 						+ mpfcb->mpfinib->blksz);
 		return(TRUE);
 	}
@@ -263,7 +265,7 @@ rel_mpf(ID mpfid, VP blk)
 	mpfcb = get_mpfcb(mpfid);
 	CHECK_PAR(mpfcb->mpfinib->mpf <= blk
 			&& blk < mpfcb->mpfinib->limit
-			&& ((SIZE)(blk) - (SIZE)(mpfcb->mpfinib->mpf))
+			&& ((char *)(blk) - (char *)(mpfcb->mpfinib->mpf))
 					% mpfcb->mpfinib->blksz == 0);
 
 	t_lock_cpu();

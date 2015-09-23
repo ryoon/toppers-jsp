@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.24 2004/09/04 16:38:40 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.25 2005/12/26 07:06:24 honda Exp $
  */
 
 
@@ -96,7 +96,6 @@
  */
 #define	TBIT_TCB_PRIORITY	8	/* priority フィールドのビット幅 */
 #define	TBIT_TCB_TSTAT		8	/* tstat フィールドのビット幅 */
-#define	TBIT_TCB_TWAIT		8	/* twait フィールドのビット幅 */
 
 #ifndef _MACRO_ONLY
 /*

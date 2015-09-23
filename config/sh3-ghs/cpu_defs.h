@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_defs.h,v 1.3 2003/12/19 11:24:55 honda Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.4 2005/07/27 11:06:36 honda Exp $
  */
 
 /*
@@ -87,7 +87,7 @@ typedef	UD  SYSUTIM;	       /* 性能評価用システム時刻 */
 #else
 typedef	UINT  SYSUTIM;	       /* 性能評価用システム時刻 */
 #endif
-extern ER   vxget_tim(SYSUTIM *pk_sysutim);
+extern ER	vxget_tim(SYSUTIM *p_sysutim) throw();
 
 /*
  *  ステータスレジスタ（SR）の現在値の読出し

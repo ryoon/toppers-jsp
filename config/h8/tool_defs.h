@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,11 +37,16 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_defs.h,v 1.7 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: tool_defs.h,v 1.13 2005/11/07 01:49:53 honda Exp $
  */
 
 /*
  *	開発環境に依存する定義
+ *
+ *  このインクルードファイルは，t_stddef.h と itron.h の先頭でインクルー
+ *  ドされる．他のファイルからは直接インクルードすることはない．他のイ
+ *  ンクルードファイルに先立って処理されるため，他のインクルードファイ
+ *  ルに依存してはならない．
  */
 
 #ifndef _TOOL_DEFS_H_
@@ -53,7 +58,13 @@
 #define	_int8_		char		/* 8ビットの整数型	*/
 #define	_int16_		short		/* 16ビットの整数型	*/
 #define	_int32_		int		/* 32ビットの整数型	*/
+
+#ifdef __LONG_LONG_MAX__
+#if (__LONG_LONG_MAX__ >> 31) != 0
 #define _int64_		long long	/* 64ビットの整数型	*/
+#endif	/*  (__LONG_LONG_MAX__ >> 31) != 0  */
+#endif	/*  __LONG_LONG_MAX__  */
+
 
 /*
  *  コンパイラの拡張機能のためのマクロ定義

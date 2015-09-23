@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.11 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: sys_config.c,v 1.12 2005/11/14 08:00:44 honda Exp $
  */
 
 /*
@@ -50,7 +50,7 @@
  *  ターゲットシステム依存の初期化
  */
 void
-sys_initialize()
+sys_initialize(void)
 {
 	/*
 	 *  プロセッサ識別のための変数の初期化
@@ -62,7 +62,7 @@ sys_initialize()
  *  ターゲットシステムの終了
  */
 void
-sys_exit()
+sys_exit(void)
 {
 	kz_sh1_exit();
 }

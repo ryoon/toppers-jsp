@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,11 +37,14 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.11 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.17 2005/11/07 01:49:53 honda Exp $
  */
 
 /*
- *  プロセッサ依存モジュール（H8用）
+ *	プロセッサ依存モジュール（H8用）
+ *
+ *  このインクルードファイルは，t_config.h のみからインクルードされる．
+ *  他のファイルから直接インクルードしてはならない．
  */
 
 #ifndef _CPU_CONFIG_H_
@@ -61,9 +64,6 @@
 
 #ifndef _MACRO_ONLY
 #include <cpu_insn.h>
-#endif /* _MACRO_ONLY */
-
-#ifndef _MACRO_ONLY
 
 /*
  *  タスクコンテキストブロックの定義
@@ -83,7 +83,7 @@ typedef struct task_context_block {
  */
 
 Inline UB
-current_intmask()
+current_intmask(void)
 {
 	return(current_ccr() & H8INT_MASK_ALL);
 }
@@ -102,7 +102,7 @@ set_intmask(UB intmask)
  *  割込みネストカウンタ
  */
 
-extern UW	intnest;
+extern volatile UB intnest;
 
 /*
  *  コンテキスト参照
@@ -112,61 +112,86 @@ extern UW	intnest;
  */
 
 Inline BOOL
-sense_context()
+sense_context(void)
 {
-	return(intnest > 0);
+	BOOL ret;
+	
+	ret = (intnest != 0) ? TRUE : FALSE;
+	return(ret);
 }
 
-Inline BOOL
-sense_lock()
-{
-	return(current_ccr() & H8INT_MASK_ALL);
-}
+/*
+ *  CPUロック状態の参照
+ */
 
+/*
+ *  CPUロック状態を表すフラグ
+ */
+extern volatile BOOL    iscpulocked;
+
+#define sense_lock()    iscpulocked
 #define t_sense_lock	sense_lock
 #define i_sense_lock	sense_lock
 
 /*
  *  CPUロックとその解除（タスクコンテキスト用）
+ *
+ *  task_intmask は、chg_ipm をサポートするための変数。chg_ipm をサポート
+ *  しない場合には、t_unlock_cpu 中の task_intmask は 0 に置き換えてよい。
  */
 
+#ifdef SUPPORT_CHG_IPM
+extern volatile UB       task_intmask;   /* タスクコンテキストでの割込みマスク */
+#endif /* SUPPORT_CHG_IPM */
+
 Inline void
-t_lock_cpu()
+t_lock_cpu(void)
 {
-	disint();
+        disint();
+        iscpulocked = TRUE;
 }
 
 Inline void
-t_unlock_cpu()
+t_unlock_cpu(void)
 {
-	enaint();
+        iscpulocked = FALSE;
+#ifdef SUPPORT_CHG_IPM
+        /*
+         *  t_unlock_cpu が呼び出されるのは CPUロック状態のみであるため、
+         *  処理の途中で task_intmask が書き換わることはない。
+         */
+        set_intmask(task_intmask);
+#else /* SUPPORT_CHG_IPM */
+        enaint();               /* cpu_insn.h */
+#endif /* SUPPORT_CHG_IPM */
 }
 
 /*
  *  CPUロックとその解除（非タスクコンテキスト用）
  */
 
-extern UB	int_intmask;	/* 非タスクコンテキストでの割込みマスク */
+extern volatile UB int_intmask;    /* 非タスクコンテキストでの割込みマスク */
 
 Inline void
-i_lock_cpu()
+i_lock_cpu(void)
 {
-	UB	intmask;
+        UB      intmask = current_intmask();
+        /*
+         *  一時変数 intmask を使っているのは，current_intmask()を呼ん
+         *  だ直後に割込みが発生し，起動された割込みハンドラ内で
+         *  int_intmask が変更される可能性があるためである．
+         */
 
-	/*
-	 *  一時変数 intmask を使っているのは，current_intmask()を呼ん
-	 *  だ直後に割込みが発生し，起動された割込みハンドラ内で
-	 *  int_intmask が変更される可能性があるためである．
-	 */
-	intmask = current_intmask();
-	disint();
-	int_intmask = intmask;
+        disint();
+        int_intmask = intmask;
+        iscpulocked = TRUE;
 }
 
 Inline void
-i_unlock_cpu()
+i_unlock_cpu(void)
 {
-	set_intmask(int_intmask);
+        iscpulocked = FALSE;
+        set_intmask(int_intmask);
 }
 
 /*
@@ -198,10 +223,16 @@ extern void	exit_and_dispatch(void);
  *
  */
 
+#define JMP_OPECODE		0x5a000000u
+
 Inline void
 define_inh(INHNO inhno, FP inthdr)
 {
-	}
+#ifdef REDBOOT
+   UW *addr = (UW *)VECTOR_TABLE_ADDR;
+   addr[inhno] = JMP_OPECODE | (UW)inthdr;
+#endif	/*  #ifdef REDBOOT  */
+}
 
 /*
  *   CPU例外ハンドラの設定
@@ -210,7 +241,9 @@ define_inh(INHNO inhno, FP inthdr)
 Inline void
 define_exc(EXCNO excno, FP exchdr)
 {
-	}
+}
+
+#endif	/*  _MACRO_ONLY  */
 
 /*
  *  割込みハンドラの出入口処理
@@ -220,125 +253,57 @@ define_exc(EXCNO excno, FP exchdr)
 /*
  *  割込みハンドラの出入口処理の生成マクロ
  *		（主に入口処理）
- *
- *  reqflg をチェックする前に割込みを禁止しないと，reqflg をチェック後
- *  に起動された割込みハンドラ内でディスパッチが要求された場合に，ディ
- *  スパッチされない．
- *
- *
  */
 
-/*  C言語ルーチンの関数名から入口処理のラベルを生成  */
+/*  
+ * C言語ルーチンの関数名から入口処理のラベルを生成 するマクロ
+ */
 
-#define	INT_ENTRY(inthdr)	inthdr##_entry
-#define	EXC_ENTRY(exchdr)	exchdr##_entry
+/*  C言語用のラベル生成  */
+#define	INT_ENTRY(inthdr)	_kernel_##inthdr##_entry
+#define	EXC_ENTRY(exchdr)	INT_ENTRY(exchdr)
+
+/*  アセンブラ用のラベル生成  */
+#define	INT_ENTRY_ASM(inthdr)	__kernel_##inthdr##_entry
+
+
 
 /*
- *  割込みハンドラの入口処理
+ *　　割込みの入口処理を生成するマクロの定義
+ *　　　（割込み要因毎に異なる部分）
  *
- *	H8では、割込みとCPU例外の扱いが同じなので、
- *	入口処理のマクロも共通に定義している
+ *　　　パラメータ
+ *	　　entry：入口処理のラベル
+ *　　　　　inthdr：C言語ルーチンの関数名（先頭の'_'は付けない）
+ *　　　　　intmask：　割込み許可時に割込みマスクに設定する値
+ *　　　　　　　　　　　IPM_LEVEL1、IPM_LEVEL2のいずれかにすること
  *
- *	entry：入口処理のラベル
- *	inthdr：C言語ルーチンの先頭アドレス
+ *　　　H8では割込み受付直後はハードウェア的に割込み禁止になっている
+ *
+ *　　　　レジスタ割り当て
+ *　　　　　・er0〜er3：退避
+ *　　　　　・er2：C言語ルーチンの先頭アドレス
+ *　　　　　・r3l：割込み許可時に割込みマスクに設定する値
  *
  */
+#define	INTHDR_ENTRY2(entry, inthdr, intmask)	 \
+	_INTHDR_ENTRY2(entry, inthdr, intmask)
 
-#define	_INTHDR_ENTRY(entry, inthdr) 					   \
-asm(".text								\n"\
-"	.align 2							\n"\
-"	.global _"#entry"						\n"\
-"_"#entry ":								\n"\
-			/*  必要最小限のレジスタをスタックに待避  */	   \
-"	push.l	er0							\n"\
-"	push.l	er1							\n"\
-			/*  割込みネストカウンタのチェック 		*/ \
-"	mov.l	@__kernel_intnest, er0					\n"\
-"	mov.l	er0, er1   						\n"\
-				/*  割込みネストカウンタを +1 */	   \
-"	inc.l	#1, er0							\n"\
-"	mov.l	er0, @__kernel_intnest					\n"\
-				/* 割込み発生時のコンテキストを判定  	*/ \
-"	or.l	er1, er1   						\n"\
-				/* 多重割込みならジャンプ   		*/ \
-"	bne	_interrupt_from_int_"#inthdr"				\n"\
-				/*  個別ハードウェア割り込み禁止 */	   \
-"	jsr	@_"#inthdr"_disable_int					\n"\
-				/* スタック入れ替え元の			*/ \
-				/* タスクスタックポインタを保存        	*/ \
-"	mov.l	sp, er0							\n"\
-				/* 割込みスタックに切り替え		*/ \
-"	mov.l	#"str_STACKTOP", sp					\n"\
-				/* 割り込み許可				*/ \
-"	andc	#"str_H8INT_ENA_ALL", ccr				\n"\
-				/*  残りのレジスタを保存 */		   \
-"	mov.l	er2, @-er0						\n"\
-"	mov.l	er3, @-er0						\n"\
-"	mov.l	er4, @-er0						\n"\
-"	mov.l	er5, @-er0						\n"\
-"	mov.l	er6, @-er0						\n"\
-"	push.l	er0							\n"\
-"	jsr	@_"#inthdr"						\n"\
-				/* 割り込み禁止				*/ \
-"	orc	#"str_H8INT_DIS_ALL", ccr				\n"\
-				/*  個別ハードウェア割り込み許可 */	   \
-"	jsr	@_"#inthdr"_enable_int					\n"\
-				/* 割込みネストカウンタを-1 */		   \
-"	mov.l	@__kernel_intnest, er0				  	\n"\
-"	dec.l	#1, er0							\n"\
-"	mov.l	er0, @__kernel_intnest					\n"\
-				/* スタック切替え  			*/ \
-"	mov.l	@sp, sp							\n"\
-				/* reqflgのチェック                    	*/ \
-"       mov.l	@__kernel_reqflg, er0							\n"\
-			/* reqflgがFALSEならret_to_task_intに飛ぶ 	*/ \
-"	or.l	er0, er0						\n"\
-"	beq	_ret_to_task_int_"#inthdr"				\n"\
-				/*  reqflgをクリア  		      	*/ \
-"	sub.l	er0, er0						\n"\
-"       mov.l	er0, @__kernel_reqflg					\n"\
-				/*  ret_intへジャンプ  			*/ \
-"	jmp	@_kernel_ret_int					\n"\
-									   \
-									   \
-/*   多重割込みの処理 							*/ \
-/* 	割込み発生時のコンテキストを判別後、割り込み禁止		*/ \
-/* 	の状態でここに飛んでくる 					*/ \
-/* 	（割込みネストカウンタのインクリメントは済んでいる） 		*/ \
-									   \
-"_interrupt_from_int_"#inthdr":						\n"\
-				/*  個別ハードウェア割り込み禁止 */	   \
-"	jsr	@_"#inthdr"_disable_int					\n"\
-				/* 割り込み許可				*/ \
-"	andc	#"str_H8INT_ENA_ALL", ccr				\n"\
-				/*  残りのレジスタを保存	  	*/ \
-"	push.l	er2							\n"\
-"	push.l	er3							\n"\
-"	push.l	er4							\n"\
-"	push.l	er5							\n"\
-"	push.l	er6							\n"\
-"	jsr	@_"#inthdr"						\n"\
-				/* 割り込み禁止				*/ \
-"	orc	#"str_H8INT_DIS_ALL", ccr				\n"\
-				/*  個別ハードウェア割り込み許可 */	   \
-"	jsr	@_"#inthdr"_enable_int					\n"\
-				/* 割込みネストカウンタを -1 */		   \
-"	mov.l	@__kernel_intnest, er0				  	\n"\
-"	dec.l	#1, er0							\n"\
-"	mov.l	er0, @__kernel_intnest					\n"\
-									   \
-									   \
-/*   reqflgがFALSEの場合の処理 						*/ \
-									   \
-"_ret_to_task_int_"#inthdr": \n"					   \
-"	pop.l	er6	\n"	/*  レジスタ復元  			*/ \
-"	pop.l	er5	\n"						   \
-"	pop.l	er4	\n"						   \
-"	pop.l	er3	\n"						   \
-"	pop.l	er2	\n"						   \
-"	pop.l	er1	\n"						   \
-"	pop.l	er0	\n"						   \
-"	rte		\n"	/*  割込み元に戻る  			*/ \
+#define	_INTHDR_ENTRY2(entry, inthdr, intmask)	 \
+asm(".text					\n"\
+"	.align 2				\n"\
+"	.global "#entry"			\n"\
+#entry":					\n"\
+	/*  必要最小限のレジスタをスタックに待避  */\
+"	push.l	er0				\n"\
+"	push.l	er1				\n"\
+"	push.l	er2				\n"\
+"	push.l	er3				\n"\
+	/*  C言語ルーチンの先頭アドレス  */	 \
+"	mov.l   #_"#inthdr", er2		\n"\
+	/*  割込み許可時に設定する割込みマスクの値  */\
+"	mov.b   #"#intmask", r3l		\n"\
+"	jmp	@__kernel_common_interrupt_process"\
 )
 
 /*  _INTHDR_ENTRY()マクロ　ここまで  */
@@ -349,14 +314,17 @@ asm(".text								\n"\
  */
 
 #define INTHDR_ENTRY(inthdr)				\
-	extern void inthdr##_entry(void);		\
-	_INTHDR_ENTRY(inthdr##_entry, inthdr)
+	extern void INT_ENTRY(inthdr)(void) throw();	\
+	INTHDR_ENTRY2(INT_ENTRY_ASM(inthdr), inthdr, inthdr##_intmask)
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
  */
 
 #define	EXCHDR_ENTRY(exchdr)	INTHDR_ENTRY(exchdr)
+
+
+#ifndef _MACRO_ONLY
 
 /*
  *  CPU例外の発生した時のシステム状態の参照
@@ -369,9 +337,8 @@ asm(".text								\n"\
 Inline BOOL
 exc_sense_context(VP p_excinf)
 {
-	/* １と比較するのは、現在実行中のCPU例外の分 		*/
-	/*  割込みネストカウンタがインクリメントされているため 	*/
-	return(intnest > 1);
+        /* H8版では呼ばれない。 */
+        return(TRUE);
 }
 
 /*
@@ -381,7 +348,8 @@ exc_sense_context(VP p_excinf)
 Inline BOOL
 exc_sense_lock(VP p_excinf)
 {
-	return(*((UW *)p_excinf) & (((UW)H8INT_MASK_ALL) << 24));
+        /* H8版では呼ばれない。 */
+        return(TRUE);
 }
 
 /*
@@ -401,27 +369,26 @@ extern void	cpu_terminate(void);
  */
 
 typedef struct exc_stack {
-	VW	er0;
-	VW	er1;
-	VW	er2;
-	VW	er3;
-	VW	er4;
-	VW	er5;
-	VW	er6;
-	VW	pc;	/*  プログラム・カウンタ  	*/
+	UW	er0;
+	UW	er1;
+	UW	er2;
+	UW	er3;
+	UW	er4;
+	UW	er5;
+	UW	er6;
+	UW	pc;	/*  プログラム・カウンタ  	*/
 } EXCSTACK;
 
 /*
  * 未定義割込み発生時のエラー出力 (cpu_config.c, cpu_support.S)
  */
 
-extern void     cpu_experr(EXCSTACK *);
+extern void     cpu_experr(EXCSTACK *sp) throw();
 
 /*
  *  ターゲットシステムの文字出力
  *
- *  システムの低レベルの文字出力ルーチン．ROMモニタ呼出しで実現するこ
- *  とを想定している．
+ *  システムの低レベルの文字出力ルーチン．
  */
 
 extern void cpu_putc(char c);

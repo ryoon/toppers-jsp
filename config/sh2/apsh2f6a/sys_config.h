@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: sys_config.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -127,7 +127,7 @@ extern void	sys_putc(char c) throw();
  *　　　stubが管理している例外ベクタテーブルを参照する
  *  　　シリアルポートはstubが占有している
  */
-#define SIO_RESERVED
+//#define SIO_RESERVED
 
 #else /* GDB_STUB */
 /*

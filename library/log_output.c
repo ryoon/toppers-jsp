@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2004-2005 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: log_output.c,v 1.8 2004/06/15 13:07:44 hiro Exp $
+ *  @(#) $Id: log_output.c,v 1.10 2005/11/26 05:56:50 hiro Exp $
  */
 
 /*
@@ -54,11 +54,13 @@
 /*
  *  数値を文字列に変換
  */
+#define CONVERT_BUFLEN	((sizeof(_intptr_) * CHAR_BIT + 2) / 3)
+					/* _intptr_型の数値の最大文字数 */
 static void
 convert(unsigned _intptr_ val, unsigned int radix, const char *radchar,
 		int width, int minus, int padzero, void (*putc)(char))
 {
-	char	buf[12];
+	char	buf[CONVERT_BUFLEN];
 	int	i, j;
 
 	i = 0;
@@ -111,6 +113,9 @@ syslog_printf(const char *format, VP_INT *args, void (*putc)(char))
 		}
 		while ('0' <= c && c <= '9') {
 			width = width * 10 + c - '0';
+			c = *format++;
+		}
+		if (c == 'l') {
 			c = *format++;
 		}
 		switch (c) {

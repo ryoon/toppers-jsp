@@ -272,22 +272,32 @@ tpsIntPreWrap(void)
 	Asm("pushn %r15");
 #endif /* TPS_DAREA */
 
-	Asm("ld.w	%r2, %sp			");	/* スタックの切り替え、		*/
-	Asm("xld.w	%r3, _kernel_tps_IntNestCnt	");	/* 割り込みカウンタの更新、	*/
-	Asm("ld.w	%r1, [%r3]			");	/* 多重割り込みの許可を行う	*/
-	Asm("xld.w	%%r0, %0 - 8  " : : "g"(STACKTOP));
-	Asm("cmp	%r1, 0x00			");
-	Asm("jrne	0f				");
-	Asm("ld.w	%sp, %r0			");
-	Asm("0:						");
-	Asm("add	%r1, 1				");
-	Asm("ld.w	[%r3], %r1			");
-	Asm("ld.w	%r0, %psr			");
-	Asm("or		%r0, 0x10			");
-	Asm("ld.w	%psr, %r0			");
+#ifdef	__c33adv
+	Asm("pushs 	%sor				");
+#else	/* __c33adv */
 	Asm("ld.w	%r0, %ahr			");
 	Asm("ld.w	%r1, %alr			");
+#endif	/* __c33adv */
+
+	Asm("ld.w	%r2, %sp			");	/* スタックの切り替え、		*/
+	Asm("xld.w	%r3, _kernel_tps_IntNestCnt	");	/* 割り込みカウンタの更新、	*/
+	Asm("ld.w	%r5, [%r3]			");	/* 多重割り込みの許可を行う	*/
+	Asm("xld.w	%%r4, %0 - 8  " : : "g"(STACKTOP));
+	Asm("cmp	%r5, 0x00			");
+	Asm("jrne	0f				");
+	Asm("ld.w	%sp, %r4			");
+	Asm("0:						");
+	Asm("add	%r5, 1				");
+	Asm("ld.w	[%r3], %r5			");
+	Asm("ld.w	%r4, %psr			");
+	Asm("or		%r4, 0x10			");
+	Asm("ld.w	%psr, %r4			");
 	Asm("ld.w	%r6, %r2			");
+
+#ifdef	__c33adv						/* pushs命令によるスタック使用	*/
+	Asm("add	%r6, 24");				/* サイズを加算する		*/
+#endif	/* __c33adv */
+	
 #if TPS_DAREA_CNT == 4
 	Asm("add	%r6, 48");
 #elif TPS_DAREA_CNT == 3
@@ -305,15 +315,16 @@ tpsIntPreWrap(void)
 Inline void
 tpsIntPostWrap(void)
 {
+	Asm("ld.w	%r4, %psr		");	/* 割り込みをディセーブルする	*/
+	Asm("xand	%r4, 0xfffff0ff		");
+	Asm("xld.w	%%r5, %0"
+		: : "g"(TPS_CPULOCK_LEV << 8));
+	Asm("or		%r4, %r5		");
+	Asm("ld.w	%psr, %r4		");
+
 	Asm("ld.w	%r4, [%r3]		");	/* tps_IntNestCntを更新する	*/
 	Asm("sub	%r4, 1			");
 	Asm("ld.w	[%r3], %r4		");
-	Asm("ld.w	%r3, %psr		");	/* 割り込みをディセーブルする	*/
-	Asm("xand	%r3, 0xfffff0ff		");
-	Asm("xld.w	%%r5, %0"
-		: : "g"(TPS_CPULOCK_LEV << 8));
-	Asm("or		%r3, %r5		");
-	Asm("ld.w	%psr, %r3		");
 
 	Asm("ld.w	%sp, %r2		");	/* スタック領域を復元する	*/
 
@@ -324,8 +335,14 @@ tpsIntPostWrap(void)
 	Asm("cmp	%r3, 1			");	/* tps_IntNestCnt== 0でディス	  */
 	Asm("xjreq	_kernel_ret_int		");	/* パッチが発生していればジャンプ */
 	Asm("0:					");	/* する				  */
+
+#ifdef	__c33adv					/* 退避した特殊レジスタを復元する */
+	Asm("pops	%sor			");
+#else	/* __c33adv */
 	Asm("ld.w	%alr, %r1		");
 	Asm("ld.w	%ahr, %r0		");
+#endif	/* __c33adv */
+
 #if TPS_DAREA_CNT == 4
 	Asm("popn %r11");
 #elif TPS_DAREA_CNT == 3

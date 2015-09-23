@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: itron.h,v 1.15 2004/01/05 05:12:40 hiro Exp $
+ *  @(#) $Id: itron.h,v 1.16 2004/12/22 03:38:00 hiro Exp $
  */
 
 /*
@@ -227,7 +227,7 @@ typedef	INT		ER_UINT;	/* ER または UINT */
 #else /* _int8_ */
 #define	MERCD(ercd)		(((ercd) & 0x80) == 0 ? ((ercd) & 0xff) \
 							: ((ercd) | ~0xff))
-#define	SERCD(ercd)		((~(-1 >> 8)) | ((ercd) >> 8))
+#define	SERCD(ercd)		((~((~0) >> 8)) | ((ercd) >> 8))
 #endif /* _int8_ */
 
 #ifdef __cplusplus

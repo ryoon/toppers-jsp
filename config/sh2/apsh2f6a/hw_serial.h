@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_serial.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: hw_serial.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -48,19 +48,30 @@
 
 #include <s_services.h>
 #ifndef _MACRO_ONLY
-#ifdef GDB_STUB
-#include "sh7145sci0.h"
-#else	/*  GDB_STUB  */
-#include "sh7145sci1.h"
-#endif	/*  GDB_STUB  */
+#include "sh7145sci.h"
 #endif /* _MACRO_ONLY */
 
 /*
  *  SIOの割込みハンドラのベクタ番号
  */
-#define INHNO_SERIAL_IN	 RXI
-#define INHNO_SERIAL_OUT TXI
-#define INHNO_SERIAL_ERROR ERI
+#ifndef GDB_STUB
+
+#define INHNO_SERIAL_IN	 RXI1
+#define INHNO_SERIAL_OUT TXI1
+#define INHNO_SERIAL_ERROR ERI1
+#if TNUM_PORT >= 2
+#define INHNO_SERIAL2_IN	 RXI0
+#define INHNO_SERIAL2_OUT TXI0
+#define INHNO_SERIAL2_ERROR ERI0
+#endif /* TNUM_PORT >= 2 */
+
+#else /* GDB_STUB */
+
+#define INHNO_SERIAL_IN	 RXI0
+#define INHNO_SERIAL_OUT TXI0
+#define INHNO_SERIAL_ERROR ERI0
+
+#endif /* GDB_STUB */
 
 /*
  * SCIの割り込みレベル
@@ -68,11 +79,6 @@
  * 　送信も受信も同じレベルにしか設定できない。
  */
 #define LEVEL0		0			/*  割込み解除時のレベル  */
-#ifdef GDB_STUB
-#define SCI_SHIFT	4			/*  割込みレベル登録時のビットシフト  */
-#else	/*  GDB_STUB  */
-#define SCI_SHIFT	0			/*  割込みレベル登録時のビットシフト  */
-#endif	/*  GDB_STUB  */
 
 #ifndef _MACRO_ONLY
 
@@ -85,59 +91,69 @@
  *  シリアルI/Oポートのオープン
  */
 Inline SIOPCB *
-sio_opn_por(ID siopid, VP_INT exinf)
+sio_opn_por (ID siopid, VP_INT exinf)
 {
-	SIOPCB	*siopcb;
-	BOOL	openflag;
+	SIOPCB *siopcb;
+	BOOL openflag;
 
 	/*
 	 *  オープンしたポートがあるかを openflag に読んでおく．
 	 */
-	openflag = sh2sci_openflag();
+	openflag = sh2sci_openflag (siopid);
 
 	/*
 	 *  デバイス依存のオープン処理．
 	 */
-	siopcb = sh2sci_opn_por(siopid, exinf);
+	siopcb = sh2sci_opn_por (siopid, exinf);
 
 	/*
 	 *  割込みコントローラ依存
 	 *  　シリアルI/O割込みの割込みレベルを設定する
 	 */
 	if (!openflag) {
-		define_int_plevel (IPRF, SCI_INTLVL, SCI_SHIFT);
+		if ((siopcb->siopinib->reg_base) == 0xffff81c0)
+			define_int_plevel (IPRI, siopcb->siopinib->int_level, 12);
+		if ((siopcb->siopinib->reg_base) == 0xffff81a0)
+			define_int_plevel (IPRF, siopcb->siopinib->int_level, 4);
+		if ((siopcb->siopinib->reg_base) == 0xffff81b0)
+			define_int_plevel (IPRF, siopcb->siopinib->int_level, 0);
 	}
-	return(siopcb);
+	return (siopcb);
 }
 
 /*
  *  シリアルI/Oポートのクローズ
  */
 Inline void
-sio_cls_por(SIOPCB *siopcb)
+sio_cls_por (SIOPCB * siopcb)
 {
 	/*
 	 *  デバイス依存のクローズ処理．
 	 */
-	sh2sci_cls_por(siopcb);
+	sh2sci_cls_por (siopcb);
 
 	/*
 	 *  シリアルI/O割込みレベルを最低レベルにする
 	 */
-	define_int_plevel (IPRF, LEVEL0, SCI_SHIFT);
-
-	if (!sh2sci_openflag()) {
-		/*  すべてのポートがクローズされていれば  */
-		/*  シリアルデバイスへのクロック供給停止  */
-	}
+	if ((siopcb->siopinib->reg_base) == 0xffff81c0)
+		define_int_plevel (IPRI, LEVEL0, 12);
+	if ((siopcb->siopinib->reg_base) == 0xffff81a0)
+		define_int_plevel (IPRF, LEVEL0, 4);
+	if ((siopcb->siopinib->reg_base) == 0xffff81b0)
+		define_int_plevel (IPRF, LEVEL0, 0);
 }
 
 /*
  *  SIOの割込みハンドラ
  */
-#define	sio_handler_in	sh2sci_isr_in		/*  受信割込みハンドラ  */
-#define	sio_handler_out	sh2sci_isr_out		/*  送信割込みハンドラ  */
+#define	sio_handler_in	sh2sci_isr_in	/*  受信割込みハンドラ  */
+#define	sio_handler_out	sh2sci_isr_out	/*  送信割込みハンドラ  */
 #define	sio_handler_error sh2sci_isr_error	/*  受信エラー割込みハンドラ  */
+#if TNUM_PORT >= 2
+#define	sio_handler2_in		sh2sci_isr2_in	/*  受信割込みハンドラ  */
+#define	sio_handler2_out	sh2sci_isr2_out	/*  送信割込みハンドラ  */
+#define	sio_handler2_error	sh2sci_isr2_error	/*  受信エラー割込みハンドラ  */
+#endif /* TNUM_PORT >= 2 */
 
 /*
  *  シリアルI/Oポートへの文字送信

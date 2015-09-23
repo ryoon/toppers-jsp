@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2005 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -54,7 +54,7 @@ UINT _kernel_tic_nume = 1u ;
  *  プロセッサ依存の初期化
  */
 void
-cpu_initialize()
+cpu_initialize(void)
 {
                                 /*
                                  *  例外の許可
@@ -74,7 +74,7 @@ cpu_initialize()
  *  プロセッサ依存の終了処理
  */
 void
-cpu_terminate()
+cpu_terminate(void)
 {
                                 /*
                                  *  カーネルタイマーの停止

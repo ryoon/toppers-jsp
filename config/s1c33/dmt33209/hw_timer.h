@@ -68,6 +68,11 @@ hw_timer_initialize(void)
 	dis_int(INHNO_TIMER);
 
 	/*
+	 *  16ビットタイマ1B 割込み要因クリア
+	 */
+	(*(s1c33Intc_t *) S1C33_INTC_BASE).bIntFactor[2] |= 0x40;
+
+	/*
 	 *  16bitタイマ1設定
 	 *
 	 *  タイマクロックON  16分周  16ビットタイマ1B 周期 1ms

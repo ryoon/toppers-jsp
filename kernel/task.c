@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task.c,v 1.10 2004/05/18 07:10:57 hiro Exp $
+ *  @(#) $Id: task.c,v 1.11 2005/11/12 14:55:55 hiro Exp $
  */
 
 /*
@@ -42,7 +44,7 @@
 
 #include "jsp_kernel.h"
 #include "task.h"
-#include "cpu_context.h"
+#include <cpu_context.h>
 
 #ifdef __tskini
 
@@ -137,7 +139,7 @@ task_initialize()
 Inline UINT
 bitmap_search(UINT bitmap)
 {
-	static const VB search_table[] = { 0, 1, 0, 2, 0, 1, 0,
+	static const char search_table[] = { 0, 1, 0, 2, 0, 1, 0,
 					3, 0, 1, 0, 2, 0, 1, 0 };
 	INT	n = 0;
 

@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.12 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.16 2005/11/14 08:00:44 honda Exp $
  */
 
 /*
@@ -98,7 +98,7 @@ static FP exc_entries[NUM_EXC];
  *  プロセッサ依存の初期化
  */
 void
-cpu_initialize()
+cpu_initialize(void)
 {
 	/*
 	 *  タスクコンテキストでの割込みマスクの初期化
@@ -150,7 +150,7 @@ cpu_initialize()
  *  プロセッサ依存の終了処理
  */
 void
-cpu_terminate()
+cpu_terminate(void)
 {
 #ifdef KERNEL_HAS_A_VECTOR_TABLE
 	set_vbr(org_vbr);
@@ -169,7 +169,9 @@ define_exc(EXCNO excno, FP exchdr)
 	define_inh((INHNO)excno, exchdr);
 
 #ifdef SUPPORT_CPU_EXC_ENTRY_CHECK
-//	CHECK_PAR(num_exc < NUM_EXC);
+#if 0
+	CHECK_PAR(num_exc < NUM_EXC);
+#endif
 	exc_entries[num_exc++] = exchdr;
 #endif /* SUPPORT_CPU_EXC_ENTRY_CHECK */
 }
@@ -310,8 +312,8 @@ void cpu_experr(EXCSTACK *sp)
  *  使った方が効率が良い可能性がある．
  *
  */
-VP
-_dummy_memcpy(VP dest, VP src, UINT len)
+void *
+_dummy_memcpy(void *dest, const void *src, size_t len)
 {
 	VB	*d = (VB *)dest;
 	VB	*s = (VB *)src;

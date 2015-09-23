@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.12 2003/06/19 06:33:16 hiro Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.13 2005/11/12 14:58:24 hiro Exp $
  */
 
 /*
@@ -65,46 +67,6 @@ typedef	UINT	IPM;		/* 割込みマスク */
 
 extern ER	chg_ipm(IPM ipm) throw();
 extern ER	get_ipm(IPM *p_ipm) throw();
-
-/*
- *  現在の割込みマスクの読出し
- */
-Inline UH
-_current_intmask_()
-{
-	UH	sr;
-
-	Asm("move.w %%sr, %0" : "=g"(sr));
-	return(sr & 0x0700);
-}
-
-/*
- *  NMIを除くすべての割込みを禁止
- */
-Inline void
-_disint_()
-{
-	Asm("or.w #0x0700, %sr");
-}
-
-/*
- *  割込みマスクの設定
- */
-Inline void
-_set_intmask_(UH intmask)
-{
-	UH	sr;
-
-	Asm("move.w %%sr, %0" : "=g"(sr));
-	Asm("move.w %0, %%sr" : : "g"((sr & ~0x0700) | intmask));
-}
-
-/*
- *  割込みロック状態の制御
- */
-#define	SIL_PRE_LOC	UH _intmask_ = _current_intmask_()
-#define	SIL_LOC_INT()	_disint_()
-#define	SIL_UNL_INT()	_set_intmask_(_intmask_)
 
 /*
  *  微少時間待ち

@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task.h,v 1.9 2003/06/04 01:46:16 hiro Exp $
+ *  @(#) $Id: task.h,v 1.10 2005/11/15 06:42:04 hiro Exp $
  */
 
 /*
@@ -56,9 +58,10 @@
  *  タスク状態の内部表現
  *
  *  TCB 中のタスク状態では，実行状態（RUNNING）と実行可能状態（READY）
- *  は区別しない．二重待ち状態は，(TS_WAITING | TS_SUSPENDED) で表す．
- *  TS_WAIT_???? は，待ち状態に伴う付属状態を表し，待ち状態（二重待ち
- *  状態を含む）の場合にのみ設定される．
+ *  は区別しない．両状態を総称して，実行できる状態（RUNNABLE）と呼ぶ．
+ *  二重待ち状態は，(TS_WAITING | TS_SUSPENDED) で表す．TS_WAIT_???? 
+ *  は，待ち状態に伴う付属状態を表し，待ち状態（二重待ち状態を含む）の
+ *  場合にのみ設定される．
  */
 #define	TS_DORMANT	0x00u	/* 休止状態 */
 #define	TS_RUNNABLE	0x01u	/* 実行できる状態 */
@@ -232,9 +235,13 @@ extern BOOL	enadsp;
 /*
  *  レディキュー
  *
- *  レディキューは，実行できる状態のタスクを管理するためのキューで，優
- *  先度ごとのタスクキューで構成されている．タスクのTCBは，該当する優
- *  先度のキューに登録される．
+ *  レディキューは，実行できる状態のタスクを管理するためのキューである．
+ *  実行状態のタスクも管理しているため，レディ（実行可能）キューという
+ *  名称は正確ではないが，レディキューという名称が定着しているため，こ
+ *  の名称で呼ぶことにする．
+ *
+ *  レディキューは，優先度ごとのタスクキューで構成されている．タスクの
+ *  TCBは，該当する優先度のキューに登録される．
  */
 extern QUEUE	ready_queue[TNUM_TPRI];
 

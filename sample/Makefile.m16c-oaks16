@@ -35,7 +35,7 @@
 #  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 #  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile.m16c-oaks16,v 1.1 2004/05/27 12:20:36 honda Exp $
+#  @(#) $Id: Makefile.m16c-oaks16,v 1.2 2005/12/06 03:06:03 honda Exp $
 # 
 
 #
@@ -300,7 +300,7 @@ realclean: cleandep clean
 #  kernel_cfg.c は，アプリケーションプログラム用，システムサービス用，
 #  カーネル用のすべてのオプションを付けてコンパイルする．
 #
-KERNEL_CFG_CFLAG = $(UTASK_CFLAGS) $(STASK_CFLAGS) $(KERNEL_CFLAGS)
+KERNEL_CFG_CFLAGS = $(UTASK_CFLAGS) $(STASK_CFLAGS) $(KERNEL_CFLAGS)
 
 kernel_cfg.r30: kernel_cfg.c
 	$(CC) -c $(CFLAGS) $(KERNEL_CFG_CFLAGS) $(<D)\$(<F)

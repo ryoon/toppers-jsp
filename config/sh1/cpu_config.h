@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.14 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.18 2005/11/14 08:00:44 honda Exp $
  */
 
 /*
@@ -120,7 +120,7 @@ typedef struct task_context_block {
  *  現在の割込みマスクの読出し
  */
 Inline UW
-current_intmask()
+current_intmask(void)
 {
 	return(current_sr() & 0x000000f0u);
 }
@@ -152,13 +152,13 @@ extern UW	intnest;
  *  戻ったときにはコンテキストも元に戻っている
  */
 Inline BOOL
-sense_context()
+sense_context(void)
 {
 	return(intnest > 0);
 }
 
 Inline BOOL
-sense_lock()
+sense_lock(void)
 {
 	return(current_intmask() == (MAX_IPM << 4));
 }
@@ -178,13 +178,13 @@ extern UW	task_intmask;	/* タスクコンテキストでの割込みマスク */
 #endif /* SUPPORT_CHG_IPM */
 
 Inline void
-t_lock_cpu()
+t_lock_cpu(viod)
 {
 	disint();		/*  cpu_insn.h  */
 }
 
 Inline void
-t_unlock_cpu()
+t_unlock_cpu(void)
 {
 #ifdef SUPPORT_CHG_IPM
 	/*
@@ -204,7 +204,7 @@ t_unlock_cpu()
 extern UW	int_intmask;	/* 非タスクコンテキストでの割込みマスク */
 
 Inline void
-i_lock_cpu()
+i_lock_cpu(void)
 {
 	UW	intmask;
 
@@ -219,7 +219,7 @@ i_lock_cpu()
 }
 
 Inline void
-i_unlock_cpu()
+i_unlock_cpu(void)
 {
 	set_intmask(int_intmask);
 }
@@ -274,9 +274,9 @@ define_inh(INHNO inhno, FP inthdr)
 {
 #ifdef GDB_STUB
 	/*  スタブ呼び出し  */
-	Asm("mov   #0x08,r0
-	     mov   %0,r4
-	     mov   %1,r5
+	Asm("mov   #0x08,r0;	\
+	     mov   %0,r4;	\
+	     mov   %1,r5;	\
 	     trapa #0x21"
                : /* no output */
                : "r"(inhno),"r"(inthdr)

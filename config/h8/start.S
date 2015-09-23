@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,15 +37,15 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.10 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: start.S,v 1.16 2005/11/07 01:49:53 honda Exp $
  */
 #define _MACRO_ONLY
 #include <t_config.h>
 	
 /*
  *   H8用スタートアップモジュール
- *   カーネルはアプリケーションとリンクして使用する
- *   だけなのでJSPカーネルのみ使用する。	
+ *   　カーネルはアプリケーションとリンクして使用するので
+ *   　このスタートアップモジュールはJSPカーネルでのみ使用する。	
  */
 	.h8300h
 
@@ -56,11 +56,15 @@
 _start:
 
 	/*
-	 * タスク独立のスタックをSTACKTOPに初期化する
-	 * STACKTOPは、sys_config.hで定義
+	 * 非タスクコンテキスト用スタックをSTACKTOPに初期化する
+	 * 　（STACKTOPは、sys_config.hで定義）
+	 * _hardware_init_hookを呼び出すにはSTACKTOPが指すRAM
+	 * 領域がアクセス可能になっている必要がある。（下記参照）
 	 */
-
 	mov.l	#STACKTOP, sp
+	
+	/*  割込み全禁止  */
+	orc.b  #H8INT_DIS_ALL, ccr
 
 	/*
 	 *  _hardware_init_hook を呼び出す。(0でない場合)
@@ -71,18 +75,23 @@ _start:
 	 *  バスコントローラの初期化等を行う。
 	 *  sys_support.S 内で hardware_init_hook を定義してい
 	 *  る．
+	 *  
+	 *  hardware_init_hookではバス・ステートコントローラの
+	 *  初期化を行うので、そのルーチンを呼び出すのにRAMを
+	 *  スタック領域に使用するのはおかしいが、
+         *　ここのサブルーチン呼び出しでは、
+         *　　・初期状態のままアクセスできる内蔵RAM　または
+         *　　・モニタによりアクセスできる状態にある外部RAM
+         *　をスタック領域に使用している。
 	 */
-
 start_0:
-	mov.l  	@_hardware_init_hook_k, er0
-	or.l	er0, er0
+	mov.l  	#_hardware_init_hook, er0
 	beq	start_1
 	jsr	@er0
 	
 	/*
          * bssセクションをクリア
 	 */
-
 start_1:		
 	mov.l	#__bss_start, er0
 	mov.l	#_end, er1
@@ -99,7 +108,6 @@ start_2:
 	 *  __idata_start から __idata_end までを，__data_start 以降に
 	 *  コピーする．
 	 */
-
 	mov.l	#__idata_start, er0
 	mov.l	#__idata_end, er1
 	mov.l	#__data_start, er2
@@ -117,21 +125,13 @@ start_4:
 	 *  理がある場合は，software_init_hook という関数を用意すれば
 	 *  よい．
 	 */
-
-	mov.l	@_software_init_hook_k, er0
-	or.l	er0, er0
+	mov.l	#_software_init_hook, er0
 	beq	start_6		
 	jsr	@er0
 		
 	/*	
          *  カーネルを起動する
 	 */
-
 start_6:
 	jmp	@_kernel_start
 
-	.align 4
-_hardware_init_hook_k:	
-	.long   _hardware_init_hook
-_software_init_hook_k:	
-	.long   _software_init_hook

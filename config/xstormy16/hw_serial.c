@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2005 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -278,7 +278,7 @@ void sio_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 /*
  *  デフォルトの送信可能コールバック
  */
-__asm__( ".weak sio_ierdy_snd" ) ;
+void sio_ierdy_snd(VP_INT exinf) __attribute__((__weak__)) ;
 void sio_ierdy_snd(VP_INT exinf)
 {
 }
@@ -286,7 +286,7 @@ void sio_ierdy_snd(VP_INT exinf)
 /*
  *  デフォルトの受信通知コールバック
  */
-__asm__( ".weak sio_ierdy_rcv" ) ;
+void sio_ierdy_rcv(VP_INT exinf) __attribute__((__weak__)) ;
 void sio_ierdy_rcv(VP_INT exinf)
 {
 }

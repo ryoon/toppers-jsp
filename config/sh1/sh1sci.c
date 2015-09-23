@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sh1sci.c,v 1.8 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: sh1sci.c,v 1.12 2005/11/14 08:00:44 honda Exp $
  */
 
 /*
@@ -105,8 +105,8 @@
 /*  シリアルモードジスタSMRの各ビット  */
 				/* コミュニケーションモード 	*/
 #define SMR_CA_CLOCK	0x80u	/* 	クロック同期式 		*/
-#define SMR_CA_ASYNC	0x00u	/* 	調歩同期式通 		*/
-	/*  調歩同期式通信方：Asynchronous Communication method */
+#define SMR_CA_ASYNC	0x00u	/* 	調歩同期式 		*/
+	/*  調歩同期式通信：Asynchronous Communication method	*/
 				/* キャラクタレングス 		*/
 #define SMR_CHR8	0x00u	/* 	8ビット 		*/
 #define SMR_CHR7	0x40u	/* 	7ビット 		*/
@@ -300,7 +300,8 @@
 #define SH1SCI_DELAY 	27000
 
 #else	/*  CONFIG_BAUD  */
-	ここでコンパイルエラー（サポート外のボーレート）
+
+#error unsupported baud rate.
 
 #endif 	/*  CONFIG_BAUD  */
 
@@ -382,7 +383,7 @@ sh1sci_putchar(SIOPCB *siopcb, char c)
  *  SIOドライバの初期化ルーチン
  */
 void
-sh1sci_initialize()
+sh1sci_initialize(void)
 {
 	SIOPCB	*siopcb;
 	UINT	i;
@@ -497,7 +498,7 @@ INT
 sh1sci_rcv_chr(SIOPCB *siopcb)
 {
 	if (sh1sci_getready(siopcb)) {
-		return((INT)(UB) sh1sci_getchar(siopcb));
+		return((INT)(UB)sh1sci_getchar(siopcb));
 		/*  (UB)でキャストするのはゼロ拡張にするため  */
 	}
 	return(-1);

@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN    
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: nios2.c,v 1.3 2004/09/09 07:19:00 honda Exp $
+ *  @(#) $Id: nios2.c,v 1.6 2005/07/17 14:24:04 honda Exp $
  */
 
 /*
@@ -63,6 +63,14 @@ SIOPCB  siopcb_table[TNUM_SIOP];
 #define INDEX_SIOP(siopid)  ((UINT)((siopid) - 1))
 #define get_siopcb(siopid)  (&(siopcb_table[INDEX_SIOP(siopid)]))
 
+#ifdef USE_JTAG_UART
+/*
+ *  JTAG_UART はステータスとデータを同時に取得するため，ステータスを
+ *  チェックするとデータを読み込んでしまう．そのため，uart_getready()
+ *  を実行した後のデータを入れる．  
+ */ 
+UB jtag_uart_buf = -1;
+#endif /* USE_JTAG_UART */
 
 /*
  * 文字を受信したか?                                                       
@@ -70,9 +78,14 @@ SIOPCB  siopcb_table[TNUM_SIOP];
 Inline BOOL
 uart_getready(SIOPCB *siopcb)
 {
-    return((sil_rew_mem((VP)UART_STATUS) &
-            UART_STATUS_RRDY) != 0);
-
+#ifndef USE_JTAG_UART
+	return((sil_rew_mem((VP)UART_STATUS) &
+			UART_STATUS_RRDY) != 0);
+#else
+	UW tmp = sil_rew_mem((VP)JTAG_UART_DATA);
+	jtag_uart_buf = (UB)tmp;	
+	return ((tmp & JTAG_UART_DATA_RVALID) != 0);
+#endif /* USE_JTAG_UART	*/	
 }
 
 /*                                                                             
@@ -81,7 +94,12 @@ uart_getready(SIOPCB *siopcb)
 Inline BOOL
 uart_putready(SIOPCB *siopcb)
 {
-  return((sil_rew_mem((VP)UART_STATUS) & UART_STATUS_TRDY) != 0);
+#ifndef USE_JTAG_UART		
+	return((sil_rew_mem((VP)UART_STATUS) & UART_STATUS_TRDY) != 0);
+#else
+	return((sil_rew_mem(
+		(VP)JTAG_UART_CONTROL) & JTAG_UART_CONTROL_WSAPCE) > 0);
+#endif /* USE_JTAG_UART	*/
 }
 
 /*                                                                             
@@ -90,7 +108,11 @@ uart_putready(SIOPCB *siopcb)
 Inline UB
 uart_getchar(SIOPCB *siopcb)
 {
-    return((UB)(sil_rew_mem((VP)UART_RXDATA)));
+#ifndef USE_JTAG_UART
+	return((UB)(sil_rew_mem((VP)UART_RXDATA)));
+#else
+	return((UB)(sil_rew_mem((VP)JTAG_UART_DATA)));
+#endif /* USE_JTAG_UART	*/
 }
 
 /*                                                                            
@@ -99,7 +121,11 @@ uart_getchar(SIOPCB *siopcb)
 Inline void
 uart_putchar(SIOPCB *siopcb, UB c)
 {
-    sil_wrw_mem((VP)UART_TXDATA, c);
+#ifndef USE_JTAG_UART
+	sil_wrw_mem((VP)UART_TXDATA, c);
+#else
+	sil_wrw_mem((VP)JTAG_UART_DATA,c);
+#endif /* USE_JTAG_UART	*/
 }
 
 /*
@@ -111,8 +137,13 @@ uart_putchar(SIOPCB *siopcb, UB c)
 Inline void
 uart_enable_send(SIOPCB *siopcb)
 {
-    sil_wrw_mem((VP)UART_CONTROL,
-                sil_rew_mem((VP)UART_CONTROL)|UART_CONTROL_ITRD);
+#ifndef USE_JTAG_UART
+	sil_wrw_mem((VP)UART_CONTROL,
+				sil_rew_mem((VP)UART_CONTROL)|UART_CONTROL_ITRD);
+#else
+	sil_wrw_mem((VP)JTAG_UART_CONTROL,
+				sil_rew_mem((VP)JTAG_UART_CONTROL)|JTAG_UART_CONTROL_WIE);
+#endif /* USE_JTAG_UART	*/	
 }
 
 /*                                                                             
@@ -121,8 +152,13 @@ uart_enable_send(SIOPCB *siopcb)
 Inline void
 uart_disable_send(SIOPCB *siopcb)
 {
-    sil_wrw_mem((VP)UART_CONTROL,
-                sil_rew_mem((VP)UART_CONTROL)&~UART_CONTROL_ITRD);
+#ifndef USE_JTAG_UART
+	sil_wrw_mem((VP)UART_CONTROL,
+				sil_rew_mem((VP)UART_CONTROL)&~UART_CONTROL_ITRD);
+#else
+	sil_wrw_mem((VP)JTAG_UART_CONTROL,
+				sil_rew_mem((VP)JTAG_UART_CONTROL)&~JTAG_UART_CONTROL_WIE);
+#endif /* USE_JTAG_UART	*/
 }
 
 /*
@@ -134,8 +170,13 @@ uart_disable_send(SIOPCB *siopcb)
 Inline void
 uart_enable_rcv(SIOPCB *siopcb)
 {
-    sil_wrw_mem((VP)UART_CONTROL,
-                sil_rew_mem((VP)UART_CONTROL)|UART_STATUS_RRDY);
+#ifndef USE_JTAG_UART
+	sil_wrw_mem((VP)UART_CONTROL,
+				sil_rew_mem((VP)UART_CONTROL)|UART_STATUS_RRDY);
+#else
+	sil_wrw_mem((VP)JTAG_UART_CONTROL,
+				sil_rew_mem((VP)JTAG_UART_CONTROL)|JTAG_UART_CONTROL_RIE);
+#endif /* USE_JTAG_UART	*/
 }
 
 /*                                                                             
@@ -144,8 +185,13 @@ uart_enable_rcv(SIOPCB *siopcb)
 Inline void
 uart_disable_rcv(SIOPCB *siopcb)
 {
-    sil_wrw_mem((VP)UART_CONTROL,
-                sil_rew_mem((VP)UART_CONTROL)&~UART_STATUS_RRDY);
+#ifndef USE_JTAG_UART	
+	sil_wrw_mem((VP)UART_CONTROL,
+				sil_rew_mem((VP)UART_CONTROL)&~UART_STATUS_RRDY);
+#else
+	sil_wrw_mem((VP)JTAG_UART_CONTROL,
+				sil_rew_mem((VP)JTAG_UART_CONTROL)&~JTAG_UART_CONTROL_RIE);
+#endif /* USE_JTAG_UART	*/	
 }
 
 
@@ -179,9 +225,7 @@ uart_opn_por(ID siopid, VP_INT exinf){
     siopcb = get_siopcb(siopid);
     siopinib = siopcb->siopinib;
 
-    /*
-     * 
-     */
+#ifndef USE_JTAG_UART		
 //    sil_wrw_mem(UART_DIVISOR, UART_DIVISOR_VAL);
     sil_wrw_mem((VP)UART_STATUS, 0x00);
     
@@ -189,7 +233,10 @@ uart_opn_por(ID siopid, VP_INT exinf){
      *  受信割り込み許可
      */
     sil_wrw_mem((VP)UART_CONTROL, UART_STATUS_RRDY);
-
+#else
+	sil_wrw_mem((VP)JTAG_UART_CONTROL,JTAG_UART_CONTROL_RIE);
+#endif /* USE_JTAG_UART	*/
+	
     siopcb->exinf = exinf;
     siopcb->getready = siopcb->putready = FALSE;
     siopcb->openflag = TRUE;
@@ -200,8 +247,12 @@ uart_opn_por(ID siopid, VP_INT exinf){
 
 void
 uart_cls_por(SIOPCB *siopcb){
+#ifndef USE_JTAG_UART	
     /* 割込み禁止 */
-    sil_wrw_mem((VP)UART_CONTROL, 0x00);    
+    sil_wrw_mem((VP)UART_CONTROL, 0x00);
+#else
+	sil_wrw_mem((VP)JTAG_UART_CONTROL,0x00);
+#endif /* USE_JTAG_UART	*/		
     siopcb->openflag = FALSE;
     siopcb->sendflag = FALSE;
 }
@@ -221,17 +272,27 @@ uart_snd_chr(SIOPCB *siopcb, INT chr)
     return(FALSE);
 }
 
-
 /*
  *  シリアルI/Oポートからの文字受信
  */
 INT
 uart_rcv_chr(SIOPCB *siopcb)
 {
-    if (uart_getready(siopcb)) {
-        return((INT)(UB) uart_getchar(siopcb));
-    }
-    return(-1);
+#ifndef USE_JTAG_UART
+	if (uart_getready(siopcb)) {
+		return((INT)(UB) uart_getchar(siopcb));
+	}
+	return(-1);
+#else
+	UB tmp;
+	
+	if (jtag_uart_buf != -1) {
+		tmp = jtag_uart_buf;
+		jtag_uart_buf = -1;
+		return tmp;
+	}
+	return(-1);
+#endif /* USE_JTAG_UART	*/	
 }
 
 

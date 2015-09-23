@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2004-2005 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: vasyslog.c,v 1.6 2004/05/18 07:16:54 hiro Exp $
+ *  @(#) $Id: vasyslog.c,v 1.7 2005/11/24 11:46:02 hiro Exp $
  */
 
 /*
@@ -52,6 +52,7 @@ syslog(UINT prio, const char *format, ...)
 	va_list	ap;
 	int	i;
 	int	c;
+	BOOL	lflag;
 
 	log.logtype = LOG_TYPE_COMMENT;
 	log.loginfo[0] = (VP_INT) format;
@@ -63,18 +64,27 @@ syslog(UINT prio, const char *format, ...)
 			continue;
 		}
 
+		lflag = FALSE;
 		c = *format++;
 		while ('0' <= c && c <= '9') {
 			c = *format++;
 		}
+		if (c == 'l') {
+			lflag = TRUE;
+			c = *format++;
+		}
 		switch (c) {
 		case 'd':
-			log.loginfo[i++] = (VP_INT) va_arg(ap, int);
+			log.loginfo[i++] = lflag ?
+					(VP_INT) va_arg(ap, long) :
+					(VP_INT) va_arg(ap, int);
 			break;
 		case 'u':
 		case 'x':
 		case 'X':
-			log.loginfo[i++] = (VP_INT) va_arg(ap, unsigned int);
+			log.loginfo[i++] = lflag ?
+					(VP_INT) va_arg(ap, unsigned long) :
+					(VP_INT) va_arg(ap, unsigned int);
 			break;
 		case 'p':
 			log.loginfo[i++] = (VP_INT) va_arg(ap, void *);

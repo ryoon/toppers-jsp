@@ -36,16 +36,13 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: sys_config.c,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 #include "jsp_kernel.h"
 #include <sil.h>
-#ifdef GDB_STUB
-#include "sh7145sci0.h"
-#else	/*  GDB_STUB  */
-#include "sh7145sci1.h"
-#endif	/*  GDB_STUB  */
+#include <s_services.h>
+#include "sh7145sci.h"
 
 /*
  *  ターゲットシステム依存の初期化
@@ -53,36 +50,48 @@
 /*
  *  シリアルI/Oポートの初期化 banner出力のためカーネルの初期化と無関係に行う
  */
-Inline void
-Sci_Initialize ()
-{
-#ifndef GDB_STUB
-	sil_wrh_mem (PACRL2, sil_reh_mem (PACRL2) | (0x0100 | 0x0040));
-#else	/*  GDB_STUB  */
-	sil_wrh_mem (PACRL2, sil_reh_mem (PACRL2) | (0x0004 | 0x0001));
-#endif	/*  GDB_STUB  */
-	sil_wrb_mem (SCI_SDCR,0xf0);
-	sil_wrb_mem (SCI_SCR,0x00);
-	sil_wrb_mem (SCI_SMR, 0x00);
-	sil_wrb_mem (SCI_BRR, (VB) BRR);
-	sil_dly_nse (sh2sci_DELAY);
-	sil_dly_nse (sh2sci_DELAY);
-	sil_wrb_mem (SCI_SSR, sil_reb_mem (SCI_SSR) & ~(SSR_ORER | SSR_FER |SSR_PER));
-	sil_wrb_mem (SCI_SCR, (VB) (SCI_RIE | SCI_TE | SCI_RE));
-}
-
 void
-sys_initialize()
+sys_initialize ()
 {
-	Sci_Initialize ();
+	SIOPCB *siopcb;
 
+	/* 使用する周辺機器はここで有効にしておく。 */
+	/*  SCIデータ入出力ポートの設定  */
+
+#ifndef GDB_STUB
+
+	/* SCI1 */
+	sil_wrh_mem (MSTCR1, (VH) ((VH) sil_reh_mem (MSTCR1) & ~0x0002));
+	sil_wrh_mem (PACRL2, sil_reh_mem (PACRL2) | (PFC_TXD1 | PFC_RXD1));
+#if TNUM_PORT >=2
+	/* SCI0 */
+	sil_wrh_mem (MSTCR1, (VH) ((VH) sil_reh_mem (MSTCR1) & ~0x0001));
+	sil_wrh_mem (PACRL2, sil_reh_mem (PACRL2) | (PFC_TXD0 | PFC_RXD0));
+#endif /*TNUM_PORT >=2 */
+
+#else /* GDB_STUB */
+
+	/* SCI0 */
+	sil_wrh_mem (MSTCR1, (VH) ((VH) sil_reh_mem (MSTCR1) & ~0x0001));
+	sil_wrh_mem (PACRL2, sil_reh_mem (PACRL2) | (PFC_TXD0 | PFC_RXD0));
+
+#endif /* GDB_STUB */
+
+	/* CMT0 */
+	sil_wrh_mem (MSTCR2, (VH) ((VH) sil_reh_mem (MSTCR2) & ~0x1000));
+	/*
+	 *  デバイス依存のオープン処理．
+	 */
+	/*バナー出力するため */
+	sh2sci_initialize();
+	siopcb = sh2sci_opn_por (LOGTASK_PORTID, 0);
 }
 
 /*
  *  ターゲットシステムの終了
  */
 void
-sys_exit()
+sys_exit ()
 {
 	sh2_exit ();
 }
@@ -91,21 +100,20 @@ sys_exit()
  *  ターゲットシステムの文字出力
  */
 void
-sys_putc(char c)
+sys_putc (char c)
 {
 	if (c == '\n') {
-		sh2_putc ('\r');
+		sh2_putc (LOGTASK_PORTID, '\r');
 	}
-	sh2_putc (c);
+	sh2_putc (LOGTASK_PORTID, c);
 }
 
 /* ハードウェアの設定 */
+/* ここではバスの設定のみ行う。周辺機器の設定はsys_initializeで行う。 */
 #ifndef GDB_STUB
 void
 hardware_init_hook (void)
 {
-	sil_wrh_mem (MSTCR1, (VH)((VH)sil_reh_mem(MSTCR1)& ~0x0002));
-	sil_wrh_mem (MSTCR2, (VH)((VH)sil_reh_mem(MSTCR2)& ~0x1000));
 	sil_wrh_mem (BCR1, 0x202f);
 	sil_wrh_mem (BCR2, 0x5500);
 	sil_wrh_mem (WCR1, 0x0010);
@@ -123,15 +131,10 @@ hardware_init_hook (void)
 	sil_wrh_mem (PECRL2, 0x0000);
 	sil_wrh_mem (PAIORL, 0x87e7);
 	sil_wrh_mem (PBIOR, 0x023c);
-	sil_wrh_mem (PEIORL, 0x8000);
 }
-#else	/*  GDB_STUB  */
+#else /*  GDB_STUB  */
 void
 hardware_init_hook (void)
 {
-	sil_wrh_mem (MSTCR1, (VH)((VH)sil_reh_mem(MSTCR1)& ~0x0001));
-	sil_wrh_mem (MSTCR2, (VH)((VH)sil_reh_mem(MSTCR2)& ~0x1000));
-	sil_wrh_mem (PEIORL, 0x8000);
 }
-#endif	/*  GDB_STUB  */
-
+#endif /*  GDB_STUB  */

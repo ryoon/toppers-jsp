@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,17 +37,31 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.9 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.15 2005/11/07 01:49:53 honda Exp $
+ */
+
+/*
+ *	プロセッサに依存する定義（H8用）
+ *
+ *  このインクルードファイルは，kernel.h と sil.h でインクルードされる．
+ *  他のファイルから直接インクルードすることはない．このファイルをイン
+ *  クルードする前に，t_stddef.h と itron.h がインクルードされるので，
+ *  それらに依存してもよい．
  */
 
 #ifndef _CPU_DEFS_H_
 #define _CPU_DEFS_H_
 
-/*
- *  プロセッサに依存する定義
- */
-
+#include <h8.h>		/*  IPM_LEVEL0,1,2の定義  */
 #define H8
+
+/* カーネル起動時のメッセージ */
+#define COPYRIGHT_CPU \
+"Copyright (C) 2001-2005 by Industrial Technology Institute,\n" \
+"                            Miyagi Prefectural Government, JAPAN\n" \
+"Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering\n" \
+"                 Tomakomai National College of Technology, JAPAN\n" \
+"Copyright (C) 2003-2004 by Katsuhiro Amano\n"
 
 /*
  *  タイムティックの定義
@@ -56,8 +70,6 @@
 #define	TIC_NUME	1		/* タイムティックの周期の分子 */
 #define	TIC_DENO	1		/* タイムティックの周期の分母 */
 
-#define	STACK_SIZE	1024		/* タスクのスタックサイズ */
-
 /*
  *  CPU のバイト順に関する定義
  */
@@ -65,23 +77,51 @@
 #define SIL_ENDIAN		SIL_ENDIAN_BIG
 
 #ifndef _MACRO_ONLY
-
 typedef	UINT	INHNO;			/* 割込みハンドラ番号 */
 typedef	UINT	EXCNO;			/* CPU例外ハンドラ番号 */
+#endif /* _MACRO_ONLY */
 
 /*
  *  ターゲットシステム依存のサービスコール
+ *
+ * cpu_defs.hとsys_defs.hをインクルードする順番の関係で
+ * SUPPORT_CHG_IPMマクロやSUPPORT_VXGET_TIMマクロでは囲まない
+ * （_MACRO_ONLYマクロで囲めば、十分）
  */
 
-   /*
-    * cpu_defs.hとsys_defs.hをインクルードする順番の
-    * 関係でSUPPORT_VXGET_TIMマクロでは囲まない
-    * （_MACRO_ONLYマクロで囲めば、十分）
-   */
+/*
+ *  割込みマスクの型と割込みマスクの変更／参照
+ */
+#ifndef _MACRO_ONLY
+typedef UB              IPM;            /* 割込みマスク */
 
-typedef	UD  SYSUTIM;	/* 性能評価用システム時刻 */
+extern ER       chg_ipm(IPM ipm) throw();
+extern ER       get_ipm(IPM *p_ipm) throw();
 
-extern ER   vxget_tim(SYSUTIM *pk_sysutim);
+
+/*
+ *  プライオリティレベル設定用のデータ構造
+ */
+typedef struct {
+        UB *ipr;        /* 設定するIPRレジスタの番地 */
+        UB bit;         /* IPRレジスタの該当するビット番号 */
+        IPM ipm;        /* 設定する割込みレベル */
+                        /* IPM_LEVEL0,IPM_LEVEL1のいずれか */
+} IRC;                  /* IRC:Interrupt Request Controller */
+
+
+/*
+ *  性能評価用システム時刻計測機能
+ */
+
+/* 性能評価用システム時刻 */
+#ifdef _int64_		/*  64ビット整数が扱える  */
+typedef	UD  SYSUTIM;
+#else 	/*  _int64_  */
+typedef	UW  SYSUTIM;
+#endif	/*  _int64_  */
+
+extern ER   vxget_tim(SYSUTIM *pk_sysutim) throw();
 
 /*
  *  システムの中断処理
@@ -92,7 +132,7 @@ kernel_abort (void)
 {
 	while (1)
 		;
-	}
+}
 
 #endif /* _MACRO_ONLY */
 

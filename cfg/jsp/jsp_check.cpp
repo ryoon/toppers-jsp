@@ -33,10 +33,10 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: jsp_check.cpp,v 1.24 2003/12/19 15:31:28 takayuki Exp $
+ *  @(#) $Id: jsp_check.cpp,v 1.25 2005/07/06 01:29:21 honda Exp $
  */
 
-// $Header: /home/CVS/configurator/jsp/jsp_check.cpp,v 1.24 2003/12/19 15:31:28 takayuki Exp $
+// $Header: /home/CVS/configurator/jsp/jsp_check.cpp,v 1.25 2005/07/06 01:29:21 honda Exp $
 
 #include "base/defs.h"
 #include "jsp/jsp_defs.h"
@@ -588,7 +588,7 @@ bool ConfigurationChecker::check_interrupt_handlerblock(Directory & parameter, F
         if((*inhatr & 0x1) != 0)
             notify(STANDARD,
                 Message("The attribute can take only TA_HLNG|TA_ASM",
-                        "TA_HNLG|TA_ASM以外の属性は設定できません"));
+                        "TA_HLNG|TA_ASM以外の属性は設定できません"));
 
             // 属性値に TA_ASM が含まれている
         if((*inhatr & 0x1) != 0)
@@ -631,7 +631,7 @@ bool ConfigurationChecker::check_exception_handlerblock(Directory & parameter, F
         if((*excatr & 0x1) != 0)
             notify(STANDARD,
                 Message("The attribute can take only TA_HLNG|TA_ASM",
-                        "TA_HNLG|TA_ASM以外の属性は設定できません"));
+                        "TA_HLNG|TA_ASM以外の属性は設定できません"));
 
             // 属性値に TA_ASM が含まれている
         if((*excatr & 0x1) != 0)

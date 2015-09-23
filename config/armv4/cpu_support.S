@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.23 2004/10/04 12:11:59 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.24 2005/07/06 02:10:40 honda Exp $
  */
 
 /*
@@ -117,19 +117,20 @@ dispatcher_3:
         ldr   pc, [r1,#TCB_pc] /* 実行再開番地を復帰   */
 dispatcher_2:
         mov   r3,#1
-        str   r3, [r6]
+        str   r3, [r6]         /* interupt_count = 1 */
+        ldr   sp, =STACKTOP
         /* sleepモードを持つCPUなら書き換える */
-        mrs   r0, cpsr                     /* FIQを継承            */
+        mrs   r0, cpsr        /* FIQを継承           */
         and   r0, r0, #CPSR_FIQ_BIT
         orr   r0, r0, r4
-        msr   cpsr, r0        /* 割込み待ち      */
+        msr   cpsr, r0        /* 割込み待ち          */
         WAIT_INTERRUPT
-        mrs   r0, cpsr                     /* FIQを継承            */
+        mrs   r0, cpsr        /* FIQを継承           */
         and   r0, r0, #CPSR_FIQ_BIT
         orr   r0, r0, r5
-        msr   cpsr, r0        /* 割込み禁止      */        
+        msr   cpsr, r0        /* 割込み禁止          */        
         mov   r3,#0
-        str   r3, [r6]        
+        str   r3, [r6]        /* interrupt_count = 0 */   
         b     dispatcher_1
 
 

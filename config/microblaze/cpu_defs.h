@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.9 2004/10/04 12:11:59 honda Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.10 2005/07/27 10:38:55 honda Exp $
  */
 
 /*
@@ -137,8 +137,8 @@ kernel_abort()
 Inline void
 sil_dly_nse(UINT dlytim)
 {
-    Asm("add r5, r0, %0;
-         brlid r15, _sil_dly_nse;
+    Asm("add r5, r0, %0; \
+         brlid r15, _sil_dly_nse; \
          nop\n"
         : 
         : "r"(dlytim)

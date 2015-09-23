@@ -1,7 +1,7 @@
 /* This file is generated from jsp_rename.def by genrename. */
 
-#ifdef _JSP_RENAME_H_
-#undef _JSP_RENAME_H_
+#ifdef _JSP_UNRENAME_H_
+#undef _JSP_UNRENAME_H_
 
 /*
  *  startup.c
@@ -336,4 +336,4 @@
 #undef _tmevt_heap
 
 #endif /* LABEL_ASM */
-#endif /* _JSP_RENAME_H_ */
+#endif /* _JSP_UNRENAME_H_ */

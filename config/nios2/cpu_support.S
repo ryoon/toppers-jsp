@@ -34,7 +34,7 @@
  * 含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  * 接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_support.S,v 1.3 2004/09/03 17:32:25 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.4 2005/07/06 01:48:21 honda Exp $
  */
 
 #define _MACRO_ONLY
@@ -232,7 +232,6 @@ ret_exc:
     stw   r2,  TCB_pc(r5)         /* 実行再開番地をTCBに保存   */
     br    dispatcher
 
-    .global ret_int_r
 ret_int_r:
     ldw   r16,  0(sp)       /* レジスタを復帰 */
     ldw   r17,  4(sp)

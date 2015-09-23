@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.6 2003/12/13 05:09:01 hiro Exp $
+ *  @(#) $Id: tool_config.h,v 1.7 2005/11/12 14:59:02 hiro Exp $
  */
 
 /*
@@ -253,9 +253,9 @@ call_atexit()
 #define	LOG_VXGET_TIM_ENTER(p_sysutim)
 #define	LOG_VXGET_TIM_LEAVE(ercd, sysutim)
 
-#define	LOG_CHG_IPM_ENTER(ipm)
-#define	LOG_CHG_IPM_LEAVE(ercd)
-#define	LOG_GET_IPM_ENTER(p_ipm)
-#define	LOG_GET_IPM_LEAVE(ercd, ipm)
+#define	LOG_CHG_IPM_ENTER(ipm)		/* プロセッサ依存部 */
+#define	LOG_CHG_IPM_LEAVE(ercd)		/* プロセッサ依存部 */
+#define	LOG_GET_IPM_ENTER(p_ipm)	/* プロセッサ依存部 */
+#define	LOG_GET_IPM_LEAVE(ercd, ipm)	/* プロセッサ依存部 */
 
 #endif /* _TOOL_CONFIG_H_ */

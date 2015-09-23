@@ -34,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.1 2004/05/27 12:04:18 honda Exp $
+ *  @(#) $Id: sys_defs.h,v 1.4 2005/11/24 12:41:23 honda Exp $
  */
 
 /*
@@ -61,7 +61,7 @@
  */
 typedef	unsigned long SYSUTIM;	/* 性能評価用システム時刻 */
 
-extern ER	vxget_tim(SYSUTIM *pk_sysutim);
+extern ER	vxget_tim(SYSUTIM *p_sysutim) throw();
 
 #endif /* _MACRO_ONLY */
 
@@ -78,7 +78,7 @@ extern void hardware_start(void);
  *  システムの停止処理
  */
 Inline void
-kernel_abort()
+kernel_abort(void)
 {
 	hardware_start();
 	/* リスタート */

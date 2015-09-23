@@ -8,7 +8,6 @@
  *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD.
- *   51 Tateminami, Watari-cyo, Watari-gun, Miyagi-ken 989-2361, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -200,7 +199,7 @@
 #define SH1SCI_DELAY0 	27000
 
 #else	/*  CONFIG_BAUD  */
-	ここでコンパイルエラー（チャネル0:サポート外のボーレート）
+#error chanel0 is unsupported baud rate.
 
 #endif 	/*  CONFIG_BAUD  */
 
@@ -272,7 +271,7 @@
 #define SH1SCI_DELAY1 	27000
 
 #else	/*  CONFIG_BAUD  */
-	ここでコンパイルエラー（チャネル1:サポート外のボーレート）
+#error chanel1 is unsupported baud rate.
 
 #endif 	/*  CONFIG_BAUD  */
 
@@ -398,7 +397,7 @@ sh1sci_putchar(SIOPCB *siopcb, char c)
  *  SIOドライバの初期化ルーチン
  */
 void
-sh1sci_initialize()
+sh1sci_initialize(void)
 {
 	SIOPCB	*siopcb;
 	UINT	i;

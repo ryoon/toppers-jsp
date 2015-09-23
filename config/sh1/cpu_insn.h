@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_insn.h,v 1.11 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: cpu_insn.h,v 1.12 2005/11/14 08:00:44 honda Exp $
  */
 
 /*
@@ -70,7 +70,7 @@ set_sr(UW sr)
  *  　（カーネルが管理する割込みのみ禁止）
  */
 Inline void
-disint()
+disint(void)
 {
     set_sr((current_sr() & ~0x000000f0u) |  (MAX_IPM << 4) );
 }
@@ -79,7 +79,7 @@ disint()
  *  すべての割込みを許可
  */
 Inline void
-enaint()
+enaint(void)
 {
 	set_sr(current_sr() & ~0x000000f0u);
 }
@@ -88,7 +88,7 @@ enaint()
  *  ベクタベースレジスタ（VBR）の現在値の読出し
  */
 Inline VP
-current_vbr()
+current_vbr(void)
 {
 	VP	vbr;
 

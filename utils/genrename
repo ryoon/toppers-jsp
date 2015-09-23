@@ -6,6 +6,8 @@
 # 
 #  Copyright (C) 2003 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
+#  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+#              Graduate School of Information Science, Nagoya Univ., JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
 #  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +36,7 @@
 #  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 #  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: genrename,v 1.3 2003/06/18 14:28:58 hiro Exp $
+#  @(#) $Id: genrename,v 1.4 2005/06/08 05:33:46 hiro Exp $
 # 
 
 #
@@ -75,7 +77,8 @@ $name = $ARGV[0];
 $NAME = $name; $NAME =~ y/a-z/A-Z/;
 
 $infile = $name."_rename.def";
-$defsym = "_".$NAME."_RENAME_H_";
+$defsym_rename = "_".$NAME."_RENAME_H_";
+$defsym_unrename = "_".$NAME."_UNRENAME_H_";
 
 #
 #  シンボルリストを読み込む
@@ -96,8 +99,8 @@ open(FILE, "> ".$file);
 print FILE <<END;
 /* This file is generated from $infile by genrename. */
 
-#ifndef $defsym
-#define $defsym
+#ifndef $defsym_rename
+#define $defsym_rename
 
 END
 
@@ -138,7 +141,7 @@ foreach $sym (@syms) {
 print FILE <<END;
 
 #endif /* LABEL_ASM */
-#endif /* $defsym */
+#endif /* $defsym_rename */
 END
 
 #
@@ -150,8 +153,8 @@ open(FILE, "> ".$file);
 print FILE <<END;
 /* This file is generated from $infile by genrename. */
 
-#ifdef $defsym
-#undef $defsym
+#ifdef $defsym_unrename
+#undef $defsym_unrename
 
 END
 
@@ -192,7 +195,7 @@ foreach $sym (@syms) {
 print FILE <<END;
 
 #endif /* LABEL_ASM */
-#endif /* $defsym */
+#endif /* $defsym_unrename */
 END
 
 close(FILE);

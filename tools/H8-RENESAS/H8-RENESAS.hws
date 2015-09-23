@@ -1,0 +1,46 @@
+[HIMDBVersion]
+2.0
+[DATABASE_VERSION]
+"7.0" 
+[WORKSPACE_DETAILS]
+"H8-RENESAS" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\H8-RENESAS.hws" "H8S,H8/300" "Hitachi H8S,H8/300 Standard" 
+[SHARED_WORKSPACE_CONTROL_STATUS]
+"" "" "" 
+"" "" "" 
+[PROJECTS]
+"divide_files" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\divide_files" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\divide_files\divide_files.hwp" 0 
+"libkernel" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\libkernel" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\libkernel\libkernel.hwp" 4 
+"configuration" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\configuration" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\configuration\configuration.hwp" 4 
+"sample" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\sample" "D:\cygwin\home\Administrator\tmp\jsp-1.4.2.pre5\hew\jsp\tools\H8-RENESAS\sample\sample.hwp" 4 
+[INFORMATION]
+"ワークスペース情報がありません" 
+[SCRAP]
+[PROJECT_DEPENDENCY]
+"libkernel" "divide_files" 
+"sample" "configuration" 
+"sample" "divide_files" 
+"sample" "libkernel" 
+[WORKSPACE_PROPERTIES]
+[VCS]
+"" "" "" 0 
+[VCS_PROJECT]
+[HELP_FILES]
+"c:\hew3\tools\renesas\h8\6_0_3\hew\Stdlib.hlp" "C/C++ Standard Library Help" 0 
+"c:\hew3\tools\renesas\h8\6_1_0\hew\Stdlib.hlp" "C/C++ Standard Library Help" 1 
+[GENERAL_DATA_PROJECT]
+[SYSMENUTOOLS]
+"Hitachi Mapview" "1.0" 
+"Hitachi Call Walker" "1.1" 
+"Hitachi H Series Librarian Interface" "1.1" 
+[USERMENUTOOLS]
+[CUSTOMPLACEHOLDERS]
+[MAKEFILE_BUILD_INFO]
+"$(WORKSPDIR)\make\$(PROJECTNAME).mak" "" 0 0 
+[VD_CONFIGURATION_OPTIONS]
+"ACTIVE_DESKTOP" "0" 
+[VD_CONFIGURATIONS]
+"0" "Default1" "0" 
+"1" "Default2" "0" 
+"2" "Default3" "0" 
+"3" "Default4" "0" 
+[END]

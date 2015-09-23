@@ -1,7 +1,7 @@
 /* This file is generated from cpu_rename.def by genrename. */
 
-#ifdef _CPU_RENAME_H_
-#undef _CPU_RENAME_H_
+#ifdef _CPU_UNRENAME_H_
+#undef _CPU_UNRENAME_H_
 
 #undef activate_r
 #undef ret_int
@@ -18,4 +18,4 @@
 #undef _int_intmask
 
 #endif /* LABEL_ASM */
-#endif /* _CPU_RENAME_H_ */
+#endif /* _CPU_UNRENAME_H_ */

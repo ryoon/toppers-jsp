@@ -5,7 +5,7 @@
 ;*
 ;*  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
 ;*                              Toyohashi Univ. of Technology, JAPAN
-;*  Copyright (C) 2003-2004 by Naoki Saito
+;*  Copyright (C) 2003-2005 by Naoki Saito
 ;*             Nagoya Municipal Industrial Research Institute, JAPAN
 ;*  Copyright (C) 2003-2004 by Ryosuke Takeuchi
 ;*              Platform Development Center RICOH COMPANY,LTD. JAPAN
@@ -37,7 +37,7 @@
 ;*  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 ;*  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 ;* 
-;*  @(#) $Id: cpu_support.a30,v 1.1 2004/05/27 12:04:18 honda Exp $
+;*  @(#) $Id: cpu_support.a30,v 1.5 2005/11/24 12:41:23 honda Exp $
 
 
 ;
@@ -91,7 +91,8 @@ __kernel_dispatch:
 ;
 dispatch_r:
 	popm	sb,fb						; タスクスタックからレジスタ復帰
-	btst	TCB_enatex_bit, __kernel_runtsk+TCB_enatex	; タスク例外処理許可?
+	mov.w	TCB_enatex[a0], r0
+	btst	TCB_enatex_bit, r0			; タスク例外処理許可?
 	jz	dispatch_r_1					; 許可でなければ dispatch_r_1 へ
 	mov.w	TCB_texptn[a0], r0				; 保留例外要因があるか？
 	jz	dispatch_r_1					; なければ dispatch_r_1 へ
@@ -180,9 +181,9 @@ dispatcher_2:
 ;
 ret_int:
 	mov.w	#0, __kernel_reqflg		; reqflg <--- FALSE
+	mov.w	__kernel_runtsk, a0		; A0 <--- runtsk
 	mov.w	__kernel_enadsp, r0		; enadsp が FALSE なら
 	jz	ret_int_r			; ret_int_r へ
-	mov.w	__kernel_runtsk, a0		; A0 <--- runtsk
 	mov.w	__kernel_schedtsk, r0		; schedtskと
 	cmp.w	a0, r0				; runtsk が同じなら
 	jeq	ret_int_r			; ret_int_r へ

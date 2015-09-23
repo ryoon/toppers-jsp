@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2004-2005 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.20 2004/06/05 14:39:14 honda Exp $
+ *  @(#) $Id: sample1.c,v 1.22 2005/11/12 15:01:44 hiro Exp $
  */
 
 /* 
@@ -259,7 +259,7 @@ void main_task(VP_INT exinf)
 #endif /* OMIT_VGET_TIM */
 
 	vmsk_log(LOG_UPTO(LOG_INFO), LOG_UPTO(LOG_EMERG));
-	syslog(LOG_NOTICE, "Sample program starts (exinf = %d).", exinf);
+	syslog(LOG_NOTICE, "Sample program starts (exinf = %d).", (INT) exinf);
 
 	syscall(serial_ctl_por(TASK_PORTID,
 			(IOCTL_CRLF | IOCTL_FCSND | IOCTL_FCRCV)));

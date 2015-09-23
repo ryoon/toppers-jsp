@@ -7,8 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD.
- *   51 Tateminami, Watari-cyo, Watari-gun, Miyagi-ken 989-2361, JAPAN
+ *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD. JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -101,6 +100,7 @@
  */
 /*
  * SRAMのスモールタイプをご利用の場合は LARGE_TYPE をコメントアウトして下さい
+ * MAKEFILEで定義しても良い
  */
 //#define	LARGE_TYPE
 

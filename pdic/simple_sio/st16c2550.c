@@ -33,14 +33,14 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: st16c2550.c,v 1.2 2003/12/24 08:00:42 honda Exp $
+ *  @(#) $Id: st16c2550.c,v 1.4 2005/11/12 15:00:43 honda Exp $
  */
 
 /*
  *     ST16C2550 用 簡易SIOドライバ
  */
 #include <s_services.h>
-#include "st16c2550.h"
+#include <st16c2550.h>
  
 /*
  * 各レジスタのオフセット
@@ -300,7 +300,7 @@ st16c2550_opn_por(ID siopid, VP_INT exinf)
     siopinib = siopcb->siopinib;
     
     /*
-     * 最初期化
+     * 初期化
      */
     st16c2550_init_siopinib(siopcb->siopinib);
     

@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sh7615frt.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: sh7615frt.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -191,22 +191,19 @@ sh2_timer_terminate ()
 
 /*
  *  タイマの現在値の読出し
- *　　　タイマの動作を一時的に停止し，タイマ値を読み出す．
+ *　　　タイマ値を読み出す．
  */
 Inline CLOCK
 sh2_timer_get_current ()
 {
+	CLOCK	clk;
 	CLOCK up, low;
 
-/* SH1と同じ */
-	sh2_timer_stop ();			/*  タイマ停止  */
-
-	/*  本来は待ち時間を入れるべき  */
 
 	up = sil_reb_mem (FRT_FRCH);
 	low = sil_reb_mem (FRT_FRCL);
-	return (CLOCK_PER_TICK - (CLOCK) ((up << 8) | low));
-
+	clk = (up << 8) | low;
+	return (clk);
 }
 
 /*

@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.9 2003/12/10 16:58:27 hiro Exp $
+ *  @(#) $Id: cpu_config.c,v 1.10 2005/11/12 14:57:17 hiro Exp $
  */
 
 /*
@@ -101,9 +103,9 @@ cpu_terminate()
  *  タスクディスパッチによって，新しく実行状態になったタスクへ引き継が
  *  れる．そのため，タスクが実行中に，別のタスクによって IPM が変更さ
  *  れる場合がある．JSPカーネルでは，IPM の変更はタスク例外処理ルーチ
- *  ンによっても起こるので，これによって扱いが難しくなる状況は少ないと
- *  思われる．IPM の値によってタスクディスパッチを禁止したい場合には，
- *  dis_dsp を併用すればよい．
+ *  ンによっても起こるので，別のタスクによって IPM が変更されることに
+ *  よって，扱いが難しくなる状況は少ないと思われる．IPM の値によってタ
+ *  スクディスパッチを禁止したい場合には，dis_dsp を併用すればよい．
  */
 SYSCALL ER
 chg_ipm(IPM ipm)

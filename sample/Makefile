@@ -5,6 +5,8 @@
 # 
 #  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
+#  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+#              Graduate School of Information Science, Nagoya Univ., JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
 #  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
 #  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 #  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile,v 1.31 2004/09/06 14:28:34 honda Exp $
+#  @(#) $Id: Makefile,v 1.33 2005/12/06 03:06:03 honda Exp $
 # 
 
 #
@@ -51,8 +53,8 @@ TOOL = @(TOOL)
 #
 #  プログラミング言語の定義
 #
-LANG = @(LANG)
-ifeq ($(LANG),c++)
+PROGRAM_LANG = @(LANG)
+ifeq ($(PROGRAM_LANG),c++)
     USE_CXX = true
     CXXLIBS = -lstdc++ -lm -lc 
     CXXRTS  = cxxrt.o newlibrt.o
@@ -316,7 +318,7 @@ realclean: cleandep clean
 #  kernel_cfg.c は，アプリケーションプログラム用，システムサービス用，
 #  カーネル用のすべてのオプションを付けてコンパイルする．
 #
-KERNEL_CFG_CFLAG = $(UTASK_CFLAGS) $(STASK_CFLAGS) $(KERNEL_CFLAGS)
+KERNEL_CFG_CFLAGS = $(UTASK_CFLAGS) $(STASK_CFLAGS) $(KERNEL_CFLAGS)
 
 kernel_cfg.o: kernel_cfg.c
 	$(CC) -c $(CFLAGS) $(KERNEL_CFG_CFLAGS) $<

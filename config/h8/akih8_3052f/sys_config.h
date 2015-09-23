@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,14 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h,v 1.7 2004/09/04 16:52:27 honda Exp $
+ *  @(#) $Id: sys_config.h,v 1.13 2005/11/24 12:03:40 honda Exp $
+ */
+
+/*
+ *	ターゲットシステム依存モジュール
+ *
+ *  このインクルードファイルは，t_config.h のみからインクルードされる．
+ *  他のファイルから直接インクルードしてはならない．
  */
 
 #ifndef _SYS_CONFIG_H_
@@ -52,7 +59,7 @@
 /*
  *  ターゲットシステムのハードウェア資源の定義
  */
-
+#include <h8.h>
 #include <h8_3052f.h>
 
 /*
@@ -62,7 +69,12 @@
 #define	TARGET_NAME	"AKI-H8/3052F"
 
 /*
- *  vgxet_tim をサポートするかどうかの定義
+ *  chg_ipmをサポートするかどうかの定義
+ */
+#define SUPPORT_CHG_IPM
+
+/*
+ *  vxget_tim をサポートするかどうかの定義
  */
 
 #define	SUPPORT_VXGET_TIM
@@ -71,7 +83,8 @@
  *   スタック領域の定義
  */
 
-#define STACKTOP    	(H8IN_RAM_BASE + H8IN_RAM_SIZE)	/* タスク独立部用スタックの初期値 */
+			/* 非タスクコンテキスト用スタックの初期値 */
+#define STACKTOP    	(H8IN_RAM_BASE + H8IN_RAM_SIZE)
 #define str_STACKTOP	_TO_STRING(STACKTOP)
 
 #ifndef _MACRO_ONLY
@@ -104,7 +117,7 @@ Inline void
 sys_putc(char c)
 {
 	cpu_putc(c);
-	};
+};
 
 #endif /* _MACRO_ONLY */
 
@@ -117,8 +130,7 @@ sys_putc(char c)
 /*
  *  サポートするシリアルディバイスの数は最大 2
  */
-
-#define TNUM_PORT		2
+#define TNUM_PORT		1
 
 /*
  *  SCI 共通定数、マクロ
@@ -130,7 +142,9 @@ sys_putc(char c)
 #define H8_MIN_BAUD_RATE	9600		/* SCI をクローズする前の待ち時間の計算に使用する。*/
 
 /* エラー割り込みを、入力割り込みと別に操作する場合はコメントをはずす。*/
-/*#define H8_CFG_SCI_ERR_HANDLER*/
+#if 0
+#define H8_CFG_SCI_ERR_HANDLER
+#endif
 
 /*
  *  SYSTEM 用 SCI の設定値
@@ -193,6 +207,54 @@ sys_putc(char c)
 
 #endif	/* of #if TNUM_PORT == 1 */
 
+/*  プライオリティレベル設定用のデータ  */
+
+/*  割込み要求のレベル設定  */
+#define SYSTEM_SCI_IPM			IPM_LEVEL0
+#define USER_SCI_IPM			IPM_LEVEL0
+
+/*  
+ * 割込みハンドラ実行中の割込みマスクの値
+ * 　　他の割込みをマスクするための設定  
+ * 　　自分と同じレベルの割込み要求をブロックするため、
+ * 　　上記の割込み要求レベルより１つ高いレベルに設定する。
+ */
+#if TNUM_PORT == 1	/*  ポート１：システム・ポート  */
+
+/*  システム・ポート  */
+#if SYSTEM_SCI_IPM == IPM_LEVEL0
+#define sio_in_handler_intmask		IPM_LEVEL1
+#elif SYSTEM_SCI_IPM == IPM_LEVEL1
+#define sio_in_handler_intmask		IPM_LEVEL2
+#endif 	/* SYSTEM_SCI_IPM == IPM_LEVEL0 */
+
+
+#elif TNUM_PORT == 2	/* of #if TNUM_PORT == 1 */
+			/*  ポート１：ユーザー・ポート  */
+			/*  ポート２：システム・ポート  */
+/*  ユーザー・ポート  */
+#if USER_SCI_IPM == IPM_LEVEL0
+#define sio_in_handler_intmask		IPM_LEVEL1
+#elif USER_SCI_IPM == IPM_LEVEL1
+#define sio_in_handler_intmask		IPM_LEVEL2
+#endif 	/* USER_SCI_IPM == IPM_LEVEL0 */
+
+/*  システム・ポート  */
+#if SYSTEM_SCI_IPM == IPM_LEVEL0
+#define sio_in2_handler_intmask		IPM_LEVEL1
+#elif SYSTEM_SCI_IPM == IPM_LEVEL1
+#define sio_in2_handler_intmask		IPM_LEVEL2
+#endif 	/* SYSTEM_SCI_IPM == IPM_LEVEL0 */
+
+#endif	/* of #if TNUM_PORT == 1 */
+
+#define sio_out_handler_intmask		sio_in_handler_intmask
+#define sio_err_handler_intmask		sio_in_handler_intmask
+#define sio_out2_handler_intmask	sio_in2_handler_intmask
+#define sio_err2_handler_intmask	sio_in2_handler_intmask
+
+
+
 /*
  *  タイマの設定
  */
@@ -219,7 +281,28 @@ sys_putc(char c)
 #define SYSTEM_TIMER_TCR_BIT	(H8TCR_CCLR0 | H8TCR_TPSC1 | H8TCR_TPSC0)
 #define SYSTEM_TIMER_TIOR_BIT	(0)
 
-#define TIMER_CLOCK		((CPU_CLOCK)/8000)	/* 25MHz / 8 = 2MHz = 3125KHz */
+#define TIMER_CLOCK		((CPU_CLOCK)/8000)
+				/* 25MHz / 8 = 2MHz = 3125KHz */
+
+/*  プライオリティレベル設定用のデータ  */
+
+/*  割込み要求のレベル設定  */
+#define SYSTEM_TIMER_IPR                H8IPRA
+#define SYSTEM_TIMER_IP_BIT             H8IPR_ITU0_BIT
+#define SYSTEM_TIMER_IPM                IPM_LEVEL1
+
+/*  
+ * 割込みハンドラ実行中の割込みマスクの値
+ * 　　他の割込みをマスクするための設定  
+ * 　　自分と同じレベルの割込み要求をブロックするため、
+ * 　　上記の割込み要求レベルより１つ高いレベルに設定する。
+ */
+#if SYSTEM_TIMER_IPM == IPM_LEVEL0
+#define timer_handler_intmask		IPM_LEVEL1
+#elif SYSTEM_TIMER_IPM == IPM_LEVEL1
+#define timer_handler_intmask		IPM_LEVEL2
+#endif 	/* SYSTEM_TIMER_IPM == IPM_LEVEL0 */
+
 
 /*
  *  外部アドレス空間制御
@@ -227,10 +310,70 @@ sys_putc(char c)
 
 /*#define ENABLE_LOWER_DATA*/
 
-#define ENABLE_P8_CS		(H8P8DDR_CS0|H8P8DDR_CS1|H8P8DDR_CS2|H8P8DDR_CS3)
-/*#define ENABLE_PA_CS		(H8PADDR_CS4|H8PADDR_CS5|H8PADDR_CS6)*/
-/*#define ENABLE_PB_CS 	 	H8PBDDR_CS7*/
+#define ENABLE_P8_CS	(H8P8DDR_CS0|H8P8DDR_CS1|H8P8DDR_CS2|H8P8DDR_CS3)
+
+#if 0
+#define ENABLE_PA_CS	(H8PADDR_CS4|H8PADDR_CS5|H8PADDR_CS6)
+#define ENABLE_PB_CS 	H8PBDDR_CS7
+#endif
 
 #define ENABLE_PA_A21_A23	(H8BRCR_A23E|H8BRCR_A22E|H8BRCR_A21E)
+
+/*
+ *  微少時間待ちのための定義
+ */
+
+#ifdef ROM
+
+
+#define	SIL_DLY_TIM1	 5750
+#define	SIL_DLY_TIM2	  430
+
+#else	/* of #ifdef ROM */
+
+#define	SIL_DLY_TIM1	13910
+#define	SIL_DLY_TIM2	 2940
+
+#endif	/* of #ifdef ROM */
+
+/*
+ *  DDRの初期値の定義
+ */
+#define	H8P1DDR0        0xff				/*  ポート1  */
+#define	H8P2DDR0        0xff				/*  ポート2  */
+#define	H8P3DDR0        0xff				/*  ポート3  */
+
+#ifdef ENABLE_LOWER_DATA
+#define	H8P4DDR0        0xff				/*  ポート4  */
+#else	/* #if ENABLE_LOWER_DATA */
+#define	H8P4DDR0        DUMMY				/*  ポート4  */
+#endif	/* #if ENABLE_LOWER_DATA */
+
+#define	H8P5DDR0        0xff				/*  ポート5  */
+#define	H8P6DDR0        DUMMY				/*  ポート6  */
+
+/*  ポート7は入力専用でDDRレジスタがないため、省略している。  */
+
+#ifdef ENABLE_P8_CS
+#define	H8P8DDR0        ENABLE_P8_CS			/*  ポート8  */
+#else	/* #ifdef ENABLE_P8_CS */
+#define	H8P8DDR0        DUMMY				/*  ポート8  */
+#endif	/* #ifdef ENABLE_P8_CS */
+
+#define	H8P9DDR0        DUMMY				/*  ポート9  */
+
+#ifdef ENABLE_PA_CS
+#define	H8PADDR0        ENABLE_PA_CS			/*  ポートA  */
+#elif defined(ENABLE_PA_A21_A23)
+#define	H8PADDR0        ENABLE_PA_A21_A23		/*  ポートA  */
+#else
+#define	H8PADDR0        DUMMY				/*  ポートA  */
+#endif	/* #ifdef ENABLE_PA_CS */
+
+#ifdef ENABLE_PB_CS
+#define	H8PBDDR0        ENABLE_PB_CS			/*  ポートB  */
+#else	/* #ifdef ENABLE_PB_CS */
+#define	H8PBDDR0        DUMMY				/*  ポートB  */
+#endif	/* #ifdef ENABLE_PB_CS */
 
 #endif /* _SYS_CONFIG_H_ */

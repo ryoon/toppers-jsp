@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2005 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -45,7 +45,7 @@
  *  ターゲットシステム依存の初期化
  */
 void
-sys_initialize()
+sys_initialize(void)
 {
 }
 
@@ -53,7 +53,7 @@ sys_initialize()
  *  ターゲットシステムの終了
  */
 void
-sys_exit()
+sys_exit(void)
 {
                                 /*
                                  *  プログラムの停止
@@ -67,7 +67,7 @@ sys_exit()
  *  ターゲットシステムの異常終了
  */
 void
-kernel_abort()
+kernel_abort(void)
 {
                                 /*
                                  *  プログラムの停止

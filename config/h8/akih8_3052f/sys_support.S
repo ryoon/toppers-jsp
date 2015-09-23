@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,272 +37,31 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_support.S,v 1.5 2004/09/03 15:39:08 honda Exp $
+ *  @(#) $Id: sys_support.S,v 1.10 2005/11/07 01:49:53 honda Exp $
+ */
+
+/*
+ *	ターゲットシステム依存モジュール アセンブリ言語部
  */
 
 #define _MACRO_ONLY
 #include "jsp_kernel.h"
 
-	.h8300h
-
 /*
- * 割込みベクタの定義
+ *  システム依存の初期化ルーチン
  */
-
-	.section	.vectors
-	.align 4
-
-	.global _vectors
-_vectors:
-
-#ifdef AKI_MONITOR
-
-	.long	_start				/*  0, 0x0000: reset	*/
-	.long	0				/*  1, 0x0004: reserved	*/
-	.long	0				/*  2, 0x0008: reserved	*/
-	.long	0				/*  3, 0x000c: reserved	*/
-	.long	0				/*  4, 0x0010: reserved	*/
-	.long	0				/*  5, 0x0014: reserved	*/
-	.long	0				/*  6, 0x0018: reserved	*/
-	.long	0				/*  7, 0x001c: NMI	*/
-	.long	0				/*  8, 0x0020: trap	*/
-	.long	0				/*  9, 0x0024: trap	*/
-	.long	0				/* 10, 0x0028: trap	*/
-	.long	0				/* 11, 0x002c: trap	*/
-	.long	0				/* 12, 0x0030: IRQ0	*/
-	.long	0				/* 13, 0x0034: IRQ1	*/
-	.long	0				/* 14, 0x0038: IRQ2	*/
-	.long	0				/* 15, 0x003c: IRQ3	*/
-	.long	0				/* 16, 0x0040: IRQ4	*/
-	.long	0				/* 17, 0x0044: IRQ5	*/
-	.long	0				/* 18, 0x0048: reserved	*/
-	.long	0				/* 19, 0x004c: reserved	*/
-	.long	0				/* 20, 0x0050: WOVI	*/
-	.long	0				/* 21, 0x0054: CMI	*/
-	.long	0				/* 22, 0x0058: reserved	*/
-	.long	0				/* 23, 0x005c: reserved	*/
-	.long	_timer_handler_entry		/* 24, 0x0060: IMIA0	*/
-	.long	0				/* 25, 0x0064: IMIB0	*/
-	.long	0				/* 26, 0x0068: OVI0	*/
-	.long	0				/* 27, 0x006c: reserved	*/
-	.long	0				/* 28, 0x0070: IMIA1	*/
-	.long	0				/* 29, 0x0074: IMIB1	*/
-	.long	0				/* 30, 0x0078: OVI1	*/
-	.long	0				/* 31, 0x007c: reserved	*/
-	.long	0				/* 32, 0x0080: IMIA2	*/
-	.long	0				/* 33, 0x0084: IMIB2	*/
-	.long	0				/* 34, 0x0088: OVI2	*/
-	.long	0				/* 35, 0x008c: reserved	*/
-	.long	0				/* 36, 0x0090: IMIA3	*/
-	.long	0				/* 37, 0x0094: IMIB3	*/
-	.long	0				/* 38, 0x0098: OVI3	*/
-	.long	0				/* 39, 0x009c: reserved	*/
-	.long	0				/* 40, 0x00a0: IMIA4	*/
-	.long	0				/* 41, 0x00a4: IMIA4	*/
-	.long	0				/* 42, 0x00a8: OVI4	*/
-	.long	0				/* 43, 0x00ac: reserved	*/
-	.long	0				/* 44, 0x00b0: DEND0A	*/
-	.long	0				/* 45, 0x00b4: DEND0B	*/
-	.long	0				/* 46, 0x00b8: DEND1A	*/
-	.long	0				/* 47, 0x00bc: DEND1B	*/
-	.long	0				/* 48, 0x00c0: reserved	*/
-	.long	0				/* 49, 0x00c4: reserved	*/
-	.long	0				/* 50, 0x00c8: reserved	*/
-	.long	0				/* 51, 0x00cc: reserved	*/
-
-#if TNUM_PORT == 1
-
-	.long	0				/* 52, 0x00d0: ERI0	*/
-	.long	0				/* 53, 0x00d4: RXI0	*/
-	.long	0				/* 54, 0x00d8: TXI0	*/
-	.long	0				/* 55, 0x00ec: TEI0	*/
-
-#ifdef H8_CFG_SCI_ERR_HANDLER
-
-	.long	_sio_err_handler_entry		/* 56, 0x00e0: ERI1	*/
-
-#else	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in_handler_entry		/* 56, 0x00e0: ERI1	*/
-
-#endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in_handler_entry		/* 57, 0x00e4: RXI1	*/
-	.long	_sio_out_handler_entry		/* 58, 0x00e8: TXI1	*/
-	.long	0				/* 59, 0x00ec: TEI1	*/
-
-#elif TNUM_PORT == 2	/* of #if TNUM_PORT == 1 */
-
-#ifdef H8_CFG_SCI_ERR_HANDLER
-
-	.long	_sio_err_handler_entry		/* 52, 0x00d0: ERI0	*/
-
-#else	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in_handler_entry		/* 52, 0x00d0: ERI0	*/
-
-#endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in_handler_entry		/* 53, 0x00d4: RXI0	*/
-	.long	_sio_out_handler_entry		/* 54, 0x00d8: TXI0	*/
-	.long	0				/* 55, 0x00ec: TEI0	*/
-
-#ifdef H8_CFG_SCI_ERR_HANDLER
-
-	.long	_sio_err2_handler_entry		/* 56, 0x00e0: ERI1	*/
-
-#else	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in2_handler_entry		/* 56, 0x00e0: ERI1	*/
-
-#endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in2_handler_entry		/* 57, 0x00e4: RXI1	*/
-	.long	_sio_out2_handler_entry		/* 58, 0x00e8: TXI1	*/
-	.long	0				/* 59, 0x00ec: TEI1	*/
-
-#endif	/* of #if TNUM_PORT == 1 */
-
-	.long	0				/* 60, 0x00f0: ADI	*/
-
-#else	/* of #ifdef AKI_MONITOR */
-
-	.long	_start				/*  0, 0x0000: reset	*/
-	.long	_no_reg_exception		/*  1, 0x0004: reserved	*/
-	.long	_no_reg_exception		/*  2, 0x0008: reserved	*/
-	.long	_no_reg_exception		/*  3, 0x000c: reserved	*/
-	.long	_no_reg_exception		/*  4, 0x0010: reserved	*/
-	.long	_no_reg_exception		/*  5, 0x0014: reserved	*/
-	.long	_no_reg_exception		/*  6, 0x0018: reserved	*/
-	.long	_no_reg_exception		/*  7, 0x001c: NMI	*/
-	.long	_no_reg_exception		/*  8, 0x0020: trap	*/
-	.long	_no_reg_exception		/*  9, 0x0024: trap	*/
-	.long	_no_reg_exception		/* 10, 0x0028: trap	*/
-	.long	_no_reg_exception		/* 11, 0x002c: trap	*/
-	.long	_no_reg_exception		/* 12, 0x0030: IRQ0	*/
-	.long	_no_reg_exception		/* 13, 0x0034: IRQ1	*/
-	.long	_no_reg_exception		/* 14, 0x0038: IRQ2	*/
-	.long	_no_reg_exception		/* 15, 0x003c: IRQ3	*/
-	.long	_no_reg_exception		/* 16, 0x0040: IRQ4	*/
-	.long	_no_reg_exception		/* 17, 0x0044: IRQ5	*/
-	.long	_no_reg_exception		/* 18, 0x0048: reserved	*/
-	.long	_no_reg_exception		/* 19, 0x004c: reserved	*/
-	.long	_no_reg_exception		/* 20, 0x0050: WOVI	*/
-	.long	_no_reg_exception		/* 21, 0x0054: CMI	*/
-	.long	_no_reg_exception		/* 22, 0x0058: reserved	*/
-	.long	_no_reg_exception		/* 23, 0x005c: reserved	*/
-	.long	_timer_handler_entry		/* 24, 0x0060: IMIA0	*/
-	.long	_no_reg_exception		/* 25, 0x0064: IMIB0	*/
-	.long	_no_reg_exception		/* 26, 0x0068: OVI0	*/
-	.long	_no_reg_exception		/* 27, 0x006c: reserved	*/
-	.long	_no_reg_exception		/* 28, 0x0070: IMIA1	*/
-	.long	_no_reg_exception		/* 29, 0x0074: IMIB1	*/
-	.long	_no_reg_exception		/* 30, 0x0078: OVI1	*/
-	.long	_no_reg_exception		/* 31, 0x007c: reserved	*/
-	.long	_no_reg_exception		/* 32, 0x0080: IMIA2	*/
-	.long	_no_reg_exception		/* 33, 0x0084: IMIB2	*/
-	.long	_no_reg_exception		/* 34, 0x0088: OVI2	*/
-	.long	_no_reg_exception		/* 35, 0x008c: reserved	*/
-	.long	_no_reg_exception		/* 36, 0x0090: IMIA3	*/
-	.long	_no_reg_exception		/* 37, 0x0094: IMIB3	*/
-	.long	_no_reg_exception		/* 38, 0x0098: OVI3	*/
-	.long	_no_reg_exception		/* 39, 0x009c: reserved	*/
-	.long	_no_reg_exception		/* 40, 0x00a0: IMIA4	*/
-	.long	_no_reg_exception		/* 41, 0x00a4: IMIA4	*/
-	.long	_no_reg_exception		/* 42, 0x00a8: OVI4	*/
-	.long	_no_reg_exception		/* 43, 0x00ac: reserved	*/
-	.long	_no_reg_exception		/* 44, 0x00b0: DEND0A	*/
-	.long	_no_reg_exception		/* 45, 0x00b4: DEND0B	*/
-	.long	_no_reg_exception		/* 46, 0x00b8: DEND1A	*/
-	.long	_no_reg_exception		/* 47, 0x00bc: DEND1B	*/
-	.long	_no_reg_exception		/* 48, 0x00c0: reserved	*/
-	.long	_no_reg_exception		/* 49, 0x00c4: reserved	*/
-	.long	_no_reg_exception		/* 50, 0x00c8: reserved	*/
-	.long	_no_reg_exception		/* 51, 0x00cc: reserved	*/
-
-#if TNUM_PORT == 1
-
-	.long	_no_reg_exception		/* 52, 0x00d0: ERI0	*/
-	.long	_no_reg_exception		/* 53, 0x00d4: RXI0	*/
-	.long	_no_reg_exception		/* 54, 0x00d8: TXI0	*/
-	.long	_no_reg_exception		/* 55, 0x00ec: TEI0	*/
-
-#ifdef H8_CFG_SCI_ERR_HANDLER
-
-	.long	_sio_err_handler_entry		/* 56, 0x00e0: ERI1	*/
-
-#else	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in_handler_entry		/* 56, 0x00e0: ERI1	*/
-
-#endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in_handler_entry		/* 57, 0x00e4: RXI1	*/
-	.long	_sio_out_handler_entry		/* 58, 0x00e8: TXI1	*/
-	.long	_no_reg_exception		/* 59, 0x00ec: TEI1	*/
-
-#elif TNUM_PORT == 2	/* of #if TNUM_PORT == 1 */
-
-#ifdef H8_CFG_SCI_ERR_HANDLER
-
-	.long	_sio_err_handler_entry		/* 52, 0x00d0: ERI0	*/
-	.long	_sio_in_handler_entry		/* 53, 0x00d4: RXI0	*/
-	.long	_sio_out_handler_entry		/* 54, 0x00d8: TXI0	*/
-	.long	_no_reg_exception		/* 55, 0x00ec: TEI0	*/
-	.long	_sio_err2_handler_entry		/* 56, 0x00e0: ERI1	*/
-	.long	_sio_in2_handler_entry		/* 57, 0x00e4: RXI1	*/
-	.long	_sio_out2_handler_entry		/* 58, 0x00e8: TXI1	*/
-	.long	_no_reg_exception		/* 59, 0x00ec: TEI1	*/
-
-#else	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-	.long	_sio_in_handler_entry		/* 52, 0x00d0: ERI0	*/
-	.long	_sio_in_handler_entry		/* 53, 0x00d4: RXI0	*/
-	.long	_sio_out_handler_entry		/* 54, 0x00d8: TXI0	*/
-	.long	_no_reg_exception		/* 55, 0x00ec: TEI0	*/
-	.long	_sio_in2_handler_entry		/* 56, 0x00e0: ERI1	*/
-	.long	_sio_in2_handler_entry		/* 57, 0x00e4: RXI1	*/
-	.long	_sio_out2_handler_entry		/* 58, 0x00e8: TXI1	*/
-	.long	_no_reg_exception		/* 59, 0x00ec: TEI1	*/
-
-#endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
-#endif	/* of #if TNUM_PORT == 1 */
-
-	.long	_no_reg_exception		/* 60, 0x00f0: ADI	*/
-
-#endif	/* of #ifdef AKI_MONITOR */
-
+	.h8300h
 	.text
 	.align 2
 
-/*
- *  リリースでは、外部 RAM 有効にする。
- */
-
 	.global	_hardware_init_hook
 _hardware_init_hook:
-
-	/* CCR の UI ビットを割り込みマスクビットとして使用する。*/
-
-	orc	#H8CCR_UI, ccr
-	mov.l	#H8SYSCR, er0
-	mov.b	@er0, r1h
-	bclr	#H8SYSCR_UE_BIT, r1h
-	mov.b	r1h, @er0
-
-	/* 全割り込みの優先度を上げる。*/
-
-	mov.b	#0xff, r1l
-
-	add.b	#(H8IPRA - H8SYSCR), r0l
-	mov.b	r1l, @er0
-	add.b	#(H8IPRB - H8IPRA), r0l
-	mov.b	r1l, @er0
-
-	/* 外部 RAM を有効にする。*/
-
+	/*
+	 *  リリースでは、外部DRAMを有効にする。
+	 */
+#ifdef ROM
 	mov.l	#H8P1DDR, er0
+	mov.b	#0xff, r1l
 	mov.b	r1l, @er0	/* enable A0  - A7  */
 
 	add.b	#(H8P2DDR - H8P1DDR), r0l
@@ -335,7 +94,7 @@ _hardware_init_hook:
 	mov.b	#ENABLE_PA_CS, r1l
 	mov.b	r1l, @er0	/* enable CS4 - CS6 */
 
-#elif ENABLE_PA_A21_A23
+#elif defined(ENABLE_PA_A21_A23)
 
 	mov.l	#H8PADDR, er0
 	mov.b	#ENABLE_PA_A21_A23, r1l
@@ -350,5 +109,7 @@ _hardware_init_hook:
 	mov.b	r1l, @er0	/* enable CS7 */
 
 #endif	/* #ifdef ENABLE_PB_CS */
+
+#endif	/*  #ifdef ROM  */
 
 	rts

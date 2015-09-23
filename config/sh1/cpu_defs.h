@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.13 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.14 2005/11/14 08:00:44 honda Exp $
  */
 
 /*
@@ -109,7 +109,7 @@ extern ER	get_ipm(IPM *p_ipm) throw();
  *  　具体的にはGDB stubのシリアル受信割込みの扱いが異なる。
  */
 Inline void
-_disint_()
+_disint_(void)
 {
 	UW sr;
 

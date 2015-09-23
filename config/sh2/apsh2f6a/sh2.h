@@ -33,7 +33,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: sh2.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: sh2.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 
@@ -45,8 +45,6 @@
 
 #ifndef _MACRO_ONLY
 #include <sil.h>
-
-void sci_reg_print (unsigned long data);
 
 Inline void
 define_int_plevel (VH * mem, UW level, UINT shift)

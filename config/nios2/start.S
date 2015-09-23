@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN    
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.3 2004/09/03 17:32:25 honda Exp $
+ *  @(#) $Id: start.S,v 1.4 2005/03/11 07:37:57 honda Exp $
  */
 
 #define _MACRO_ONLY
@@ -41,7 +41,7 @@
 #include <sys_defs.h>
 
 #define NIOS2_ICACHE_SIZE 4096
-#define NIOS2_DCACHE_SIZE 2048
+#define NIOS2_DCACHE_SIZE 0
 #define NIOS2_ICACHE_LINE_SIZE 32
 #define NIOS2_DCACHE_LINE_SIZE 4
 
@@ -57,21 +57,24 @@ __reset:
      */
 
 #if NIOS2_ICACHE_SIZE > 0x8000
-    movhi r1, %hi(NIOS2_ICACHE_SIZE)
+    movhi r2, %hi(NIOS2_ICACHE_SIZE)
 #else 
-    movui r1, NIOS2_ICACHE_SIZE
+    movui r2, NIOS2_ICACHE_SIZE
 #endif
-    movui r2, NIOS2_ICACHE_LINE_SIZE
+0:
+    initi r2
+    addi r2, r2, -NIOS2_ICACHE_LINE_SIZE
+    bgt r2, zero, 0b
+1:
 
-text_init:
-    initi r1
-    sub r1, r1, r2
-    bgt r1, zero, text_init
+    .pushsection .debug_alt_sim_info
+    .int 1, 1, 0b, 1b
+    .popsection
 #endif /* NIOS2_ICACHE_SIZE > 0 */
 
-    movhi r1, %hiadj(_start)
-    addi r1, r1, %lo(_start)
-    jmp r1    
+    movhi r3, %hiadj(_start)
+    addi r3, r3, %lo(_start)
+    jmp r3    
 
 
 
@@ -80,17 +83,21 @@ text_init:
     .globl _start
     .type _start, @function
 _start:
-    movhi r1, %hiadj(NIOS2_DCACHE_SIZE)
-    addi  r1, r1, %lo(NIOS2_DCACHE_SIZE)
-    movui r2, NIOS2_DCACHE_LINE_SIZE
-    beq   r1, zero, data_init_done
-
-data_init:
-    initd (r1)
-    sub r1, r1, r2
-    bgt r1, zero, data_init
-
-data_init_done:
+#if NIOS2_DCACHE_SIZE > 0
+#if NIOS2_DCACHE_SIZE > 0x8000
+    movhi r2, %hi(NIOS2_DCACHE_SIZE)
+#else
+    movui r2, NIOS2_DCACHE_SIZE
+#endif
+0:
+    initd 0(r2)
+    addi r2, r2, -NIOS2_DCACHE_LINE_SIZE
+    bgt r2, zero, 0b
+1:
+    .pushsection .debug_alt_sim_info
+    .int 2, 1, 0b, 1b
+    .popsection
+#endif /* NIOS2_DCACHE_SIZE > 0 */
 
     /*
      *  スタックの設定

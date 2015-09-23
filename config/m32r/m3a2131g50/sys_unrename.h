@@ -33,11 +33,11 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_unrename.h,v 1.2 2003/06/30 17:22:47 takayuki Exp $
+ *  @(#) $Id: sys_unrename.h,v 1.3 2005/07/06 03:10:29 honda Exp $
  */
 
-#ifdef _SYS_RENAME_H_
-#undef _SYS_RENAME_H_
+#ifdef _SYS_UNRENAME_H_
+#undef _SYS_UNRENAME_H_
 
 #ifndef OMIT_RENAME
 
@@ -47,4 +47,4 @@
 
 #endif /* LABEL_ASM */
 #endif /* OMIT_RENAME */
-#endif /* _SYS_RENAME_H_ */
+#endif /* _SYS_UNRENAME_H_ */

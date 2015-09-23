@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -271,22 +271,18 @@ Inline void
 define_inh(INHNO inhno, FP inthdr)
 {
 #ifdef GDB_STUB
-	/*  スタブ呼び出し  */
-	Asm("mov   #0x08,r0
-	     mov   %0,r4
-	     mov   %1,r5
-	     trapa #0x21"
-               : /* no output */
-               : "r"(inhno),"r"(inthdr)
-               : "r0","r4","r5");
-
+        Asm("mov #0x8,r0;  mov %0,r4; mov %1,r5; trapa #0x21"
+	    : /* no output */
+	    : "r"(inhno),"r"(inthdr)
+	    : "r0", "r4", "r5");
 #else	/*  GDB_STUB  */
 
 #ifdef KERNEL_HAS_A_VECTOR_TABLE
 
-#ifdef SIO_RESERVED	/*  シリアル割り込みは避ける  */
-	if ((inhno != RXI0) && (inhno != TXI0))
-#endif /* SIO_RESERVED */
+/* SIO_RESERVEDは使用しない。sys_config.hでコメントにしてある */
+/*#ifdef SIO_RESERVED	*//*  シリアル割り込みは避ける  */
+/*	if ((inhno != RXI0) && (inhno != TXI0))*/
+/*#endif *//* SIO_RESERVED */ 
 		vector_table[inhno] = inthdr;
 
 #endif /* KERNEL_HAS_A_VECTOR_TABLE */

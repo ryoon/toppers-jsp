@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN    
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: nios2.h,v 1.3 2004/09/09 07:19:00 honda Exp $
+ *  @(#) $Id: nios2.h,v 1.5 2005/03/11 07:37:57 honda Exp $
  */
 
 #ifndef _NIOSII_H_
@@ -96,7 +96,6 @@
 
 /*
  * UART
- * 
  */
 #define UART_RXDATA_OFFSET  0x00
 #define UART_TXDATA_OFFSET  0x04
@@ -118,7 +117,6 @@
 #define UART_STATUS_FE    0x0002
 #define UART_STATUS_PE    0x0001
 
-
 #define UART_CONTROL_IEOP  0x1000
 #define UART_CONTROL_RTS   0x0800
 #define UART_CONTROL_IDCTS 0x0400
@@ -133,13 +131,31 @@
 #define UART_CONTROL_IFE   0x0002
 #define UART_CONTROL_IPE   0x0001
 
-
 #define UART_RXDATA  (UART_BASE + UART_RXDATA_OFFSET)
 #define UART_TXDATA  (UART_BASE + UART_TXDATA_OFFSET)
 #define UART_STATUS  (UART_BASE + UART_STATUS_OFFSET)
 #define UART_CONTROL (UART_BASE + UART_CONTROL_OFFSET)
 #define UART_DIVISOR (UART_BASE + UART_DIVISOR_OFFSET)
 #define UART_ENDOFPACKET (UART_BASE + UART_ENDOFPACKET_OFFSET)
+
+
+/*
+ * JTAG UART関連
+ */ 
+#define JTAG_UART_DATA_OFFSET    0x00
+#define JTAG_UART_CONTROL_OFFSET 0x04
+
+#define JTAG_UART_DATA_RVALID 0x8000
+
+#define JTAG_UART_CONTROL_RIE 0x01
+#define JTAG_UART_CONTROL_WIE 0x02
+#define JTAG_UART_CONTROL_RIP 0x04
+#define JTAG_UART_CONTROL_WIP 0x08
+#define JTAG_UART_CONTROL_WSAPCE 0x0ffff0000
+
+#define JTAG_UART_DATA    (UART_BASE + JTAG_UART_DATA_OFFSET)
+#define JTAG_UART_CONTROL (UART_BASE + JTAG_UART_CONTROL_OFFSET)
+
 
 #ifndef _MACRO_ONLY
 
@@ -172,14 +188,28 @@ extern SIOPCB   siopcb_table[];
 
 Inline void
 uart_putc(unsigned char c){
-  while(!(sil_rew_mem((VP)UART_STATUS) & UART_STATUS_TRDY));
-  sil_wrw_mem((VP)UART_TXDATA, c);
+#ifndef USE_JTAG_UART	
+	while(!(sil_rew_mem((VP)UART_STATUS) & UART_STATUS_TRDY));
+	sil_wrw_mem((VP)UART_TXDATA, c);
+#else
+	while(!((sil_rew_mem((VP)JTAG_UART_CONTROL) & JTAG_UART_CONTROL_WSAPCE) > 0));
+	sil_wrw_mem((VP)JTAG_UART_DATA, c);	
+#endif /* USE_JTAG_UART	*/	
 }
 
 Inline unsigned char
 uart_getc(void){
-  while(!(sil_rew_mem((VP)UART_STATUS) & UART_STATUS_RRDY));
-  return (char)(sil_rew_mem((VP)UART_RXDATA));
+#ifndef USE_JTAG_UART	
+	while(!(sil_rew_mem((VP)UART_STATUS) & UART_STATUS_RRDY));
+	return (char)(sil_rew_mem((VP)UART_RXDATA));
+#else
+	int tmp;
+	do{
+		tmp = sil_rew_mem((VP)JTAG_UART_DATA);
+	}while((tmp &JTAG_UART_DATA_RVALID) == 0);
+
+	return (char)tmp;
+#endif /* USE_JTAG_UART	*/			
 }
 
 /*

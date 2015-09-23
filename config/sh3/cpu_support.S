@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.36 2003/10/21 06:56:46 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.37 2005/08/22 16:57:25 honda Exp $
  */
 
 
@@ -458,7 +458,7 @@ ret_int_1:
      nop       
 ret_int_2:               
 #ifdef SUPPORT_CHG_IPM
-    mov    #32,r0
+    mov    #44,r0
     mov.l  @(r0,r15),r1
     mov.l  _unmask_ipm,r2
     and    r2,r1

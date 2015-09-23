@@ -35,7 +35,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: sh7615.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: sh7615.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 #ifndef _SH7615_H_
@@ -206,7 +206,6 @@
 /* 割り込みコントロール/ステータスレジスタ */
 #define IRQCSR  ((VH *)0xfffffee8)
 
-
 /*
  * 割り込みコントローラの初期化
  */
@@ -218,28 +217,6 @@ sh2_init_intcontorller (void)
 	sil_wrh_mem (IPRC, 0x0000);
 	sil_wrh_mem (IPRD, 0x0000);
 	sil_wrh_mem (IPRE, 0x0000);
-}
-
-
-/*
- *  メモリブロック操作ライブラリ
- *	(ItIsからの流用)
- *
- *  関数の仕様は，ANSI C ライブラリの仕様と同じ．標準ライブラリのものを
- *  使った方が効率が良い可能性がある．
- *
- */
-
-Inline VP
-memcpy (VP dest, VP src, UINT len)
-{
-	VB *d = dest;
-	VB *s = src;
-
-	while (len-- > 0) {
-		*d++ = *s++;
-	}
-	return (dest);
 }
 
 #endif /* _MACRO_ONLY */

@@ -6,6 +6,8 @@
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  *                2003      by Advanced Data Controls, Corp
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN    
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.1 2004/05/23 12:18:56 honda Exp $
+ *  @(#) $Id: sys_defs.h,v 1.2 2005/07/27 11:06:36 honda Exp $
  */
 
 
@@ -77,7 +79,7 @@ typedef    UINT        INHNO;        /* 割込みハンドラ番号 */
 
 
 typedef    UD  SYSUTIM;    /* 性能評価用システム時刻 */
-extern ER   vxget_tim(SYSUTIM *pk_sysutim);
+extern ER   vxget_tim(SYSUTIM *pk_sysutim) throw();
 
 #endif /* _MACRO_ONLY */
 

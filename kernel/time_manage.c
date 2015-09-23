@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: time_manage.c,v 1.10 2003/12/06 08:01:35 hiro Exp $
+ *  @(#) $Id: time_manage.c,v 1.11 2005/11/12 14:56:15 hiro Exp $
  */
 
 /*
@@ -99,7 +99,7 @@ get_tim(SYSTIM *p_systim)
  */
 #ifdef __vxget_tim
 #ifdef SUPPORT_VXGET_TIM
-#include "hw_timer.h"
+#include <hw_timer.h>
 
 SYSCALL ER
 vxget_tim(SYSUTIM *p_sysutim)

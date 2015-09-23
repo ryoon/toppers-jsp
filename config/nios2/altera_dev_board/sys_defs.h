@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.1 2004/06/27 10:51:54 honda Exp $
+ *  @(#) $Id: sys_defs.h,v 1.4 2005/11/12 09:17:48 honda Exp $
  */
 
 
@@ -50,7 +50,7 @@
 #ifndef _SYS_DEFS_H_
 #define _SYS_DEFS_H_
 
-#define MB_TEMPLATE_SYSTEM
+#define ALTERA_DEV
 
 
 /*
@@ -80,16 +80,21 @@
 #define    TIC_DENO    1        /* タイムティックの周期の分母 */
 
 
+#define USE_JTAG_UART
 
 /*
  *  TIMER のベースアドレス
  */
-#define TIM_BASE 0x00920800
+#define TIM_BASE 0x02120800
 
 /*
  * カーネルで使用する UART のベースアドレス
  */
-#define UART_BASE  0x009208A0
+#ifndef USE_JTAG_UART
+#define UART_BASE  0x02120840
+#else
+#define UART_BASE  0x021208B0
+#endif /* USE_JTAG_UART */
 
 
 /*
@@ -100,7 +105,11 @@
 /*
  * UART 割込みの割込み番号
  */
+#ifndef USE_JTAG_UART
 #define UART_INTLVL       4
+#else
+#define UART_INTLVL       1
+#endif /* USE_JTAG_UART */
 
 
 /*                                                                             

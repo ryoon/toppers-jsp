@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sfruart.c,v 1.1 2004/05/27 12:04:18 honda Exp $
+ *  @(#) $Id: sfruart.c,v 1.3 2005/11/24 12:41:23 honda Exp $
  */
 
 /*
@@ -110,7 +110,7 @@ static SIOPCB siopcb_table[TNUM_SIOP];
  *  SIOドライバの初期化ルーチン
  */
 void
-sfruart_initialize()
+sfruart_initialize(void)
 {
 	SIOPCB	*siopcb;
 	UINT	i;
@@ -249,7 +249,7 @@ sfruart_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 /*
  *  uart0からの受信割込み
  */
-void serial_in_handler1()
+void serial_in_handler1(void)
 {
 	SIOPCB *siopcb = &siopcb_table[0];
 	if((siopcb->cr1 & TBIT_UiC1_RE) != 0) {
@@ -263,7 +263,7 @@ void serial_in_handler1()
 /*
  *  uart0からの送信割込み
  */
-void serial_out_handler1()
+void serial_out_handler1(void)
 {
 	SIOPCB *siopcb = &siopcb_table[0];
 	if(siopcb->tic > 0 && (sil_reb_mem((VP)(siopcb->siopinib->cntrl+TADR_SFR_UC1_OFFSET)) & TBIT_UiC1_TI)){
@@ -277,7 +277,7 @@ void serial_out_handler1()
 /*
  *  uart1からの受信割込み
  */
-void serial_in_handler2()
+void serial_in_handler2(void)
 {
 	SIOPCB *siopcb = &siopcb_table[1];
 	if((siopcb->cr1 & TBIT_UiC1_RE) != 0){
@@ -291,7 +291,7 @@ void serial_in_handler2()
 /*
  *  uart1からの送信割込み
  */
-void serial_out_handler2()
+void serial_out_handler2(void)
 {
 	SIOPCB *siopcb = &siopcb_table[1];
 	if(siopcb->tic > 0 && (sil_reb_mem((VP)(siopcb->siopinib->cntrl+TADR_SFR_UC1_OFFSET)) & TBIT_UiC1_TI)){

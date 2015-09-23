@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sh1itu.h,v 1.7 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: sh1itu.h,v 1.8 2005/11/14 08:00:44 honda Exp $
  */
 
 /*
@@ -152,7 +152,7 @@ typedef UH	CLOCK;
  *  タイマスタート
  */
 Inline void
-sh1_itu_start()
+sh1_itu_start(void)
 {
 	sh1_orb_reg(ITU_TSTR, TSTR_STR0);
 }
@@ -161,7 +161,7 @@ sh1_itu_start()
  *  タイマ一時停止
  */
 Inline void
-sh1_itu_stop()
+sh1_itu_stop(void)
 {
 	sh1_anb_reg(ITU_TSTR, (VB)~TSTR_STR0);
 }
@@ -171,7 +171,7 @@ sh1_itu_stop()
  *	TCRレジスタのIMFAビットは1回読み出した後に０を書き込む
  */
 Inline void
-sh1_itu_int_clear()
+sh1_itu_int_clear(void)
 {
 	/* 割り込み要求をクリア 	*/
 	/*  （GRAコンペアマッチフラグ） */
@@ -185,7 +185,7 @@ sh1_itu_int_clear()
  *  タイマを初期化し，周期的なタイマ割込み要求を発生させる．
  */
 Inline void
-sh1_itu_initialize()
+sh1_itu_initialize(void)
 {
 	CLOCK	cyc = TO_CLOCK(TIC_NUME, TIC_DENO);
 
@@ -215,7 +215,7 @@ sh1_itu_initialize()
  *  タイマの動作を停止させる．
  */
 Inline void
-sh1_itu_terminate()
+sh1_itu_terminate(void)
 {
 	sh1_itu_stop();			/* タイマを停止 	*/
 	sh1_itu_int_clear();		/* 割り込み要求をクリア */
@@ -230,7 +230,7 @@ sh1_itu_terminate()
  *　　　タイマの動作を一時的に停止し，タイマ値を読み出す．
  */
 Inline CLOCK
-sh1_itu_get_current()
+sh1_itu_get_current(void)
 {
 	CLOCK	clk;
 	
@@ -249,7 +249,7 @@ sh1_itu_get_current()
  *  タイマ割込み要求のチェック
  */
 Inline BOOL
-sh1_itu_fetch_interrupt()
+sh1_itu_fetch_interrupt(void)
 {
 	VB tsr0 = sil_reb_mem(ITU_TSR0);
 	return(tsr0 & TSR_IMFA);

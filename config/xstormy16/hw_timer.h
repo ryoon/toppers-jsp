@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2005 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -52,17 +52,17 @@
 /*
  *  タイマの起動処理
  */
-extern void hw_timer_initialize() ;
+extern void hw_timer_initialize(void) ;
 
 /*
  *  タイマ割込み要求のクリア
  */
-extern void hw_timer_int_clear() ;
+extern void hw_timer_int_clear(void) ;
 
 /*
  *  タイマの停止処理
  */
-extern void hw_timer_terminate() ;
+extern void hw_timer_terminate(void) ;
 
 /*
  *  デフォルトのタイマー割り込みハンドラー

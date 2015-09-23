@@ -1,7 +1,7 @@
 /* This file is generated from sys_rename.def by genrename. */
 
-#ifdef _SYS_RENAME_H_
-#undef _SYS_RENAME_H_
+#ifdef _SYS_UNRENAME_H_
+#undef _SYS_UNRENAME_H_
 
 /*
  * sys_config.c
@@ -28,4 +28,4 @@
 #undef _sil_log_id
 
 #endif /* LABEL_ASM */
-#endif /* _SYS_RENAME_H_ */
+#endif /* _SYS_UNRENAME_H_ */

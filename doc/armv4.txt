@@ -2,7 +2,7 @@
             ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                 （ARMv4 ターゲット依存部）
 
-          （Release 1.4.1対応，最終更新: 27-May-2004）
+          （Release 1.4.2対応，最終更新: 11-Jul-2005）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
@@ -39,7 +39,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: armv4.txt,v 1.8 2004/10/06 06:51:51 honda Exp $
+ @(#) $Id: armv4.txt,v 1.10 2005/07/11 02:50:33 honda Exp $
 ------------------------------------------------------------------------
 
 
@@ -52,16 +52,12 @@ ARMV4 プロセッサのターゲットシステムとしては，ARMv4アーキテクチャのCPU
 コアを搭載した以下のボードをサポートしている．なお，Thumb命令はサポー
 トしていない．
 
-  ・京都マイクロコンピュータ製の ARM9EX (Excalibur-ARM : ARM9TDMI)
-
-ARM9EX のシステム依存部に関しては，そのほとんどが Excalibur-ARM に依存
-したものであるため，名前を Excalibur としている．よって，他の 
-Excalibur-ARM を搭載したボードにポーティングするのは比較的容易である．
+  ・ARM製の Integrator/CM922T-ETM(ARM9TDMI) + Integrator/AP
 
 開発環境には，GCC などの GNU開発環境を用い，オブジェクトファイルフォー
 マットは ELF を標準とする．
 
-Excaliburでは，実行間環境としてJTAG-ICEを用いることを想定している．
+Integratorでは，実行間環境としてJTAG-ICEを用いることを想定している．
 JTAG-ICEとしては，ARM社製の Multi-ICE と，ソフィアシステムズ製の
 UniSTAC II/J ETM for ARM9 で動作確認している．
 
@@ -82,25 +78,14 @@ ARMv4 依存の機能として、性能評価用システム時刻参照機能(vxget_tim)をサポ
   ・シリアルドライバ
 
 
-1.4 Excalibur-ARM の初期化
-
-Excalibur 依存部は，JTAG-ICE を使うことを想定しており，メモリマップの
-初期化コード等は含まれていない．そのため，メモリマップの初期化はICEの
-初期化コマンドで行う必要がある．Multi-ICE + gdb を使用した場合のカーネ
-ルを動作させるための初期化コマンドを以下に示す．
-
-  set *(0x7FFFD0C0)=0x40000A83
-  set *(0x7FFFD0C4)=0x50000c03
-  set *(0x7FFFD090)=0x00000781
-  set *(0x7FFFD094)=0x00010781
-  set *(0x7FFFD000)=0x01
-  set $cpsr=0xdf
+1.4 Integrator の初期化
 
 
 1.5 シリアルポート
 
-Excalibur-ARM ではチップ内蔵の UART をカーネルログ出力用に使用する．ディ
-フォルトでは，速度115200bps,データ:8bit,Parity:none,Stop:1bitである。
+Integrator ではIntegrator/AP 上の UART をカーネルログ出力用に使用する．
+ディフォルトでは，速度115200bps,データ:8bit,Parity:none,Stop:1bitであ
+る。
 
 
 1.6 Thumbコードについて
@@ -226,7 +211,7 @@ ARMv4 依存部では、性能評価用システム時刻参照機能(vxget_tim)をサポートし
 
 3.3 シリアルインタフェースドライバ
 
-Excalibur 依存部では，チップ内蔵の UART をサポートしている．
+Integrator 依存部では，Intergrator/AP上の UART をサポートしている．
 
 
 ４．開発環境の構築
@@ -295,14 +280,14 @@ ARMv4 ターゲット依存部の各ファイルの概要は次の通り．
         tool_config.h   開発環境依存部の構成定義（GNU開発環境用）
         tool_defs.h     開発環境依存部のアプリケーション用定義（GNU開発環境用）
 
-    config/armv4/excalibur
-        Makefile.config Makefileの Excalibur 依存定義
-        excalibur.c     Excalibur ハードウェア操作関数
-        excalibur.h     Excalibur ハードウェア定義
+    config/armv4/integrator
+        Makefile.config Makefileの Integrator 依存定義
         hw_serial.cfg   SIOドライバのコンフィギュレーションファイル
         hw_serial.h     SIOドライバ
         hw_timer.h      タイマ操作ルーチン
-        kz_arm9ex.h     KZ_ARM9EX 依存のハードウェア定義
+        integrator.c    Integrator ハードウェア操作関数
+        integrator.h    Integrator ハードウェア定義
+        integrator.ld   Integrator リンカスクリプト
         sys_config.c    システム依存部の関数
         sys_config.h    システム依存部の構成定義
         sys_defs.h      システム依存部のアプリケーション用定義
@@ -310,6 +295,3 @@ ARMv4 ターゲット依存部の各ファイルの概要は次の通り．
         sys_rename.h    カーネルの内部識別名のリネーム
         sys_support.S   システム依存部のサブルーチン
         sys_unrename.h  カーネルの内部識別名のリネーム解除
-
-
-

@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: kz_sh1.h,v 1.11 2004/09/22 08:47:52 honda Exp $
+ *  @(#) $Id: kz_sh1.h,v 1.14 2005/11/07 01:15:43 honda Exp $
  */
 
 /*
@@ -68,8 +68,8 @@ gdb_stub_exit(void)
 Inline int
 gdb_stub_putc(int c)
 {
-	Asm("mov   #0x00,r0
-	     mov   %0,r4
+	Asm("mov   #0x00,r0;	\
+	     mov   %0,r4;	\
 	     trapa #0x21"
                : /* no output */
                : "r"(c)

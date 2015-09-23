@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sil.h,v 1.7 2003/07/01 13:32:20 hiro Exp $
+ *  @(#) $Id: sil.h,v 1.8 2005/11/12 15:01:15 hiro Exp $
  */
 
 /*
@@ -93,6 +95,7 @@ extern "C" {
  *  割込みロック状態の制御
  */
 #ifndef SIL_PRE_LOC
+#include <kernel.h>
 #define	SIL_PRE_LOC	BOOL _sil_loc_ = sns_loc()
 #define	SIL_LOC_INT()	((void)(!(_sil_loc_) \
 				&& (sns_ctx() ? iloc_cpu() : loc_cpu())))

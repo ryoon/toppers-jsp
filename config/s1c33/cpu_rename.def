@@ -1,5 +1,4 @@
 #cpu_config.c
-cpu_initialize
 cpu_terminate
 activate_r
 dispatch

@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2005 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -49,7 +49,7 @@
  *
  *  タイマを初期化し，周期的なタイマ割込み要求を発生させる．
  */
-void hw_timer_initialize()
+void hw_timer_initialize(void)
 {
                                 /*
                                  *  タイムティック周期の設定
@@ -78,7 +78,7 @@ void hw_timer_initialize()
 /*
  *  タイマ割込み要求のクリア
  */
-void hw_timer_int_clear()
+void hw_timer_int_clear(void)
 {
     __SFR_BITCLR( __T0CNT, 1 ) ;
 }
@@ -86,7 +86,7 @@ void hw_timer_int_clear()
 /*
  *  タイマの停止処理
  */
-void hw_timer_terminate()
+void hw_timer_terminate(void)
 {
                                 /*
                                  *  タイマの動作を停止させる．

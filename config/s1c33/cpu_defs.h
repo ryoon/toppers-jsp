@@ -132,7 +132,7 @@ _enaint_(UW intmask)
 
 typedef	UW  SYSUTIM;		/* 性能評価用システム時刻 */
 
-extern ER   vxget_tim(SYSUTIM *pk_sysutim);
+extern ER	vxget_tim(SYSUTIM *p_sysutim) throw();
 
 /*
  *  システムの中断処理

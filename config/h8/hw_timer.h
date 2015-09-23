@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,13 +37,14 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_timer.h,v 1.9 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: hw_timer.h,v 1.14 2005/11/07 01:49:53 honda Exp $
  */
 
 #ifndef _HW_TIMER_H_
 #define _HW_TIMER_H_
 
 #include <s_services.h>
+#include <h8_sil.h>
 
 #ifndef _MACRO_ONLY
 
@@ -88,6 +89,16 @@ typedef UH	CLOCK;
 		((clock) >= TO_CLOCK(TIC_NUME, TIC_DENO) - GET_TOLERANCE)
 
 /*
+ *  プライオリティレベル設定用のデータ
+ *      本当は割込みコントローラ依存部分を分離すべき
+ *
+ *      本来はhw_timer.hに実体を記述するべきだが、そうすると
+ *      hw_timer.hをインクルードしたファイルですべて実体化されて
+ *　　　メモリ領域を占有してしまうため、実体はcpu_config.cに記述する。
+ */
+extern IRC TIMER_IRC;
+
+/*
  *  タイマ割込み要求のクリア
  *	TCRレジスタのIMFAビットは1回読み出した後に０を書き込む
  */
@@ -96,13 +107,7 @@ Inline void
 hw_timer_int_clear(void)
 {
     /* GRAコンペアマッチの割り込み要求フラグをクリア */
-    /*sil_wrb_mem((VP)SYSTEM_TIMER_IFR,
-                  sil_reb_mem((VP)SYSTEM_TIMER_IFR) & ~SYSTEM_TIMER_IF);*/
-    UW addr = SYSTEM_TIMER_IFR;
-
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(SYSTEM_TIMER_IF_BIT));
-#undef  BITCLR
+    bitclr((UB *)SYSTEM_TIMER_IFR, SYSTEM_TIMER_IF_BIT);
 }
 
 /*
@@ -112,17 +117,10 @@ hw_timer_int_clear(void)
  */
 
 Inline void
-hw_timer_initialize()
+hw_timer_initialize(void)
 {
-    UW addr = SYSTEM_TIMER_TSTR;
-
     /* タイマ停止 */
-    /*sil_wrb_mem((VP)SYSTEM_TIMER_TSTR,
-                  sil_reb_mem((VP)SYSTEM_TIMER_TSTR) & ~SYSTEM_TIMER_STR);*/
-
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(SYSTEM_TIMER_STR_BIT));
-#undef  BITCLR
+    bitclr((UB *)SYSTEM_TIMER_TSTR, SYSTEM_TIMER_STR_BIT);
 
     /*  GRAコンペアマッチでカウンタをクリア、分周比設定 */
     sil_wrb_mem((VP)SYSTEM_TIMER_TCR, SYSTEM_TIMER_TCR_BIT);
@@ -140,13 +138,14 @@ hw_timer_initialize()
 
     hw_timer_int_clear();			/*  割込み要求をクリア	*/
 
-    /* タイマスタート */
-    /*sil_wrb_mem((VP)SYSTEM_TIMER_TSTR,
-                  sil_reb_mem((VP)SYSTEM_TIMER_TSTR) | SYSTEM_TIMER_STR);*/
+    /*
+     *  プライオリティ・レベルの設定
+     *  本当は割込みコントローラ依存部分を分離すべき
+     */
+    define_int_plevel(&TIMER_IRC);
 
-#define BITSET(bit)	Asm("bset #" bit ", @%0" : : "r"(addr))
-	BITSET(_TO_STRING(SYSTEM_TIMER_STR_BIT));
-#undef  BITSET
+    /* タイマスタート */
+    bitset((UB *)SYSTEM_TIMER_TSTR, SYSTEM_TIMER_STR_BIT);
 }
 
 /*
@@ -154,18 +153,10 @@ hw_timer_initialize()
  */
 
 Inline void
-hw_timer_terminate()
+hw_timer_terminate(void)
 {
-    UW addr = SYSTEM_TIMER_TSTR;
-
-    /* タイマ停止 */
-    /*sil_wrb_mem((VP)SYSTEM_TIMER_TSTR,
-                  sil_reb_mem((VP)SYSTEM_TIMER_TSTR) & ~SYSTEM_TIMER_STR);*/
-
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(SYSTEM_TIMER_STR_BIT));
-#undef  BITCLR
-
+    					/* タイマ停止 */
+    bitclr((UB *)SYSTEM_TIMER_TSTR, SYSTEM_TIMER_STR_BIT);
     hw_timer_int_clear();		/* 割り込み要求をクリア */
 }
 
@@ -188,7 +179,8 @@ hw_timer_get_current(void)
 Inline BOOL
 hw_timer_fetch_interrupt(void)
 {
-	return(sil_reb_mem((VP)SYSTEM_TIMER_IFR) & SYSTEM_TIMER_IF);
+	UB ifr = sil_reb_mem((VP)SYSTEM_TIMER_IFR);
+	return(ifr & SYSTEM_TIMER_IF);
 }
 
 #endif	/* of #ifndef _MACRO_ONLY */

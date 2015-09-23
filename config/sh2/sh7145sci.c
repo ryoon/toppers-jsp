@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sh7145sci.c,v 1.1 2004/10/04 12:23:39 honda Exp $
+ *  @(#) $Id: sh7145sci.c,v 1.3 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -44,24 +44,29 @@
  */
 
 #include <s_services.h>
-#ifdef GDB_STUB
-#include "sh7145sci0.h"
-#else	/*  GDB_STUB  */
-#include "sh7145sci1.h"
-#endif	/*  GDB_STUB  */
+#include "sh7145sci.h"
 
 /*
- *  シリアルI/Oポート管理ブロックの定義
+ * シリアルI/Oポート初期化ブロック
  */
-struct sio_port_control_block {
-	VP_INT		exinf;		/* 拡張情報 */
-	BOOL		openflag;	/* オープン済みフラグ */
+#ifndef GDB_STUB
+const SIOPINIB siopinib_table[TNUM_PORT] = {
+	{0xffff81b0, BRR9600, 0x0, 6}, /* SCI1 */
+#if TNUM_PORT >= 2
+	{0xffff81a0, BRR9600, 0x0, 6}, /* SCI0 */
+#endif /* TNUM_PORT >= 2 */
 };
+#else /* GDB_STUB */
+const SIOPINIB siopinib_table[TNUM_PORT] = {
+	{0xffff81a0, BRR9600, 0x0, 6}, /* SCI0 */
+};
+#endif /* GDB_STUB */
+
 
 /*
  *  シリアルI/Oポート管理ブロックのエリア
  */
-static SIOPCB	siopcb_table[TNUM_SIOP];
+static SIOPCB siopcb_table[TNUM_PORT];
 
 /*
  *  シリアルI/OポートIDから管理ブロックを取り出すためのマクロ
@@ -74,33 +79,37 @@ static SIOPCB	siopcb_table[TNUM_SIOP];
  *  文字を受信できるか？
  */
 Inline BOOL
-sh2sci_getready(SIOPCB *siopcb)
+sh2sci_getready (SIOPCB * siopcb)
 {
 	/*  レシーブデータレジスタフル・フラグのチェック  */
-	return (sil_reb_mem (SCI_SSR) & SSR_RDRF);
+	return (sil_reb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SSR)) &
+			SSR_RDRF);
 }
 
 /*
  *  文字を送信できるか？
  */
 Inline BOOL
-sh2sci_putready(SIOPCB *siopcb)
+sh2sci_putready (SIOPCB * siopcb)
 {
 	/*  トランスミットデータレジスタエンプティ・フラグのチェック */
-	return (sil_reb_mem (SCI_SSR) & SSR_TDRE);
+	return (sil_reb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SSR)) &
+			SSR_TDRE);
 }
 
 /*
  *  受信した文字の取出し
  */
 Inline char
-sh2sci_getchar(SIOPCB *siopcb)
+sh2sci_getchar (SIOPCB * siopcb)
 {
 	char data;
 
-	data = sil_reb_mem (SCI_RDR);
+	data = sil_reb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_RDR));
 	/*  レシーブデータレジスタフル・フラグのクリア  */
-	sil_wrb_mem (SCI_SSR, sil_reb_mem (SCI_SSR) & ~SSR_RDRF);
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SSR),
+				 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+									  SCI_SSR)) & ~SSR_RDRF);
 	return data;
 }
 
@@ -108,34 +117,29 @@ sh2sci_getchar(SIOPCB *siopcb)
  *  送信する文字の書込み
  */
 Inline void
-sh2sci_putchar(SIOPCB *siopcb, char c)
+sh2sci_putchar (SIOPCB * siopcb, char c)
 {
-#ifdef GDB_STUB
-	//gdb_stub_putc( c );
-	sil_wrb_mem (SCI_TDR, c);
-	/*  トランスミットFIFOデータレジスタエンプティ・フラグのクリア */
-	sil_wrb_mem (SCI_SSR, sil_reb_mem (SCI_SSR) & ~SSR_TDRE);
-#else
-	sil_wrb_mem (SCI_TDR, c);
-	/*  トランスミットFIFOデータレジスタエンプティ・フラグのクリア */
-	sil_wrb_mem (SCI_SSR, sil_reb_mem (SCI_SSR) & ~SSR_TDRE);
-#endif
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_TDR), c);
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SSR),
+				 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+									  SCI_SSR)) & ~SSR_TDRE);
 }
 
 /*
  *  SIOドライバの初期化ルーチン
  */
 void
-sh2sci_initialize()
+sh2sci_initialize ()
 {
-	SIOPCB	*siopcb;
-	UINT	i;
+	SIOPCB *siopcb;
+	UINT i;
 
 	/*
 	 *  シリアルI/Oポート管理ブロックの初期化
 	 */
-	for (siopcb = siopcb_table, i = 0; i < TNUM_SIOP; siopcb++, i++) {
+	for (siopcb = siopcb_table, i = 0; i < TNUM_PORT; siopcb++, i++) {
 		siopcb->openflag = FALSE;
+		siopcb->siopinib = (&siopinib_table[i]);
 	}
 }
 
@@ -143,50 +147,36 @@ sh2sci_initialize()
  *  オープンしているポートがあるか？
  */
 BOOL
-sh2sci_openflag(void)
+sh2sci_openflag (ID siopid)
 {
-#if TNUM_SIOP < 2
-	return(siopcb_table[0].openflag);
-#else /* TNUM_SIOP < 2 */
-	return(siopcb_table[0].openflag || siopcb_table[1].openflag);
-#endif /* TNUM_SIOP < 2 */
+	return (siopcb_table[siopid - 1].openflag);
 }
 
 /*
  *  シリアルI/Oポートのオープン
  */
 SIOPCB *
-sh2sci_opn_por(ID siopid, VP_INT exinf)
+sh2sci_opn_por (ID siopid, VP_INT exinf)
 {
-	SIOPCB *siopcb = get_siopcb(siopid);
-
-#ifdef GDB_STUB
-	sil_wrh_mem (MSTCR1, (VH)((VH)sil_reh_mem(MSTCR1)& ~0x0001));
-#else	/*  GDB_STUB  */
-	sil_wrh_mem (MSTCR1, (VH)((VH)sil_reh_mem(MSTCR1)& ~0x0002));
-#endif	/*  GDB_STUB  */
-	sil_wrb_mem (SCI_SDCR,0xf0);
+	SIOPCB *siopcb = get_siopcb (siopid);
 
 	/*  送受信停止  */
-	sil_wrb_mem (SCI_SCR,0x00);
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR), 0x00);
 
 	/*  SCIデータ入出力ポートの設定  */
-	sil_wrh_mem (PACRL2, sil_reh_mem (PACRL2) | (PFC_TXD | PFC_RXD));
-
-	/*  ピンアサイン
-	 *     シリアルデバイス自体の事項ではないので
-	 *     本来はこのファイルに記述するのはふさわしくないが、
-	 *     hw_serial.cを用意するのも煩雑なので暫定的にここに入れている。
-	 */
+	/*  ピンアサイン */
+	/* sys_initializeで設定 */
 
 	/*  送受信フォーマット  */
-	sil_wrb_mem (SCI_SMR, 0x00);
 	/*  調歩同期式  */
 	/*  8ビット、パリティなし  */
 	/*  ストップビットレングス：1   */
 	/*  クロックセレクト */
 
-	sil_wrb_mem (SCI_BRR, (VB) BRR);
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SMR),
+				 siopcb->siopinib->smr);
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_BRR),
+				 (VB) siopcb->siopinib->brr);
 
 	/*
 	 * ボーレートの設定後、1カウント分待たなければならない。
@@ -194,28 +184,30 @@ sh2sci_opn_por(ID siopid, VP_INT exinf)
 	sil_dly_nse (sh2sci_DELAY);	/* 値はｓｈ１と同じ */
 
 	/* エラーフラグをクリア */
-	sil_wrb_mem (SCI_SSR, sil_reb_mem (SCI_SSR) & ~(SSR_ORER | SSR_FER |SSR_PER));
-	//送受信許可、受信割り込み許可
-	sil_wrb_mem (SCI_SCR, (VB) (SCI_RIE | SCI_TE | SCI_RE));
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SSR),
+				 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+									  SCI_SSR)) & ~(SSR_ORER | SSR_FER |
+													SSR_PER));
+	/*送受信許可、受信割り込み許可 */
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR),
+				 (VB) (SCI_RIE | SCI_TE | SCI_RE));
 
 	siopcb->exinf = exinf;
 	siopcb->openflag = TRUE;
-	return(siopcb);
+	return (siopcb);
 }
 
 /*
  *  シリアルI/Oポートのクローズ
  */
 void
-sh2sci_cls_por(SIOPCB *siopcb)
+sh2sci_cls_por (SIOPCB * siopcb)
 {
 	/*  送受信停止、割込み禁止  */
-	sil_wrb_mem (SCI_SCR,sil_reb_mem (SCI_SCR) & (VB) ~ (SCI_TIE | SCI_RIE | SCI_TE | SCI_RE));
-#ifdef GDB_STUB
-	sil_wrh_mem (MSTCR1, (VH)((VH)sil_reh_mem(MSTCR1) | 0x0001));
-#else	/*  GDB_STUB  */
-	sil_wrh_mem (MSTCR1, (VH)((VH)sil_reh_mem(MSTCR1) | 0x0002));
-#endif	/*  GDB_STUB  */
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR),
+				 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+									  SCI_SCR)) & (VB) ~ (SCI_TIE | SCI_RIE |
+														  SCI_TE | SCI_RE));
 	siopcb->openflag = FALSE;
 }
 
@@ -223,40 +215,44 @@ sh2sci_cls_por(SIOPCB *siopcb)
  *  シリアルI/Oポートへの文字送信
  */
 BOOL
-sh2sci_snd_chr(SIOPCB *siopcb, char c)
+sh2sci_snd_chr (SIOPCB * siopcb, char c)
 {
-	if (sh2sci_putready(siopcb)) {
-		sh2sci_putchar(siopcb, c);
-		return(TRUE);
+	if (sh2sci_putready (siopcb)) {
+		sh2sci_putchar (siopcb, c);
+		return (TRUE);
 	}
-	return(FALSE);
+	return (FALSE);
 }
 
 /*
  *  シリアルI/Oポートからの文字受信
  */
 INT
-sh2sci_rcv_chr(SIOPCB *siopcb)
+sh2sci_rcv_chr (SIOPCB * siopcb)
 {
-	if (sh2sci_getready(siopcb)) {
-		return((INT)(UB) sh2sci_getchar(siopcb));
+	if (sh2sci_getready (siopcb)) {
+		return ((INT) (UB) sh2sci_getchar (siopcb));
 		/*  (UB)でキャストするのはゼロ拡張にするため  */
 	}
-	return(-1);
+	return (-1);
 }
 
 /*
  *  シリアルI/Oポートからのコールバックの許可
  */
 void
-sh2sci_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
+sh2sci_ena_cbr (SIOPCB * siopcb, UINT cbrtn)
 {
 	switch (cbrtn) {
-	case SIO_ERDY_SND:	/* 送信割り込み要求を許可 */
-		sil_wrb_mem (SCI_SCR, sil_reb_mem (SCI_SCR) | SCI_TIE);
+	case SIO_ERDY_SND:			/* 送信割り込み要求を許可 */
+		sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR),
+					 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+										  SCI_SCR)) | SCI_TIE);
 		break;
-	case SIO_ERDY_RCV:	/* 受信割り込み要求を許可 */
-		sil_wrb_mem (SCI_SCR, sil_reb_mem (SCI_SCR) | SCI_RIE);
+	case SIO_ERDY_RCV:			/* 受信割り込み要求を許可 */
+		sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR),
+					 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+										  SCI_SCR)) | SCI_RIE);
 		break;
 	}
 }
@@ -265,14 +261,18 @@ sh2sci_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
  *  シリアルI/Oポートからのコールバックの禁止
  */
 void
-sh2sci_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
+sh2sci_dis_cbr (SIOPCB * siopcb, UINT cbrtn)
 {
 	switch (cbrtn) {
-	case SIO_ERDY_SND:	/* 送信割り込み要求を禁止 */
-		sil_wrb_mem (SCI_SCR, sil_reb_mem (SCI_SCR) & ~SCI_TIE);
+	case SIO_ERDY_SND:			/* 送信割り込み要求を禁止 */
+		sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR),
+					 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+										  SCI_SCR)) & ~SCI_TIE);
 		break;
-	case SIO_ERDY_RCV:	/* 受信割り込み要求を禁止 */
-		sil_wrb_mem (SCI_SCR, sil_reb_mem (SCI_SCR) & ~SCI_RIE);
+	case SIO_ERDY_RCV:			/* 受信割り込み要求を禁止 */
+		sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR),
+					 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+										  SCI_SCR)) & ~SCI_RIE);
 		break;
 	}
 }
@@ -281,15 +281,15 @@ sh2sci_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
  *  シリアルI/Oポートに対する送信割込み処理
  */
 Inline void
-sh2sci_isr_siop_out(SIOPCB *siopcb)
+sh2sci_isr_siop_out (SIOPCB * siopcb)
 {
-	VB scr0 = sil_reb_mem (SCI_SCR);
-	
-	if ((scr0 & SCI_TIE) != 0 && sh2sci_putready(siopcb)) {
+	VB scr0 = sil_reb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR));
+
+	if ((scr0 & SCI_TIE) != 0 && sh2sci_putready (siopcb)) {
 		/*
 		 *  送信通知コールバックルーチンを呼び出す．
 		 */
-		sh2sci_ierdy_snd(siopcb->exinf);
+		sh2sci_ierdy_snd (siopcb->exinf);
 	}
 }
 
@@ -297,16 +297,28 @@ sh2sci_isr_siop_out(SIOPCB *siopcb)
  *  シリアルI/Oポートに対する受信割込み処理
  */
 Inline void
-sh2sci_isr_siop_in(SIOPCB *siopcb)
+sh2sci_isr_siop_in (SIOPCB * siopcb)
 {
-	VB scr0 = sil_reb_mem (SCI_SCR);
+	VB scr0 = sil_reb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SCR));
 
-	if ((scr0 & SCI_RIE) != 0 && sh2sci_getready(siopcb)) {
+	if ((scr0 & SCI_RIE) != 0 && sh2sci_getready (siopcb)) {
 		/*
 		 *  受信通知コールバックルーチンを呼び出す．
 		 */
-		sh2sci_ierdy_rcv(siopcb->exinf);
+		sh2sci_ierdy_rcv (siopcb->exinf);
 	}
+}
+
+/*
+ *  シリアルI/Oポートに対する受信エラー割込み処理
+ */
+Inline void
+sh2sci_isr_siop_err (SIOPCB * siopcb)
+{
+	sil_wrb_mem ((VB *) (siopcb->siopinib->reg_base + SCI_SSR),
+				 sil_reb_mem ((VB *) (siopcb->siopinib->reg_base +
+									  SCI_SSR)) & ~(SSR_ORER | SSR_FER |
+													SSR_PER));
 }
 
 /*
@@ -314,10 +326,10 @@ sh2sci_isr_siop_in(SIOPCB *siopcb)
  *  
  */
 void
-sh2sci_isr_out(void)
+sh2sci_isr_out (void)
 {
 	if (siopcb_table[0].openflag) {
-		sh2sci_isr_siop_out(get_siopcb(1));
+		sh2sci_isr_siop_out (get_siopcb (1));
 	}
 }
 
@@ -326,10 +338,10 @@ sh2sci_isr_out(void)
  *  
  */
 void
-sh2sci_isr_in(void)
+sh2sci_isr_in (void)
 {
 	if (siopcb_table[0].openflag) {
-		sh2sci_isr_siop_in(get_siopcb(1));
+		sh2sci_isr_siop_in (get_siopcb (1));
 	}
 }
 
@@ -337,10 +349,10 @@ sh2sci_isr_in(void)
  *  SIO受信エラー割込みサービスルーチン
  */
 void
-sh2sci_isr_error(void)
+sh2sci_isr_error (void)
 {
 	if (siopcb_table[0].openflag) {
-	sil_wrb_mem (SCI_SSR, sil_reb_mem (SCI_SSR) & ~(SSR_ORER | SSR_FER |SSR_PER));
+		sh2sci_isr_siop_err (get_siopcb (1));
 	}
 }
 
@@ -348,8 +360,46 @@ sh2sci_isr_error(void)
  * ポーリングによる文字の送信
  */
 void
-sh2sci_putc_pol(char c)
+sh2sci_putc_pol (ID portid, char c)
 {
-	while(!sh2sci_putready(&siopcb_table[0]));
-	sh2sci_putchar(&siopcb_table[0], c);
+	while (!sh2sci_putready (&siopcb_table[portid - 1]));
+	sh2sci_putchar (&siopcb_table[portid - 1], c);
 }
+
+
+#if TNUM_PORT >= 2
+/*
+ *  SIO受信割込みサービスルーチン
+ *  
+ */
+void
+sh2sci_isr2_in (void)
+{
+	if (siopcb_table[1].openflag) {
+		sh2sci_isr_siop_in (get_siopcb (2));
+	}
+}
+
+/*
+ *  SCI送信割込みサービスルーチン
+ *  
+ */
+void
+sh2sci_isr2_out (void)
+{
+	if (siopcb_table[1].openflag) {
+		sh2sci_isr_siop_out (get_siopcb (2));
+	}
+}
+
+/*
+ *  SIO受信エラー割込みサービスルーチン
+ */
+void
+sh2sci_isr2_error (void)
+{
+	if (siopcb_table[1].openflag) {
+		sh2sci_isr_siop_err (get_siopcb (2));
+	}
+}
+#endif /* of #if TNUM_PORT >= 2 */

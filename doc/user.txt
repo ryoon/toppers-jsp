@@ -1,7 +1,7 @@
 
             ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
 
-            （Release 1.4.1対応，最終更新: 14-Oct-2004）
+            （Release 1.4.2対応，最終更新: 27-Dec-2005）
 
 ※ このユーザズマニュアルは，μITRON4.0仕様書（Ver. 4.02.00）の内容を
 前提に記述してあります．μITRON4.0仕様書は，以下のURLからダウンロード
@@ -15,7 +15,7 @@
 
  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
- Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2004-2005 by Embedded and Real-Time Systems Laboratory
              Graduate School of Information Science, Nagoya Univ., JAPAN
 
  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -45,7 +45,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: user.txt,v 1.68 2004/10/14 05:48:10 hiro Exp $
+ @(#) $Id: user.txt,v 1.80 2005/12/27 04:11:56 honda Exp $
 ----------------------------------------------------------------------
  * μITRON4.0仕様は，トロン協会が中心となって策定されたオープンなリア
    ルタイムカーネル仕様です．μITRON4.0仕様の仕様書は，トロン協会のホー
@@ -80,6 +80,16 @@ JSPカーネルは，現時点で，以下のターゲットプロセッサ／ターゲットシステ
     m68k                    GNU開発環境
         M68040（MC68LC040）     DVE-68K/40（電産）
 
+    sh1                     GNU開発環境
+        SH1（SH7032）           KZ-SH1-01（京都マイクロコンピュータ）
+                                ※ RISC評価キットSH-1（CQ出版）でも動作
+        SH1（SH7034）           μITRON搭載SH1CPUボード（(株)中央製作所）
+        
+
+    sh2                     GNU開発環境
+        SH2(SH7145)             AP_SH2F_6A（アルファプロジェクト）
+        SH2(SH7615)             HSB7615IT （北斗電子）
+
     sh3                     GNU開発環境
         SH3（SH7709A）          MS7709ASE01 （日立超LSIシステムズ）
         SH3（SH7729R）          MS7729RSE01 （日立超LSIシステムズ）
@@ -90,24 +100,17 @@ JSPカーネルは，現時点で，以下のターゲットプロセッサ／ターゲットシステ
         SH3（SH7709A）          MS7709ASE01 （日立超LSIシステムズ）
         SH3（SH7727）           MS7727CP01  （日立超LSIシステムズ）
 
-    sh1                     GNU開発環境
-        SH1（SH7032）           KZ-SH1-01（京都マイクロコンピュータ）
-                                ※ RISC評価キットSH-1（CQ出版）でも動作
-        SH1（SH7032）           SH1/CPUB（常盤商行）
-
-    sh2                     GNU開発環境
-        SH2(SH7145)             AP_SH2F_6A（アルファプロジェクト）
-        SH2(SH7615)             HSB7615IT （北斗電子）
-
     h8                      GNU開発環境
         H8（H8/3048F）          AKI-H8/3048F（秋月電子通商）
         H8（H8/3052F）          AKI-H8/3052F（秋月電子通商）
-        H8（H8/3067F）          AKI-H8/3067F（秋月電子通商）
-        H8（H8/3068F）          AKI-H8/3068F（秋月電子通商）
         H8（H8/3069F）          AKI-H8/3069F（秋月電子通商）
-    
-    h8s                     GNU開発環境
-        H8S（2350）             H8S/2350 評価ボード(ミスポ)
+        H8 (H8/3069F)           NKEV-010H8   (品川通信計装サービス)
+
+    h8-renesas              Renesas社の開発環境
+        H8(HSB8F3048BF25)       H8/3048F-ONEスタータキット((株)北斗電子)
+
+    h8s-renesas              Renesas社の開発環境
+        H8S(H8S/2339F)          MiNET-H8S/2339F（株式会社ミスポ製）
 
     armv4                   GNU開発環境
         ARM9（ARM922T）         KZ-ARM9EXPCI-01（京都マイクロコンピュータ）
@@ -119,6 +122,9 @@ JSPカーネルは，現時点で，以下のターゲットプロセッサ／ターゲットシステ
     m32r                    GNU開発環境
         M32R（M32102S6FP）      M3A-2131G50（三菱電機）
 
+    m32c-renesas            Renesas社の開発環境
+        M32C                    OAKS32（オークス電子）
+
     microblaze              GNU開発環境
         MicroBlaze              MIREF（YDK）
         MicroBlaze              MIRE_MULTI3000（YDK）
@@ -129,10 +135,6 @@ JSPカーネルは，現時点で，以下のターゲットプロセッサ／ターゲットシステ
 
     xstormy16               GNU開発環境
         Xstormy16               三洋マイコン開発ツール（三洋電機）
-
-    mips3                   GNU開発環境
-        MIPS3（VR4131）         KZ-Vr4131PCI-01（京都マイクロコンピュータ）
-        MIPS3（VR5500）         RTE-VR5500-CB(64)（マイダス・ラボ）
 
     m16c-renesas            Renesas社の開発環境
         M16C（M30620FCAFP-CPU） OASKS16（オークス電子）
@@ -146,11 +148,26 @@ JSPカーネルは，現時点で，以下のターゲットプロセッサ／ターゲットシステ
         SC33                    DMT33209（EPSON）
         SC33                    LUXUN2（EPSON）
 
+    nios2                   GNU開発環境
+        Nios2                   NiosII Development Board（アルテラ）
+
+    v850                    GNU開発環境
+        V850                    TK-850/KJ1+ (Application Corp.)
+
+また，以下のターゲットは，以前のバージョン(1.4.1)のコードからアップデ
+ートされておらず，動作確認を行っていないため，1.4.2では，参考実装扱い
+とする．
+
+    h8s                     GNU開発環境
+        H8S（2350）             H8S/2350 評価ボード(ミスポ)
+
     powerpc32               GNU開発環境
         PowerPC32（MPC860T）    TB6102S（タンバック）
 
-    nios2                   GNU開発環境
-        Nios2                   NiosII Development Board（アルテラ）
+    mips3                   GNU開発環境
+        MIPS3（VR4131）         KZ-Vr4131PCI-01（京都マイクロコンピュータ）
+        MIPS3（VR5500）         RTE-VR5500-CB(64)（マイダス・ラボ）
+
 
 JSPカーネルは，カーネルのできる限り多くの部分をC言語で記述する，ターゲッ
 ト非依存部と依存部を明確に分離するなど，他のターゲットプロセッサへのポ
@@ -275,6 +292,10 @@ kernel_cfg.cは，カーネル，システムサービス，アプリケーションのいずれの
 kernel_cfg.cが正しくコンパイルできなくなる場合が考えられる．カーネルの
 シンボルをリネームするなどの方法でかなり軽減されてはいるが，問題がなく
 なっているわけではない．
+
+シリアルインタフェースドライバで，シリアルポートをクローズした後にオー
+プンしなおした場合に，正しく動作しない．これは，シリアルインタフェース
+ドライバが使用しているセマフォが初期化されないためである．
 
 1.6 注意事項
 
@@ -593,6 +614,33 @@ jsp_services.hというファイル名になっていた．バージョンを問わずに動作す
 い（実際には，ターゲットによって，呼び出しても差し支えないサービスコー
 ルがある）．
 
+2.13 その他
+
+JSPカーネルでは，t_stddef.h の中で，次のマクロを定義している．
+
+(1) assert(exp)
+
+JSPカーネルでは，assertマクロを独自に定義している．開発環境の標準の
+assertマクロは使われない．
+
+(2) throw()
+
+C言語とEC++言語では，throw() が空になるように定義している．C++言語から
+呼び出す可能性のあるC言語で記述された関数のプロトタイプ宣言に，throw() 
+をつけることを想定している．
+
+また，t_services.h の中で，次のマクロを定義している．
+
+(3) syscall(s)
+
+サービスコール s を呼び出し，返値がエラーであれば，エラーメッセージを
+出力する．
+
+(4) _syscall(s)
+
+サービスコール s を呼び出し，返値がエラーであれば，エラーメッセージを
+出力し，カーネルを異常終了させる．
+
 
 ３．JSPカーネルのサービスコールと静的API
 
@@ -821,6 +869,11 @@ isig_tim は，ターゲット依存に定義された TIC_NUME と TIC_DENO で指定さ
 cycatr に TA_PHS が指定された場合の機能（周期ハンドラの起動位相を保存
 する）はサポートしていない．また，TA_ASM が指定された場合の機能（周期
 ハンドラをアセンブリ言語で記述する）もサポートしていない．
+
+cycatr に TA_STA を指定し，cycphs に 0 を指定した場合，周期ハンドラの
+初回の起動は，システム起動後の最初のタイムティックで行われる．すなわち，
+cycphs に 1 を指定した場合と同じ振る舞いとなる．混乱の原因となるため，
+cycphs に 0 を指定することは推奨しない．
 
 (2) sta_cyc                     周期ハンドラの動作開始
 
@@ -1263,10 +1316,10 @@ arg1〜argn は VP_INT型にキャストされるため，VP_INT型に型変換できる任意
 
 ・format 中に使えるフォーマット指定は次の通り．
 
-    %d    引数を符号付き整数とみなし，10進数で表示
-    %u    引数を符号無し整数とみなし，10進数で表示
-    %x    引数を符号無し整数とみなし，16進数（英文字は小文字）で表示
-    %X    引数を符号無し整数とみなし，16進数（英文字は大文字）で表示
+    %d    引数をsigned int型とみなし，10進数で表示
+    %u    引数をunsigned int型とみなし，10進数で表示
+    %x    引数をunsigned int型とみなし，16進数（英文字は小文字）で表示
+    %X    引数をunsigned int型とみなし，16進数（英文字は大文字）で表示
     %p    引数をポインタとみなし，16進数（英文字は小文字）で表示
     %c    引数を文字コードとみなし，文字を表示
     %s    引数を文字列を示すポインタとみなし，文字列を表示
@@ -1276,6 +1329,15 @@ arg1〜argn は VP_INT型にキャストされるため，VP_INT型に型変換できる任意
 することができる．その場合，表示すべき文字列が指定した桁数に満たない場
 合には，指定した桁数内に右詰めで表示する．10進数値が '0' で始まる場合
 には，その間に '0' を埋める．
+
+また，VP_INT型のサイズが long型のサイズ以上である環境においては，次の
+フォーマット指定も使用することができる．この他のフォーマット指定に 'l' 
+を付加した場合には無視する（%lcと%lsには対応していない）．
+
+    %ld   引数をsigned long型とみなし，10進数で表示
+    %lu   引数をunsigned long型とみなし，10進数で表示
+    %lx   引数をunsigned long型とみなし，16進数（英文字は小文字）で表示
+    %lX   引数をunsigned long型とみなし，16進数（英文字は大文字）で表示
 
 ・arg1〜argn にポインタを渡す場合（%s に対応する引数の場合）に，ポイン
 タの指すデータは，このマクロから戻った後も変化してはならない．定数文字
@@ -1555,6 +1617,9 @@ timer.cfgをインクルードすることで，システムに組み込むことができる．
 ファイルにserial.cfgをインクルードすることで，システムに組み込むことが
 できる．
 
+シリアルインタフェースドライバは，ポート毎にセマフォを2個ずつ使用する．
+セマフォを生成する静的APIは，serial.cfgに含まれている．
+
 NEWLIBやGLIBCなどの標準Cライブラリを使用する場合には，標準Cライブラリ
 の低レベル入出力ルーチンをシリアルインタフェースドライバを呼び出すもの
 にすることで，タスクの標準入出力をシリアルインタフェースドライバ経由に
@@ -1583,12 +1648,14 @@ portidで示されるシリアルポートをクローズする．
 (3) ER_UINT serial_rea_dat(ID portid, char *buf, UINT len)
 
 portidで示されるシリアルポートから，lenバイトの文字列を受信し，bufから
-の領域に入れる．受信した文字数またはエラーコードを返す．
+の領域に入れる．lenバイト受信するまで，待ち状態となる．受信した文字数
+またはエラーコードを返す．
 
 (4) ER_UINT serial_wri_dat(ID portid, char *buf, UINT len)
 
 portidで示されるシリアルポートに，bufからのlenバイトの文字列を送信する．
-送信した文字数またはエラーコードを返す．
+lenバイト送信バッファに入れるまで，待ち状態となる．送信した文字数また
+はエラーコードを返す．
 
 (5) ER serial_ctl_por(ID portid, UINT ioctl)
 
@@ -1693,27 +1760,32 @@ ercd で示されるメインエラーコードに対応するエラーコードの文字列を返す．
     config/     ターゲット依存部
         m68k/           M68040 プロセッサ依存ファイル
             dve68k/             DVE-68K/40 システム依存ファイル
+        sh1/            SH1 プロセッサ依存ファイル
+            kz_sh1/             KZ-SH1-01 システム依存ファイル
+            zunda_sh1/          ZUNDA/SH1 システム依存ファイル
+        sh2/            SH2 プロセッサ依存ファイル 
+            apsh2f6a/           APSH2F6A システム依存ファイル
+            hsb7616it/          HSB7616IT システム依存ファイル
         sh3/            SH3 プロセッサ依存ファイル
             ms7727cp01/         MS7727CP01 システム依存ファイル
             solution_engine/    Solution Engine システム依存ファイル
         sh3-ghs/        SH3 プロセッサ依存ファイル（GHS開発環境）
             ms7727cp01/         MS7727CP01 システム依存ファイル
             solution_engine/    Solution Engine システム依存ファイル
-        sh1/            SH1 プロセッサ依存ファイル
-            kz_sh1/             KZ-SH1-01 システム依存ファイル
-            tokiwa_sh1/         SH1/CPUB システム依存ファイル
         h8/             H8 プロセッサ依存ファイル
             akih8_3048f/        AKI-H8/3048F システム依存ファイル
             akih8_3052f/        AKI-H8/3052F システム依存ファイル
-            akih8_3067f/        AKI-H8/3067F システム依存ファイル
-            akih8_3068f/        AKI-H8/3068F システム依存ファイル
             akih8_3069f/        AKI-H8/3069F システム依存ファイル
+            nkev_010h8/         NKEV-010H8 システム依存ファイル
+        h8-renesas/     H8 プロセッサ依存ファイル(Renesas開発環境)
+            hsb8f3048bf25/      H8_3048F システム依存ファイル
+        h8s/            H8S プロセッサ依存ファイル
+            h8s2350/            H8S_2350 システム依存ファイル
+            h8s2351/            H8S_2351 システム依存ファイル
         armv4/          ARMV4 プロセッサ依存ファイル
-            excalibur/          Excalibur-ARM システム依存ファイル
+            integrator/         Integrator システム依存ファイル
         armv4-ghs/      ARMV4 プロセッサ依存ファイル（GHS開発環境）
             integrator/         Integrator システム依存ファイル
-        m32r/           M32R プロセッサ依存ファイル
-            m3a2131g50/         M3A-2131G50 システム依存ファイル
         microblaze/     MicroBlaze プロセッサ依存ファイル
             miref/              MIREF システム依存ファイル
             mire_multi/         MIRE_MULTI3000 システム依存ファイル
@@ -1725,16 +1797,46 @@ ercd で示されるメインエラーコードに対応するエラーコードの文字列を返す．
         mips3/          MIPS3 プロセッサ依存ファイル
             vr4131/             VR4131 システム依存ファイル
             vr5500/             VR5500 システム依存ファイル
+        m16c-renesas/   M16C プロセッサ依存ファイル(Renesas開発環境)
+            oaks16/             OAKS16 システム依存ファイル
+            oaks16_mini/        OAKS16_MINI システム依存ファイル
+        m32c-renesas/   M32C プロセッサ依存ファイル(Renesas開発環境)
+            oaks32/             OAKS32 システム依存ファイル
+        m32r/           M32R プロセッサ依存ファイル
+            m3a2131g50/         M3A-2131G50 システム依存ファイル
+        s1c33/          S1C33 プロセッサ依存ファイル
+            dmt33209/           DMT33209 システム依存ファイル
+            dmt33401/           DMT33401 システム依存ファイル
+            luxun2/             LUXUN2 システム依存ファイル
+            luxun4/             LUXUN4 システム依存ファイル
+        s1c33-gnu33/    S1C33 プロセッサ依存ファイル(GNU33開発環境)
+            dmt33209/           DMT33209 システム依存ファイル
+            dmt33401/           DMT33401 システム依存ファイル
+            luxun2/             LUXUN2 システム依存ファイル
+            luxun4/             LUXUN4 システム依存ファイル
+        powerpc32/      POWERPC32 プロセッサ依存ファイル
+            ibm_ppc_emb_sample/ The IBM PowerPC Embedded Environment システム依存ファイル
+            mpc860t/            MPC860T システム依存ファイル
+        nios2/          NIOS2 プロセッサ依存ファイル
+            altera_dev_board/   ALTERA_DEV システム依存ファイル
+        v850/           V850 プロセッサ依存ファイル
+            tk850_kj1/          TK-850ES システム依存ファイル        
         linux/          Linux上のシミュレーション環境依存ファイル
         windows/        Windows上のシミュレーション環境依存ファイル
     tools/      開発環境依存ディレクトリ
         WINDOWS/        Windows上のサンプルプログラムとプロジェクトファイル
         GHS/            GHS（Green Hills Software）開発環境用のファイル
         C5402DSK/       TMS320VC5402 DSK用のプロジェクトファイル
+        H8-RENESAS/     H8-RENESAS用のプロジェクトディレクトリ
+        M16C-RENESAS/   M16C-RENESAS用のプロジェクトディレクトリ
+        M32C-RENESAS/   M32C-RENESAS用のプロジェクトディレクトリ
     pdic/       PDIC（デバイスドライバのOS非依存部分）
         simple_sio/     簡易SIOドライバ（シリアルドライバが使用するもの）
     cfg/        カーネルコンフィギュレータ
     utils/      ユーティリティ
+        h8/             H8用ベクターテーブル生成ユーティリティ
+        h8-renesas/     H8-RENESAS用ベクターテーブル生成ユーティリティ
+        m16c-renesas/   M16C-RENESAS用ベクターテーブル生成ユーティリティ 
     sample/     サンプルプログラムと Makefile
     doc/        ドキュメント
     windev/     Windowsデバイスマネージャ
@@ -1832,6 +1934,7 @@ ercd で示されるメインエラーコードに対応するエラーコードの文字列を返す．
     sample/
         Makefile        サンプルの Makefile
         Makefile.linux  サンプルの Makefile（Linux用）
+        Makefile.mware  サンプルの Makefile（ミドルウェアとの組み合わせ用）
         sample1.cfg     サンプルプログラム(1)の設定記述
         sample1.h       サンプルプログラム(1)に関する定義
         sample1.c       サンプルプログラム(1)の本体
@@ -1846,15 +1949,24 @@ ercd で示されるメインエラーコードに対応するエラーコードの文字列を返す．
         user.txt        TOPPERS/JSPカーネル ユーザズマニュアル
         gnu_install.txt GNU開発環境構築マニュアル
         m68k.txt        M68040 ターゲット依存部マニュアル
-        sh3.txt         SH3 ターゲット依存部マニュアル
         sh1.txt         SH1 ターゲット依存部マニュアル
+        sh2.txt         SH2 ターゲット依存部マニュアル
+        sh3.txt         SH3 ターゲット依存部マニュアル
         h8.txt          H8 ターゲット依存部マニュアル
+        h8-renesas.txt  H8-RENESAS ターゲット依存部マニュアル
+        h8s.txt         H8S ターゲット依存部マニュアル
         armv4.txt       ARMV4 ターゲット依存部マニュアル
-        m32r.txt        M32R ターゲット依存部マニュアル
         microblaze.txt  MicroBlaze ターゲット依存部マニュアル
         tsm320c54x.txt  TMS320C54x ターゲット依存部マニュアル
         xstormy16.txt   Xstormy16 ターゲット依存部マニュアル
         mips3.txt       MIPS3 ターゲット依存部マニュアル
+        m16c.txt        M16C ターゲット依存部マニュアル
+        m32c.txt        M32C ターゲット依存部マニュアル
+        m32r.txt        M32R ターゲット依存部マニュアル
+        nios2.txt       Nios2 ターゲット依存部マニュアル
+        powerpc32.txt   POWERPC32 ターゲット依存部マニュアル
+        s1c33.txt       S1C33 ターゲット依存部マニュアル
+        v850.txt        V850 ターゲット依存部マニュアル
         linux.txt       Linux シミュレーション環境依存部マニュアル
         windows.txt     Windows シミュレーション環境依存部マニュアル
         config.txt      JSPカーネル ターゲット依存部 ポーティングガイド
@@ -2454,6 +2566,43 @@ itron-club-ctl@ertl.jp 宛てに，本文に
 折り返し，登録確認のためのメールが送られてくるので，その指示に従って登
 録する．
 
+8.7 ミドルウェア用の Makefile
+
+サンプルディレクトリにある Makefilew.mware はJSPカーネルにミドルウェア
+を組み合わせてコンパイルするための Makefile である．この Makefile から
+インクルードするミドルウェア用の Makefile では，以下の変数を定義するこ
+と．
+
+(1) MTASK_CFG
+ミドルウェアのコンフィギュレーションファイル（ソース）を追加する．
+
+(2) MTASK_KERNEL_CFG
+ミドルウェアのコンフィギュレータから出力され，JSPカーネル のシステムコ
+ンフィギュレーションファイルにインクルードされるファイルを追加する．
+
+(3) MTASK_DIR
+ミドルウェアのディレクトリを追加する．
+
+(4) MTASK_LCSRCS
+ミドルウェアをライブラリ化するソースファイルを追加する．
+
+(5) MTASK_ASMOBJS
+ミドルウェアのアセンブリ言語のオブジェクトファイルを追加する．
+
+(6) MTASK_CXXOBJS
+ミドルウェアの C++ 言語のオブジェクトファイルを追加する．
+
+(7) MTASK_COBJS
+ミドルウェアの C 言語のオブジェクトファイルを追加する．
+
+(8) MTASK_CFLAGS
+ミドルウェアをコンパイルするときのオプションを指定する．
+
+(9) MTASK_LIBS
+ミドルウェアのライブラリを追加する．
+
+(10) MAKE_MTASK
+ライブラリ化したミドルウェアを指定する．
 
 ９．リファレンス
 
@@ -2618,5 +2767,7 @@ itron-club-ctl@ertl.jp 宛てに，本文に
     2003年12月25日      Release 1.4             多数の改良
     2004年10月14日      Release 1.4 (PL=1)      SH2，M16C，SC33，PowerPC32，
                                                 Nios2の追加など
-
+    2005年11月xx日      Release 1.4 (PL=2)      M32C-Renesas, H8-Renesas,
+                                                H8S-Renesas, V850
+                                                の追加など
 以上

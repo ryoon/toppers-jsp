@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2005 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.h,v 1.10 2004/09/03 15:39:07 honda Exp $
+ *  @(#) $Id: hw_serial.h,v 1.16 2005/11/07 01:49:53 honda Exp $
  */
 
 #ifndef _HW_SERIAL_H_
@@ -65,6 +65,7 @@ typedef struct sio_port_initialization_block {
 	UW	base;		/* SCI のベースアドレス	*/
 	UW	baudrate;	/* ボーレイト		*/	
 	UB	smr_init;	/* SMR の設定値		*/
+        IRC     irc;            /* 割込みレベル設定情報 */
 } SIOPINIB;
 
 /*
@@ -118,7 +119,7 @@ SCI_opn_por (ID sioid)
 {
 	SCI_initialize(sioid);
 	return get_siopcb(sioid);
-	}
+}
 
 /*
  *  SCI_putchar -- 送信する文字の書き込み
@@ -130,11 +131,8 @@ SCI_putchar(SIOPCB *p, UB c)
 	UW addr = p->inib->base + H8SSR;
 
 	sil_wrb_mem((VP)(p->inib->base + H8TDR), c);
-
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(H8SSR_TDRE_BIT));
-#undef  BITCLR
-	}
+	bitclr((UB *)addr, H8SSR_TDRE_BIT);
+}
 
 /*
  *  SCI_wait_putchar -- 直接出力 (待ちあり)
@@ -149,11 +147,8 @@ SCI_wait_putchar (int base, int c)
 	while ((sil_reb_mem((VP)addr) & H8SSR_TDRE) == 0)
 		;
 	sil_wrb_mem((VP)(base + H8TDR), c);
-
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(H8SSR_TDRE_BIT));
-#undef  BITCLR
-	}
+	bitclr((UB *)addr, H8SSR_TDRE_BIT);
+}
 
 /*
  *  SCI_getchar -- 受信した文字の読み出し
@@ -165,14 +160,12 @@ SCI_getchar(SIOPCB *p)
 	INT	ch;
 	UW	addr = p->inib->base + H8SSR;
 
-	ch = sil_reb_mem((VP)(p->inib->base + H8RDR));
+	ch = (INT)(UB)sil_reb_mem((VP)(p->inib->base + H8RDR));
+	/*  UB型へのキャストは、符号拡張を防ぐため  */
 
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(H8SSR_RDRF_BIT));
-#undef  BITCLR
-
+	bitclr((UB *)addr, H8SSR_RDRF_BIT);
 	return ch;
-	}
+}
 
 /*
  *  SCI_putready -- 送信可能か
@@ -181,8 +174,9 @@ SCI_getchar(SIOPCB *p)
 Inline BOOL
 SCI_putready(SIOPCB *pcb)
 {
-	return (sil_reb_mem((VP)(pcb->inib->base + H8SSR)) & H8SSR_TDRE) != 0;
-	}
+	UB ssr = sil_reb_mem((VP)(pcb->inib->base + H8SSR));
+	return ((ssr & H8SSR_TDRE) != 0);
+}
 
 /*
  *  SCI_getready -- 受信可能か
@@ -191,8 +185,9 @@ SCI_putready(SIOPCB *pcb)
 Inline BOOL
 SCI_getready(SIOPCB *pcb)
 {
-	return (sil_reb_mem((VP)(pcb->inib->base + H8SSR)) & H8SSR_RDRF) != 0;
-	}
+	UB ssr = sil_reb_mem((VP)(pcb->inib->base + H8SSR));
+	return ((ssr & H8SSR_RDRF) != 0);
+}
 
 /*
  *  送信割り込み制御関数
@@ -202,21 +197,17 @@ Inline void
 SCI_enable_send(SIOPCB *p)
 {
 	UW addr = p->inib->base + H8SCR;
-
-#define BITSET(bit)	Asm("bset #" bit ", @%0" : : "r"(addr))
-	BITSET(_TO_STRING(H8SCR_TIE_BIT));
-#undef  BITSET
-	}
+	
+	bitset((UB *)addr, H8SCR_TIE_BIT);
+}
 
 Inline void
 SCI_disable_send(SIOPCB *p)
 {
 	UW addr = p->inib->base + H8SCR;
 
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(H8SCR_TIE_BIT));
-#undef  BITCLR
-	}
+	bitclr((UB *)addr, H8SCR_TIE_BIT);
+}
 
 /*
  *  受信割り込み制御関数
@@ -227,20 +218,16 @@ SCI_enable_recv(SIOPCB *p)
 {
 	UW addr = p->inib->base + H8SCR;
 
-#define BITSET(bit)	Asm("bset #" bit ", @%0" : : "r"(addr))
-	BITSET(_TO_STRING(H8SCR_RIE_BIT));
-#undef  BITSET
-	}
+	bitset((UB *)addr, H8SCR_RIE_BIT);
+}
 
 Inline void
 SCI_disable_recv(SIOPCB *p)
 {
 	UW addr = p->inib->base + H8SCR;
 
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(H8SCR_RIE_BIT));
-#undef  BITCLR
-	}
+	bitclr((UB *)addr, H8SCR_RIE_BIT);
+}
 
 /*
  *  SIO 関数の参照
@@ -276,7 +263,7 @@ sio_opn_por(ID sioid, VP_INT exinf)
 	pcb->exinf    = exinf;
 	pcb->openflag = TRUE;
 	return pcb;
-	}
+}
 
 /*
  *  sio_cls_por -- ポートのクローズ
@@ -287,7 +274,7 @@ sio_cls_por(SIOPCB *pcb)
 {
 	SCI_cls_por(pcb->inib->base);
 	pcb->openflag = FALSE;
-	}
+}
 
 /*
  *  sio_snd_chr -- 文字送信
@@ -299,10 +286,10 @@ sio_snd_chr(SIOPCB *pcb, INT chr)
 	if (SCI_putready(pcb)) {
 		SCI_putchar(pcb, (UB)chr);
 		return TRUE;
-		}
-	else
+	} else {
 		return FALSE;
 	}
+}
 
 /*
  *  sio_rcv_chr -- 文字受信
@@ -311,11 +298,12 @@ sio_snd_chr(SIOPCB *pcb, INT chr)
 Inline INT
 sio_rcv_chr(SIOPCB *pcb)
 {
-	if (SCI_getready(pcb))
+	if (SCI_getready(pcb)) {
 		return SCI_getchar(pcb);
-	else
+	} else {
 		return -1;
 	}
+}
 
 #endif	/* of #ifndef _MACRO_ONLY */
 

@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.6 2005/09/09 02:35:37 honda Exp $
  */
 
 /*
@@ -72,11 +72,13 @@
  * 等の符号拡張を含む命令は期待通りに動作しない
  */
 #if (TCB_pc > 127) || (TCB_sp > 127)
- ここでアセンブルエラー
+#error "TCB_pc <= 127 ?"
+// ここでアセンブルエラー
 #endif
 
 #if !CHECK_IMMEDIATE_ADDRESSING(TCB_texptn)
- ここでアセンブルエラー
+#error "TCB_texptn ?"
+// ここでアセンブルエラー
 #endif
 
 /*
@@ -337,7 +339,7 @@ _waiting_interrupt:
 	 */
 
 
-	.align 2
+	.align 4
 _runtsk_dis:
 	.long _runtsk
 _schedtsk_dis:
@@ -625,7 +627,7 @@ _ret_to_int_1:
 	rte		    	/*  割込み元に戻る  			*/
 	nop
 									
-	.align 2
+	.align 4
 _stacktop_int:			/* タスク独立部のスタックの初期値  	*/
 	.long  STACKTOP
 _intnest_int:	    		/*  割込み／CPU例外ネストカウンタ  	*/
@@ -921,7 +923,7 @@ _no_reg_exception:
 	jsr    @r1
 	mov    r15, r4		/*  引数設定（遅延スロット）	*/
 
-	.align 2
+	.align 4
 _cpu_experr_k:
 	.long  _cpu_experr
 
@@ -972,7 +974,7 @@ _activate_r:
 	jmp   @r2		/* jsr命令ではprを破壊してしまう*/
 	mov.l @(TINIB_exinf,r1),r4	/*  遅延スロット  	*/
 				/*  拡張情報（タスクへの引数）  */
-	.align 2
+	.align 4
 _ext_tsk_act:
 	.long _ext_tsk
 
@@ -1002,7 +1004,7 @@ _sil_dly_nse1:
     /*  遅延スロットなし  */
     rts
     nop   
-    .align 2
+    .align 4
 _sil_dly_tim1:
     .long  -SIL_DLY_TIM1    
 _sil_dly_tim2:                         

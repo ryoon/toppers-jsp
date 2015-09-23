@@ -1,12 +1,11 @@
 /* This file is generated from cpu_rename.def by genrename. */
 
-#ifdef _CPU_RENAME_H_
-#undef _CPU_RENAME_H_
+#ifdef _CPU_UNRENAME_H_
+#undef _CPU_UNRENAME_H_
 
 /*
  * cpu_config.c
  */
-#undef cpu_initialize
 #undef cpu_terminate
 #undef activate_r
 #undef dispatch
@@ -25,7 +24,6 @@
 /*
  * cpu_config.c
  */
-#undef _cpu_initialize
 #undef _cpu_terminate
 #undef _activate_r
 #undef _dispatch
@@ -40,4 +38,4 @@
 #undef _init_sys
 
 #endif /* LABEL_ASM */
-#endif /* _CPU_RENAME_H_ */
+#endif /* _CPU_UNRENAME_H_ */

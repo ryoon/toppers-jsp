@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hsb7616it.h,v 1.3 2004/10/04 12:18:45 honda Exp $
+ *  @(#) $Id: hsb7616it.h,v 1.5 2005/07/06 00:45:07 honda Exp $
  */
 
 /*
@@ -48,32 +48,29 @@
 #define _HSB7616IT_H_
 #include "sh7615.h"
 
-#define LED ((volatile unsigned char *)0x08400000)
 #ifndef _MACRO_ONLY
 /*
  *  GDB STUB呼出しルーチン
  */
 
-extern void sh2scif_putc_pol (char c);	/*  sh2scif.c  */
+extern void sh2scif_putc_pol (ID portid, char c);	/*  sh7615sci.c  */
 
 #ifdef GDB_STUB
 
-#define sh2_exit	stub_exit
-#define sh2_putc	stub_putc
+#define sh2_exit	gdb_stub_exit
+#define sh2_putc	gdb_stub_putc
 
 Inline void
-stub_exit (void)
+gdb_stub_exit (void)
 {
 	/* テストしていない */
 	Asm("trapa #0x20"::);
 }
 
-
-extern int scicheck;
-Inline char
-stub_putc (char c)
+Inline int
+gdb_stub_putc (ID portid, int c)
 {
-	sh2scif_putc_pol (c);
+	sh2scif_putc_pol (portid, c);
 	return(c);
 }
 
@@ -86,9 +83,9 @@ sh2_exit ()
 }
 
 Inline void
-sh2_putc (char c)
+sh2_putc (ID portid, char c)
 {
-	sh2scif_putc_pol (c);
+	sh2scif_putc_pol (portid, c);
 }
 
 #endif /* GDB_STUB */

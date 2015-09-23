@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.3 2003/12/19 11:24:18 honda Exp $
+ *  @(#) $Id: sys_defs.h,v 1.4 2005/07/27 11:06:36 honda Exp $
  */
 
 
@@ -80,7 +80,7 @@ typedef	UINT		INHNO;		/* 割込みハンドラ番号 */
 
 
 typedef	UD  SYSUTIM;	/* 性能評価用システム時刻 */
-extern ER   vxget_tim(SYSUTIM *pk_sysutim);
+extern ER	vxget_tim(SYSUTIM *p_sysutim) throw();
 
 #endif /* _MACRO_ONLY */
 

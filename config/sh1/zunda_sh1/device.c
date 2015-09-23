@@ -5,8 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD.
- *   51 Tateminami, Watari-cyo, Watari-gun, Miyagi-ken 989-2361, JAPAN
+ *  Copyright (C) 2003-2004 by CHUO ELECTRIC WORKS Co.,LTD. JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
@@ -48,7 +47,7 @@
  *  LEDの初期化
  */
 void
-initial_led()
+initial_led(void)
 {
 	set_led( LED1, OFF );
 	set_led( LED2, OFF );
@@ -167,7 +166,7 @@ get_dsw( int sw )
  *  return:スイッチの値
  */
 int
-get_rsw()
+get_rsw(void)
 {
 	return (sil_reh_mem( SW_DR ) & RSW_CTL);
 }

@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.1 2004/05/27 12:04:18 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.3 2005/11/24 12:41:23 honda Exp $
  */
 
 
@@ -100,7 +100,7 @@ extern char	intnest;
  *  非タスクコンテキストならTRUEを返す.
  */
 Inline BOOL
-sense_context()
+sense_context(void)
 {
 	/*  ネストカウンタ0より大なら非タスクコンテキスト  */
 	return(intnest > 0);
@@ -111,7 +111,7 @@ sense_context()
  *  CPUロック状態ならTRUEを返す.
  */
 Inline BOOL
-sense_lock()
+sense_lock(void)
 {
 	return((current_flgreg() & FLG_I_MASK) == 0);
 }
@@ -123,13 +123,13 @@ sense_lock()
  *  CPUロックとその解除
  */
 Inline void
-lock_cpu()
+lock_cpu(void)
 {
 	disint();
 }
 
 Inline void
-unlock_cpu()
+unlock_cpu(void)
 {
 	enaint();
 }
