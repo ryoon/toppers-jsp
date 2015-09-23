@@ -1,0 +1,65 @@
+             DVE-SH7700 用 コンソール入出力用カーネル
+--------------------------------------------------------------------
+
+
+1. シリアルポート
+
+DVE-SH7700 はシリアルポートを1ポートしか持たない。このポートを、スタブ
+の通信用に使用すると、sys_logによるカーネルのログ出力はスタブ経由でホ
+ストのGDBに表示されるが、入力を行うことができない。そのため、スタブの
+使用せず、このポートをカーネルで使用する方法をサンプルのコンパイルによ
+り説明する。なお、この方法では、GDBによるデバッグは行えない。
+
+
+2. サンプルのコンパイル
+
+Makefile ではコンパイルフラグ WITH_STUB を定義せず、シリアル、システム
+ログサービスをカーネルに組み込んでいる。カーネルを作成するには、このディ
+レクトリで、XXX.without_stub ファイルのwithout_stubを取り、次の通りに
+実行する。
+
+    % make depend
+    % make 
+
+
+3. ダウンロード
+作成された jsp を引数にGDBを実行する。
+    % sh-hitachi-elf-gdb jsp
+    GNU gdb 4.18
+    Copyright 1998 Free Software Foundation, Inc.
+                  ..........
+    (gdb)
+
+GDBが実行されたら、DVE-SH7700 と接続されたポートとボーレートを設定して
+接続して、カーネルをダウンロードしダウンロードが終了したら、detach コマ
+ンドでディタッチする。
+
+    (gdb) set remotebaud 115200
+    (gdb) target remote /dev/ttyS0
+    Remote debugging using /dev/ttyS0
+    0x461100a0 in ?? ()
+    (gdb) load
+    Loading section .text, size 0x6ede lma 0xc033000
+    Loading section .data, size 0x258 lma 0xc03b514
+    Loading section .rodata, size 0x1632 lma 0xc039ee0
+    Start address 0xc033000 , load size 34664
+    Transfer rate: 46218 bits/sec.
+    (gdb) detach
+    Ending remote debugging.
+    (gdb) 
+
+
+ディタッチしたら適当なターミナルソフトで接続し、キーボードからスタブに
+対して$c#63とコマンドを送るとカーネルの実行が開始されこのターミナル経
+由で入出力が行える。
+
+
+Connecting to /dev/ttyS0, speed 115200.
+The escape character is Ctrl-\ (ASCII 28, FS)
+Type the escape character followed by C to get back,
+or followed by ? to see other options.
+----------------------------------------------------
+$c#63   <----(実際には見えない)
+
+
+
