@@ -26,7 +26,7 @@
 #  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 #  かなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile,v 1.6 2001/02/23 18:23:45 takayuki Exp $
+#  @(#) $Id: Makefile,v 1.10 2001/05/07 10:31:38 takayuki Exp $
 # 
 
 #
@@ -55,10 +55,10 @@ include ../config/$(CPU)/$(SYS)/Makefile.config
 #  共通コンパイルオプションの定義
 #
 INCLUDES = -I. -I../include -I../config/$(CPU) -I../config/$(CPU)/$(SYS)
-CDEFS := 
-CFLAGS := $(CFLAGS) $(CDEFS) $(INCLUDES) -g -Wall -ffixed-r2
+CDEFS := $(CDEFS)
+CFLAGS := $(CFLAGS) $(CDEFS) $(INCLUDES) -g -Wall
 LDFLAGS := -nostdlib $(LDFLAGS)
-LIBS = -lgcc
+LIBS := $(LIBS) -lgcc
 
 #
 #  アプリケーションプログラムに関する定義
@@ -107,7 +107,6 @@ endif
 #  ターゲットファイル
 #
 all: jsp.bin
-
 
 ##### 以下は編集しないこと #####
 

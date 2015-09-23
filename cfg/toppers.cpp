@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: toppers.cpp,v 1.14 2001/02/23 17:14:31 takayuki Exp $
+ *  @(#) $Id: toppers.cpp,v 1.18 2001/05/07 07:23:44 takayuki Exp $
  */
 
 #ifdef _MSC_VER
@@ -132,60 +132,72 @@ void Miscellanea::Body(MultiStream & dest)
 {
 	fstream * out;
 
-	if(!secondpass)
+	switch(currentstep++)
 	{
-		{	//インクルードファイルの処理
-			out = dest[CFGFILE];
-			set<string>::iterator scope = includefilename.begin();
-
-			(*out) << "#include \"jsp_kernel.h\"" << endl << "#include \"" HEADERFILE "\"" << endl;
-			while(scope != includefilename.end())
+	case 0: 
+		{	
 			{
-				(*out) << "#include " << *scope << endl;
-				scope ++;
+					//インクルードファイルの処理
+				out = dest[CFGFILE];
+				set<string>::iterator scope = includefilename.begin();
+
+				(*out) << "#include \"jsp_kernel.h\"" << endl << "#include \"" HEADERFILE "\"" << endl;
+				while(scope != includefilename.end())
+				{
+					(*out) << "#include " << *scope << endl;
+					scope ++;
+				}
+				(*out) << endl;
+
+				(*out) << "#ifdef _MSC_VER\n#define __ZERO(x,y) _declspec(naked) void y(void){}\n#else\n#define __ZERO(x,y) x y[0]\n#endif\n\n";
 			}
-			(*out) << endl;
-		}
+
+			(*out) << 
+				"#if TKERNEL_PRVER >= 0x1011\n"
+				" #define CFG_INTHDR_ENTRY(inthdr) INTHDR_ENTRY(inthdr)\n"
+				" #define CFG_EXCHDR_ENTRY(exchdr) EXCHDR_ENTRY(exchdr)\n"
+				"#else\n"
+				" #define CFG_INTHDR_ENTRY(inthdr) INTHDR_ENTRY(ENTRY(inthdr),inthdr)\n"
+				" #define CFG_EXCHDR_ENTRY(exchdr) EXCHDR_ENTRY(ENTRY(exchdr),exchdr)\n"
+				" #define INT_ENTRY(inthdr) ENTRY(inthdr)\n"
+				" #define EXC_ENTRY(exchdr) ENTRY(exchdr)\n"
+				"#endif\n\n";
 
 			
-		{	//定数定義の処理
-			out = dest[HEADERFILE];
-			map<string,Valient>::iterator scope;
-
-			scope = define.begin();
-			while(scope != define.end())
+				//定数定義の処理
 			{
-				(*out) << "#define " << (*scope).first << " " << (*scope).second << endl;
+				out = dest[HEADERFILE];
+				map<string,Valient>::iterator scope;
+
+				scope = define.begin();
+				while(scope != define.end())
+				{
+					(*out) << "#define " << (*scope).first << " " << (*scope).second << endl;
+					scope ++;
+				}
+				(*out) << endl;
+			}
+
+			break;
+		}
+
+	case 1:
+		{	//2nd pass prosess
+			set<string>::iterator scope;
+
+			out = dest[CFGFILE];
+			(*out) << "#include \"time_event.h\"" << endl << "TMEVTN	tmevt_heap[TNUM_TSKID + TNUM_CYCID];" << endl << endl;
+			(*out) << "void object_initialize(void)" << endl << '{' << endl;
+		
+			scope = initializer.begin();
+			while(scope != initializer.end())
+			{
+				(*out) << '\t' << *scope << "_initialize();" << endl;
 				scope ++;
 			}
-			(*out) << endl;
+			(*out) << '}' << endl;
+			break;
 		}
-		secondpass = true;
-
-			//特殊用途
-		out = dest[CFGFILE];
-		(*out) << "#ifdef _MSC_VER\n#define __ZERO(x,y) _declspec(naked) void y(void){}\n#else\n#define __ZERO(x,y) x y[0]\n#endif\n\n";
-		return;
-	}
-
-
-	{	//2nd pass prosess
-		set<string>::iterator scope;
-
-		out = dest[CFGFILE];
-		(*out) << "#include \"time_event.h\"" << endl << "TMEVTN	tmevt_heap[TNUM_TSKID + TNUM_CYCID];" << endl << endl;
-		(*out) << "void object_initialize(void)" << endl << '{' << endl;
-		
-		scope = initializer.begin();
-		while(scope != initializer.end())
-		{
-			(*out) << '\t' << *scope << "_initialize();" << endl;
-
-
-			scope ++;
-		}
-		(*out) << '}' << endl;
-		return;
 	}
 }
 
@@ -403,6 +415,23 @@ void Object::CreateBufferDefinition(ostream * out, int pos, char * type, char * 
 	}
 }
 
+void Object::CreateORTIEntry(ostream * out, char * type, int id, Valient & name)
+{
+	(*out) << "TEMPLATE " << type << "\t";
+
+	switch( (Valient::tagType) name )
+	{
+	case Valient::STRING:
+		(*out) << name.GetString();
+		break;
+	case Valient::INTEGER:
+		(*out) << type << "_" << name.GetInteger();
+		break;
+	}
+
+	(*out) << "(\"" << id << "\");" << endl;
+}
+
 void Task::API_CRE_TSK::Body(Array & parameter)
 {
 	int taskid;
@@ -415,6 +444,7 @@ void Task::API_CRE_TSK::Body(Array & parameter)
 
 	dest->Set(TEXTYPE, Valient("TA_NULL"));
 	dest->Set(TEXFUNC, Valient("NULL"));
+	dest->Set(NAME, parameter[0]);
 }
 
 void Task::API_DEF_TEX::Body(Array & Parameter)
@@ -451,6 +481,9 @@ void Task::Body(MultiStream & dest)
 
 		(*out) << "VB " << (*param)[STACK] << "[" << (*param)[STACKSIZE] << "];" << endl;
 
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TTASK", (*scope).first-1, (*param)[NAME]);
+
 		/*
 			//本体
 		(*out) << "extern FP " << (*param)[TASK] << ";" << endl;
@@ -486,8 +519,10 @@ void Task::Body(MultiStream & dest)
 
 void Semaphore::API_CRE_SEM::Body(Array & param)
 {
+	Array * dest;
 	CheckParameter(&param,"si,{si,si,si}");
-	semaphore.LoadParameters(param.GetArrayPtr(1),semaphore.AssignObjectID(param[0]),ATR,MAXCNT);
+	dest = semaphore.LoadParameters(param.GetArrayPtr(1),semaphore.AssignObjectID(param[0]),ATR,MAXCNT);
+	dest->Set(NAME, param[0]);
 }
 
 void Semaphore::Body(MultiStream & dest)
@@ -507,6 +542,9 @@ void Semaphore::Body(MultiStream & dest)
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
 		(*out) << '{' << (*param)[0] << ',' << (*param)[1] << ',' << (*param)[2] << '}' << endl;
+
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TSEMAPHORE", (*scope).first-1, (*param)[NAME]);
 		scope ++;
 	}
 	OutputFooterBlock(out,"sem");
@@ -514,8 +552,10 @@ void Semaphore::Body(MultiStream & dest)
 
 void EventFlag::API_CRE_FLG::Body(Array & param)
 {
+	Array * dest;
 	CheckParameter(&param,"si,{si,si}");
-	eventflag.LoadParameters(param.GetArrayPtr(1),eventflag.AssignObjectID(param[0]),ATR,FLGPTN);
+	dest = eventflag.LoadParameters(param.GetArrayPtr(1),eventflag.AssignObjectID(param[0]),ATR,FLGPTN);
+	dest->Set(NAME, param[0]);
 }
 
 void EventFlag::Body(MultiStream & dest)
@@ -535,6 +575,8 @@ void EventFlag::Body(MultiStream & dest)
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
 		(*out) << '{' << (*param)[0] << ',' << (*param)[1] << '}' << endl;
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TEVENTFLAG", (*scope).first-1, (*param)[NAME]);
 		scope ++;
 	}
 	OutputFooterBlock(out,"flg");
@@ -542,8 +584,10 @@ void EventFlag::Body(MultiStream & dest)
 
 void DataQueue::API_CRE_DTQ::Body(Array & param)
 {
+	Array * dest;
 	CheckParameter(&param,"si,{si,si,si}");
-	dataqueue.LoadParameters(param.GetArrayPtr(1),dataqueue.AssignObjectID(param[0]),ATR,DTQ);
+	dest = dataqueue.LoadParameters(param.GetArrayPtr(1),dataqueue.AssignObjectID(param[0]),ATR,DTQ);
+	dest->Set(NAME, param[0]);
 }
 
 void DataQueue::Body(MultiStream & dest)
@@ -565,6 +609,8 @@ void DataQueue::Body(MultiStream & dest)
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
 		(*out) << '{' << (*param)[0] << ',' << (*param)[1] << ',' << (*param)[2] <<  '}' << endl;
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TDATAQUEUE", (*scope).first-1, (*param)[NAME]);
 		scope ++;
 	}
 	OutputFooterBlock(out,"dtq");
@@ -572,8 +618,10 @@ void DataQueue::Body(MultiStream & dest)
 
 void Mailbox::API_CRE_MBX::Body(Array & param)
 {
+	Array * dest;
 	CheckParameter(&param,"si,{si,si,si}");
-	mailbox.LoadParameters(param.GetArrayPtr(1),mailbox.AssignObjectID(param[0]),ATR,HD);
+	dest = mailbox.LoadParameters(param.GetArrayPtr(1),mailbox.AssignObjectID(param[0]),ATR,HD);
+	dest->Set(NAME, param[0]);
 }
 
 void Mailbox::Body(MultiStream & dest)
@@ -593,6 +641,8 @@ void Mailbox::Body(MultiStream & dest)
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
 		(*out) << '{' << (*param)[0] << ',' << (*param)[1] << '}' << endl;
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TMAILBOX", (*scope).first-1, (*param)[NAME]);
 		scope ++;
 	}
 	OutputFooterBlock(out,"mbx");
@@ -600,8 +650,10 @@ void Mailbox::Body(MultiStream & dest)
 
 void FixedsizeMemoryPool::API_CRE_MPF::Body(Array & param)
 {
+	Array * dest;
 	CheckParameter(&param,"si,{si,si,si,si}");
-	fixedsizememorypool.LoadParameters(param.GetArrayPtr(1),fixedsizememorypool.AssignObjectID(param[0]),ATR,MPF);
+	dest = fixedsizememorypool.LoadParameters(param.GetArrayPtr(1),fixedsizememorypool.AssignObjectID(param[0]),ATR,MPF);
+	dest->Set(NAME, param[0]);
 }
 
 void FixedsizeMemoryPool::Body(MultiStream & dest)
@@ -636,6 +688,8 @@ void FixedsizeMemoryPool::Body(MultiStream & dest)
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
 		(*out) << '{' << (*param)[ATR] << ",TROUND_VP(" << (*param)[SZ] << ")," << (*param)[MPF] << ",(VP)(((VB *)" << (*param)[MPF] << ") + sizeof(" << (*param)[MPF] << "))}" << endl;
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TFIXEDMEMPOOL", (*scope).first-1, (*param)[NAME]);
 		scope ++;
 	}
 	OutputFooterBlock(out,"mpf");
@@ -643,8 +697,10 @@ void FixedsizeMemoryPool::Body(MultiStream & dest)
 
 void CyclicHandler::API_CRE_CYC::Body(Array & param)
 {
+	Array * dest;
 	CheckParameter(&param,"si,{si,si,si,si,si}");
-	cyclichandler.LoadParameters(param.GetArrayPtr(1),cyclichandler.AssignObjectID(param[0]),ATR,PHS);
+	dest = cyclichandler.LoadParameters(param.GetArrayPtr(1),cyclichandler.AssignObjectID(param[0]),ATR,PHS);
+	dest->Set(NAME, param[0]);
 }
 
 void CyclicHandler::Body(MultiStream & dest)
@@ -664,6 +720,8 @@ void CyclicHandler::Body(MultiStream & dest)
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
 		(*out) << '{' << (*param)[0] << ',' << (*param)[1] << ',' << (*param)[2] << ',' << (*param)[3] << ',' << (*param)[4] << '}' << endl;
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TCYCLIC", (*scope).first-1, (*param)[NAME]);
 		scope ++;
 	}
 	OutputFooterBlock(out,"cyc");
@@ -679,6 +737,7 @@ void InterruptHandler::API_DEF_INH::Body(Array & param)
 	interrupthandler.Identifier.Assign(id);
 	inip = interrupthandler.LoadParameters(param.GetArrayPtr(1),id,ATR,HDR);
 	inip->Set(NO,param[0]);
+	inip->Set(NAME, param[0]);
 }
 
 void InterruptHandler::Body(MultiStream & dest)
@@ -712,7 +771,7 @@ void InterruptHandler::Body(MultiStream & dest)
 	entry_scope = entry.begin();
 	while(entry_scope != entry.end())
 	{
-		(*out) << "INTHDR_ENTRY(ENTRY(" << (*entry_scope) << ")," << (*entry_scope) << ");" << endl;
+		(*out) << "CFG_INTHDR_ENTRY(" << (*entry_scope) << ");" << endl;
 		entry_scope ++;
 	}
 
@@ -724,7 +783,9 @@ void InterruptHandler::Body(MultiStream & dest)
 		(*out) << '\t';
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
-		(*out) << '{' << (*param)[NO] << ',' << (*param)[ATR] << ",ENTRY(" << (*param)[HDR] << ")}" << endl;
+		(*out) << '{' << (*param)[NO] << ',' << (*param)[ATR] << ",INT_ENTRY(" << (*param)[HDR] << ")}" << endl;
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TINTERRUPT", (*scope).first-1, (*param)[NAME]);
 		scope ++;
 	}
 	(*out) << "};" << endl << endl;
@@ -741,6 +802,7 @@ void ExceptionHandler::API_DEF_EXC::Body(Array & param)
 	exceptionhandler.Identifier.Assign(id);
 	inip = exceptionhandler.LoadParameters(param.GetArrayPtr(1),id,ATR,HDR);
 	inip->Set(NO,param[0]);
+	inip->Set(NAME, param[0]);
 }
 
 void ExceptionHandler::Body(MultiStream & dest)
@@ -773,7 +835,7 @@ void ExceptionHandler::Body(MultiStream & dest)
 	entry_scope = entry.begin();
 	while(entry_scope != entry.end())
 	{
-		(*out) << "EXCHDR_ENTRY(ENTRY(" << (*entry_scope) << ")," << (*entry_scope) << ");" << endl;
+		(*out) << "CFG_EXCHDR_ENTRY(" << (*entry_scope) << ");" << endl;
 		entry_scope ++;
 	}
 
@@ -785,7 +847,9 @@ void ExceptionHandler::Body(MultiStream & dest)
 		(*out) << '\t';
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
-		(*out) << '{' << (*param)[NO] << ',' << (*param)[ATR] << ",ENTRY(" << (*param)[HDR] << ")}" << endl;
+		(*out) << '{' << (*param)[NO] << ',' << (*param)[ATR] << ",EXC_ENTRY(" << (*param)[HDR] << ")}" << endl;
+		if((*parent)[Manager::CREATEORTIFILE])
+			CreateORTIEntry(dest[ORTIFILE], "TEXCEPTION", (*scope).first-1, (*param)[NAME]);
 		scope ++;
 	}
 	(*out) << "};" << endl << endl;

@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.2 2001/02/23 05:45:41 hiro Exp $
+ *  @(#) $Id: cpu_config.h,v 1.4 2001/03/26 02:47:46 hiro Exp $
  */
 
 /*
@@ -44,7 +44,7 @@
 #endif /* _MACRO_ONLY */
 
 /*
- *  chg_ipm/ref_ipm をサポートするかどうかの定義
+ *  chg_ipm/get_ipm をサポートするかどうかの定義
  */
 #define	SUPPORT_CHG_IPM
 
@@ -247,12 +247,10 @@ define_exc(EXCNO excno, FP exchdr)
  *  スパッチされない．
  */
 
-#define ENTRY(inthdr)   inthdr##_entry
-
-#define	_INTHDR_ENTRY(entry, inthdr)	\
-extern void entry(void);		\
+#define	INTHDR_ENTRY(inthdr)		\
+extern void inthdr##_entry(void);	\
 asm(".text				\n" \
-#entry ":				\n" \
+#inthdr "_entry:			\n" \
 "	movem.l %d0-%d1/%a0-%a1, -(%sp)	\n" /* スクラッチレジスタを保存 */ \
 "	jsr " #inthdr "			\n" /* 割込みハンドラを呼び出す */ \
 "	movem.l (%sp)+, %d0-%d1/%a0-%a1	\n" /* スクラッチレジスタを復帰 */ \
@@ -263,7 +261,7 @@ asm(".text				\n" \
 "	jbne _kernel_ret_int		\n" /*              ret_int へ */ \
 "1:	rte				\n")
 
-#define INTHDR_ENTRY(entry, inthdr)	_INTHDR_ENTRY(entry, inthdr)
+#define	INT_ENTRY(inthdr)	inthdr##_entry
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
@@ -278,10 +276,10 @@ asm(".text				\n" \
  *  スパッチされない．
  */
 
-#define	_EXCHDR_ENTRY(entry, exchdr)	\
-extern void entry(VP sp);		\
+#define	EXCHDR_ENTRY(exchdr)		\
+extern void exchdr##_entry(VP sp);	\
 asm(".text				\n" \
-#entry ":				\n" \
+#exchdr "_entry:			\n" \
 "	movem.l %d0-%d1/%a0-%a1, -(%sp)	\n" /* スクラッチレジスタを保存 */ \
 "	lea.l (16,%sp), %a0		\n" /* 例外フレームの先頭を A0 に */ \
 "	move.w %sr, %d0			\n" /* SR を D0 に */ \
@@ -299,7 +297,7 @@ asm(".text				\n" \
 "1:	movem.l (%sp)+, %d0-%d1/%a0-%a1	\n" /* スクラッチレジスタを復帰 */ \
 "	rte				\n")
 
-#define EXCHDR_ENTRY(entry, inthdr)	_EXCHDR_ENTRY(entry, inthdr)
+#define	EXC_ENTRY(exchdr)	exchdr##_entry
 
 /*
  *  CPU例外の発生した時のシステム状態の参照

@@ -1,7 +1,7 @@
 
                   ＝ GNU開発環境構築マニュアル ＝
 
-            （Release 1.1β対応，最終更新: 24-Feb-2001）
+            （Release 1.1β対応，最終更新: 2-May-2001）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
@@ -31,7 +31,7 @@
  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  かなる損害に関しても，その責任を負わない．
 
- @(#) $Id: gnu_install.txt,v 1.2 2001/02/23 20:13:13 hiro Exp $
+ @(#) $Id: gnu_install.txt,v 1.4 2001/05/02 09:58:16 honda Exp $
 ------------------------------------------------------------------------
 
 
@@ -65,7 +65,9 @@ perl または make のバージョンを知りたい場合には，-v オプションをつけて
 
 また，これらの開発環境を Windows上に構築するためには Cygwin を用いる．
 
-    Cygwin（動作確認は 1.1.4）
+    Cygwin（動作確認は 1.1.8）
+
+Cygwinのインストールについては後述する．
 
 これらのツールおよびライブラリのソースコードは，次のサイトから入手する
 ことができる．
@@ -75,11 +77,11 @@ perl または make のバージョンを知りたい場合には，-v オプションをつけて
         Ring Server         http://www.ring.gr.jp/
 
     NEWLIB:
-        Red Hat             http://sources.redhat.com/
+        Red Hat             http://sources.redhat.com/newlib/
                     または  ftp://sources.redhat.com/pub/newlib/
 
     Cygwin:
-        Red Hat             http://sources.redhat.com/
+        Red Hat             http://sources.redhat.com/cygwin/
                     または  ftp://sources.redhat.com/pub/cygwin/
         Ring Server         http://www.ring.gr.jp/
 
@@ -188,17 +190,6 @@ NEWLIB のインストールには GCC-CORE が必要なため，GCC-CORE のインストー
     % make
     % make install
 
-1.3 Windows上での開発環境の構築
-
-開発環境を Windows上にインストールするには，1.2節の作業に先だって，
-Cygwin をインストールしておく必要がある．Cygwin をインストールしたら，
-以下のコマンドを実行してシリアルインタフェースを RAWデバイスとして使え
-るようにする．
-
-    % mkdir /dev    
-    % mount \\.\com1 /dev/com1
-    % mount \\.\com2 /dev/com2
-
 
 ２．ターゲットへのダウンロードと実行
 
@@ -249,5 +240,82 @@ gdb が起動したら，次のコマンドを実行して，ターゲットシステムと接続する．
 戻すことができる．ただし，割込み禁止状態では，コントロール-C で停止さ
 せることはできない．詳しくは，スタブの READMEファイルまたはターゲット
 毎のマニュアルを参照すること．
+
+
+３．Cygwinのインストール
+
+本インストールマニュアルは，cygwinの1.1.8バージョンを対象にしている．
+
+3.1必要なファイル
+Cygwinのインストールに必要なファイルは次のサイトから入手することができる．
+
+        Red Hat             http://www.cygwin.com/
+                    または  ftp://sources.redhat.com/pub/cygwin/
+        Ring Server         http://www.ring.gr.jp/
+
+上記のサイトから最新版のsetup.exeをダウンロードする．
+
+
+
+3.2インストール
+setup.exeを実行すると，
+
+・インターネットからダウンロードする
+・インターネットからインストールする
+・ローカルディレクトリからインストールする
+
+該当するインストール手法にチェックし次に進む．何台かのマシンにインストー
+ルするなら，1台目はインターネットからインストールイメージをダウンロー
+ドし，後のマシンにはそれらのファイルをコピーしてローカルディレクトリか
+らインストールすればよい．
+
+以下，インターネットからダウンロードする場合について説明する．ダウンロー
+ドを選択すると必要ならばproxyの設定の後，ミラーサイトの一覧が示される
+ので，近くのサイトを選択する．
+
+次に，パッケージ一覧が示されるため，必要なパッケージを選択する．特に回
+線等の問題がないかぎりすべてのパッケージをインストールするのが望ましい．
+
+ダウンロードが終了したらもう一度setup.exeを実行して，ローカルディレク
+トリからのインストールを選択する．次にインストール元のディレクトリ(上
+でダウンロードしたファイルが存在するディレクトリ，デフォルトで選択され
+ているはず)を選択する．次にインストール先の選択に移るが，特に理由がな
+い限りデフォルトのc:\Cygwinにインストールする．次にインストールするパッ
+ケージを選択する．先ほどダウンロードされたファイルが表示され，ディフォ
+ルトでは全てインストールされることになっているため，単にnextを押してイ
+ンストールを開始する．
+
+
+3.3.開発環境のインストール
+特に最新版のコンパイラが必要でなければ，TOPPERS/JSPのホームページ
+（http://www.ertl.ics.tut.ac.jp/TOPPERS/）の"Development Tools"のペー
+ジからSH用のBINUTILS,GCC-CORE,GDBのバイナリ（gnu_cygwin_sh.tar.gz）を
+c:\Cygwin\usr/localにダウンロードして以下の手順で展開する．なお，この
+ファイルにはNEWLIBは含まれていないが，GDB-Stub，TOPPERS/JSPのsample1の
+コンパイルには支障はない．ユーザーアプリケーションを作成するさい，必要
+なら別途ソースからコンパイル，インストールする．
+
+$ ls
+bin  etc  gnu_cygwin_sh.tar.gz  lib
+$ tar xvfz gnu_cygwin_sh.tar.gz
+
+これで/usr/local/sh以下に開発ツールがインストールされる．次に
+/usr/local/sh/bin にパスを通す．ホーム（Windows2000なら
+c:\Cygwin\home\XXX XXXはログインユーザー名)にbashの設定ファイル.bashrc 
+を作成して次の一行を追加する．
+
+export PATH=/usr/local/sh/bin:${PATH}
+
+後は，JSPの各ターゲットのMakefile先頭にある"CYGWIN = ture"の部分のコメ
+ントアウトを外せばCygwin上でJSPのコンパイルが可能である．
+
+
+3.4.gdbによるデバッグ
+GDBのコマンドラインからCOM1経由でターゲットに接続する場合は，
+(gdb)target remote com1
+COM2経由の場合は
+(gdb)target remote com2
+とする．
+
 
 以上

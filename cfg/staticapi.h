@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: staticapi.h,v 1.4 2001/02/23 16:52:17 takayuki Exp $
+ *  @(#) $Id: staticapi.h,v 1.5 2001/03/24 08:22:56 takayuki Exp $
  */
 
 //------------------------------------------------------------
@@ -41,6 +41,11 @@
 
 class StaticAPI
 {
+friend class Manager;
+protected:
+	class Manager * const parent;
+
+
 private:
 	char * CheckParameter_Primitive(Array *,char *);
 protected:
@@ -50,7 +55,7 @@ protected:
 	void CheckParameterType(Array &,unsigned int,Array::tagType);
 
 public:
-	StaticAPI(void) {};
+	StaticAPI(void) : parent(0) {};
 	virtual ~StaticAPI(void) {};
 
 	virtual char * GetAPIName(void) =0;

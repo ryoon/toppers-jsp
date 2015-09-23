@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: dataqueue.c,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: dataqueue.c,v 1.2 2001/03/21 02:49:24 hiro Exp $
  */
 
 /*
@@ -135,7 +135,7 @@ static BOOL
 dequeue_data(DTQCB *dtqcb, VP_INT *p_data)
 {
 	if (dtqcb->count > 0) {
-		*p_data = ((VP_INT *)(dtqcb->dtqinib->dtq) + dtqcb->head);
+		*p_data = *((VP_INT *)(dtqcb->dtqinib->dtq) + dtqcb->head);
 		dtqcb->count--;
 		dtqcb->head++;
 		if (dtqcb->head >= dtqcb->dtqinib->dtqcnt) {

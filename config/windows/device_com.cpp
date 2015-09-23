@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: device_com.cpp,v 1.3 2001/02/23 15:44:39 takayuki Exp $
+ *  @(#) $Id: device_com.cpp,v 1.4 2001/05/07 15:06:01 takayuki Exp $
  */
 
 #include "sys_defs.h"
@@ -205,7 +205,8 @@ _WorkerThreadProc_Cleanup:
 	manager = 0l;
 	WorkerThreadID = 0;
 	WorkerThread = 0;
-	CloseHandle(Blocker);
+	::SetEvent(Blocker);
+	::CloseHandle(Blocker);
 	Blocker = INVALID_HANDLE_VALUE;
 	::CoUninitialize();
 	return 0;

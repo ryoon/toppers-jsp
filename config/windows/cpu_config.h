@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.2 2000/12/25 14:07:58 takayuki Exp $
+ *  @(#) $Id: cpu_config.h,v 1.4 2001/05/09 04:56:11 takayuki Exp $
  */
 
 /*
@@ -193,8 +193,9 @@ define_exc(EXCNO excno, FP exchdr)
  */
 
 	/* Windows-HALにおいてこの処理は割込みエミュレータに一任している */
-#define ENTRY(inthdr) inthdr
-#define INTHDR_ENTRY(entry, inthdr) extern void inthdr(void)
+
+#define INT_ENTRY(hdr) hdr
+#define INTHDR_ENTRY(inthdr) extern void inthdr(void)
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
@@ -208,7 +209,9 @@ define_exc(EXCNO excno, FP exchdr)
  *  に起動された割込みハンドラ内でディスパッチが要求された場合に，ディ
  *  スパッチされない．
  */
-#define EXCHDR_ENTRY(entry, inthdr) extern void inthdr(void)
+
+#define EXC_ENTRY(hdr) hdr
+#define EXCHDR_ENTRY(inthdr) extern void inthdr(void)
 
 /*
  *  CPU例外の発生した時のシステム状態の参照

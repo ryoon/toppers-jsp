@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.3 2001/02/23 21:47:08 takayuki Exp $
+ *  @(#) $Id: cpu_config.h,v 1.7 2001/05/07 07:30:20 takayuki Exp $
  */
 
 /*
@@ -38,7 +38,7 @@
 
 
 /*
- *  chg_ipm/ref_ipm をサポートするかどうかの定義
+ *  chg_ipm/get_ipm をサポートするかどうかの定義
  */
 /*#define	SUPPORT_CHG_IPM*/
 
@@ -160,6 +160,7 @@ define_exc(EXCNO excno, FP exchdr)
  *  割込みハンドラ／CPU例外ハンドラの出入口処理
  */
 
+
 /*
  *  割込みハンドラの出入口処理の生成マクロ
  *
@@ -168,11 +169,9 @@ define_exc(EXCNO excno, FP exchdr)
  *  スパッチされない．
  */
 
-#define ENTRY(inthdr)   inthdr
 
-#define	_INTHDR_ENTRY(entry, inthdr)
-
-#define INTHDR_ENTRY(entry, inthdr)	_INTHDR_ENTRY(entry, inthdr)
+#define INT_ENTRY(hdr) hdr
+#define INTHDR_ENTRY(entry)	extern void entry();
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
@@ -187,9 +186,8 @@ define_exc(EXCNO excno, FP exchdr)
  *  スパッチされない．
  */
 
-#define	_EXCHDR_ENTRY(entry, exchdr)
-
-#define EXCHDR_ENTRY(entry, inthdr)	_EXCHDR_ENTRY(entry, inthdr)
+#define EXC_ENTRY(hdr) hdr
+#define EXCHDR_ENTRY(entry)	extern void entry();
 
 /*
  *  CPU例外の発生した時のシステム状態の参照

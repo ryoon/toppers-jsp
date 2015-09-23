@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.9 2001/02/23 21:14:08 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.11 2001/05/02 09:37:23 honda Exp $
  */
 
 
@@ -57,7 +57,7 @@
 #endif /* _MACRO_ONLY */
 
 /*
- *  chg_ipm/ref_ipm をサポートするかどうかの定義
+ *  chg_ipm/get_ipm をサポートするかどうかの定義
  */
 #define	SUPPORT_CHG_IPM
 
@@ -311,20 +311,21 @@ define_int_plevel(UINT dintno, UW plevel)
  */
 
 
-#define ENTRY(inthdr) inthdr
 /*
  *  割込みハンドラの出入口処理の生成マクロ
  */
 
-#define	INTHDR_ENTRY(entry, inthdr)  extern void inthdr(void);
+#define	INTHDR_ENTRY(inthdr)  extern void inthdr(void);
 
+#define INT_ENTRY(inthdr) inthdr
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
  *
- *  まだ未完成．ディスパッチ処理が怪しい．
  */
-#define	EXCHDR_ENTRY(entry, exchdr)  extern void exchdr(VP sp);
+#define	EXCHDR_ENTRY(exchdr)  extern void exchdr(VP sp);
+
+#define	EXC_ENTRY(exchdr)     exchdr
 
 /*
  *  CPU例外の発生した時のシステム状態の参照

@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: manager.h,v 1.3 2000/11/14 16:57:33 takayuki Exp $
+ *  @(#) $Id: manager.h,v 1.5 2001/05/07 07:23:44 takayuki Exp $
  */
 
 //------------------------------------------------------------
@@ -46,7 +46,15 @@
 
 class Manager
 {
+public:
+	enum tagOption
+	{
+		CREATEORTIFILE = 0
+	};
+
 protected:
+	unsigned long OptionFlag;
+
 	class Parser * Source;
 	std::map<std::string, class StaticAPI *> API;
 	std::list<class Serializer *> SerializeUnit;
@@ -62,7 +70,19 @@ public:
 	~Manager(void);
 
 	bool Body(char *);
+
+	bool SetOption(enum tagOption);
+	bool ResetOption(enum tagOption);
+	void ClearOption(void);
+
+	bool operator [](enum tagOption);
 };
+
+inline void Manager::ClearOption(void)
+{	OptionFlag = 0;	}
+
+inline bool Manager::operator [](enum Manager::tagOption _opt)
+{	return ((OptionFlag & (1 << static_cast<int>(_opt))) != 0);	}
 
 #endif
 

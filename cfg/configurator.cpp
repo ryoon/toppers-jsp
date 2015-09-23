@@ -1,5 +1,5 @@
 /*
- *  TOPPERS/JSP Kernel
+ *  Toppers/JSP Kernel
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: configurator.cpp,v 1.5 2001/02/23 17:03:26 takayuki Exp $
+ *  @(#) $Id: configurator.cpp,v 1.7 2001/05/07 07:23:44 takayuki Exp $
  */
 
 // Configurator.cpp : コンソール アプリケーション用のエントリ ポイントの定義
@@ -43,19 +43,44 @@
 int main(int argc, char* argv[])
 {
 	Manager mainapp(new SimpleParser);
-
-	if(argc > 2)
+	char * sourcefilename = NULL;
+	int i;
+	
+	for(i=1;i<argc;i++)
 	{
-		fputs("Usage : " APPNAME " sourcefile\n",stderr);
-		return EXIT_SUCCESS;
+		if( *(argv[i]) == '-')
+		{
+			switch(*(argv[i]+1))
+			{
+			case 'O':
+				mainapp.SetOption(Manager::CREATEORTIFILE);
+				break;
+
+			case '-':
+				if( strcmp(argv[i]+2, "odl") == 0)
+				{
+					mainapp.SetOption(Manager::CREATEORTIFILE);
+					break;
+				}
+				
+			default:
+				fprintf(stderr, MSG_UNKNOWNOPTION "\n", argv[i]);	
+				return EXIT_FAILURE;
+			}
+		}else
+		{
+			if(sourcefilename == NULL)
+				sourcefilename = argv[i];
+			else{
+				fputs(MSG_ALREADYGIVENSRCFILE "\n",stderr);
+				return EXIT_FAILURE;
+			}
+		}
 	}
 
 	try
 	{
-		if(argc == 2)
-			mainapp.Body(argv[1]);
-		else
-			mainapp.Body(0l);
+		mainapp.Body(sourcefilename);
 	}
 	catch(Exception e)
 	{

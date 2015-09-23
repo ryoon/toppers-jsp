@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: itron.h,v 1.2 2000/11/24 06:05:04 hiro Exp $
+ *  @(#) $Id: itron.h,v 1.3 2001/05/07 03:45:57 hiro Exp $
  */
 
 /*
@@ -158,9 +158,10 @@ typedef	INT		ER_UINT;	/* ER または UINT */
  */
 
 /*
- *  エラーコード取出しマクロ
+ *  エラーコード生成・分解マクロ
  */
-#define	MERCD(ercd)	((ER)((B)(ercd)))
-#define	SERCD(ercd)	((ercd) >> 8)
+#define	ERCD(mercd,sercd)	(((sercd) << 8) | ((mercd) & 0xff))
+#define	MERCD(ercd)		((ER)((B)(ercd)))
+#define	SERCD(ercd)		((ercd) >> 8)
 
 #endif /* _ITRON_H_ */

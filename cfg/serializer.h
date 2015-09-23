@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serializer.h,v 1.3 2000/11/14 16:57:33 takayuki Exp $
+ *  @(#) $Id: serializer.h,v 1.4 2001/03/24 08:22:56 takayuki Exp $
  */
 
 
@@ -41,8 +41,12 @@
 
 class Serializer
 {
+friend class Manager;
+protected:
+	class Manager * const parent;
+
 public:
-	Serializer(void) {};
+	Serializer(void) : parent(0) {};
 	virtual ~Serializer(void) {};
 
 	virtual void Check(bool & cont) { };

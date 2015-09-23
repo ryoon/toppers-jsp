@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: toppers.h,v 1.2 2000/11/14 15:56:26 takayuki Exp $
+ *  @(#) $Id: toppers.h,v 1.3 2001/04/30 08:48:45 takayuki Exp $
  */
 
 #ifndef __TOPPERS_H
@@ -53,6 +53,7 @@ using namespace std;
 
 #define HEADERFILE "kernel_id.h"
 #define CFGFILE "kernel_cfg.c"
+#define ORTIFILE "toppers_info.odl"
 
 //-----------------------------------------------------------------
 // Miscellanea : インクルードや定数定義など
@@ -64,9 +65,11 @@ protected:
 	set<string> includefilename;
 	map<string, Valient> define;
 	set<string> initializer;
-	bool secondpass;
+	int currentstep;
 
 public:
+	Miscellanea(void) : currentstep(0) {};
+
 	DECLARE_API(INCLUDE);
 	DECLARE_API(DEFINE);
 
@@ -80,7 +83,6 @@ public:
 
 	bool AddInitializer(const string &);
 
-	void Check(void) { secondpass = false; };
 	void Body(MultiStream & dest);
 };
 
@@ -95,6 +97,8 @@ protected:
 	void OutputFooterBlock(ostream *,char *, char * =0l);
 
 	void CreateBufferDefinition(ostream *, int,char *,char *,int =-1);
+	void CreateORTIEntry(ostream *, char *, int, Valient &);
+
 public:
 	Array * LoadParameters(Array *, int, int, int,int =0);
 	int AssignObjectID(Valient &);
@@ -120,7 +124,7 @@ class Task : public Object
 {
 protected:
 	enum tagPart
-	{	TYPE=0, EXINF, TASK, PRIORITY, STACKSIZE, STACK,TEXTYPE, TEXFUNC	};
+	{	TYPE=0, EXINF, TASK, PRIORITY, STACKSIZE, STACK, TEXTYPE, TEXFUNC, NAME	};
 
 
 public:
@@ -139,7 +143,7 @@ class Semaphore : public Object
 {
 protected:
 	enum tagPart
-	{	ATR=0, ISEMCNT, MAXCNT	};
+	{	ATR=0, ISEMCNT, MAXCNT, NAME	};
 
 public:
 	DECLARE_API(CRE_SEM)
@@ -150,7 +154,7 @@ public:
 class EventFlag : public Object
 {
 protected:
-	enum tagPart { ATR=0, FLGPTN };
+	enum tagPart { ATR=0, FLGPTN, NAME };
 public:
 	DECLARE_API(CRE_FLG)
 
@@ -160,7 +164,7 @@ public:
 class DataQueue : public Object
 {
 protected:
-	enum tagPart { ATR=0, CNT, DTQ };
+	enum tagPart { ATR=0, CNT, DTQ, NAME };
 public:
 	DECLARE_API(CRE_DTQ)
 
@@ -170,7 +174,7 @@ public:
 class Mailbox : public Object
 {
 protected:
-	enum tagPart { ATR = 0, MPRI, HD };
+	enum tagPart { ATR = 0, MPRI, HD, NAME };
 public:
 	DECLARE_API(CRE_MBX)
 
@@ -180,7 +184,7 @@ public:
 class FixedsizeMemoryPool : public Object
 {
 protected:
-	enum tagPart { ATR=0, CNT, SZ, MPF };
+	enum tagPart { ATR=0, CNT, SZ, MPF, NAME };
 public:
 	DECLARE_API(CRE_MPF)
 
@@ -190,7 +194,7 @@ public:
 class CyclicHandler : public Object
 {
 protected:
-	enum tagPart { ATR=0, EXINF, HDR, TIM, PHS };
+	enum tagPart { ATR=0, EXINF, HDR, TIM, PHS, NAME };
 public:
 	DECLARE_API(CRE_CYC)
 
@@ -200,7 +204,7 @@ public:
 class InterruptHandler : public Object
 {
 protected:
-	enum tagPart { ATR=0, HDR, NO };
+	enum tagPart { ATR=0, HDR, NO, NAME };
 public:
 	DECLARE_API(DEF_INH)
 
@@ -211,7 +215,7 @@ public:
 class ExceptionHandler : public Object
 {
 protected:
-	enum tagPart { ATR=0, HDR, NO };
+	enum tagPart { ATR=0, HDR, NO, NAME };
 public:
 	DECLARE_API(DEF_EXC)
 

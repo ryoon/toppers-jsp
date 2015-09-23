@@ -26,7 +26,7 @@
 #  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 #  かなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile,v 1.3 2001/02/23 18:05:52 hiro Exp $
+#  @(#) $Id: Makefile,v 1.4 2001/03/23 01:35:18 hiro Exp $
 # 
 
 #
@@ -56,9 +56,9 @@ include ../config/$(CPU)/$(SYS)/Makefile.config
 #
 INCLUDES = -I. -I../include -I../config/$(CPU) -I../config/$(CPU)/$(SYS)
 CDEFS := $(CDEFS)
-CFLAGS := $(CFLAGS) $(INCLUDES) $(CDEFS) -g -Wall
+CFLAGS := $(CFLAGS) $(CDEFS) $(INCLUDES) -g -Wall
 LDFLAGS := -nostdlib $(LDFLAGS)
-LIBS = -lgcc
+LIBS := $(LIBS) -lgcc
 
 #
 #  アプリケーションプログラムに関する定義

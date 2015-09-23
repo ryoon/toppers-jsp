@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: manager.cpp,v 1.5 2001/02/23 16:52:17 takayuki Exp $
+ *  @(#) $Id: manager.cpp,v 1.7 2001/05/07 07:23:44 takayuki Exp $
  */
 
 #include "manager.h"
@@ -39,6 +39,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
@@ -49,6 +50,7 @@ using namespace std;
 Manager::Manager(Parser * src)
 {
 	Source = src;
+	ClearOption();
 }
 
 Manager::~Manager(void)
@@ -178,6 +180,7 @@ void Manager::DeclareAPI(StaticAPI * api)
 	if(api == 0l)
 		throw Exception(MSG_INTERNAL " : " MSG_NULLAPIASSIGNMENT);
 	
+	*const_cast<Manager **>(&api->parent) = this;
 	API[string(api->GetAPIName())] = api;
 }
 
@@ -186,5 +189,30 @@ void Manager::DeclareSerializer(Serializer * sel)
 	if(sel == 0l)
 		throw Exception(MSG_INTERNAL " : " MSG_NULLSERASSIGNMENT);
 
+	*const_cast<Manager **>(&sel->parent) = this;
 	SerializeUnit.push_back(sel);
+}
+
+bool Manager::SetOption(enum Manager::tagOption _opt)
+{
+	bool result;
+	unsigned long opt;
+
+	opt = static_cast<int>(_opt);
+	result = (OptionFlag & (1 << opt)) != 0;
+
+	OptionFlag |= (1 << opt);
+	return result;
+}
+
+bool Manager::ResetOption(enum Manager::tagOption _opt)
+{
+	bool result;
+	unsigned long opt;
+
+	opt = static_cast<int>(_opt);
+	result = (OptionFlag & (1 << opt)) != 0;
+
+	OptionFlag &= ~(1 << opt);
+	return result;
 }

@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.2 2001/02/23 21:15:02 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.3 2001/05/02 09:37:23 honda Exp $
  */
 
 /*
@@ -256,18 +256,17 @@ define_exc(EXCNO excno, FP exchdr)
  *  動作する。そのためreqflgのチェック後シグナルが発行されて起動された
  *  ハンドラでディスパッチが要求されても正しく動く
  */
-#define ENTRY(inthdr)   inthdr##_entry
 
-#define	_INTHDR_ENTRY(entry, inthdr)	\
-void entry(void){                       \
+
+#define	INTHDR_ENTRY(inthdr)      \
+void inthdr##_entry(void){        \
      inthdr();                           /* 割り込みハンドラを呼び出す */ \
      if(reqflg)                          /* regflg がTRUEであれば      */ \
        raise(SIGUSR1);                   /* ディスパッチャを呼び出す   */ \
 }                                      
 
+#define INT_ENTRY(inthdr)   inthdr##_entry
 
-
-#define INTHDR_ENTRY(entry, inthdr) _INTHDR_ENTRY(entry, inthdr)
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
@@ -277,14 +276,15 @@ void entry(void){                       \
  *  動作する。そのためreqflgのチェック後シグナルが発行されて起動された
  *  ハンドラでディスパッチが要求されても正しく動く 
  */
-#define	_EXCHDR_ENTRY(entry, exchdr)	\
-void entry(VP sp){                      \
+#define	EXCHDR_ENTRY(exchdr)	  \
+void exchdr##_entry(VP sp){        \
      exchdr(sp);                         /* 割り込みハンドラを呼び出す */ \
      if(reqflg)                          /* regflg がTRUEであれば      */ \
        raise(SIGUSR1);                   /* ディスパッチャを呼び出す   */ \
 }
 
-#define EXCHDR_ENTRY(entry, inthdr) _EXCHDR_ENTRY(entry, inthdr)
+#define EXC_ENTRY(exchdr) exchdr##_entry
+
 /*
  *  CPU例外の発生した時のシステム状態の参照
  */

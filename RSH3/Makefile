@@ -3,7 +3,7 @@
 #      Toyohashi Open Platform for Embedded Real-Time Systems/
 #      Just Standard Profile Kernel
 # 
-#  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+#  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
 # 
 #  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,9 +26,8 @@
 #  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 #  かなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile,v 1.4 2001/02/23 20:56:57 honda Exp $
+#  @(#) $Id: Makefile,v 1.5 2001/03/23 16:20:47 honda Exp $
 # 
-
 
 #
 #  ターゲット名の定義
@@ -57,9 +56,9 @@ include ../config/$(CPU)/$(SYS)/Makefile.config
 #
 INCLUDES = -I. -I../include -I../config/$(CPU) -I../config/$(CPU)/$(SYS)
 CDEFS  := $(CDEFS) -DWITH_STUB
-CFLAGS := $(CFLAGS) $(CDEFS) $(INCLUDES) -g -Wall 
+CFLAGS := $(CFLAGS) $(CDEFS) $(INCLUDES) -g -Wall
 LDFLAGS := -nostdlib $(LDFLAGS)
-LIBS = -lgcc
+LIBS := $(LIBS) -lgcc
 
 #
 #  アプリケーションプログラムに関する定義

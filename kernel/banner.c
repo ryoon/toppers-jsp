@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: banner.c,v 1.2 2001/02/23 21:28:54 hiro Exp $
+ *  @(#) $Id: banner.c,v 1.3 2001/05/08 01:57:09 hiro Exp $
  */
 
 /*
@@ -35,10 +35,19 @@
 
 #include "jsp_kernel.h"
 
+#ifndef COPYRIGHT_CPU
+#define COPYRIGHT_CPU
+#endif /* COPYRIGHT_CPU */
+
+#ifndef COPYRIGHT_SYS
+#define COPYRIGHT_SYS
+#endif /* COPYRIGHT_SYS */
+
 static char const banner[] = "\n"
 "JSP Kernel Release %d.%d (patchlevel = %d) for %s (%s, %s)\n"
 "Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory\n"
-"                            Toyohashi Univ. of Technology, JAPAN\n";
+"                            Toyohashi Univ. of Technology, JAPAN\n"
+COPYRIGHT_CPU COPYRIGHT_SYS;
 
 void
 print_banner()

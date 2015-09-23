@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.12 2001/02/23 21:14:08 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.13 2001/02/27 07:10:47 honda Exp $
  */
 
 
@@ -109,11 +109,11 @@ _general_exception:
 	mov.l  _stacktop_exc,r15 /* を入れ替え元のスタックポインタを保存      */  
 	mov.l  r1,@-r15            
 	mov.l  _expevt,r0        /* 割り込み許可すると消えるレジスタを保存    */
-	mov.l  @r0,r5            /* EXPECTレジスタを取得		              */
-	ldc    r1,r4_bank        /* CPU例外ハンドラへの引数                   */	
-	ldc    r5,r5_bank	     /* るためコピー                              */
+	mov.l  @r0,r5            /* EXPEVTレジスタを取得		              */
+	ldc    r1,r4_bank        /* CPU例外ハンドラへの引数                   */
+	ldc    r5,r5_bank	     
 	mov.l  _unmak_rb_bl_exc,r2 /* BLビットを0に，レジスタバンクを切り替え */
-	stc    sr,r3
+	stc    sr,r3               
 	and    r3,r2			
 	ldc    r2,sr               
 	shlr2  r5                /* EXPECTを3ビット右シフト	              */
@@ -149,8 +149,8 @@ _general_exception:
 _exception_from_int:
 	mov.l   _expevt,r0       /* 割り込み許可すると消えるレジスタを保存    */
 	mov.l   @r0,r5           /* EXPECTレジスタを取得                      */
-	ldc     r15,r4_bank      /* CPU例外ハンドラへの引数                   */		
-	ldc     r5,r5_bank	     /* るためコピー                              */
+	ldc     r15,r4_bank      /* CPU例外ハンドラへの引数                   */
+	ldc     r5,r5_bank	     
 	mov.l   _unmak_rb_bl_exc,r2 /* BLビットを0に，レジスタバンクを切り替え */
 	stc     sr,r3
 	and     r3,r2			

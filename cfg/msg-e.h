@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: msg-e.h,v 1.2 2001/02/23 22:10:55 takayuki Exp $
+ *  @(#) $Id: msg-e.h,v 1.3 2001/03/24 08:22:56 takayuki Exp $
  */
 
 #ifndef __MESSAGE_H
@@ -57,5 +57,7 @@
 #define MSG_NOTEXIST			"There is no object specified"
 #define MSG_ILLEGALIDENTIFIER2	"\n  (discontinuance, negative value, out of range, and so on)"
 #define MSG_NONNULLASSIGNED		"Non-NULL pointer specified as a buffer of the object"
+#define MSG_UNKNOWNOPTION		"Unknown option [%s]"
+#define MSG_ALREADYGIVENSRCFILE	"The source file name was already given to configurator as a parameter"
 
 #endif

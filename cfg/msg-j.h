@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: msg-j.h,v 1.1 2001/02/23 16:52:17 takayuki Exp $
+ *  @(#) $Id: msg-j.h,v 1.2 2001/03/24 08:22:56 takayuki Exp $
  */
 
 #ifndef __MESSAGE_H
@@ -58,5 +58,6 @@
 #define MSG_NOTEXIST			"オブジェクトが存在しません"
 #define MSG_ILLEGALIDENTIFIER2	"\n  (不連続、負値、範囲外などなど)"
 #define MSG_NONNULLASSIGNED		"オブジェクトのバッファにNULL以外の値が指定されました"
-
+#define MSG_UNKNOWNOPTION		"不明なオプション[%s]が指定されています"
+#define MSG_ALREADYGIVENSRCFILE	"ソースファイル名はすでに与えられている"
 #endif
