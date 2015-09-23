@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.1 2000/11/14 14:44:12 hiro Exp $
+ *  @(#) $Id: sample1.c,v 1.2 2000/11/18 02:19:43 hiro Exp $
  */
 
 /* 
@@ -253,7 +253,7 @@ void main_task(VP_INT exinf)
 							
 			chg_pri(tskid, HIGH_PRIORITY);
 			break;
-		case '-':
+		case '=':
 			syslog(LOG_INFO, "#chg_pri(%d, MID_PRIORITY)", tskno);
 			chg_pri(tskid, MID_PRIORITY);
 			break;

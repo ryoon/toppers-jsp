@@ -390,16 +390,33 @@ SOURCE=..\..\..\WINDOWS\sample1.cfg
 
 !IF  "$(CFG)" == "Toppers - Win32 Release"
 
-!ELSEIF  "$(CFG)" == "Toppers - Win32 Debug"
-
 # Begin Custom Build
-InputDir=\Sources\Program sources\CVS home\JSP\WINDOWS
+InputDir=\Sources\Program sources\CVS home\jsp\WINDOWS
 InputPath=..\..\..\WINDOWS\sample1.cfg
 InputName=sample1
 
 BuildCmds= \
 	cd $(InputDir) \
-	cl /E /EP /I"../config/windows" $(InputName).cfg | cfg \
+	cl /E /EP /I "./" /I "../kernel" /I "../include" /I "../config/windows" $(InputName).cfg | cfg.exe \
+	
+
+"kernel_cfg.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"kernel_id.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Toppers - Win32 Debug"
+
+# Begin Custom Build
+InputDir=\Sources\Program sources\CVS home\jsp\WINDOWS
+InputPath=..\..\..\WINDOWS\sample1.cfg
+InputName=sample1
+
+BuildCmds= \
+	cd $(InputDir) \
+	cl /E /EP /I "../" /I "../kernel" /I "../include" /I "../config/windows" $(InputName).cfg | cfg.exe \
 	
 
 "kernel_id.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"

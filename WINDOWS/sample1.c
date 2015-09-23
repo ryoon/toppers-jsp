@@ -1,5 +1,5 @@
 /*
- *  @(#) $Id: sample1.c,v 1.2 2000/11/14 17:14:29 takayuki Exp $
+ *  @(#) $Id: sample1.c,v 1.3 2000/11/20 05:47:43 takayuki Exp $
  */
 
 /* 
@@ -253,7 +253,7 @@ void main_task(VP_INT exinf)
 							
 			chg_pri(tskid, HIGH_PRIORITY);
 			break;
-		case '-':
+		case '=':
 			syslog(LOG_INFO, "#chg_pri(%d, MID_PRIORITY)", tskno);
 			chg_pri(tskid, MID_PRIORITY);
 			break;

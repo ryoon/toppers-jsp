@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: debugout.h,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: debugout.h,v 1.2 2000/11/21 06:06:17 takayuki Exp $
  */
 #ifndef __DEBUG_H
 #define __DEBUG_H
@@ -34,7 +34,6 @@
 #include "vwindows.h"
 
 /*#define DEBUG_ENABLE */
-#define DEBUG_ENABLE
 
 #ifdef DEBUG_ENABLE
 

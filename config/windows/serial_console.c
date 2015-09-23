@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serial_console.c,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: serial_console.c,v 1.2 2000/11/24 03:57:05 takayuki Exp $
  */
 /*
  * エディットボックスを使ったシリアルインターフェースモジュール
@@ -82,6 +82,25 @@ extern HINSTANCE ProcessInstance;
 extern HANDLE PrimaryDialogHandle;
 
 #define NEXT(x) (((x)+1) & (SERIAL_INPUTBUFFERSIZE-1))
+
+
+#ifdef _MSC_VER
+
+__forceinline __declspec(naked) void * __fastcall MemoryCopy(void * dest, void * src, unsigned int size)
+{
+	__asm	mov	eax, ecx
+	__asm	mov edi, ecx
+	__asm	mov esi, edx
+	__asm	pop ebx
+	__asm	pop ecx
+	__asm	rep movsb
+	__asm	jmp ebx
+}
+
+#else
+#include <string.h>
+#define MemoryCopy memcpy
+#endif
 
 
 static LRESULT CALLBACK ConsoleProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lParam)
@@ -245,18 +264,18 @@ serial_read(ID portid, char * buf, unsigned int len)
 			if(cb->Top > cb->Tail)
 			{
 				cnt = SERIAL_INPUTBUFFERSIZE - cb->Top;
-				lstrcpyn(buf,cb->Buffer + cb->Top, cnt +1);
+				MemoryCopy(buf,cb->Buffer + cb->Top, cnt);
 				buf += cnt;
 				if(cb->Tail != 0)
 				{
-					lstrcpyn(buf,cb->Buffer, cb->Tail+1);
+					MemoryCopy(buf,cb->Buffer, cb->Tail);
 					buf += cb->Tail;
 					cnt += cb->Tail;
 				}
 			}else
 			{
 				cnt = cb->Tail - cb->Top;
-				lstrcpyn(buf,cb->Buffer + cb->Top, cnt+1);
+				MemoryCopy(buf,cb->Buffer + cb->Top, cnt);
 				buf += cnt;
 			}
 

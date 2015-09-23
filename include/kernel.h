@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: kernel.h,v 1.1 2000/11/14 14:44:19 hiro Exp $
+ *  @(#) $Id: kernel.h,v 1.3 2000/11/24 06:05:04 hiro Exp $
  */
 
 /*
@@ -37,16 +37,11 @@
  *  の長さにはしていない．
  *  アセンブリ言語のソースファイルやシステムコンフィギュレーションファ
  *  イルからこのファイルをインクルードする時は，_MACRO_ONLY を定義して
- *  おくことで，マクロ定義以外の記述を除くことができる．CONFIGURATOR 
- *  が定義されている場合にも同様に振舞う．
+ *  おくことで，マクロ定義以外の記述を除くことができる．
  */
 
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
-
-#ifdef CONFIGURATOR
-#define _MACRO_ONLY
-#endif /* CONFIGURATOR */
 
 /*
  *  ITRON仕様共通規定のデータ型・定数・マクロ
@@ -256,7 +251,7 @@ extern BOOL	vxsns_tex(VP p_excinf);
 #define	TKERNEL_MAKER	0x0002		/* カーネルのメーカーコード */
 #define	TKERNEL_PRID	0x0101		/* カーネルの識別番号 */
 #define	TKERNEL_SPVER	0x5400		/* ITRON仕様のバージョン番号 */
-#define	TKERNEL_PRVER	0x1000		/* カーネルのバージョン番号 */
+#define	TKERNEL_PRVER	0x1001		/* カーネルのバージョン番号 */
 
 /*
  *  キューイング／ネスト回数の最大値

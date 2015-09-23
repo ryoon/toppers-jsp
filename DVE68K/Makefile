@@ -26,7 +26,7 @@
 #  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 #  かなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile,v 1.1 2000/11/14 14:44:12 hiro Exp $
+#  @(#) $Id: Makefile,v 1.2 2000/11/18 02:19:03 hiro Exp $
 # 
 
 #
@@ -200,7 +200,7 @@ realclean: cleandep clean
 #
 depend: kernel_cfg.c offset.h
 	rm -f Makefile.depend
-	../utils/makedep -P cpp -T kernel_cfg.c \
+	../utils/makedep -P $(CPP) -T kernel_cfg.c \
 		-O "$(INCLUDES)" $(UTASK_CFG) \
 		>> Makefile.depend
 	../utils/makedep -C $(CC) -S $(KERNEL_DIR) \

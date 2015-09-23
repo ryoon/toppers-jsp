@@ -6,27 +6,27 @@
  *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  $B>e5-Cx:n8"<T$O!$0J2<$N>r7o$rK~$?$9>l9g$K8B$j!$K\%=%U%H%&%'%"!JK\%=(B
- *  $B%U%H%&%'%"$r2~JQ$7$?$b$N$r4^$`!%0J2<F1$8!K$r;HMQ!&J#@=!&2~JQ!&:FG[(B
- *  $BI[!J0J2<!$MxMQ$H8F$V!K$9$k$3$H$rL5=~$G5vBz$9$k!%(B
- *  (1) $BK\%=%U%H%&%'%"$r%=!<%9%3!<%I$N7A$GMxMQ$9$k>l9g$K$O!$>e5-$NCx:n(B
- *      $B8"I=<(!$$3$NMxMQ>r7o$*$h$S2<5-$NL5J]>Z5,Dj$,!$$=$N$^$^$N7A$G%=!<(B
- *      $B%9%3!<%ICf$K4^$^$l$F$$$k$3$H!%(B
- *  (2) $BK\%=%U%H%&%'%"$r%P%$%J%j%3!<%I$N7A$^$?$O5!4o$KAH$_9~$s$@7A$GMx(B
- *      $BMQ$9$k>l9g$K$O!$<!$N$$$:$l$+$N>r7o$rK~$?$9$3$H!%(B
- *    (a) $BMxMQ$KH<$&%I%-%e%a%s%H!JMxMQ<T%^%K%e%"%k$J$I!K$K!$>e5-$NCx:n(B
- *        $B8"I=<(!$$3$NMxMQ>r7o$*$h$S2<5-$NL5J]>Z5,Dj$r7G:\$9$k$3$H!%(B
- *    (b) $BMxMQ$N7ABV$r!$JL$KDj$a$kJ}K!$K$h$C$F!$>e5-Cx:n8"<T$KJs9p$9$k(B
- *        $B$3$H!%(B
- *  (3) $BK\%=%U%H%&%'%"$NMxMQ$K$h$jD>@\E*$^$?$O4V@\E*$K@8$8$k$$$+$J$kB;(B
- *      $B32$+$i$b!$>e5-Cx:n8"<T$rLH@U$9$k$3$H!%(B
+ *  ¾åµ­Ãøºî¸¢¼Ô¤Ï¡¤°Ê²¼¤Î¾ò·ï¤òËþ¤¿¤¹¾ì¹ç¤Ë¸Â¤ê¡¤ËÜ¥½¥Õ¥È¥¦¥§¥¢¡ÊËÜ¥½
+ *  ¥Õ¥È¥¦¥§¥¢¤ò²þÊÑ¤·¤¿¤â¤Î¤ò´Þ¤à¡¥°Ê²¼Æ±¤¸¡Ë¤ò»ÈÍÑ¡¦Ê£À½¡¦²þÊÑ¡¦ºÆÇÛ
+ *  ÉÛ¡Ê°Ê²¼¡¤ÍøÍÑ¤È¸Æ¤Ö¡Ë¤¹¤ë¤³¤È¤òÌµ½þ¤ÇµöÂú¤¹¤ë¡¥
+ *  (1) ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ò¥½¡¼¥¹¥³¡¼¥É¤Î·Á¤ÇÍøÍÑ¤¹¤ë¾ì¹ç¤Ë¤Ï¡¤¾åµ­¤ÎÃøºî
+ *      ¸¢É½¼¨¡¤¤³¤ÎÍøÍÑ¾ò·ï¤ª¤è¤Ó²¼µ­¤ÎÌµÊÝ¾Úµ¬Äê¤¬¡¤¤½¤Î¤Þ¤Þ¤Î·Á¤Ç¥½¡¼
+ *      ¥¹¥³¡¼¥ÉÃæ¤Ë´Þ¤Þ¤ì¤Æ¤¤¤ë¤³¤È¡¥
+ *  (2) ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ò¥Ð¥¤¥Ê¥ê¥³¡¼¥É¤Î·Á¤Þ¤¿¤Ïµ¡´ï¤ËÁÈ¤ß¹þ¤ó¤À·Á¤ÇÍø
+ *      ÍÑ¤¹¤ë¾ì¹ç¤Ë¤Ï¡¤¼¡¤Î¤¤¤º¤ì¤«¤Î¾ò·ï¤òËþ¤¿¤¹¤³¤È¡¥
+ *    (a) ÍøÍÑ¤ËÈ¼¤¦¥É¥­¥å¥á¥ó¥È¡ÊÍøÍÑ¼Ô¥Þ¥Ë¥å¥¢¥ë¤Ê¤É¡Ë¤Ë¡¤¾åµ­¤ÎÃøºî
+ *        ¸¢É½¼¨¡¤¤³¤ÎÍøÍÑ¾ò·ï¤ª¤è¤Ó²¼µ­¤ÎÌµÊÝ¾Úµ¬Äê¤ò·ÇºÜ¤¹¤ë¤³¤È¡¥
+ *    (b) ÍøÍÑ¤Î·ÁÂÖ¤ò¡¤ÊÌ¤ËÄê¤á¤ëÊýË¡¤Ë¤è¤Ã¤Æ¡¤¾åµ­Ãøºî¸¢¼Ô¤ËÊó¹ð¤¹¤ë
+ *        ¤³¤È¡¥
+ *  (3) ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ÎÍøÍÑ¤Ë¤è¤êÄ¾ÀÜÅª¤Þ¤¿¤Ï´ÖÀÜÅª¤ËÀ¸¤¸¤ë¤¤¤«¤Ê¤ëÂ»
+ *      ³²¤«¤é¤â¡¤¾åµ­Ãøºî¸¢¼Ô¤òÌÈÀÕ¤¹¤ë¤³¤È¡¥
  * 
- *  $BK\%=%U%H%&%'%"$O!$L5J]>Z$GDs6!$5$l$F$$$k$b$N$G$"$k!%>e5-Cx:n8"<T$O!$(B
- *  $BK\%=%U%H%&%'%"$K4X$7$F!$$=$NE,MQ2DG=@-$b4^$a$F!$$$$+$J$kJ]>Z$b9T$o(B
- *  $B$J$$!%$^$?!$K\%=%U%H%&%'%"$NMxMQ$K$h$jD>@\E*$^$?$O4V@\E*$K@8$8$?$$(B
- *  $B$+$J$kB;32$K4X$7$F$b!$$=$N@UG$$rIi$o$J$$!%(B
+ *  ËÜ¥½¥Õ¥È¥¦¥§¥¢¤Ï¡¤ÌµÊÝ¾Ú¤ÇÄó¶¡¤µ¤ì¤Æ¤¤¤ë¤â¤Î¤Ç¤¢¤ë¡¥¾åµ­Ãøºî¸¢¼Ô¤Ï¡¤
+ *  ËÜ¥½¥Õ¥È¥¦¥§¥¢¤Ë´Ø¤·¤Æ¡¤¤½¤ÎÅ¬ÍÑ²ÄÇ½À­¤â´Þ¤á¤Æ¡¤¤¤¤«¤Ê¤ëÊÝ¾Ú¤â¹Ô¤ï
+ *  ¤Ê¤¤¡¥¤Þ¤¿¡¤ËÜ¥½¥Õ¥È¥¦¥§¥¢¤ÎÍøÍÑ¤Ë¤è¤êÄ¾ÀÜÅª¤Þ¤¿¤Ï´ÖÀÜÅª¤ËÀ¸¤¸¤¿¤¤
+ *  ¤«¤Ê¤ëÂ»³²¤Ë´Ø¤·¤Æ¤â¡¤¤½¤ÎÀÕÇ¤¤òÉé¤ï¤Ê¤¤¡¥
  * 
- *  @(#) $Id: linux_serial.c,v 1.1 2000/11/14 16:27:57 honda Exp $
+ *  @(#) $Id: linux_serial.c,v 1.2 2000/11/21 08:40:38 honda Exp $
  */
 
 #define _LINX_SERIAL_
@@ -44,13 +44,13 @@
 
 
 /*
- *  $B%7%j%"%k%]!<%H$NDc%l%Y%kDj5A(B
+ *  ¥·¥ê¥¢¥ë¥Ý¡¼¥È¤ÎÄã¥ì¥Ù¥ëÄêµÁ
  */
 
 typedef struct hardware_serial_port_descripter {
-	char   *path;		            /* UNIX $B>e$G$N%U%!%$%kL>(B */
-	int	   fd;		                /* $B%U%!%$%k%G%#%9%/%j%W%?(B */
-	struct termios	current_term;	/* $BC<Kv@)8f>pJs(B */
+	char   *path;		            /* UNIX ¾å¤Ç¤Î¥Õ¥¡¥¤¥ëÌ¾ */
+	int	   fd;		                /* ¥Õ¥¡¥¤¥ë¥Ç¥£¥¹¥¯¥ê¥×¥¿ */
+	struct termios	current_term;	/* Ã¼ËöÀ©¸æ¾ðÊó */
 	struct termios	saved_term;    
 } HWPORT;
 
@@ -59,10 +59,10 @@ typedef struct hardware_serial_port_descripter {
 #define RAWPORT1	{ 0 }
 
 /*
- *  UNIX $B%l%Y%k$N%]!<%H=i4|2=(B/$B%7%c%C%H%@%&%s=hM}(B
+ *  UNIX ¥ì¥Ù¥ë¤Î¥Ý¡¼¥È½é´ü²½/¥·¥ã¥Ã¥È¥À¥¦¥ó½èÍý
  *
- *  $B8=:_$N<BAu$G$O!$C<Kv$r;H$&%1!<%9$7$+9M$($F$$$J$$!%K\Mh$O!$(Bopen $B$7(B
- *  $B$?$N$,C<Kv$+$I$&$+$G=hM}$rJQ$($k$Y$-!%(B
+ *  ¸½ºß¤Î¼ÂÁõ¤Ç¤Ï¡¤Ã¼Ëö¤ò»È¤¦¥±¡¼¥¹¤·¤«¹Í¤¨¤Æ¤¤¤Ê¤¤¡¥ËÜÍè¤Ï¡¤open ¤·
+ *  ¤¿¤Î¤¬Ã¼Ëö¤«¤É¤¦¤«¤Ç½èÍý¤òÊÑ¤¨¤ë¤Ù¤­¡¥
  */
 
 Inline void
@@ -72,7 +72,7 @@ hw_port_initialize(HWPORT *p)
 		p->fd = open(p->path, O_RDWR|O_NDELAY);
 	}
 	else {
-		p->fd = 0;			/* $BI8=`F~=PNO$r;H$&(B */
+		p->fd = 0;			/* É¸½àÆþ½ÐÎÏ¤ò»È¤¦ */
 	}
 	fcntl(p->fd, F_SETOWN, getpid());
 	fcntl(p->fd, F_SETFL, FASYNC|FNDELAY);
@@ -101,14 +101,14 @@ hw_port_terminate(HWPORT *p)
 
 
 /*
- *  $B%7%j%"%k%$%s%?%U%'!<%9%I%i%$%PMQ$N(B SIGIO $BDLCN%$%Y%s%H%V%m%C%/(B
+ *  ¥·¥ê¥¢¥ë¥¤¥ó¥¿¥Õ¥§¡¼¥¹¥É¥é¥¤¥ÐÍÑ¤Î SIGIO ÄÌÃÎ¥¤¥Ù¥ó¥È¥Ö¥í¥Ã¥¯
  */
 
 static SIGIOEB	serial_sigioeb;
 
 
 /*
- *  $B%7%j%"%k%]!<%H4IM}%V%m%C%/$NDj5A(B
+ *  ¥·¥ê¥¢¥ë¥Ý¡¼¥È´ÉÍý¥Ö¥í¥Ã¥¯¤ÎÄêµÁ
  */
 
 typedef struct ioctl_descripter {
@@ -118,30 +118,30 @@ typedef struct ioctl_descripter {
 	int	flowc;
 } IOCTL;
 
-#define	SERIAL_BUFSZ	256	/* $B%7%j%"%k%$%s%?%U%'!<%9MQ%P%C%U%!$N%5%$%:(B */
+#define	SERIAL_BUFSZ	256	/* ¥·¥ê¥¢¥ë¥¤¥ó¥¿¥Õ¥§¡¼¥¹ÍÑ¥Ð¥Ã¥Õ¥¡¤Î¥µ¥¤¥º */
 
 #define	inc(x)		(((x)+1 < SERIAL_BUFSZ) ? (x)+1 : 0)
 #define	INC(x)		((x) = inc(x))
 
 
 typedef struct serial_port_control_block {
-	BOOL	init_flag;	/* $B=i4|2=:Q$+!)(B */
-	HWPORT	hwport;		/* $B%O!<%I%&%'%"0MB8>pJs(B */
-	ID	in_semid;	/* $B<u?.%P%C%U%!4IM}MQ%;%^%U%)$N(B ID */
-	ID	out_semid;	/* $BAw?.%P%C%U%!4IM}MQ%;%^%U%)$N(B ID */
+	BOOL	init_flag;	/* ½é´ü²½ºÑ¤«¡© */
+	HWPORT	hwport;		/* ¥Ï¡¼¥É¥¦¥§¥¢°ÍÂ¸¾ðÊó */
+	ID	in_semid;	/* ¼õ¿®¥Ð¥Ã¥Õ¥¡´ÉÍýÍÑ¥»¥Þ¥Õ¥©¤Î ID */
+	ID	out_semid;	/* Á÷¿®¥Ð¥Ã¥Õ¥¡´ÉÍýÍÑ¥»¥Þ¥Õ¥©¤Î ID */
 
-	int	in_read_ptr;	/* $B<u?.%P%C%U%!FI$_=P$7%]%$%s%?(B */
-	int	in_write_ptr;	/* $B<u?.%P%C%U%!=q$-9~$_%]%$%s%?(B */
-	int	out_read_ptr;	/* $BAw?.%P%C%U%!FI$_=P$7%]%$%s%?(B */
-	int	out_write_ptr;	/* $BAw?.%P%C%U%!=q$-9~$_%]%$%s%?(B */
-	UINT	ioctl;		/* ioctl $B$K$h$k@_DjFbMF(B */
-	BOOL	send_enabled;	/* $BAw?.$r%$%M!<%V%k$7$F$"$k$+!)(B */
-	BOOL	ixon_stopped;	/* STOP $B$r<u$1<h$C$?>uBV$+!)(B */
-	BOOL	ixoff_stopped;	/* $BAj<j$K(B STOP $B$rAw$C$?>uBV$+!)(B */
-	char	ixoff_send;	/* $BAj<j$K(B START/STOP $B$rAw$k$+!)(B */
+	int	in_read_ptr;	/* ¼õ¿®¥Ð¥Ã¥Õ¥¡ÆÉ¤ß½Ð¤·¥Ý¥¤¥ó¥¿ */
+	int	in_write_ptr;	/* ¼õ¿®¥Ð¥Ã¥Õ¥¡½ñ¤­¹þ¤ß¥Ý¥¤¥ó¥¿ */
+	int	out_read_ptr;	/* Á÷¿®¥Ð¥Ã¥Õ¥¡ÆÉ¤ß½Ð¤·¥Ý¥¤¥ó¥¿ */
+	int	out_write_ptr;	/* Á÷¿®¥Ð¥Ã¥Õ¥¡½ñ¤­¹þ¤ß¥Ý¥¤¥ó¥¿ */
+	UINT	ioctl;		/* ioctl ¤Ë¤è¤ëÀßÄêÆâÍÆ */
+	BOOL	send_enabled;	/* Á÷¿®¤ò¥¤¥Í¡¼¥Ö¥ë¤·¤Æ¤¢¤ë¤«¡© */
+	BOOL	ixon_stopped;	/* STOP ¤ò¼õ¤±¼è¤Ã¤¿¾õÂÖ¤«¡© */
+	BOOL	ixoff_stopped;	/* Áê¼ê¤Ë STOP ¤òÁ÷¤Ã¤¿¾õÂÖ¤«¡© */
+	char	ixoff_send;	/* Áê¼ê¤Ë START/STOP ¤òÁ÷¤ë¤«¡© */
 
-	char	in_buffer[SERIAL_BUFSZ];	/* $B<u?.%P%C%U%!%(%j%"(B */
-	char	out_buffer[SERIAL_BUFSZ];	/* $B<u?.%P%C%U%!%(%j%"(B */
+	char	in_buffer[SERIAL_BUFSZ];	/* ¼õ¿®¥Ð¥Ã¥Õ¥¡¥¨¥ê¥¢ */
+	char	out_buffer[SERIAL_BUFSZ];	/* ¼õ¿®¥Ð¥Ã¥Õ¥¡¥¨¥ê¥¢ */
 } SPCB;
 
 
@@ -153,7 +153,7 @@ typedef struct serial_port_control_block {
 		((spcb)->out_read_ptr == inc((spcb)->out_write_ptr))
 
 /*
- *  $B%b%8%e!<%kFb$G;H$&4X?t(B
+ *  ¥â¥¸¥å¡¼¥ëÆâ¤Ç»È¤¦´Ø¿ô
  */
 static void	sigint_handler();
 static BOOL	serial_getc(SPCB *spcb, char *c);
@@ -161,7 +161,7 @@ static BOOL	serial_putc(SPCB *spcb, char c);
 
 
 /*
- *  $B%7%j%"%k%]!<%H4IM}%V%m%C%/$NDj5A$H=i4|2=(B
+ *  ¥·¥ê¥¢¥ë¥Ý¡¼¥È´ÉÍý¥Ö¥í¥Ã¥¯¤ÎÄêµÁ¤È½é´ü²½
  */
 
 SPCB spcb_table[NUM_PORT] = {
@@ -173,7 +173,7 @@ SPCB spcb_table[NUM_PORT] = {
 
 
 /*
- *  $B%]!<%H$N=i4|2=(B
+ *  ¥Ý¡¼¥È¤Î½é´ü²½
  */
 int
 serial_open(ID portid)
@@ -188,15 +188,15 @@ serial_open(ID portid)
 	spcb = get_spcb(portid);
 
 	/*
-	 *  $BJ#?t$N%?%9%/$,F1;~$K(B serial_open $B$r8F$V>u67$K$OBP1~$7$F$$(B
-	 *  $B$J$$!%(B
+	 *  Ê£¿ô¤Î¥¿¥¹¥¯¤¬Æ±»þ¤Ë serial_open ¤ò¸Æ¤Ö¾õ¶·¤Ë¤ÏÂÐ±þ¤·¤Æ¤¤
+	 *  ¤Ê¤¤¡¥
 	 */
-	if (spcb->init_flag) {		/* $B=i4|2=:Q$+$N%A%'%C%/(B */
+	if (spcb->init_flag) {		/* ½é´ü²½ºÑ¤«¤Î¥Á¥§¥Ã¥¯ */
 		return(E_OK);
 	}
 
 	/*
-	 *  $BJQ?t$N=i4|2=(B
+	 *  ÊÑ¿ô¤Î½é´ü²½
 	 */
 	spcb->in_read_ptr = spcb->in_write_ptr = 0;
 	spcb->out_read_ptr = spcb->out_write_ptr = 0;
@@ -204,13 +204,13 @@ serial_open(ID portid)
 	spcb->ixoff_send = 0;
 
 	/*
-	 *  $B%O!<%I%&%'%"0MB8$N=i4|2=(B
+	 *  ¥Ï¡¼¥É¥¦¥§¥¢°ÍÂ¸¤Î½é´ü²½
 	 */
 	hw_port_initialize(&(spcb->hwport));
         
 	/*
- 	 *  $B%W%m%;%9$r=*N;$5$;$k%7%0%J%k$rJa$^$($k(B
-         *  sigaction()$B$G=q$-D>$7$?J}$,$$$$$N$+(B?
+ 	 *  ¥×¥í¥»¥¹¤ò½ªÎ»¤µ¤»¤ë¥·¥°¥Ê¥ë¤òÊá¤Þ¤¨¤ë
+         *  sigaction()¤Ç½ñ¤­Ä¾¤·¤¿Êý¤¬¤¤¤¤¤Î¤«?
 	 */
 	signal(SIGHUP, sigint_handler);
 	signal(SIGINT, sigint_handler);
@@ -222,10 +222,10 @@ serial_open(ID portid)
 }
 
 /*
- *  $B%]!<%H$N%7%c%C%H%@%&%s(B
+ *  ¥Ý¡¼¥È¤Î¥·¥ã¥Ã¥È¥À¥¦¥ó
  *
- *  flush $B$,(B TRUE $B$N>l9g$O!$%7%j%"%k%]!<%H$X$NAw?.%P%C%U%!$,6u$K$J$k$^(B
- *  $B$GBT$D!%(B
+ *  flush ¤¬ TRUE ¤Î¾ì¹ç¤Ï¡¤¥·¥ê¥¢¥ë¥Ý¡¼¥È¤Ø¤ÎÁ÷¿®¥Ð¥Ã¥Õ¥¡¤¬¶õ¤Ë¤Ê¤ë¤Þ
+ *  ¤ÇÂÔ¤Ä¡¥
  */
 
 #define	MAX_FLUSH_LOOP	1000000
@@ -237,16 +237,16 @@ serial_close(ID portid, int flush)
 	int	i;
 
 	if (!(1 <= portid && portid <= NUM_PORT)) {
-		return(E_PAR);		/* $B%]!<%HHV9f$N%A%'%C%/(B */
+		return(E_PAR);		/* ¥Ý¡¼¥ÈÈÖ¹æ¤Î¥Á¥§¥Ã¥¯ */
 	}
 
 	spcb = get_spcb(portid);
-	if (!(spcb->init_flag)) {	/* $B=i4|2=:Q$+$N%A%'%C%/(B */
+	if (!(spcb->init_flag)) {	/* ½é´ü²½ºÑ¤«¤Î¥Á¥§¥Ã¥¯ */
 		return(E_OBJ);
 	}
 
 	/*
-	 *  $B%P%C%U%!$N%U%i%C%7%e=hM}(B
+	 *  ¥Ð¥Ã¥Õ¥¡¤Î¥Õ¥é¥Ã¥·¥å½èÍý
 	 */
 	if (flush) {
 		for (i = 0; i < MAX_FLUSH_LOOP; i++) {
@@ -257,7 +257,7 @@ serial_close(ID portid, int flush)
 	}
 
 	/*
-	 *  $B%O!<%I%&%'%"0MB8$N%7%c%C%H%@%&%s=hM}(B
+	 *  ¥Ï¡¼¥É¥¦¥§¥¢°ÍÂ¸¤Î¥·¥ã¥Ã¥È¥À¥¦¥ó½èÍý
 	 */
 	syscall(loc_cpu());
 	hw_port_terminate(&(spcb->hwport));
@@ -268,7 +268,7 @@ serial_close(ID portid, int flush)
 }
 
 /*
- *  $B%W%m%;%9$r=*N;$5$;$k%7%0%J%k$KBP$9$k%O%s%I%i(B
+ *  ¥×¥í¥»¥¹¤ò½ªÎ»¤µ¤»¤ë¥·¥°¥Ê¥ë¤ËÂÐ¤¹¤ë¥Ï¥ó¥É¥é
  */
 void
 sigint_handler()
@@ -286,7 +286,7 @@ sigint_handler()
 }
 
 /*
- *  $B%U%m!<%3%s%H%m!<%k4X78$NDj5A(B
+ *  ¥Õ¥í¡¼¥³¥ó¥È¥í¡¼¥ë´Ø·¸¤ÎÄêµÁ
  */
 #define	STOP	'\023'		/* Control-S */
 #define	START	'\021'		/* Control-Q */
@@ -299,7 +299,7 @@ sigint_handler()
 		 (spcb->in_read_ptr - spcb->in_write_ptr) :		\
 		 (spcb->in_read_ptr + SERIAL_BUFSZ - spcb->in_write_ptr))
 /*
- *  $B%f!<%F%#%j%F%#%k!<%A%s(B
+ *  ¥æ¡¼¥Æ¥£¥ê¥Æ¥£¥ë¡¼¥Á¥ó
  */
 
 Inline BOOL
@@ -327,7 +327,7 @@ write_char(SPCB *spcb, char c)
 }
 
 /*
- *  $B%7%j%"%k%]!<%H$+$i$N<u?.(B
+ *  ¥·¥ê¥¢¥ë¥Ý¡¼¥È¤«¤é¤Î¼õ¿®
  */
 
 static BOOL
@@ -339,8 +339,8 @@ serial_getc(SPCB *spcb, char *c)
 	*c = spcb->in_buffer[spcb->in_read_ptr];
         if (inc(spcb->in_write_ptr) == spcb->in_read_ptr) {
             /*
-             *  $B%P%C%U%!%U%k>uBV$,2r=|$5$l$?$i!"3d$j9~$_$,F~$C$?$N$H(B
-             *  $BF1$8?6$kIq$$$r$5$;$k!#(B
+             *  ¥Ð¥Ã¥Õ¥¡¥Õ¥ë¾õÂÖ¤¬²ò½ü¤µ¤ì¤¿¤é¡¢³ä¤ê¹þ¤ß¤¬Æþ¤Ã¤¿¤Î¤È
+             *  Æ±¤¸¿¶¤ëÉñ¤¤¤ò¤µ¤»¤ë¡£
              */
             kill(getpid(), SIGIO);
         }
@@ -371,15 +371,15 @@ serial_read(int portid, char *buf, unsigned int len)
 	int	i;
 
 
-	if (sns_dpn()) {		/* $B%3%s%F%-%9%H$N%A%'%C%/(B */
+	if (sns_dpn()) {		/* ¥³¥ó¥Æ¥­¥¹¥È¤Î¥Á¥§¥Ã¥¯ */
 		return(E_CTX);
 	}
 	if (!(0 <= portid && portid <= NUM_PORT)) {
-		return(E_PAR);		/* $B%]!<%HHV9f$N%A%'%C%/(B */
+		return(E_PAR);		/* ¥Ý¡¼¥ÈÈÖ¹æ¤Î¥Á¥§¥Ã¥¯ */
 	}
 
 	spcb = get_spcb_def(portid);
-	if (!(spcb->init_flag)) {	/* $B=i4|2=:Q$+$N%A%'%C%/(B */
+	if (!(spcb->init_flag)) {	/* ½é´ü²½ºÑ¤«¤Î¥Á¥§¥Ã¥¯ */
 		return(E_OBJ);
 	}
 	if (len == 0) {
@@ -416,7 +416,7 @@ serial_read(int portid, char *buf, unsigned int len)
 
 
 /*
- * $B%7%j%"%k%]!<%H$X$NAw?.(B
+ * ¥·¥ê¥¢¥ë¥Ý¡¼¥È¤Ø¤ÎÁ÷¿®
  */
 
 static BOOL
@@ -450,15 +450,15 @@ serial_write(ID portid, char *buf, unsigned int len)
 	BOOL	buffer_full;
 	int	i;
 
-	if (sns_dpn()) {		/* $B%3%s%F%-%9%H$N%A%'%C%/(B */
+	if (sns_dpn()) {		/* ¥³¥ó¥Æ¥­¥¹¥È¤Î¥Á¥§¥Ã¥¯ */
 		return(E_CTX);
 	}
 	if (!(0 <= portid && portid <= NUM_PORT)) {
-		return(E_PAR);		/* $B%]!<%HHV9f$N%A%'%C%/(B */
+		return(E_PAR);		/* ¥Ý¡¼¥ÈÈÖ¹æ¤Î¥Á¥§¥Ã¥¯ */
 	}
 
 	spcb = get_spcb_def(portid);
-	if (!(spcb->init_flag)) {	/* $B=i4|2=:Q$+$N%A%'%C%/(B */
+	if (!(spcb->init_flag)) {	/* ½é´ü²½ºÑ¤«¤Î¥Á¥§¥Ã¥¯ */
 		return(E_OBJ);
 	}
 
@@ -477,7 +477,7 @@ serial_write(ID portid, char *buf, unsigned int len)
 }
 
 /*
- *  $B%7%j%"%k%]!<%H$N@)8f(B
+ *  ¥·¥ê¥¢¥ë¥Ý¡¼¥È¤ÎÀ©¸æ
  */
 
 int
@@ -485,15 +485,15 @@ serial_ioctl(ID portid, UINT ioctl)
 {
 	SPCB	*spcb;
 
-	if (sns_ctx()) {		/* $B%3%s%F%-%9%H$N%A%'%C%/(B */
+	if (sns_ctx()) {		/* ¥³¥ó¥Æ¥­¥¹¥È¤Î¥Á¥§¥Ã¥¯ */
 		return(E_CTX);
 	}
 	if (!(0 <= portid && portid <= NUM_PORT)) {
-		return(E_PAR);		/* $B%]!<%HHV9f$N%A%'%C%/(B */
+		return(E_PAR);		/* ¥Ý¡¼¥ÈÈÖ¹æ¤Î¥Á¥§¥Ã¥¯ */
 	}
 
 	spcb = get_spcb_def(portid);
-	if (!(spcb->init_flag)) {	/* $B=i4|2=:Q$+$N%A%'%C%/(B */
+	if (!(spcb->init_flag)) {	/* ½é´ü²½ºÑ¤«¤Î¥Á¥§¥Ã¥¯ */
 		return(E_OBJ);
 	}
 
@@ -503,7 +503,7 @@ serial_ioctl(ID portid, UINT ioctl)
 
 
 /*
- *  $B%7%j%"%k%]!<%H3d9~$_%O%s%I%i(B
+ *  ¥·¥ê¥¢¥ë¥Ý¡¼¥È³ä¹þ¤ß¥Ï¥ó¥É¥é
  */
 
 static BOOL
@@ -517,10 +517,10 @@ serial_int_handler(ID portid)
 	flag = 0;
 
 	/*
-	 *  1$BJ8;z<u?.=hM}(B
+	 *  1Ê¸»ú¼õ¿®½èÍý
 	 *
-	 *  $B$^$:!$%P%C%U%!%U%k$G$J$$>l9g$K!$(B1$BJ8;zFI$s$G$_$k!%FI$a$l$P!$(B
-	 *  $B$=$l$K1~$8$?=hM}$r9T$&!%(B
+	 *  ¤Þ¤º¡¤¥Ð¥Ã¥Õ¥¡¥Õ¥ë¤Ç¤Ê¤¤¾ì¹ç¤Ë¡¤1Ê¸»úÆÉ¤ó¤Ç¤ß¤ë¡¥ÆÉ¤á¤ì¤Ð¡¤
+	 *  ¤½¤ì¤Ë±þ¤¸¤¿½èÍý¤ò¹Ô¤¦¡¥
 	 */
 	if (inc(spcb->in_write_ptr) != spcb->in_read_ptr
             && read_char(spcb, &c)) {
@@ -549,7 +549,7 @@ serial_int_handler(ID portid)
 	}
 
 	/*
-	 *  1$BJ8;zAw?.=hM}(B
+	 *  1Ê¸»úÁ÷¿®½èÍý
 	 */
 	if (spcb->ixoff_send) {
 		if (write_char(spcb, spcb->ixoff_send)) {
@@ -573,7 +573,7 @@ serial_int_handler(ID portid)
 
 
 /*
- *  SIGIO $B%3!<%k%P%C%/%k!<%A%s(B
+ *  SIGIO ¥³¡¼¥ë¥Ð¥Ã¥¯¥ë¡¼¥Á¥ó
  */
 
 static BOOL
@@ -592,7 +592,7 @@ serial_sigio_callback(VP arg)
 
 
 /*
- *  $B%7%j%"%k%$%s%?%U%'!<%9%I%i%$%P$N5/F0(B
+ *  ¥·¥ê¥¢¥ë¥¤¥ó¥¿¥Õ¥§¡¼¥¹¥É¥é¥¤¥Ð¤Îµ¯Æ°
  */
 
 void

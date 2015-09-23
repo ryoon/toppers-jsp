@@ -1,58 +1,58 @@
 
-   TOPPERS/JSP Kernel$B!J(BRelease 1.0$B&B!K(B
+   TOPPERS/JSP Kernel¡ÊRelease 1.0¦Â¡Ë
        Toyohashi Open Platform for Embedded Real-Time Systems/
        Just Standard Profile Kernel
 
    Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
                                Toyohashi Univ. of Technology, JAPAN
 
-TOPPERS/JSP$B%+!<%M%k$O!$K-665;=Q2J3XBg3X(B $B>pJs9)3X7O(B $BAH9~$_%j%"%k%?%$%`(B
-$B%7%9%F%`8&5f<<$K$*$$$F3+H/$7$?&L(BITRON4.0$B;EMM$K=`5r$7$?%j%"%k%?%$%`%+!<(B
-$B%M%k$G$9!%(BJSP$B!J(BJust Standard Profile$B!K$NL>A0$,<($9DL$j!$&L(BITRON4.0$B;EMM(B
-$B$N%9%?%s%@!<%I%W%m%U%!%$%k5,Dj$K=>$C$F<BAu$5$l$F$$$^$9!%(B
+TOPPERS/JSP¥«¡¼¥Í¥ë¤Ï¡¤Ë­¶¶µ»½Ñ²Ê³ØÂç³Ø ¾ðÊó¹©³Ø·Ï ÁÈ¹þ¤ß¥ê¥¢¥ë¥¿¥¤¥à
+¥·¥¹¥Æ¥à¸¦µæ¼¼¤Ë¤ª¤¤¤Æ³«È¯¤·¤¿¦ÌITRON4.0»ÅÍÍ¤Ë½àµò¤·¤¿¥ê¥¢¥ë¥¿¥¤¥à¥«¡¼
+¥Í¥ë¤Ç¤¹¡¥JSP¡ÊJust Standard Profile¡Ë¤ÎÌ¾Á°¤¬¼¨¤¹ÄÌ¤ê¡¤¦ÌITRON4.0»ÅÍÍ
+¤Î¥¹¥¿¥ó¥À¡¼¥É¥×¥í¥Õ¥¡¥¤¥ëµ¬Äê¤Ë½¾¤Ã¤Æ¼ÂÁõ¤µ¤ì¤Æ¤¤¤Þ¤¹¡¥
 
-$B%?!<%2%C%H%W%m%;%C%5$H$7$F!$8=;~E@$G$O!$(B68040$B$H(BSH3$B$r%5%]!<%H$7$F$$$^$9!%(B
-$B%+!<%M%k$N$G$-$k8B$jB?$/$NItJ,$r(BC$B8@8l$G5-=R$9$k!$%?!<%2%C%HFHN)It$H0M(B
-$BB8It$rL@3N$KJ,N%$9$k$J$I!$B>$N%?!<%2%C%H%W%m%;%C%5$X$N%]!<%F%#%s%0$,MF(B
-$B0W$J9=B$$K$J$C$F$$$^$9!%$^$?!$5!G=$K8BDj$O$"$j$^$9$,!$(BLinux$B>e$H(BWindows
-$B>e$GF0:n$9$k%7%_%e%l!<%7%g%s4D6-$rMQ0U$7$F$$$^$9!%(B
+¥¿¡¼¥²¥Ã¥È¥×¥í¥»¥Ã¥µ¤È¤·¤Æ¡¤¸½»þÅÀ¤Ç¤Ï¡¤68040¤ÈSH3¤ò¥µ¥Ý¡¼¥È¤·¤Æ¤¤¤Þ¤¹¡¥
+¥«¡¼¥Í¥ë¤Î¤Ç¤­¤ë¸Â¤êÂ¿¤¯¤ÎÉôÊ¬¤òC¸À¸ì¤Çµ­½Ò¤¹¤ë¡¤¥¿¡¼¥²¥Ã¥ÈÆÈÎ©Éô¤È°Í
+Â¸Éô¤òÌÀ³Î¤ËÊ¬Î¥¤¹¤ë¤Ê¤É¡¤Â¾¤Î¥¿¡¼¥²¥Ã¥È¥×¥í¥»¥Ã¥µ¤Ø¤Î¥Ý¡¼¥Æ¥£¥ó¥°¤¬ÍÆ
+°×¤Ê¹½Â¤¤Ë¤Ê¤Ã¤Æ¤¤¤Þ¤¹¡¥¤Þ¤¿¡¤µ¡Ç½¤Ë¸ÂÄê¤Ï¤¢¤ê¤Þ¤¹¤¬¡¤Linux¾å¤ÈWindows
+¾å¤ÇÆ°ºî¤¹¤ë¥·¥ß¥å¥ì¡¼¥·¥ç¥ó´Ä¶­¤òÍÑ°Õ¤·¤Æ¤¤¤Þ¤¹¡¥
 
-TOPPERS/JSP$B%+!<%M%k$O!$%U%j!<%=%U%H%&%'%"$G$9!%(BTOPPERS/JSP$B%+!<%M%k$NG[(B
-$BIU%-%C%H$N:G?7HG$O!$0J2<$N%&%'%V%5%$%H$+$i%@%&%s%m!<%I$9$k$3$H$,$G$-$^(B
-$B$9!%(B
+TOPPERS/JSP¥«¡¼¥Í¥ë¤Ï¡¤¥Õ¥ê¡¼¥½¥Õ¥È¥¦¥§¥¢¤Ç¤¹¡¥TOPPERS/JSP¥«¡¼¥Í¥ë¤ÎÇÛ
+ÉÕ¥­¥Ã¥È¤ÎºÇ¿·ÈÇ¤Ï¡¤°Ê²¼¤Î¥¦¥§¥Ö¥µ¥¤¥È¤«¤é¥À¥¦¥ó¥í¡¼¥É¤¹¤ë¤³¤È¤¬¤Ç¤­¤Þ
+¤¹¡¥
 	http://www.ertl.ics.tut.ac.jp/TOPPERS/
 
-$B$3$N%Z!<%8$+$i%@%&%s%m!<%I$G$-$kG[IU%-%C%H$K$O!$%7%_%e%l!<%7%g%s4D6-$r(B
-$B4^$`(BTOPPERS/JSP$B%+!<%M%k$NA4%=!<%9%U%!%$%k$H%3%s%U%#%.%e%l!<%?$N%=!<%9(B
-$B%U%!%$%k$,4^$^$l$F$$$^$9!%(BTOPPERS/JSP$B%+!<%M%k$NMxMQ>r7o$K$D$$$F$O!$3F(B
-$B%=!<%9%U%!%$%k$N@hF,$K5-=R$5$l$F$$$kMxMQ>r7o$r;2>H$7$F$/$@$5$$!%(B
+¤³¤Î¥Ú¡¼¥¸¤«¤é¥À¥¦¥ó¥í¡¼¥É¤Ç¤­¤ëÇÛÉÕ¥­¥Ã¥È¤Ë¤Ï¡¤¥·¥ß¥å¥ì¡¼¥·¥ç¥ó´Ä¶­¤ò
+´Þ¤àTOPPERS/JSP¥«¡¼¥Í¥ë¤ÎÁ´¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤È¥³¥ó¥Õ¥£¥®¥å¥ì¡¼¥¿¤Î¥½¡¼¥¹
+¥Õ¥¡¥¤¥ë¤¬´Þ¤Þ¤ì¤Æ¤¤¤Þ¤¹¡¥TOPPERS/JSP¥«¡¼¥Í¥ë¤ÎÍøÍÑ¾ò·ï¤Ë¤Ä¤¤¤Æ¤Ï¡¤³Æ
+¥½¡¼¥¹¥Õ¥¡¥¤¥ë¤ÎÀèÆ¬¤Ëµ­½Ò¤µ¤ì¤Æ¤¤¤ëÍøÍÑ¾ò·ï¤ò»²¾È¤·¤Æ¤¯¤À¤µ¤¤¡¥
 
-$B!Z(BTOPPERS$B%f!<%6%:%a!<%j%s%0%j%9%H![(B
+¡ÚTOPPERS¥æ¡¼¥¶¥º¥á¡¼¥ê¥ó¥°¥ê¥¹¥È¡Û
 
-TOPPERS/JSP$B%+!<%M%k$N%f!<%6$N$?$a$K!$(BTOPPERS$B%f!<%6%:%a!<%j%s%0%j%9%H$r(B
-$BMQ0U$7$F$$$^$9!%$3$N%a!<%j%s%0%j%9%H$K$O!$C/$G$b<+M3$K%a!<%k$rAwIU$9$k(B
-$B$3$H$,$G$-$^$9!%%a!<%k$NAwIU@h$O!$(Btoppers-users@ertl.ics.tut.ac.jp $B$G(B
-$B$9!%$^$?!$AwIU$5$l$?%a!<%k$O!$>e5-$N%&%'%V%5%$%H$GFI$`$3$H$,$G$-$^$9!%(B
+TOPPERS/JSP¥«¡¼¥Í¥ë¤Î¥æ¡¼¥¶¤Î¤¿¤á¤Ë¡¤TOPPERS¥æ¡¼¥¶¥º¥á¡¼¥ê¥ó¥°¥ê¥¹¥È¤ò
+ÍÑ°Õ¤·¤Æ¤¤¤Þ¤¹¡¥¤³¤Î¥á¡¼¥ê¥ó¥°¥ê¥¹¥È¤Ë¤Ï¡¤Ã¯¤Ç¤â¼«Í³¤Ë¥á¡¼¥ë¤òÁ÷ÉÕ¤¹¤ë
+¤³¤È¤¬¤Ç¤­¤Þ¤¹¡¥¥á¡¼¥ë¤ÎÁ÷ÉÕÀè¤Ï¡¤toppers-users@ertl.ics.tut.ac.jp ¤Ç
+¤¹¡¥¤Þ¤¿¡¤Á÷ÉÕ¤µ¤ì¤¿¥á¡¼¥ë¤Ï¡¤¾åµ­¤Î¥¦¥§¥Ö¥µ¥¤¥È¤ÇÆÉ¤à¤³¤È¤¬¤Ç¤­¤Þ¤¹¡¥
 
-TOPPERS/JSP$B%+!<%M%k$K4X$9$k<ALd$d%P%0%l%]!<%H$O!$$3$N%a!<%j%s%0%j%9%H(B
-$B08$F$K$*Aw$j2<$5$$!%$?$@$7!$C4Ev<T$NET9g$G?WB.$JJVEz$,$G$-$J$$>l9g$,$"(B
-$B$k$+$H;W$$$^$9$,!$$4N;>52<$5$$!%(B
+TOPPERS/JSP¥«¡¼¥Í¥ë¤Ë´Ø¤¹¤ë¼ÁÌä¤ä¥Ð¥°¥ì¥Ý¡¼¥È¤Ï¡¤¤³¤Î¥á¡¼¥ê¥ó¥°¥ê¥¹¥È
+°¸¤Æ¤Ë¤ªÁ÷¤ê²¼¤µ¤¤¡¥¤¿¤À¤·¡¤Ã´Åö¼Ô¤ÎÅÔ¹ç¤Ç¿×Â®¤ÊÊÖÅú¤¬¤Ç¤­¤Ê¤¤¾ì¹ç¤¬¤¢
+¤ë¤«¤È»×¤¤¤Þ¤¹¤¬¡¤¤´Î»¾µ²¼¤µ¤¤¡¥
 
-TOPPERS$B%f!<%6%:%a!<%j%s%0%j%9%H$X$NEPO?$r4uK>$5$l$kJ}$O!$(B
-toppers-users-ctl@ertl.ics.tut.ac.jp $B08$F$K!$K\J8$K(B
+TOPPERS¥æ¡¼¥¶¥º¥á¡¼¥ê¥ó¥°¥ê¥¹¥È¤Ø¤ÎÅÐÏ¿¤ò´õË¾¤µ¤ì¤ëÊý¤Ï¡¤
+toppers-users-ctl@ertl.ics.tut.ac.jp °¸¤Æ¤Ë¡¤ËÜÊ¸¤Ë
 
-	subscribe $B$"$J$?$NL>A0(B
-	$BNc(B: subscribe Hiroaki Takada
+	subscribe ¤¢¤Ê¤¿¤ÎÌ¾Á°
+	Îã: subscribe Hiroaki Takada
 
-$B$H=q$$$?%a!<%k$rAwIU$7$F$/$@$5$$!%@^$jJV$7!$EPO?3NG'$N$?$a$N%a!<%k$r$*(B
-$BAw$j$7$^$9$N$G!$$=$N;X<($K=>$C$F2<$5$$!%(B
+¤È½ñ¤¤¤¿¥á¡¼¥ë¤òÁ÷ÉÕ¤·¤Æ¤¯¤À¤µ¤¤¡¥ÀÞ¤êÊÖ¤·¡¤ÅÐÏ¿³ÎÇ§¤Î¤¿¤á¤Î¥á¡¼¥ë¤ò¤ª
+Á÷¤ê¤·¤Þ¤¹¤Î¤Ç¡¤¤½¤Î»Ø¼¨¤Ë½¾¤Ã¤Æ²¼¤µ¤¤¡¥
 
 ----------------------------------------------------------------------
-$B!&(BTRON $B$O(B "The Real-time Operating system Nucleus" $B$NN,>N$G$9!%(B
-$B!&(BITRON $B$O(B "Industrial TRON" $B$NN,>N$G$9!%(B
-$B!&&L(BITRON $B$O(B "Micro Industrial TRON" $B$NN,>N$G$9!%(B
-$B!&(BTRON$B!$(BITRON$B!$$*$h$S&L(BITRON$B$O!$FCDj$N>&IJ$J$$$7$O>&IJ72$r;X$9L>>N$G$O(B
-  $B$"$j$^$;$s!%(B
-$B!&(BTOPPERS $B$O(B "Toyohashi OPen Platform for Embedded Real-time Systems" 
-  $B$NN,>N!$(BJSP $B$O(B "Just Standard Profile" $B$NN,>N$G$9!%(B
-$B!&K\J8Cf$N>&IJL>$O!$3F<R$N>&I8$^$?$OEPO?>&I8$G$9!%(B
+¡¦TRON ¤Ï "The Real-time Operating system Nucleus" ¤ÎÎ¬¾Î¤Ç¤¹¡¥
+¡¦ITRON ¤Ï "Industrial TRON" ¤ÎÎ¬¾Î¤Ç¤¹¡¥
+¡¦¦ÌITRON ¤Ï "Micro Industrial TRON" ¤ÎÎ¬¾Î¤Ç¤¹¡¥
+¡¦TRON¡¤ITRON¡¤¤ª¤è¤Ó¦ÌITRON¤Ï¡¤ÆÃÄê¤Î¾¦ÉÊ¤Ê¤¤¤·¤Ï¾¦ÉÊ·²¤ò»Ø¤¹Ì¾¾Î¤Ç¤Ï
+  ¤¢¤ê¤Þ¤»¤ó¡¥
+¡¦TOPPERS ¤Ï "Toyohashi OPen Platform for Embedded Real-time Systems" 
+  ¤ÎÎ¬¾Î¡¤JSP ¤Ï "Just Standard Profile" ¤ÎÎ¬¾Î¤Ç¤¹¡¥
+¡¦ËÜÊ¸Ãæ¤Î¾¦ÉÊÌ¾¤Ï¡¤³Æ¼Ò¤Î¾¦É¸¤Þ¤¿¤ÏÅÐÏ¿¾¦É¸¤Ç¤¹¡¥

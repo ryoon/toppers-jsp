@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: manager.cpp,v 1.3 2000/11/14 15:56:26 takayuki Exp $
+ *  @(#) $Id: manager.cpp,v 1.4 2000/11/24 09:14:47 takayuki Exp $
  */
 
 #include "manager.h"
@@ -73,7 +73,7 @@ bool Manager::Body(char * filename)
 		{
 			infile.open(filename,ios::in);
 			if(!infile.is_open())
-				throw Exception(string("入力ファイル[") + filename + "]が開けない");
+				throw Exception(string("Configurator failed to open the source file [") + filename + "]");
 			in = static_cast<istream *>(&infile);
 		}else
 			in = static_cast<istream *>(&cin);
@@ -84,7 +84,7 @@ bool Manager::Body(char * filename)
 			if((func = API.find(api)) == API.end())
 			{
 				char buffer[1024];
-				sprintf(buffer,"%s(%d) : 存在しないAPI [%s] を呼び出そうとした",filename,Source->GetPreviousLinePosition(),api.c_str());
+				sprintf(buffer,"%s(%d) : Static API [%s] does not exist",filename,Source->GetPreviousLinePosition(),api.c_str());
 				throw Exception(buffer);
 			}
 
@@ -95,7 +95,7 @@ bool Manager::Body(char * filename)
 			catch(Exception e)
 			{
 				char buffer[1024];
-				sprintf(buffer,"%s(%d) : 静的API[%s]の致命的なエラー (%s)",filename,Source->GetPreviousLinePosition(),api.c_str(),e.GetReason().c_str());
+				sprintf(buffer,"%s(%d) : Fatal error on Static API[%s] (%s)",filename,Source->GetPreviousLinePosition(),api.c_str(),e.GetReason().c_str());
 				throw Exception(buffer);
 			}
 
@@ -137,14 +137,14 @@ bool Manager::Body(char * filename)
 				catch(Exception e)
 				{
 					char buffer[1024];
-					sprintf(buffer,"チェックルーチンは致命的なエラーにより停止した(%s)",e.GetReason().c_str());
+					sprintf(buffer,"Fatal error on validation step (%s)",e.GetReason().c_str());
 					throw Exception(buffer);
 				}
 			}
 		}while(Checkers.begin() != Checkers.end() && LastCheckersCount != Checkers.size());
 
 		if(Checkers.begin() != Checkers.end())
-			throw Exception("チェックルーチンがデッドロック状態に陥った");
+			throw Exception("Validation step comes to a deadlock");
 	}
 
 	{
@@ -161,7 +161,7 @@ bool Manager::Body(char * filename)
 			catch(Exception e)
 			{
 				char buffer[1024];
-				sprintf(buffer,"ファイル出力中に致命的なエラーが発生した(%s)",e.GetReason().c_str());
+				sprintf(buffer,"Configurator failed on Output step (%s)",e.GetReason().c_str());
 				throw Exception(buffer);
 			}
 			scope ++;
@@ -176,7 +176,7 @@ bool Manager::Body(char * filename)
 void Manager::DeclareAPI(StaticAPI * api)
 {
 	if(api == 0l)
-		throw Exception("値がNULLのAPIを登録しようとした");
+		throw Exception("Fatal: Assigning a Static API with NULL pointer");
 	
 	API[string(api->GetAPIName())] = api;
 }
@@ -184,7 +184,7 @@ void Manager::DeclareAPI(StaticAPI * api)
 void Manager::DeclareSerializer(Serializer * sel)
 {
 	if(sel == 0l)
-		throw Exception("値がNULLのシリアライザを登録しようとした");
+		throw Exception("Fatal: Assigning a Serializer with NULL pointer");
 
 	SerializeUnit.push_back(sel);
 }

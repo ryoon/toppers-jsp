@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: array.cpp,v 1.3 2000/11/14 16:57:33 takayuki Exp $
+ *  @(#) $Id: array.cpp,v 1.4 2000/11/24 09:14:47 takayuki Exp $
  */
 
 #include "array.h"
@@ -228,16 +228,3 @@ Array * Array::GetArrayPtr(unsigned int offset)
 
 	return scope->ArrayedValue;
 }
-
-
-
-
-/*
-	Valient * GetValuePtr(unsigned int);
-	Array * GetArrayPtr(unsigned int);
-
-	Valient & operator [](unsigned int);
-
-	bool IsArray(unsigned int);
-};
-*/

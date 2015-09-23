@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: jsp_rename.h,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: jsp_rename.h,v 1.2 2000/11/21 08:50:44 honda Exp $
  */
 
 /*
@@ -77,7 +77,6 @@
 #define calltex			_kernel_calltex
 #define runtsk			_kernel_runtsk
 #define reqflg			_kernel_reqflg
-#define _reqflg			__kernel_reqflg
 #define schedtsk		_kernel_schedtsk
 #define enadsp			_kernel_enadsp
 
@@ -194,7 +193,6 @@
 #define _calltex		__kernel_calltex
 #define _runtsk			__kernel_runtsk
 #define _reqflg			__kernel_reqflg
-#define __reqflg		___kernel_reqflg
 #define _schedtsk		__kernel_schedtsk
 #define _enadsp			__kernel_enadsp
 

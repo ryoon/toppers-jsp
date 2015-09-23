@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task_manage.c,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: task_manage.c,v 1.2 2000/11/24 01:05:25 hiro Exp $
  */
 
 /*
@@ -137,29 +137,41 @@ ext_tsk()
 	if (sense_context()) {
 		/*
 		 *  非タスクコンテキストから ext_tsk が呼ばれた場合，
-		 *  強制的にタスクコンテキストに切り換えて実行を継続す
-		 *  るが，ターゲットによっては非タスクコンテキスト用の
-		 *  スタックにゴミが残る場合がある．
+		 *  システムログにエラーを記録し，そのまま実行を続ける．
+		 *  その結果，強制的にタスクコンテキストに切り換えて，
+		 *  実行状態のタスクを終了させることになる．カーネルは
+		 *  そのまま実行を継続するが，ターゲットによっては，非
+		 *  タスクコンテキスト用のスタックにゴミが残ったり，割
+		 *  込みハンドラのネスト数の管理に矛盾が生じたりする場
+		 *  合がある．
 		 */
-		syslog(LOG_ALERT, "ext_tsk reports E_CTX.");
+		syslog(LOG_ALERT,
+			"ext_tsk is called from non-task contexts.");
 	}
-	if (t_sense_lock()) {
+	if (sense_lock()) {
 		/*
-		 *  CPUロック状態で ext_tsk が呼ばれた場合は，CPUロッ
-		 *  クを解除してからタスクを終了する．実装上は，サービ
-		 *  スコール内でのCPUロックを省略すればよいだけ．
+		 *  CPUロック状態で ext_tsk が呼ばれた場合は，CPUロック
+		 *  を解除してからタスクを終了する．実装上は，サービス
+		 *  コール内でのCPUロックを省略すればよいだけ．
 		 */
-		syslog(LOG_WARNING, "ext_tsk reports E_CTX.");
+		syslog(LOG_WARNING,
+			"ext_tsk is called from CPU locked state.");
 	}
 	else {
-		t_lock_cpu();
+		if (sense_context()) {
+			i_lock_cpu();
+		}
+		else  {
+			t_lock_cpu();
+		}
 	}
 	if (!(enadsp)) {
 		/*
 		 *  ディスパッチ禁止状態で ext_tsk が呼ばれた場合は，
 		 *  ディスパッチ許可状態にしてからタスクを終了する．
 		 */
-		syslog(LOG_WARNING, "ext_tsk reports E_CTX.");
+		syslog(LOG_WARNING,
+			"ext_tsk is called from dispatch disabled state.");
 		enadsp = TRUE;
 	}
 	exit_task();

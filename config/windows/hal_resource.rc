@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// ì˙ñ{åÍ resources
+// ∆¸À‹∏Ï resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 #ifdef _WIN32
@@ -29,16 +29,16 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 PRIMARYDIALOG DIALOG DISCARDABLE  0, 0, 187, 11
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "TOPPERS/JSP for Windows - Primary Messaging Dialog"
-FONT 9, "ÇlÇr ÇoÉSÉVÉbÉN"
+FONT 9, "£Õ£” £–•¥•∑•√•Ø"
 BEGIN
-    CONTROL         "ÉNÉçÉbÉNãüããÇÃí‚é~",IDC_CLOCKSUPPLY,"Button",
+    CONTROL         "•Ø•Ì•√•Ø∂°µÎ§Œƒ‰ªﬂ",IDC_CLOCKSUPPLY,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,0,95,10
 END
 
 DEBUGOUTDIALOG DIALOG DISCARDABLE  0, 0, 186, 93
 STYLE WS_POPUP | WS_CAPTION | WS_THICKFRAME
-CAPTION "ÉfÉoÉbÉOèoóÕï∂éöóÒ"
-FONT 9, "ÇlÇr ÇoÉSÉVÉbÉN"
+CAPTION "•«•–•√•∞Ω–Œœ ∏ª˙ŒÛ"
+FONT 9, "£Õ£” £–•¥•∑•√•Ø"
 BEGIN
     EDITTEXT        IDC_DEBUGOUT,24,21,142,52,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_READONLY | ES_WANTRETURN | WS_VSCROLL
@@ -46,8 +46,8 @@ END
 
 CONSOLEDIALOG DIALOG DISCARDABLE  0, 0, 94, 82
 STYLE DS_NOFAILCREATE | WS_VISIBLE | WS_CAPTION | WS_THICKFRAME
-CAPTION "ÉVÉäÉAÉãì¸èoóÕ"
-FONT 18, "ÇcÇeÇfÇ‹ÇÈÇ‡Ç∂ëÃW3"
+CAPTION "•∑•Í•¢•Î∆˛Ω–Œœ"
+FONT 9, "£Õ£” £–•¥•∑•√•Ø"
 BEGIN
     EDITTEXT        IDC_CONSOLE,7,7,64,35,ES_MULTILINE | ES_AUTOVSCROLL | 
                     ES_AUTOHSCROLL | ES_READONLY | ES_WANTRETURN | 
@@ -124,7 +124,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ERTLICON            ICON    DISCARDABLE     "icon1.ico"
-#endif    // ì˙ñ{åÍ resources
+#endif    // ∆¸À‹∏Ï resources
 /////////////////////////////////////////////////////////////////////////////
 
 

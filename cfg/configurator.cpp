@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: configurator.cpp,v 1.3 2000/11/14 15:56:26 takayuki Exp $
+ *  @(#) $Id: configurator.cpp,v 1.4 2000/11/24 09:14:47 takayuki Exp $
  */
 
 // Configurator.cpp : コンソール アプリケーション用のエントリ ポイントの定義
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
 	}
 	catch(Exception e)
 	{
-		fputs("致命的なエラーにより動作を停止しました\n",stderr);
+		fputs("Program was aborted with fatal errors\n",stderr);
 		fputs(e,stderr);
 	}
 	return EXIT_SUCCESS;

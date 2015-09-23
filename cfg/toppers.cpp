@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: toppers.cpp,v 1.10 2000/11/14 15:56:26 takayuki Exp $
+ *  @(#) $Id: toppers.cpp,v 1.12 2000/11/24 09:24:55 takayuki Exp $
  */
 
 #ifdef _MSC_VER
@@ -250,7 +250,7 @@ Array * Object::LoadParameters(Array * src, int id, int start, int end, int offs
 
 	dest = &InitialParameter[id];
 	if(src->Size() <= end + offset)
-		throw Exception("引数の数が合わない");
+		throw Exception("Too few parameters");
 
 	do
 	{
@@ -269,7 +269,7 @@ int Object::AssignObjectID(Valient & src)
 	{
 	case Valient::STRING:
 		if(misc.IsDefined(string(src.GetString())))
-			throw Exception("オブジェクト名はすでに利用済み");
+			throw Exception("Target object already exists");
 
 		id = Identifier.GetNewID();
 		misc.AddDefinition(string(src.GetString()),Valient(id));
@@ -277,10 +277,10 @@ int Object::AssignObjectID(Valient & src)
 	case Valient::INTEGER:
 		id = src.GetInteger();
 		if(Identifier.IsAssigned(id))
-			throw Exception("オブジェクトIDはすでに利用済み");
+			throw Exception("Target object ID is already assigned");
 		break;
 	default:
-		throw Exception("不正な値が指定された");
+		throw Exception("Illegal object identifier");
 	}
 
 	Identifier.Assign(id);
@@ -296,22 +296,22 @@ int Object::GetAssignedObjectID(Valient & src)
 	{
 	case Valient::STRING:
 		if(!misc.IsDefined(string(src.GetString())))
-			throw Exception("指定されたオブジェクト名は存在しない");
+			throw Exception("Target object does not exist");
 	
 		misc.GetDefinision(string(src.GetString()),work);
 		if(!(work == Valient::INTEGER))
-			throw Exception("オブジェクト名が不正");
+			throw Exception("Illegal object identifier");
 		id = work.GetInteger();
 		break;
 	case Valient::INTEGER:
 		id = src.GetInteger();
 		break;
 	default:
-		throw Exception("不正な値");
+		throw Exception("Illegal object identifier");
 	}
 
 	if(!Identifier.IsAssigned(id))
-		throw Exception("オブジェクトが存在しない");
+		throw Exception("Target object does not exist");
 
 	return id;
 }
@@ -319,7 +319,7 @@ int Object::GetAssignedObjectID(Valient & src)
 void Object::Check(bool & cont)
 {
 	if(!Identifier.IsAvailable())
-		throw Exception("オブジェクトIDが不正 [不連続, 負数, 範囲外 など]");
+		throw Exception("Illegal object identifier\n  (Discontinuous, Negative numbers, Out of range, etc.)");
 }
 
 void Object::OutputHeaderBlock(ostream * dest, char * shortname, char * longname, char * sp)
@@ -434,7 +434,7 @@ void Task::Body(MultiStream & dest)
 	char buffer[128];
 
 	out = dest[CFGFILE];
-	(*out) << "\t//タスク関連" << endl;
+	(*out) << "\t//Task object" << endl;
 
 		//変数宣言
 	scope = InitialParameter.begin();
@@ -497,7 +497,7 @@ void Semaphore::Body(MultiStream & dest)
 	map<int,Array>::iterator scope;
 
 	out = dest[CFGFILE];
-	(*out) << "\t//セマフォ関連" << endl;
+	(*out) << "\t//Semaphore object" << endl;
 	OutputHeaderBlock(out,"sem","semaphore");
 	scope = InitialParameter.begin();
 	while(scope != InitialParameter.end())
@@ -524,7 +524,7 @@ void EventFlag::Body(MultiStream & dest)
 	Array * param;
 	ostream * out = dest[CFGFILE];
 
-	(*out) << "\t//フラグ関連" << endl;
+	(*out) << "\t//Eventflag object" << endl;
 
 	OutputHeaderBlock(out,"flg","eventflag");
 	scope = InitialParameter.begin();
@@ -552,7 +552,7 @@ void DataQueue::Body(MultiStream & dest)
 	Array * param;
 	ostream * out = dest[CFGFILE];
 
-	(*out) << "\t//データキュー関連" << endl;
+	(*out) << "\t//Dataqueue object" << endl;
 	CreateBufferDefinition(out,DTQ,"VP_INT","_dtq",CNT);
 	(*out) << endl;
 
@@ -582,7 +582,7 @@ void Mailbox::Body(MultiStream & dest)
 	Array * param;
 	ostream * out = dest[CFGFILE];
 
-	(*out) << "\t//メールボックス関連" << endl;
+	(*out) << "\t//Mailbox object" << endl;
 
 	OutputHeaderBlock(out,"mbx","mailbox");
 	scope = InitialParameter.begin();
@@ -611,7 +611,7 @@ void FixedsizeMemoryPool::Body(MultiStream & dest)
 	ostream * out = dest[CFGFILE];
 	char buffer[128];
 
-	(*out) << "\t//固定長メモリプール関連" << endl;
+	(*out) << "\t//Fix-sized memorypool object" << endl;
 
 		//バッファ作成
 	scope = InitialParameter.begin();
@@ -653,7 +653,7 @@ void CyclicHandler::Body(MultiStream & dest)
 	Array * param;
 	ostream * out = dest[CFGFILE];
 
-	(*out) << "\t//周期起動ハンドラ関連" << endl;
+	(*out) << "\t//Cyclic handler" << endl;
 
 	OutputHeaderBlock(out,"cyc","cyclic");
 	scope = InitialParameter.begin();
@@ -690,7 +690,7 @@ void InterruptHandler::Body(MultiStream & dest)
 	Array * param;
 	ostream * out = dest[CFGFILE];
 
-	(*out) << "\t//割り込みハンドラ関連" << endl;
+	(*out) << "\t//Interrupt handler" << endl;
 	(*out) << "#include \"interrupt.h\"" << endl;
 	(*out) << "#define TNUM_INHNO " << Identifier.GetCount() << endl;
 	(*out) << "const ID _kernel_tnum_inhno = TNUM_INHNO;" << endl << endl;
@@ -751,7 +751,7 @@ void ExceptionHandler::Body(MultiStream & dest)
 	Array * param;
 	ostream * out = dest[CFGFILE];
 
-	(*out) << "\t//CPU例外ハンドラ関連" << endl;
+	(*out) << "\t//CPU Exception handler" << endl;
 	(*out) << "#include \"exception.h\"" << endl;
 	(*out) << "#define TNUM_EXCNO " << Identifier.GetCount() << endl;
 	(*out) << "const ID _kernel_tnum_excno = TNUM_EXCNO;" << endl << endl;
@@ -807,7 +807,7 @@ void InitializeHandler::Body(MultiStream & dest)
 	Array * param;
 	ostream * out = dest[CFGFILE];
 
-	(*out) << "\t//初期化ルーチン関連" << endl;
+	(*out) << "\t//Application-defined Additional Initialization Routine" << endl;
 	(*out) << "void call_inirtn(void)" << endl << '{' << endl;
 
 	scope = InitialParameter.begin();

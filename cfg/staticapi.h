@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: staticapi.h,v 1.2 2000/11/14 15:56:26 takayuki Exp $
+ *  @(#) $Id: staticapi.h,v 1.3 2000/11/24 09:14:47 takayuki Exp $
  */
 
 //------------------------------------------------------------
@@ -60,19 +60,19 @@ public:
 inline void StaticAPI::CheckParameterCount(Array & param,unsigned int start, unsigned int end)
 {
 	if((param.Size() < start) || (end != 0 && param.Size() > end))
-		throw Exception("引数の数が合わない");
+		throw Exception("Too few or Too much parameters");
 }
 
 inline void StaticAPI::CheckParameterType(Array & param,unsigned int offset, Valient::tagType type)
 {
 	if(param.Size() > offset || param.GetValuePtr(offset) == 0l || !(param[offset] == type))
-		throw Exception("引数の型が合わない");
+		throw Exception("Parameter type is not match");
 }
 
 inline void StaticAPI::CheckParameterType(Array & param,unsigned int offset, Array::tagType type)
 {
 	if((type != Array::EMPTY) && param.IsArray(offset) != (type == Array::ARRAY) ? true : false)
-		throw Exception("引数の型が合わない");
+		throw Exception("Parameter type is not match");
 }
 
 inline void StaticAPI::CheckParameter(Array * param, char * format)

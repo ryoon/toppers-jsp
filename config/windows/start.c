@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.c,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: start.c,v 1.2 2000/11/24 03:57:05 takayuki Exp $
  */
 #include "jsp_kernel.h"
 #include "task.h"
@@ -132,6 +132,7 @@ HALMessageHandler(WPARAM wParam,LPARAM lParam)
 		if(runtsk != 0l)
 		{
 			CurrentRunningThreadHandle = runtsk->tskctxb.ThreadHandle;
+			_kernel_calltex();
 			ResumeThread(runtsk->tskctxb.ThreadHandle);
 		}else
 		{
