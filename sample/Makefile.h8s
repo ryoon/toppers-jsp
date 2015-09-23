@@ -1,0 +1,893 @@
+#
+#  TOPPERS/JSP Kernel
+#      Toyohashi Open Platform for Embedded Real-Time Systems/
+#      Just Standard Profile Kernel
+#
+#  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+#                              Toyohashi Univ. of Technology, JAPAN
+#  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+#                   Tomakomai National College of Technology, JAPAN
+#  Copyright (C) 2001,2002 by Industrial Technology Institute,
+#                              Miyagi Prefectural Government, JAPAN
+#
+#  上記著作権者は，Free Software Foundation によって公表されている
+#  GNU General Public License の Version 2 に記述されている条件か，以
+#  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
+#  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+#  利用と呼ぶ）することを無償で許諾する．
+#  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
+#      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
+#      スコード中に含まれていること．
+#  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+#      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+#      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+#      この利用条件および下記の無保証規定を掲載すること．
+#  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+#      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
+#    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
+#        権表示，この利用条件および下記の無保証規定を掲載すること．
+#    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
+#        こと．
+#  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+#      害からも，上記著作権者を免責すること．
+#
+#  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
+#  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
+#  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
+#  かなる損害に関しても，その責任を負わない．
+#
+#  @(#) $Id: Makefile.h8s,v 1.2 2002/04/13 13:24:03 imai Exp $
+#
+
+#
+#  ターゲット名の定義
+#
+CPU = @(CPU)
+SYS = @(SYS)
+
+#
+#  ソースファイルのディレクトリの定義
+#
+JSPDIR = @(JSPDIR)
+
+#
+#  H8S依存部のディレクトリの定義
+#
+H8SDIR = $(JSPDIR)/config/$(CPU)
+#
+#  Cygwin上でコンパイルするかどうかの設定
+#
+#CYGWIN = true
+
+#
+#  実行環境の定義（複数の実行環境を同時に選択してはならない）
+#		 （どれにも該当しない場合は，すべてコメントアウトする）
+#
+#GDB_STUB = true
+#PARTNER_J = true
+
+#
+#  ターゲット依存の定義のインクルード
+#
+-include $(H8SDIR)/Makefile.config
+ifdef SYS
+    -include $(H8SDIR)/$(SYS)/Makefile.config
+endif
+
+#
+#  共通コンパイルオプションの定義
+#
+INCLUDES = .,$(JSPDIR)/include,$(H8SDIR),$(H8SDIR)/$(SYS)
+CDEFS = $(CPU_CDEFS) $(SYS_CDEFS) $(ENV_CDEFS)
+CFLAGS = $(CPU_CFLAGS) $(SYS_CFLAGS) $(CDEFS)
+ASMDEFS = $(CPU_ASMDEFS) $(SYS_ASMDEFS)
+ASMFLAGS =$(CPU_ASMFLAGS) $(SYS_ASMFLAGS)
+LDFLAGS = $(CPU_LDFLAGS) $(SYS_LDFLAGS)
+LIBS = $(CPU_LIBS) $(SYS_LIBS)
+
+#
+#  アプリケーションプログラムに関する定義
+#
+UNAME = sample1
+UTASK_CFG = $(UNAME).cfg
+
+UTASK_DIR = $(JSPDIR)/libjsp
+UTASK_ASMOBJS =
+UTASK_COBJS = $(UNAME).obj
+UTASK_CFLAGS =
+UTASK_CFLAGS_INC =
+UTASK_ASMFLAGS =
+UTASK_ASMFLAGS_INC =
+UTASK_LIBS =
+
+#
+#  システムサービスに関する定義
+#
+STASK_DIR = $(JSPDIR)/systask:$(JSPDIR)/libjsp
+STASK_ASMOBJS =
+STASK_COBJS = timer.obj serial.obj logtask.obj \
+	      vasyslog.obj jsp_perror.obj strerror.obj
+STASK_CFLAGS_INC =,$(JSPDIR)/systask
+STASK_CFLAGS =
+STASK_ASMFLAGS_INC =,$(JSPDIR)/systask
+STASK_ASMFLAGS =
+STASK_LIBS =
+#
+#  カーネルに関する定義
+#
+#  KERNEL_ASMOBJS: カーネルライブラリに含める，ソースがアセンブリ言語の
+#		   オブジェクトファイル．
+#  KERNEL_COBJS: カーネルのライブラリに含める，ソースがC言語のオブジェク
+#		 トファイル．
+#  KERNEL_ADD_COBJS: カーネルのライブラリに含めず，ロードモジュールに直
+#		     接リンクするソースがC言語のオブジェクトファイル．
+#  KERNEL_AUX_COBJS: ロードモジュールに含めないが，カーネルのソースファ
+#		     イルと同じオプションを適用してコンパイルすべきファ
+#		     イル．
+#
+KERNEL = $(JSPDIR)/kernel
+KERNEL_DIR = $(H8SDIR):$(H8SDIR)/$(SYS):$(KERNEL)
+KERNEL_ASMOBJS = cpu_support.obj sys_support.obj
+KERNEL_COBJS = startup.obj cpu_config.obj sys_config.obj \
+	       task.obj wait.obj time_event.obj syslog.obj \
+	       task_manage.obj task_sync.obj task_except.obj \
+	       semaphore.obj eventflag.obj dataqueue.obj mailbox.obj mempfix.obj \
+	       time_manage.obj cyclic.obj sys_manage.obj interrupt.obj 
+#	       exception.obj
+KERNEL_ADD_COBJS = banner.obj kernel_cfg.obj 
+KERNEL_AUX_COBJS = makeoffset.obj kernel_chk.obj
+KERNEL_CFLAGS_INC =,$(KERNEL)
+KERNEL_CFLAGS =
+KERNEL_ASMFLAGS_INC =,$(KERNEL)
+KERNEL_ASMFLAGS =
+INT_HDLER_OBJ = int_hdler.obj
+
+#
+#  スタートアップモジュールに関する定義
+#
+ifndef START_OBJS
+    START_OBJS = start.obj
+endif
+
+#
+#  オブジェクトファイル名の定義（Cygwin では .exe が付く）
+#
+#ifneq ($(CYGWIN),true)
+#    JSPOBJ = jsp
+#else
+#    JSPOBJ = jsp.exe
+#endif
+     JSPOBJ = jsp.abs
+
+#
+#  ターゲットファイル（複数を同時に選択してはならない）
+#
+all: $(JSPOBJ)
+#all: jsp.out
+#all: jsp.bin
+#all: jsp.src
+
+#
+#  カーネルのコンフィギュレーションファイルの生成(修正)
+#
+kernel_cfg.c kernel_id.h kernel_chk.c : $(UTASK_CFG)
+	echo -i=$(INCLUDES) $(CDEFS) $(UTASK_CFG) > subcommand.sub
+	$(CPP)=kernel_cfg.tmp -euc -sub=subcommand.sub
+	grep -v "#line" kernel_cfg.tmp | $(JSPDIR)/cfg/cfg -s -c -z
+
+
+#
+#　割込みの出入り口処理のファイル生成(追加)
+#
+int_hdler.obj : kernel_cfg.c
+	echo rule int_hdler.obj
+	grep ^CFG_INTHDR_ENTRY kernel_cfg.c | \
+		perl $(H8SDIR)/gen_int.pl > int_hdler.src
+	echo $(ASMFLAGS) $(KERNEL_ASMFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(KERNEL_ASMFLAGS_INC) >> tmp.sub
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sub
+	echo $(AS)  int_hdler.src -O=$@ -sub=tmp.sub > tmp.sh
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sh
+	sh tmp.sh
+
+
+##### 以下は編集しないこと #####
+
+#
+#  環境に依存するコンパイルオプションの定義
+#
+#ifeq ($(GDB_STUB),true)
+#    ENV_CDEFS = -DGDB_STUB
+#else
+#ifeq ($(PARTNER_J),true)
+#    ENV_CDEFS = -DPARTNER_J
+#endif
+#endif
+#
+#
+#  jsp.chk の生成規則（静的APIのパラメータチェック）
+#
+#jsp.chk: kernel_chk.src $(JSPDIR)/utils/gencheck
+#	$(JSPDIR)/utils/gencheck kernel_chk.src > jsp.chk
+#
+#
+#  offset.h の生成規則（構造体内のオフセット値の算出）
+#
+offset.h: makeoffset.c $(H8SDIR)/offset_of.pl $(H8SDIR)/bit_of.pl 
+	echo $(CFLAGS) $(KERNEL_CFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(KERNEL_CFLAGS_INC) >> tmp.sub
+	$(CC) -c=asmcode -sub=tmp.sub $<
+	perl $(H8SDIR)/offset_of.pl makeoffset.src > offset.h
+	perl $(H8SDIR)/bit_of.pl makeoffset.src >> offset.h
+
+#
+#  ソースファイルのあるディレクトリに関する定義
+#
+vpath %.c $(KERNEL_DIR):$(STASK_DIR):$(UTASK_DIR)
+vpath %.src $(KERNEL_DIR):$(STASK_DIR):$(UTASK_DIR)
+
+#
+#  コンパイルのための変数の定義
+#
+KERNEL_LIB_OBJS = $(KERNEL_ASMOBJS) $(KERNEL_COBJS)
+STASK_OBJS = $(STASK_ASMOBJS) $(STASK_COBJS)
+UTASK_OBJS = $(UTASK_ASMOBJS) $(UTASK_COBJS)
+ALL_OBJS = $(START_OBJS) $(KERNEL_ADD_COBJS) $(STASK_OBJS) $(UTASK_OBJS) $(INT_HDLER_OBJ)
+ALL_LIBS = $(STASK_LIBS) $(UTASK_LIBS) libkernel.lib $(LIBS)
+
+ifdef TEXT_START_ADDRESS
+    LDFLAGS := $(LDFLAGS) -Wl,-Ttext,$(TEXT_START_ADDRESS)
+endif
+ifdef DATA_START_ADDRESS
+    LDFLAGS := $(LDFLAGS) -Wl,-Tdata,$(DATA_START_ADDRESS)
+endif
+ifdef LDSCRIPT
+    LDFLAGS := $(LDFLAGS) -T $(JSPDIR)/config/$(LDSCRIPT)
+endif
+
+#
+#  特別な依存関係の定義
+#
+banner.obj: Makefile $(filter-out banner.obj,$(ALL_OBJS)) libkernel.lib
+
+#
+#  カーネルライブラリファイルの生成
+#
+libkernel.lib: $(KERNEL_LIB_OBJS)
+	$(REMOVE) libkernel.lib
+	echo  create libkernel.lib > lib.sub
+	echo add $(KERNEL_LIB_OBJS) >> lib.sub
+	echo exit >> lib.sub
+	$(AR) -sub=lib.sub
+
+#
+#  全体のリンク
+#
+$(JSPOBJ): $(ALL_OBJS) libkernel.lib
+	echo INPUT $(ALL_OBJS) > link.sub
+	echo LIBRARY $(ALL_LIBS) >> link.sub
+	cat $(JSPDIR)/config/$(LDSCRIPT) >> link.sub
+	$(LD) -EXCLUDE -output=jsp.abs -sub=link.sub
+
+#
+#  PARTNER-J のためのファイル
+#
+jsp.out: $(JSPOBJ)
+	cp $(JSPOBJ) jsp.out
+
+#
+#  バイナリファイルの生成
+#
+jsp.bin: $(JSPOBJ)
+	$(OBJCOPY) -O binary -S $(JSPOBJ) jsp.bin
+
+#
+#  Sレコードファイルの生成
+#
+jsp.src: $(JSPOBJ)
+	$(OBJCOPY) -O srec -S $(JSPOBJ) jsp.src
+
+#
+#  コンパイル結果の消去
+#
+clean:
+	$(REMOVE) \#* *~ *.o *.obj *.OBJ *.tmp *.lst *.sub err.txt *.bak
+	$(REMOVE) makeoffset.src offset.h kernel_cfg.c kernel_chk.c kernel_chk.src kernel_id.h
+	$(REMOVE) libkernel.lib jsp jsp.chk jsp.exe jsp.bin jsp.out jsp.src jsp.abs 
+	$(REMOVE) int_hdler.src tmp.sh libkernel.LCT makeoffset.p
+
+cleandep:
+	$(REMOVE) Makefile.depend
+
+realclean: cleandep clean
+
+#
+#  依存関係ファイルの生成
+#    (make dependは使用できない。)
+#
+#  依存関係ファイルの生成
+#
+
+REMOVE = rm -f
+
+#
+#  コンパイラドライバの定義
+#
+ifdef TARGET
+    TARGET_PREFIX = $(TARGET)/
+else
+    TARGET_PREFIX = 
+endif
+CC = $(TARGET_PREFIX)ch38
+AS = $(TARGET_PREFIX)asm38
+LD = lnk
+AR = lbr
+NM =
+RANLIB =
+OBJCOPY =
+OBJDUMP =
+
+#
+#  Cプリプロセッサのコマンド名の定義
+#
+CPP = $(CC) -prep
+
+#
+#  コンパイルルールの定義
+#
+KERNEL_ALL_COBJS = $(KERNEL_COBJS) $(KERNEL_ADD_COBJS) $(KERNEL_AUX_COBJS)
+
+$(START_OBJS): %.obj: %.src
+	echo rule 1
+	echo $(ASMFLAGS) $(KERNEL_ASMFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(KERNEL_ASMFLAGS_INC) >> tmp.sub
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sub
+	echo $(AS) $< -O=$@ -sub=tmp.sub > tmp.sh
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sh
+	sh tmp.sh
+
+$(KERNEL_ALL_COBJS): %.obj: %.c
+	echo rule a
+	echo $(CFLAGS) $(KERNEL_CFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(KERNEL_CFLAGS_INC) >> tmp.sub
+	$(CC) -sub=tmp.sub $<
+
+$(KERNEL_ALL_COBJS:.obj=.src): %.src: %.c
+	echo $(CFLAGS) $(KERNEL_CFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(KERNEL_CFLAGS_INC) >> tmp.sub
+	$(CC) -c=asmcode -sub=tmp.sub $<
+
+$(KERNEL_ASMOBJS): %.obj: %.src
+	echo rule 2
+	echo $(ASMFLAGS) $(KERNEL_ASMFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(KERNEL_ASMFLAGS_INC) >> tmp.sub
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sub
+	echo $(AS) $< -O=$@ -sub=tmp.sub > tmp.sh
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sh
+	sh tmp.sh
+
+$(STASK_COBJS): %.obj: %.c
+	echo rule b
+	echo $(CFLAGS) $(STASK_CFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(STASK_CFLAGS_INC) >> tmp.sub
+	$(CC) -sub=tmp.sub $<
+
+$(STASK_COBJS:.obj=.src): %.src: %.c
+	echo $(CFLAGS) $(STASK_CFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(STASK_CFLAGS_INC) >> tmp.sub
+	$(CC) -c=asmcode -sub=tmp.sub $<
+
+$(STASK_ASMOBJS): %.obj: %.src
+	echo rule 3
+	echo $(ASMFLAGS) $(STASK_ASMFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(STASK_ASMFLAGS_INC) >> tmp.sub
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sub
+	echo $(AS) $< -O=$@ -sub=tmp.sub > tmp.sh
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sh
+	sh tmp.sh
+
+$(UTASK_COBJS): %.obj: %.c
+	echo rule c
+	echo $(CFLAGS) $(UTASK_CFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(UTASK_CFLAGS_INC) >> tmp.sub
+	$(CC) -sub=tmp.sub $<
+
+$(UTASK_COBJS:.obj=.src): %.src: %.c
+	echo $(CFLAGS) $(UTASK_CFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(UTASK_CFLAGS_INC) >> tmp.sub
+	$(CC) -c=asmcode -sub=tmp.sub $<
+
+$(UTASK_ASMOBJS): %.obj: %.src
+	echo rule 4
+	
+	echo $(ASMFLAGS) $(UTASK_ASMFLAGS) | perl $(H8SDIR)/make_sub.pl > tmp.sub
+	echo -i=$(INCLUDES)$(UTASK_ASMFLAGS_INC) >> tmp.sub
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sub
+	echo $(AS) $< -O=$@ -sub=tmp.sub > tmp.sh
+	perl -i.bak $(H8SDIR)/make_asm_path.pl tmp.sh
+	sh tmp.sh
+
+#
+#  デフォルトコンパイルルールを上書き
+#
+%.obj: %.c
+	@echo "*** Default compile rules should not be used."
+	$(CC)  $(CFLAGS) $<
+
+%.src: %.c
+	@echo "*** Default compile rules should not be used."
+	$(CC)  $(CFLAGS) $<
+
+%.obj: %.src
+	@echo "*** Default compile rules should not be used."
+	$(CC)  $(CFLAGS) $<
+	
+#
+#  ファイルの依存関係
+#
+
+int_hdler.obj: kernel_cfg.c \
+	$(H8SDIR)/int_header.txt
+int_hdler.src: kernel_cfg.c
+kernel_cfg.c kernel_id.h kernel_chk.c : \
+	$(JSPDIR)/include/../systask/timer.cfg \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h \
+	$(JSPDIR)/include/../systask/serial.cfg \
+	$(H8SDIR)/$(SYS)/sys_defs.h ./sample1.cfg \
+	$(JSPDIR)/include/../systask/logtask.cfg \
+	$(H8SDIR)/cpu_config.h sample1.h \
+	$(H8SDIR)/cpu_config_asm.h
+cpu_support.obj: offset.h $(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(H8SDIR)/cpu_support.src \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/include/jsp_stddef.h \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h
+sys_support.obj: $(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/include/jsp_stddef.h \
+	$(H8SDIR)/$(SYS)/sys_support.src \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h
+banner.obj: $(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(H8SDIR)/cpu_insn.h \
+	$(JSPDIR)/include/kernel.h $(JSPDIR)/kernel/banner.c \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h 
+kernel_cfg.obj: $(JSPDIR)/kernel/semaphore.h $(JSPDIR)/kernel/dataqueue.h \
+	$(JSPDIR)/kernel/exception.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/include/serial.h $(JSPDIR)/kernel/mempfix.h \
+	$(JSPDIR)/include/logtask.h ./kernel_cfg.c sample1.h \
+	$(JSPDIR)/kernel/cyclic.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(JSPDIR)/kernel/eventflag.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/cpu_insn.h $(H8SDIR)/hw_serial.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/syslog.h $(H8SDIR)/hw_timer.h \
+	$(JSPDIR)/kernel/interrupt.h kernel_id.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/mailbox.h \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/include/timer.h 
+startup.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/time_event.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/kernel/startup.c \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h 
+cpu_config.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(H8SDIR)/cpu_config.c $(JSPDIR)/include/jsp_stddef.h \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/kernel/check.h 
+sys_config.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/jsp_rename.h \
+	$(JSPDIR)/include/itron.h \
+	$(H8SDIR)/$(SYS)/sys_config.c \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/hw_serial.h $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h 
+task.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(H8SDIR)/cpu_context.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/task.c 
+wait.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/wait.c \
+	$(JSPDIR)/kernel/task.h $(JSPDIR)/kernel/time_event.h \
+	$(JSPDIR)/kernel/queue.h $(JSPDIR)/kernel/jsp_rename.h \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/kernel/wait.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h 
+time_event.obj: $(JSPDIR)/kernel/time_event.c \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/time_event.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+syslog.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/time_event.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(JSPDIR)/kernel/syslog.c $(H8SDIR)/cpu_insn.h \
+	$(JSPDIR)/include/kernel.h $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h 
+task_manage.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/task_manage.c $(JSPDIR)/kernel/jsp_rename.h \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/kernel/wait.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+task_sync.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/kernel/wait.h $(JSPDIR)/kernel/task_sync.c \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+task_except.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/kernel/task_except.c \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+semaphore.obj: $(JSPDIR)/kernel/semaphore.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/kernel/wait.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/semaphore.c \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/kernel/check.h 
+eventflag.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/kernel/wait.h $(JSPDIR)/kernel/eventflag.c \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(JSPDIR)/kernel/eventflag.h $(H8SDIR)/cpu_insn.h \
+	$(JSPDIR)/include/kernel.h $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+dataqueue.obj: $(JSPDIR)/kernel/dataqueue.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/kernel/wait.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/dataqueue.c \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/kernel/check.h 
+mailbox.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/kernel/wait.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/kernel/mailbox.c $(JSPDIR)/include/jsp_stddef.h \
+	$(JSPDIR)/kernel/mailbox.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+mempfix.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/mempfix.c $(JSPDIR)/kernel/jsp_rename.h \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/kernel/wait.h \
+	$(JSPDIR)/kernel/mempfix.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+time_manage.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/time_event.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/kernel/time_manage.c \
+	$(JSPDIR)/include/itron.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(H8SDIR)/hw_timer.h $(JSPDIR)/include/jsp_stddef.h \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/kernel/check.h 
+cyclic.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/time_event.h \
+	$(JSPDIR)/kernel/queue.h $(JSPDIR)/kernel/jsp_rename.h \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/kernel/cyclic.c \
+	$(JSPDIR)/kernel/cyclic.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+sys_manage.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(JSPDIR)/kernel/sys_manage.c $(H8SDIR)/cpu_insn.h \
+	$(JSPDIR)/include/kernel.h $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/check.h 
+interrupt.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/jsp_rename.h \
+	$(JSPDIR)/include/itron.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/kernel/interrupt.c $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/kernel/interrupt.h $(JSPDIR)/include/jsp_stddef.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h 
+exception.obj: $(JSPDIR)/kernel/exception.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(JSPDIR)/include/itron.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/kernel/exception.c 
+makeoffset.src: $(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(H8SDIR)/cpu_insn.h \
+	$(JSPDIR)/include/kernel.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/kernel/jsp_rename.h $(H8SDIR)/makeoffset.c \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/include/jsp_stddef.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/kernel/jsp_kernel.h $(H8SDIR)/cpu_config.h 
+kernel_chk.src: $(JSPDIR)/kernel/semaphore.h $(JSPDIR)/kernel/dataqueue.h \
+	./kernel_chk.c $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/kernel/task.h \
+	$(JSPDIR)/kernel/time_event.h $(JSPDIR)/kernel/queue.h \
+	$(JSPDIR)/kernel/jsp_rename.h \
+	$(JSPDIR)/include/../kernel/exception.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/kernel/wait.h $(JSPDIR)/kernel/mempfix.h \
+	$(JSPDIR)/include/logtask.h $(JSPDIR)/kernel/cyclic.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(JSPDIR)/kernel/eventflag.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/cpu_insn.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/syslog.h $(H8SDIR)/hw_timer.h \
+	$(JSPDIR)/kernel/interrupt.h $(JSPDIR)/include/jsp_stddef.h \
+	$(JSPDIR)/kernel/mailbox.h $(JSPDIR)/kernel/jsp_kernel.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/include/timer.h 
+timer.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/systask/timer.c $(JSPDIR)/include/serial.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(JSPDIR)/include/kernel.h $(H8SDIR)/cpu_insn.h \
+	$(H8SDIR)/hw_serial.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/syslog.h $(H8SDIR)/hw_timer.h \
+	$(JSPDIR)/include/jsp_stddef.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/include/jsp_services.h $(JSPDIR)/include/timer.h 
+serial.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/systask/serial.c \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/include/serial.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/hw_serial.h $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h kernel_id.h \
+	$(JSPDIR)/include/jsp_stddef.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/include/jsp_services.h 
+logtask.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/include/serial.h $(JSPDIR)/include/logtask.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(JSPDIR)/systask/logtask.c $(H8SDIR)/hw_serial.h \
+	$(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/include/jsp_services.h 
+vasyslog.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/include/serial.h \
+	/usr/local/lib/gcc-lib/h8300-hms/2.95.2/include/stdarg.h \
+	/usr/local/lib/gcc-lib/h8300-hms/2.95.2/include/va-h8300.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/hw_serial.h $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(JSPDIR)/libjsp/vasyslog.c \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/cpu_config.h $(JSPDIR)/include/jsp_services.h 
+jsp_perror.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/libjsp/jsp_perror.c \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/include/serial.h \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/hw_serial.h $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/include/jsp_services.h 
+strerror.obj: $(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(H8SDIR)/cpu_defs.h $(JSPDIR)/include/itron.h \
+	$(JSPDIR)/include/serial.h $(JSPDIR)/libjsp/strerror.c \
+	$(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/hw_serial.h $(JSPDIR)/include/syslog.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h \
+	$(JSPDIR)/include/jsp_stddef.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(JSPDIR)/include/jsp_services.h 
+sample1.obj: kernel_id.h $(H8SDIR)/$(SYS)/sys_config.h \
+	$(H8SDIR)/$(SYS)/sys_config_asm.h \
+	$(JSPDIR)/include/itron.h $(JSPDIR)/include/jsp_stddef.h \
+	$(H8SDIR)/$(SYS)/h8s_2350.h \
+	$(H8SDIR)/$(SYS)/h8s_2350_asm.h \
+	$(JSPDIR)/include/serial.h $(H8SDIR)/cpu_defs.h \
+	$(H8SDIR)/cpu_insn.h $(JSPDIR)/include/kernel.h \
+	$(H8SDIR)/hw_serial.h ./sample1.c \
+	$(JSPDIR)/include/syslog.h $(H8SDIR)/cpu_config.h \
+	$(H8SDIR)/cpu_config_asm.h \
+	$(H8SDIR)/$(SYS)/sys_defs.h sample1.h \
+	$(JSPDIR)/include/jsp_services.h 

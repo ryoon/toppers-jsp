@@ -8,7 +8,7 @@
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: mempfix.c,v 1.5 2001/09/17 02:32:41 hiro Exp $
+ *  @(#) $Id: mempfix.c,v 1.7 2002/03/26 08:19:38 hiro Exp $
  */
 
 /*
@@ -136,8 +136,10 @@ get_mpf(ID mpfid, VP *p_blk)
 	else {
 		wobj_make_wait((WOBJCB *) mpfcb, (WINFO_WOBJ *) &winfo);
 		dispatch();
-		*p_blk = winfo.blk;
 		ercd = winfo.winfo.wercd;
+		if (ercd == E_OK) {
+			*p_blk = winfo.blk;
+		}
 	}
 	t_unlock_cpu();
 	return(ercd);
@@ -194,8 +196,10 @@ tget_mpf(ID mpfid, VP *p_blk, TMO tmout)
 		wobj_make_wait_tmout((WOBJCB *) mpfcb, (WINFO_WOBJ *) &winfo,
 						&tmevtb, tmout);
 		dispatch();
-		*p_blk = winfo.blk;
 		ercd = winfo.winfo.wercd;
+		if (ercd == E_OK) {
+			*p_blk = winfo.blk;
+		}
 	}
 	t_unlock_cpu();
 	return(ercd);

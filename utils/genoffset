@@ -9,7 +9,7 @@
 # 
 #  上記著作権者は，Free Software Foundation によって公表されている 
 #  GNU General Public License の Version 2 に記述されている条件か，以
-#  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+#  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
 #  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
 #  利用と呼ぶ）することを無償で許諾する．
 #  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -33,7 +33,7 @@
 #  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 #  かなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: genoffset,v 1.7 2001/11/15 04:12:47 hiro Exp $
+#  @(#) $Id: genoffset,v 1.9 2002/04/08 05:28:34 hiro Exp $
 # 
 
 #
@@ -75,8 +75,13 @@ sub parse_begin {
 	"word", "",
 	"int", "",
 	"short", "",
+	"value", "",
 	"byte", "",
+	"data32", 4,
+	"data16", 2,
+	"data8", 1,
 	"zero", -1,
+	"space", -1,
 	"globl", 0,
 	"global", 0,
 	"align", 0,
@@ -84,6 +89,8 @@ sub parse_begin {
 	"stabs", 0,
 	"type", 0,
 	"size", 0,
+	"section", 0,
+	"sdata", 0,
 );
 
 #
@@ -97,13 +104,13 @@ sub parse_bit {
 	while ($line = <>) {
 		chop $line;
 
-		next if ($line =~ /^[ \t]*(\#.*)$/);
+		next if ($line =~ /^[ \t]*[#;].*$/);
 		return if ($line =~ /! END/);
 
 		if ($line =~ /^([^ \t]+):/) {
 			$label = $1;
 		}
-		elsif ($line =~ /[ \t]*\.([a-zA-Z]+)[ \t]*([^ \t]*)$/
+		elsif ($line =~ /[ \t]*\.([a-zA-Z0-9]+)[ \t]*([^ \t]*)$/
 				&& defined($dir = $directives{$1})) {
 			$val = $2;
 
@@ -201,13 +208,13 @@ sub ref_bit {
 	while ($line = <>) {
 		chop $line;
 
-		next if ($line =~ /^[ \t]*(\#.*)$/);
+		next if ($line =~ /^[ \t]*[#;].*$/);
 		return if ($line =~ /! END/);
 
 		if ($line =~ /^_?ref_([0-9]+):/) {
 			$size = $1;
 		}
-		elsif ($line =~ /[ \t]*\.([a-zA-Z]+)[ \t]*([^ \t]*)$/
+		elsif ($line =~ /[ \t]*\.([a-zA-Z0-9]+)[ \t]*([^ \t]*)$/
 				&& defined($dir = $directives{$1})) {
 			$directive = $1;
 			if ($dir eq "") {

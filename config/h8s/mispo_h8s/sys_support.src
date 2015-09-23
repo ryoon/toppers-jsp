@@ -1,0 +1,248 @@
+ ;/*
+ ;*  TOPPERS/JSP Kernel
+ ;*      Toyohashi Open Platform for Embedded Real-Time Systems/
+ ;*      Just Standard Profile Kernel
+ ;*
+ ;*  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ ;*                              Toyohashi Univ. of Technology, JAPAN
+ ;*  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+ ;*                   Tomakomai National College of Technology, JAPAN
+ ;*  Copyright (C) 2001,2002 by Industrial Technology Institute,
+ ;*                              Miyagi Prefectural Government, JAPAN
+ ;*
+ ;*  上記著作権者は，Free Software Foundation によって公表されている
+ ;*  GNU General Public License の Version 2 に記述されている条件か，以
+ ;*  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
+ ;*  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ ;*  利用と呼ぶ）することを無償で許諾する．
+ ;*  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
+ ;*      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
+ ;*      スコード中に含まれていること．
+ ;*  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ ;*      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ ;*      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ ;*      この利用条件および下記の無保証規定を掲載すること．
+ ;*  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ ;*      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
+ ;*    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
+ ;*        権表示，この利用条件および下記の無保証規定を掲載すること．
+ ;*    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
+ ;*        こと．
+ ;*  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ ;*      害からも，上記著作権者を免責すること．
+ ;*
+ ;*  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
+ ;*  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
+ ;*  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
+ ;*  かなる損害に関しても，その責任を負わない．
+ ;*
+ ;*  @(#) $Id: sys_support.src,v 1.2 2002/04/13 13:15:41 imai Exp $
+ ;*/
+
+;/*  日立純正Cコンパイラ用アセンブラソース  */
+ 	.CPU 2000A:24
+_MACRO_ONLY: .DEFINE ""
+;	.INCLUDE "jsp_kernel.h"
+	.INCLUDE "h8s_2350_asm.h"
+
+;/* 割込みベクタの定義                                               */
+;/*（ベクタテーブルは固定なので、割込みの出入り口処理のラベルは      */
+;/* 以下のベクタテーブルに直接書き込む必要がある。)                  */
+
+	.SECTION V, CODE, ALIGN=4
+
+	.GLOBAL _vectors
+        .IMPORT _start
+        .IMPORT _no_reg_exception
+	.IMPORT	_timer_handler_entry
+        .IMPORT	_serial_in_handler_entry
+	.IMPORT	_serial_out_handler_entry
+	.IMPORT _cpuexc_handler_entry
+_vectors:
+	.DATA.L	_start				;/*  0, 0x0000: パワーオンリセット	*/
+	.DATA.L	_start				;/*  1, 0x0004: マニュアルリセット	*/
+	.DATA.L	_no_reg_exception		;/*  2, 0x0008: システム予約		*/
+	.DATA.L	_no_reg_exception		;/*  3, 0x000c: システム予約		*/
+	.DATA.L	_no_reg_exception		;/*  4, 0x0010: システム予約		*/
+	.DATA.L	_no_reg_exception		;/*  5, 0x0014: トレース		*/
+	.DATA.L	_no_reg_exception		;/*  6, 0x0018: システム予約		*/
+	.DATA.L	_no_reg_exception		;/*  7, 0x001c: 外部割込み　NMI		*/
+	.DATA.L	_no_reg_exception		;/*  8, 0x0020: トラップ命令		*/
+	.DATA.L	_no_reg_exception		;/*  9, 0x0024: トラップ命令		*/
+	.DATA.L	_no_reg_exception		;/* 10, 0x0028: トラップ命令		*/
+	.DATA.L	_no_reg_exception		;/* 11, 0x002c: トラップ命令		*/
+	.DATA.L	_no_reg_exception		;/* 12, 0x0030: システム予約		*/
+	.DATA.L	_no_reg_exception		;/* 13, 0x0034: システム予約		*/
+	.DATA.L	_no_reg_exception		;/* 14, 0x0038: システム予約		*/
+	.DATA.L	_no_reg_exception		;/* 15, 0x003c: システム予約		*/
+	;/*  ---外部割込み--------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 16, 0x0040: IRQ0	*/
+	.DATA.L	_no_reg_exception		;/* 17, 0x0044: IRQ1	*/
+	.DATA.L	_no_reg_exception		;/* 18, 0x0048: IRQ2	*/
+	.DATA.L	_no_reg_exception		;/* 19, 0x004c: IRQ3 	*/
+	.DATA.L	_no_reg_exception		;/* 20, 0x0050: IRQ4	*/
+	.DATA.L	_no_reg_exception		;/* 21, 0x0054: IRQ5	*/
+	.DATA.L	_no_reg_exception		;/* 22, 0x0058: IRQ6	*/
+        .DATA.L	_no_reg_exception		;/* 23, 0x005c: IRQ7	*/
+        ;/*  ---DTC----------------------------------------------------  */
+        .DATA.L	_no_reg_exception		;/* 24, 0x0060: SWDTEND(ソフトウェア起動データ転送終了)	*/
+        ;/*  ウォッチドッグタイマ--------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 25, 0x0064: WOVI(インターバルタイマ)	*/
+	;/*  ---リフレッシュコントローラ-------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 26, 0x0068: CMI(コンペアマッチ)	*/
+        ;/*  ----------------------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 27, 0x006c: リザーブ	*/
+ 	;/*  ---A/D----------------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 28, 0x0070: ADI(A/D変換の終了)	*/
+	;/*  ----------------------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 29, 0x0074: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 30, 0x0078: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 31, 0x007c: リザーブ	*/
+	;/*  ---TPUチャネル0-------------------------------------------  */
+	.DATA.L	_timer_handler_entry		;/* 32, 0x0080: TGI0A	*/
+	.DATA.L	_no_reg_exception		;/* 33, 0x0084: TGI0B	*/
+	.DATA.L	_no_reg_exception		;/* 34, 0x0088: TGI0C	*/
+	.DATA.L	_no_reg_exception		;/* 35, 0x008c: TGI0D	*/
+	.DATA.L	_no_reg_exception		;/* 36, 0x0090: TCI0V	*/
+	;/*  ----------------------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 37, 0x0094: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 38, 0x0098: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 39, 0x009c: リザーブ	*/
+	;/*  ---TPUチャネル1-------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 40, 0x00a0: TGI1A	*/
+	.DATA.L	_no_reg_exception		;/* 41, 0x00a4: TGI1B	*/
+	.DATA.L	_no_reg_exception		;/* 42, 0x00a8: TCI1V	*/
+	.DATA.L	_no_reg_exception		;/* 43, 0x00ac: TCI1U	*/
+	;/*  ---TPUチャネル2-------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 44, 0x00b0: TGI2A	*/
+	.DATA.L	_no_reg_exception		;/* 45, 0x00b4: TGI2B	*/
+	.DATA.L	_no_reg_exception		;/* 46, 0x00b8: TCI2V	*/
+	.DATA.L	_no_reg_exception		;/* 47, 0x00bc: TCI2U	*/
+	;/*  --TPUチャネル3--------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 48, 0x00c0: TGI3A	*/
+	.DATA.L	_no_reg_exception		;/* 49, 0x00c4: TGI3B	*/
+	.DATA.L	_no_reg_exception		;/* 50, 0x00c8: TGI3C	*/
+	.DATA.L	_no_reg_exception		;/* 51, 0x00cc: TGI3D	*/
+	.DATA.L	_no_reg_exception		;/* 52, 0x00d0: TCI3V	*/
+	;/*  ----------------------------------------------------------  */
+ 	.DATA.L	_no_reg_exception		;/* 53, 0x00d4: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 54, 0x00d8: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 55, 0x00dc: リザーブ	*/
+	;/*  ---TPUチャネル4-------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 56, 0x00e0: TGI4A	*/
+	.DATA.L	_no_reg_exception		;/* 57, 0x00e4: TGI4B	*/
+	.DATA.L	_no_reg_exception		;/* 58, 0x00e8: TCI4V	*/
+	.DATA.L	_no_reg_exception		;/* 59, 0x00ec: TCI4U	*/
+	;/*  ---TPUチャネル5-------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 60, 0x00f0: TGI5A	*/
+	.DATA.L	_no_reg_exception		;/* 61, 0x00f4: TGI5B	*/
+	.DATA.L	_no_reg_exception		;/* 62, 0x00f8: TCI5V	*/
+	.DATA.L	_no_reg_exception		;/* 63, 0x00fc: TCI5U    */
+     	;/*  ----------------------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 64, 0x0100: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 65, 0x0104: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 66, 0x0108: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 67, 0x010c: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 68, 0x0110: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 69, 0x0114: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 70, 0x0118: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 71, 0x011c: リザーブ	*/
+	;/*  ---DMAC---------------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 72, 0x0120: DEND0A	*/
+	.DATA.L	_no_reg_exception		;/* 73, 0x0124: DEND0B	*/
+	.DATA.L	_no_reg_exception		;/* 74, 0x0128: DEND1A	*/
+	.DATA.L	_no_reg_exception		;/* 75, 0x012c: DEND0B	*/
+	;/*  ----------------------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 76, 0x0130: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 77, 0x0134: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 78, 0x0138: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 79, 0x013c: リザーブ	*/
+	;/*  ---SCIチャネル0-------------------------------------------  */
+	.DATA.L	_serial_in_handler_entry	;/* 80, 0x0140: ERI0	*/
+	.DATA.L	_serial_in_handler_entry	;/* 81, 0x0144: RXI0	*/
+	.DATA.L	_serial_out_handler_entry	;/* 82, 0x0148: TXI0	*/
+	.DATA.L	_no_reg_exception		;/* 83, 0x014c: TEI0	*/
+        ;/*  ---SCIチャネル1-------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 84, 0x0150: ERI1	*/
+	.DATA.L	_no_reg_exception		;/* 85, 0x0154: RXI1	*/
+	.DATA.L	_no_reg_exception		;/* 86, 0x0158: TXI1	*/
+	.DATA.L	_no_reg_exception		;/* 87, 0x015c: TEl1	*/
+        ;/*  ----------------------------------------------------------  */
+	.DATA.L	_no_reg_exception		;/* 88, 0x0160: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 89, 0x0164: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 90, 0x0168: リザーブ	*/
+	.DATA.L	_no_reg_exception		;/* 91, 0x016c: リザーブ	*/
+
+
+	.SECTION P, CODE, ALIGN=2 
+	.GLOBAL	_hardware_init_hook
+	.IMPORT start_1
+_hardware_init_hook:
+
+	;/* 割込み制御モードの設定（割込み制御モード2)*/
+        ;/* EXR の I2〜I0 ビットを割り込みマスクビットとして使用 */
+       
+        ;/* cpu_initialize()に記述すべき */
+	mov.l	#H8SSYSCR, er0
+	mov.b	@er0, r1h
+	or.b	#H8SSYSCR_INTM1, r1h
+	bclr    #H8SSYSCR_RNAME_BIT, r1h	 ;/*  内蔵RAM無効  */
+	mov.b	r1h, @er0
+
+	;/* CPU動作モードはボード上のディップスイッチでモード5に設定されている。   */
+        ;/* モード5：アドバンストモード、アドレス空間は16Mバイト、内臓ROM無効      */
+        ;/*                                                                        */
+        ;/* CPU動作モードを設定することで、I/Oポートは自動的に以下のように         */
+        ;/* 設定されるので、ここでは設定しない。                                   */
+        ;/* ポートA,B,C->アドレス出力                                              */
+        ;/* ポートD->データ入出力                                                  */
+        ;/* ポートFのPF6〜PF3->バス制御出力                                        */
+
+        ;/*                                                                        */
+        ;/* バスコントローラ(BSC)の設定(エリア0，1，7)                             */
+        ;/* 外部ROM(128kB)->エリア0                                                */
+        ;/* 外部RAM(128kB)->エリア1                                                */
+        ;/* 内蔵RAM(2kB)，内部I/Oレジスタ->エリア7                                 */
+        ;/*   ( 注意： 内蔵RAM及び内蔵I/Oレジスタに対するアクセスステート数は      */
+        ;/*      　　　ASTCRの設定値に関わらず固定。)                              */
+
+        ;/*　初期値の設定のままである場合には、以下のバスコントローラ  	           */
+        ;/*　の設定は不要である.                                                   */
+
+        ;/*    エリア0                                                             */
+        ;/*         ：3ステートアクセス(ASTCR.AST0<-1(初期値))                     */
+        ;/*         : プログラムウエイトを3ステート挿入(WCRL.W01<-1,WCRL.W00<-1)   */
+        ;/*    エリア1                                                             */
+        ;/*         ：3ステートアクセス(AST1<-1(初期値))                           */
+        ;/*         : プログラムウエイトを3ステート挿入(WCRL.W11<-1,WCRL.W10<-1)   */
+        ;/*    アイドルサイクルの挿入                                              */
+        ;/*         ：異なるエリアの外部リードサイクルが連続したときに,            */
+        ;/*          アイドルサイクルを挿入(BCRH.ICIS1<-1)                         */
+        ;/*          :外部リードサイクルと外部ライトサイクルが連続したときに,      */
+        ;/*　　　 　　アイドルサイクルを挿入(BCRH.ICIS01<-1)                       */
+
+                                     ;/*  ウエイトコントロールレジスタL(WCRL)の設定  */
+                 mov.l		#H8SWCRL, er0
+                 mov.b		#H'ff, r1l	;/*  初期値  */
+             ; /*   mov.b		#H'f1, r1l  */	;/*  エリア0は1ステート挿入  */
+                 				;/*  エリア1は0ステート挿入  */
+                 mov.b		r1l, @er0
+                                     ;/*  バスコントロールレジスタH(BCRH)の設定  */
+                                     ;/*   BCRHは初期値のままなので設定不要  */
+                  mov.l		#H8SBCRH,er0
+                  mov.b 	#H'ff,r1l	;/*  初期値  */
+               ;/*   mov.b 	#H'10,r1l  */   ;/*  アイドルサイクルは挿入しない  */
+                  mov.b 	r1l, @er0
+                 
+                 ;/*  PGDDR  -> 0x18  */	;/*　CS0,CS1 イネーブル　*/
+                 mov.l		#H8SPGDDR, er0
+                 mov.b		#H'18, r1l
+                 mov.b		r1l, @er0
+                
+		mov.l  @start_1_k, er0
+		jmp    @er0
+
+start_1_k:
+	.DATA.L  start_1
+	
+	.END

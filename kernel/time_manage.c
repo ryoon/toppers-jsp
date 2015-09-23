@@ -8,7 +8,7 @@
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: time_manage.c,v 1.2 2001/09/05 16:12:29 hiro Exp $
+ *  @(#) $Id: time_manage.c,v 1.4 2002/03/26 08:19:38 hiro Exp $
  */
 
 /*
@@ -47,12 +47,12 @@
  *  システム時刻の設定
  */
 SYSCALL ER
-set_tim(SYSTIM *pk_systim)
+set_tim(SYSTIM *p_systim)
 {
 	CHECK_TSKCTX_UNL();
 
 	t_lock_cpu();
-	systim_offset = *pk_systim - current_time;
+	systim_offset = *p_systim - current_time;
 	t_unlock_cpu();
 	return(E_OK);
 }
@@ -61,12 +61,12 @@ set_tim(SYSTIM *pk_systim)
  *  システム時刻の参照
  */
 SYSCALL ER
-get_tim(SYSTIM *pk_systim)
+get_tim(SYSTIM *p_systim)
 {
 	CHECK_TSKCTX_UNL();
 
 	t_lock_cpu();
-	*pk_systim = systim_offset + current_time;
+	*p_systim = systim_offset + current_time;
 	t_unlock_cpu();
 	return(E_OK);
 }
@@ -78,7 +78,7 @@ get_tim(SYSTIM *pk_systim)
 #include "hw_timer.h"
 
 SYSCALL ER
-vxget_tim(SYSUTIM *pk_sysutim)
+vxget_tim(SYSUTIM *p_sysutim)
 {
 	SYSUTIM	utime;
 	SYSTIM	time;
@@ -107,14 +107,14 @@ vxget_tim(SYSUTIM *pk_sysutim)
 
 	utime = ((SYSUTIM) time) * 1000;
 #if TIC_DENO != 1
-	utime += subtime * 1000 / TIC_DENO
+	utime += subtime * 1000 / TIC_DENO;
 #endif /* TIC_DENO != 1 */
 	if (!(ireq) || clock >= (TO_CLOCK(TIC_NUME, TIC_DENO)
 					- GET_TOLERANCE)) {
 		utime -= TIC_NUME * 1000 / TIC_DENO;
 	}
 	utime += clock * 1000 / TIMER_CLOCK;
-	*pk_sysutim = utime;
+	*p_sysutim = utime;
 	return(E_OK);
 }
 

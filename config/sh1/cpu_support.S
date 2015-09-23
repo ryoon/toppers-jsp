@@ -3,14 +3,14 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  *
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001 by Industrial Technology Institute,
+ *  Copyright (C) 2001,2002 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，Free Software Foundation によって公表されている
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -34,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_support.S,v 1.2 2001/10/22 02:16:43 imai Exp $
+ *  @(#) $Id: cpu_support.S,v 1.5 2002/04/11 11:30:20 imai Exp $
  */
 
 
@@ -339,7 +339,7 @@ ret_int_1:
 	jsr    @r1
 	nop			/*  遅延スロット　			*/
 
-				/*  戻り先の割込みマスクを  		*/
+ret_int_2:			/*  戻り先の割込みマスクを  		*/
 #ifdef SUPPORT_CHG_IPM		/*  task_intmaskにする 			*/
 	mov    #40,r0		/*  	スタックの先頭からsrまでの  	*/
 				/*  	オフセット （下記参照）		*/
@@ -352,7 +352,7 @@ ret_int_1:
 	mov.l  r1,@(r0,r15)	/*  スタックに積んであるsrに上書き  	*/
 #endif /* SUPPORT_CHG_IPM */
 
-ret_int_2:			/* pr,スクラッチレジスタを復帰 		*/
+				/* pr,スクラッチレジスタを復帰 		*/
 				/*  スタックの先頭からのオフセット  	*/
 	lds.l  @r15+,pr		/*   +0:PR  */
 	mov.l  @r15+,r7		/*   +4:r7  */
@@ -453,6 +453,11 @@ _activate_r:
 	ldc   r1,sr		/*  割込み許可  		*/
 	mov.l _ext_tsk_act,r0
 	lds   r0,pr		/*  タスクからの戻り番地を設定  */
+
+	/*  ここで割込みが入ってruntskが書き換わっても、  	*/
+	/*  このタスクに戻ってくるときにはruntskの値も  	*/
+	/*  当然、元に戻っている				*/
+				
 	mov.l _runtsk_act,r1
 	mov.l @r1,r2
 	mov.l @(TCB_tinib,r2),r3

@@ -7,12 +7,12 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -36,7 +36,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: h8_3048f.h,v 1.1 2001/11/12 13:38:30 abe Exp $
+ *  @(#) $Id: h8_3048f.h,v 1.2 2002/04/10 10:40:53 honda Exp $
  */
 
 #ifndef _H8_3048F_H_
@@ -392,13 +392,13 @@
 #define H8SYSCR_NMIEG_BIT	2
 #define H8SYSCR_RAME_BIT	0
 
-#define H8SYSCR_SSBY		(1<<(H8SYSCR_SSBY))
-#define H8SYSCR_STS2		(1<<(H8SYSCR_STS2))
-#define H8SYSCR_STS1		(1<<(H8SYSCR_STS1))
-#define H8SYSCR_STS0		(1<<(H8SYSCR_STS0))
-#define H8SYSCR_UE		(1<<(H8SYSCR_UE))
-#define H8SYSCR_NMIEG		(1<<(H8SYSCR_NMIEG))
-#define H8SYSCR_RAME		(1<<(H8SYSCR_RAME))
+#define H8SYSCR_SSBY		(1<<(H8SYSCR_SSBY_BIT))
+#define H8SYSCR_STS2		(1<<(H8SYSCR_STS2_BIT))
+#define H8SYSCR_STS1		(1<<(H8SYSCR_STS1_BIT))
+#define H8SYSCR_STS0		(1<<(H8SYSCR_STS0_BIT))
+#define H8SYSCR_UE		(1<<(H8SYSCR_UE_BIT))
+#define H8SYSCR_NMIEG		(1<<(H8SYSCR_NMIEG_BIT))
+#define H8SYSCR_RAME		(1<<(H8SYSCR_RAME_BIT))
 
 /* Interrupt Priority Register A */
 
@@ -414,17 +414,17 @@
 #define H8IPR_ITU1_BIT		1	/* ITU1		*/
 #define H8IPR_ITU2_BIT		0	/* ITU2		*/
 
-#define H8IPR_IRQ0		(1<<(H8IPR_IRQ0))
-#define H8IPR_IRQ1		(1<<(H8IPR_IRQ1))
-#define H8IPR_IRQ2		(1<<(H8IPR_IRQ2))
-#define H8IPR_IRQ3		(1<<(H8IPR_IRQ3))
-#define H8IPR_IRQ4		(1<<(H8IPR_IRQ4))
-#define H8IPR_IRQ5		(1<<(H8IPR_IRQ5))
-#define H8IPR_WDT		(1<<(H8IPR_WDT))
-#define H8IPR_CMI		(1<<(H8IPR_CMI))
-#define H8IPR_ITU0		(1<<(H8IPR_ITU0))
-#define H8IPR_ITU1		(1<<(H8IPR_ITU1))
-#define H8IPR_ITU2		(1<<(H8IPR_ITU2))
+#define H8IPR_IRQ0		(1<<(H8IPR_IRQ0_BIT))
+#define H8IPR_IRQ1		(1<<(H8IPR_IRQ1_BIT))
+#define H8IPR_IRQ2		(1<<(H8IPR_IRQ2_BIT))
+#define H8IPR_IRQ3		(1<<(H8IPR_IRQ3_BIT))
+#define H8IPR_IRQ4		(1<<(H8IPR_IRQ4_BIT))
+#define H8IPR_IRQ5		(1<<(H8IPR_IRQ5_BIT))
+#define H8IPR_WDT		(1<<(H8IPR_WDT_BIT))
+#define H8IPR_CMI		(1<<(H8IPR_CMI_BIT))
+#define H8IPR_ITU0		(1<<(H8IPR_ITU0_BIT))
+#define H8IPR_ITU1		(1<<(H8IPR_ITU1_BIT))
+#define H8IPR_ITU2		(1<<(H8IPR_ITU2_BIT))
 
 /* Interrupt Priority Register B */
 
@@ -435,12 +435,12 @@
 #define H8IPR_SCI1_BIT		2	/* SCI1		*/
 #define H8IPR_AD_BIT		1	/* A/D		*/
 
-#define H8IPR_ITU3		(1<<(H8IPR_ITU3))
-#define H8IPR_ITU4		(1<<(H8IPR_ITU4))
-#define H8IPR_DMAC		(1<<(H8IPR_DMAC))
-#define H8IPR_SCI0		(1<<(H8IPR_SCI0))
-#define H8IPR_SCI1		(1<<(H8IPR_SCI1))
-#define H8IPR_AD		(1<<(H8IPR_AD))
+#define H8IPR_ITU3		(1<<(H8IPR_ITU3_BIT))
+#define H8IPR_ITU4		(1<<(H8IPR_ITU4_BIT))
+#define H8IPR_DMAC		(1<<(H8IPR_DMAC_BIT))
+#define H8IPR_SCI0		(1<<(H8IPR_SCI0_BIT))
+#define H8IPR_SCI1		(1<<(H8IPR_SCI1_BIT))
+#define H8IPR_AD		(1<<(H8IPR_AD_BIT))
 
 /* Integrated Timer Unit (ITU) */
 

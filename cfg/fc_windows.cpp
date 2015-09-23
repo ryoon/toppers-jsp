@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,15 +32,13 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: fc_windows.cpp,v 1.2 2001/11/12 14:59:27 takayuki Exp $
+ *  @(#) $Id: fc_windows.cpp,v 1.5 2002/04/05 08:48:31 takayuki Exp $
  */
-
 
 
 #include "filecontainer.h"
 
-#include "exception.h"
-#include "message.h"
+#include "except.h"
 
 #include <windows.h>
 #include <imagehlp.h>
@@ -72,7 +70,7 @@ filecontainer_windows::filecontainer_windows(void)
 {
 	process = 0;
 	base = 0;
-	container = this;
+	instance = this;
 }
 
 filecontainer_windows::~filecontainer_windows(void)
@@ -83,19 +81,13 @@ bool filecontainer_windows::attach_module(const char * filename)
 {
 	process = ::GetCurrentProcess();
 	if(::SymInitialize( process , NULL, FALSE) == FALSE)
-	{
-		Exception::Throw(Message("Internal Error : ImageHelper API initialization failure","内部エラー : 初期化に失敗しました (ImageHlp)"));
-		return false;
-	}
+		Exception("Internal Error : ImageHelper API initialization failure","内部エラー : 初期化に失敗しました (ImageHlp)");
 	
 	base = ::SymLoadModule(process, NULL, const_cast<char *>(filename), NULL, 0, 0);
 	
 	image.SizeOfImage = sizeof(LOADED_IMAGE);
 	if(::MapAndLoad(const_cast<char *>(filename), NULL, &image, FALSE, TRUE) == FALSE)
-	{
-		Exception::Throw(string(Message("Internel error : Module loading failure [","内部エラー:モジュールの読み込みに失敗しました [")) + filename + "]");
-		return false;
-	}
+		Exception("Internel error : Module loading failure [%s]","内部エラー:モジュールの読み込みに失敗しました [%s]").format(filename);
 	return true;
 }
 
@@ -124,7 +116,7 @@ bool filecontainer_windows::load_contents(void * dest, unsigned long address, un
 		}
 	}
 
-	Exception::Throw(Message("Internel error: Memory read with unmapped address","内部エラー; マップされてないアドレスを使ってメモリリードが行われました"));
+	Exception("Internel error: Memory read with unmapped address","内部エラー; マップされてないアドレスを使ってメモリリードが行われました");
 
 	return false;
 }
@@ -132,20 +124,20 @@ bool filecontainer_windows::load_contents(void * dest, unsigned long address, un
 unsigned long filecontainer_windows::get_symbol_address(const char * symbol)
 {
 	IMAGEHLP_SYMBOL sym;
+	char buffer[256];
 
 	if(process == NULL || base == 0)
-	{
-		Exception::Throw(Message("Not initialized","初期化されてません"));
-		return 0;
-	}
+		Exception("Not initialized","初期化されてません");
 
 	sym.SizeOfStruct = sizeof(sym);
 	sym.MaxNameLength = 0;
 
 	if(::SymGetSymFromName(process, const_cast<char *>(symbol), &sym) == FALSE)
 	{
-		Exception::Throw(string(Message("Unknown symbol [","不明なシンボル [")) + symbol + "]");
-		return 0;
+		sprintf(buffer,"_%s",symbol);
+		if(::SymGetSymFromName(process, const_cast<char *>(buffer), &sym) == FALSE)
+			return 0;
 	}
+
 	return sym.Address;
 }

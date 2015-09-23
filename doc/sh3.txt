@@ -2,19 +2,19 @@
 	    ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                  （SH3/SH4 ターゲット依存部）
 
-            （Release 1.2対応，最終更新: 14-Nov-2001）
+            （Release 1.3対応，最終更新: 08-Apr-2002）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
  上記著作権者は，Free Software Foundation によって公表されている 
  GNU General Public License の Version 2 に記述されている条件か，以
- 下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ 下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  利用と呼ぶ）することを無償で許諾する．
  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -38,9 +38,8 @@
  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  かなる損害に関しても，その責任を負わない．
 
- @(#) $Id: sh3.txt,v 1.20 2001/11/15 05:56:12 honda Exp $
+ @(#) $Id: sh3.txt,v 1.23 2002/04/10 08:25:00 honda Exp $
 ------------------------------------------------------------------------
-
 
 １．SH3/SH4 ターゲット依存部の概要
 
@@ -95,8 +94,7 @@ ROM化の際に必要なバスコントローラの設定は記述していないため，初期化ルー
 述が参考になると思われる．
 
 ・CARD-E09A
-	./config/sh3/card_e09a/Makefile.config 中のTEXT_START_ADDRESS，
-	#DATA_START_ADDRESS をスタブ用に変更(コメントアウトしてある)．
+    特に無し
 ・MU200-RSH3
 	hardware_init_hook にバスステートコントローラ等の初期化を追加．
 	sys_initialize に SCIF の初期化を追加．
@@ -408,6 +406,27 @@ gccでは，MACH，MACL，GBRはすべてスクラッチレジスタとして扱われるため，
 存していない．アセンブラのコードを使用する場合もこのルールに従う必要が
 ある．
 
+
+2.7 割込みハンドラ実行時の割込みマスク
+
+SH3は割込み発生時，割込みマスクビット(I3〜I0)はプロセッサによって自動
+的に設定されないため，ソフトウェアによって設定する必要がある．割込みハ
+ンドラ実行時に設定する割込みマスクビットをカーネルに指定するサービスコー
+ルとしてdefine_int_plevel() を用意している．このサービスコールの使用は
+次の通り
+
+ define_int_plevel  割込みハンドラ実行時の割込みマスクビットの指定
+
+【C言語API】
+  void define_int_plevel(UINT dintno, UW plevel)
+
+【パラメータ】
+  dintno    割込み番号
+  plevel    割込みレベル
+
+【機能】
+  dintno で指定した割込み番号の割込みハンドラが実行される場合の割込み
+  マスクを plevel にする．
 
 
 ３．システム依存部の機能

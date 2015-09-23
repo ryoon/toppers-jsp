@@ -8,7 +8,7 @@
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_manage.c,v 1.2 2001/09/06 12:39:51 hiro Exp $
+ *  @(#) $Id: sys_manage.c,v 1.4 2002/03/26 08:19:38 hiro Exp $
  */
 
 /*
@@ -84,7 +84,7 @@ irot_rdq(PRI tskpri)
  *  実行状態のタスクIDの参照
  */
 SYSCALL ER
-get_tid(ID* p_tskid)
+get_tid(ID *p_tskid)
 {
 	CHECK_TSKCTX_UNL();
 
@@ -98,7 +98,7 @@ get_tid(ID* p_tskid)
  *  実行状態のタスクIDの参照（非タスクコンテキスト用）
  */
 SYSCALL ER
-iget_tid(ID* p_tskid)
+iget_tid(ID *p_tskid)
 {
 	CHECK_INTCTX_UNL();
 

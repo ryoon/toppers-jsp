@@ -3,14 +3,14 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  *
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001 by Industrial Technology Institute,
+ *  Copyright (C) 2001,2002 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，Free Software Foundation によって公表されている
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -34,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: start.S,v 1.3 2001/11/02 11:13:39 imai Exp $
+ *  @(#) $Id: start.S,v 1.5 2002/04/11 11:30:20 imai Exp $
  */
 #define _MACRO_ONLY
 #include "sys_config.h"
@@ -49,7 +49,7 @@
 #endif /*  WITH_STUB  */
 #define _init_stack  STACKTOP
 
-
+#ifndef CQ_SH1_DEB
 	.section ".vector","ax"
 	.align 4
 
@@ -312,7 +312,6 @@
 	.long   _no_reg_exception
 
 
-
 /*
  *   SH1用スタートアップモジュール
  *   カーネルはアプリケーションとリンクして使用する
@@ -329,12 +328,6 @@ _start:
 	 */
 	mov.l _init_sr,r0
 	ldc   r0,sr
-	/*
-	 *  割込み／CPU例外ネストカウンタを初期化する。
-	 */
-	mov.l _intnest_k,r1
-	mov   #0x01,r0
-	mov.l r0,@r1
 	/*
 	 * 非タスクコンテストのスタックをSTACKTOPに初期化する
 	 * STACKTOPは、sys_config.hで定義
@@ -459,3 +452,5 @@ _hardware_init_k:
 	.long   _hardware_init_hook
 _software_init_hook_k:
 	.long   _software_init_hook
+
+#endif	/* CQ_SH1_DEB */

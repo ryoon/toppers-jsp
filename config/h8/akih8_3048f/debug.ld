@@ -7,11 +7,11 @@ MEMORY {
 	/* for mode 5: 0x00000 -> 0xfffff */
         vectors		: o = 0xff000, l = 0x00100	/* for debug */
 
-	/* use 128k * 3 as the main ram size.  */
+	/* use 128k as the main ram size.  */
 	ram		: o = 0x20000, l = 0x20000
 
-	/* use 128k * 3 as the main ram size.  */
-	ram4		: o = 0x40000, l = 0x40000
+	/* use 128k as the main ram size.  */
+	ram4		: o = 0x40000, l = 0x20000
 
 	}
 
@@ -64,3 +64,5 @@ SECTIONS {
 	.debug_aranges  0 : { *(.debug_aranges) }
 	.debug_pubnames 0 : { *(.debug_pubnames) }
 }
+
+PROVIDE(_memcpy = _local_memcpy);

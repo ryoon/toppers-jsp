@@ -7,12 +7,12 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -36,7 +36,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.h,v 1.1 2001/11/12 13:38:30 abe Exp $
+ *  @(#) $Id: hw_serial.h,v 1.4 2002/04/14 11:36:50 hiro Exp $
  */
 
 #ifndef _HW_SERIAL_H_
@@ -44,9 +44,12 @@
 
 /*
  *  ターゲット依存シリアルI/Oモジュール（H8用）
- *  SCI1を使用
- *  　　共通部のモジュールによって、XON/XOFFフロー制御が行わ
- *  　　れているので、信号線はTxDとRxDの2本でよい
+ *    ・ポートが 1本の場合は HWPORT1_ADDRに指定されたポートを使用し、
+ *      2本の場合は、HWPORT1_ADDRをユーザ用、HWPORT2_ADDRをコンソール
+ *      出力として使用する。
+ *      HWPORTx_ADDRは ターゲット依存の sys_config.h中で指定する。
+ *    ・共通部のモジュールによって、XON/XOFFフロー制御が行わ
+ *      れているので、信号線はTxDとRxDの2本でよい
  */
 
 #include "sys_config.h"
@@ -60,7 +63,6 @@
 
 typedef struct hardware_serial_port_descripter {
 	UW	base;	/* SCI のベースアドレス		*/
-	UW	enaix;	/* SCI の送信割込み状態の索引	*/
 } HWPORT;
 
 #endif	/* of #ifndef _MACRO_ONLY */
@@ -69,10 +71,11 @@ typedef struct hardware_serial_port_descripter {
  *  低レベルポート情報管理ブロックの初期値
  */
 
-#define NUM_PORT	1	/* サポートするシリアルポートの数 */
-#define PORT_ID1	1	/* SCI1 */
+#define PORT_ID1	1
+#define PORT_ID2	2
 
-#define HWPORT1	{ SYSTEM_SCI, 0 }
+#define HWPORT1	{ HWPORT1_ADDR	}
+#define HWPORT2	{ HWPORT2_ADDR	}
 
 #ifndef _MACRO_ONLY
 
@@ -147,22 +150,93 @@ extern void	serial_handler_out(int portid);
  *  シリアルI/Oポートの割込みハンドラ
  */
 
+#if NUM_PORT == 1
+
 Inline void
 hw_serial_handler_in()
 {
-	serial_handler_in(PORT_ID1);
+	unsigned char status;
 
-    	/* エラーフラグをクリア		*/
-	outb(H8SCI1 + H8SSR,
-	 inb(H8SCI1 + H8SSR) & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+	status = inb(SYSTEM_SCI + H8SSR);
+	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
+
+		/* エラー処理		*/
+
+	    	/* エラーフラグをクリア	*/
+		outb(SYSTEM_SCI + H8SSR, status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+		}
+
+	if (status & H8SSR_RDRF)
+		serial_handler_in(SYSTEM_PORTID);
 
 }
 
 Inline void
 hw_serial_handler_out()
 {
-	serial_handler_out(PORT_ID1);
+	serial_handler_out(SYSTEM_PORTID);
 }
+
+#elif NUM_PORT == 2	/* of #if NUM_PORT == 1 */
+
+Inline void
+hw_serial_handler_in()
+{
+	unsigned char status;
+
+	/* USER_SCI の処理 */
+
+	status = inb(USER_SCI + H8SSR);
+	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
+
+		/* エラー処理		*/
+
+	    	/* エラーフラグをクリア	*/
+		outb(USER_SCI + H8SSR, status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+		}
+
+	if (status & H8SSR_RDRF)
+		serial_handler_in(USER_PORTID);
+
+	/* SYSTEM_SCI の処理 */
+
+	status = inb(SYSTEM_SCI + H8SSR);
+	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
+
+		/* エラー処理		*/
+
+	    	/* エラーフラグをクリア	*/
+		outb(SYSTEM_SCI + H8SSR, status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+		}
+
+	if (status & H8SSR_RDRF)
+		serial_handler_in(SYSTEM_PORTID);
+
+}
+
+Inline void
+hw_serial_handler_out()
+{
+	unsigned char status;
+
+	/* USER SCI の処理 */
+
+	status = inb(USER_SCI + H8SSR);
+	if (status & H8SSR_TDRE)
+		serial_handler_out(USER_PORTID);
+
+	/* SYSTEM SCI の処理 */
+
+	status = inb(SYSTEM_SCI + H8SSR);
+	if (status & H8SSR_TDRE)
+		serial_handler_out(SYSTEM_PORTID);
+}
+
+#else	/* of #if NUM_PORT == 1 */
+
+#error NUM_PORT <= 2
+
+#endif	/* of #if NUM_PORT == 1 */
 
 /*
  *  文字を受信したか？

@@ -7,12 +7,12 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -36,7 +36,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_timer.h,v 1.1 2001/11/12 13:38:30 abe Exp $
+ *  @(#) $Id: hw_timer.h,v 1.4 2002/04/14 11:36:50 hiro Exp $
  */
 
 #ifndef _HW_TIMER_H_
@@ -44,7 +44,6 @@
 
 /*
  *  CPU依存タイマモジュール（H8用）
- *  ITU0を使用
  */
 
 #include "sys_defs.h"
@@ -93,11 +92,11 @@ Inline void
 hw_timer_int_clear(void)
 {
     /* GRAコンペアマッチの割り込み要求フラグをクリア */
-    /*outb(SYSTEM_ITU + H8TSR, inb(SYSTEM_ITU + H8TSR) & ~H8TSR_IMIFA);*/
-    UW addr = SYSTEM_ITU + H8TSR;
+    /*outb(SYSTEM_TIMER_IFR, inb(SYSTEM_TIMER_IFR) & ~SYSTEM_TIMER_IF);*/
+    UW addr = SYSTEM_TIMER_IFR;
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(H8TSR_IMIFA_BIT));
+	BITCLR(_TO_STRING(SYSTEM_TIMER_IF_BIT));
 #undef  BITCLR
 }
 
@@ -110,36 +109,36 @@ hw_timer_int_clear(void)
 Inline void
 hw_timer_initialize()
 {
-    UW addr = H8ITU_TSTR;
+    UW addr = SYSTEM_TIMER_TSTR;
 
     /* タイマ停止 */
-    /*outb(H8ITU_TSTR, inb(H8ITU_TSTR) & ~SYSTEM_STR);*/
+    /*outb(SYSTEM_TIMER_TSTR, inb(SYSTEM_TIMER_TSTR) & ~SYSTEM_TIMER_STR);*/
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(SYSTEM_STR_BIT));
+	BITCLR(_TO_STRING(SYSTEM_TIMER_STR_BIT));
 #undef  BITCLR
 
     /*  GRAコンペアマッチでカウンタをクリア、分周比設定 */
-    outb(SYSTEM_ITU + H8TCR, H8TCR_CCLR | H8TCR_CKEG | H8TCR_TPSC);
+    outb(SYSTEM_TIMER_TCR, SYSTEM_TIMER_TCR_BIT);
 
     /*  GRAコンペアマッチによる割込み要求を許可 */
-    outb(SYSTEM_ITU + H8TIER, SYSTEM_ITU_IE);
+    outb(SYSTEM_TIMER_IER, SYSTEM_TIMER_IE);
 
     /*  GRAコンペアマッチによる端子出力禁止 */
-    outb(SYSTEM_ITU + H8TIOR, H8TIOR_IOB | H8TIOR_IOA);
+    outb(SYSTEM_TIMER_TIOR, SYSTEM_TIMER_TIOR_BIT);
 
     /*  GRAレジスタ設定（カウンタ目標値）  	*/
-    outw(SYSTEM_ITU + SYSTEM_GR, CLOCK_PER_TICK);
+    outw(SYSTEM_TIMER_GR, CLOCK_PER_TICK);
 
-    outw(SYSTEM_ITU + H8TCNT, 0);	/* カウンタをクリア	*/
+    outw(SYSTEM_TIMER_CNT, 0);	/* カウンタをクリア	*/
 
     hw_timer_int_clear();		/*  割込み要求をクリア  */
 
     /* タイマスタート */
-    /*outb(H8ITU_TSTR, inb(H8ITU_TSTR) | SYSTEM_STR);*/
+    /*outb(SYSTEM_TIMER_TSTR, inb(SYSTEM_TIMER_TSTR) | SYSTEM_TIMER_STR);*/
 
 #define BITSET(bit)	Asm("bset #" bit ", @%0" : : "r"(addr))
-	BITSET(_TO_STRING(SYSTEM_STR_BIT));
+	BITSET(_TO_STRING(SYSTEM_TIMER_STR_BIT));
 #undef  BITSET
 }
 
@@ -150,13 +149,13 @@ hw_timer_initialize()
 Inline void
 hw_timer_terminate()
 {
-    UW addr = H8ITU_TSTR;
+    UW addr = SYSTEM_TIMER_TSTR;
 
     /* タイマ停止 */
-    /*outb(H8ITU_TSTR, inb(H8ITU_TSTR) & ~SYSTEM_STR);*/
+    /*outb(SYSTEM_TIMER_TSTR, inb(SYSTEM_TIMER_TSTR) & ~SYSTEM_TIMER_STR);*/
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(SYSTEM_STR_BIT));
+	BITCLR(_TO_STRING(SYSTEM_TIMER_STR_BIT));
 #undef  BITCLR
 
     hw_timer_int_clear();		/* 割り込み要求をクリア */
@@ -171,7 +170,7 @@ hw_timer_terminate()
 Inline CLOCK
 hw_timer_get_current(void)
 {
-	return(CLOCK_PER_TICK - (CLOCK)(inw(SYSTEM_ITU + H8TCNT)));
+	return(CLOCK_PER_TICK - (CLOCK)(inw(SYSTEM_TIMER_CNT)));
 }
 
 /*
@@ -181,7 +180,7 @@ hw_timer_get_current(void)
 Inline BOOL
 hw_timer_fetch_interrupt(void)
 {
-	return(inb(SYSTEM_ITU + H8TSR) & H8TSR_IMIFA);
+	return(inb(SYSTEM_TIMER_IFR) & SYSTEM_TIMER_IF);
 }
 
 #endif /* _HW_TIMER_H_ */

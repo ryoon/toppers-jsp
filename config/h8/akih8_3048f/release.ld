@@ -5,7 +5,7 @@ ENTRY("_start")
 
 MEMORY {
 	/* for mode 5: 0x00000 -> 0xfffff */
-        vectors		: o = 0x00000, l = 0xff100
+        vectors		: o = 0x00000, l = 0x00100
 
 	/* use 128k - 100 as the main ROM size.  */
 	rom		: o = 0x00100, l = 0x1ff00
@@ -64,3 +64,5 @@ SECTIONS {
 	.debug_aranges  0 : { *(.debug_aranges) }
 	.debug_pubnames 0 : { *(.debug_pubnames) }
 }
+
+PROVIDE(_memcpy = _local_memcpy);

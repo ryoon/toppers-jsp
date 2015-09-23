@@ -1,7 +1,7 @@
 VERSION 5.00
 Object = "{194B359F-594E-4EE4-A804-84723D1CF1C4}#1.0#0"; "ATLDevice.dll"
 Begin VB.Form Form1 
-   BorderStyle     =   3  'М┼Тш└▐▓▒█╕▐
+   BorderStyle     =   3  '╕╟─ъО└О▐О▓О▒О█О╕О▐
    Caption         =   "Form1"
    ClientHeight    =   1140
    ClientLeft      =   45
@@ -13,7 +13,7 @@ Begin VB.Form Form1
    ScaleHeight     =   1140
    ScaleWidth      =   3045
    ShowInTaskbar   =   0   'False
-   StartUpPosition =   3  'Windows В╠К∙ТшТl
+   StartUpPosition =   3  'Windows д╬┤√─ъ├═
    Begin ATLDEVICELibCtl.DeviceControl DeviceControl1 
       Height          =   375
       Left            =   2400
@@ -24,7 +24,7 @@ Begin VB.Form Form1
       Width           =   495
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'ТЖЙЫС╡Вж
+      Alignment       =   2  '├ц▒√┬╖ди
       Caption         =   "Label1"
       Height          =   255
       Index           =   4
@@ -34,7 +34,7 @@ Begin VB.Form Form1
       Width           =   975
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'ТЖЙЫС╡Вж
+      Alignment       =   2  '├ц▒√┬╖ди
       Caption         =   "Label1"
       Height          =   255
       Index           =   3
@@ -44,7 +44,7 @@ Begin VB.Form Form1
       Width           =   975
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'ТЖЙЫС╡Вж
+      Alignment       =   2  '├ц▒√┬╖ди
       Caption         =   "Label1"
       Height          =   255
       Index           =   2
@@ -54,7 +54,7 @@ Begin VB.Form Form1
       Width           =   975
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'ТЖЙЫС╡Вж
+      Alignment       =   2  '├ц▒√┬╖ди
       Caption         =   "Label1"
       Height          =   255
       Index           =   1
@@ -64,7 +64,7 @@ Begin VB.Form Form1
       Width           =   975
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'ТЖЙЫС╡Вж
+      Alignment       =   2  '├ц▒√┬╖ди
       Caption         =   "Label1"
       Height          =   255
       Index           =   0
@@ -81,6 +81,43 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
+'
+'  TOPPERS/JSP Kernel
+'      Toyohashi Open Platform for Embedded Real-Time Systems/
+'      Just Standard Profile Kernel
+' 
+'  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+'                              Toyohashi Univ. of Technology, JAPAN
+' 
+'  ╛х╡н├°║ю╕в╝╘д╧бдFree Software Foundation д╦дшд├д╞╕°╔╜д╡дьд╞ддды 
+'  GNU General Public License д╬ Version 2 д╦╡н╜╥д╡дьд╞ддды╛Є╖ядлбд░╩
+'  ▓╝д╬(1)б┴(4)д╬╛Є╖ядЄ╦■д┐д╣╛ь╣чд╦╕┬дъбд╦▄е╜е╒е╚ежезевб╩╦▄е╜е╒е╚ежез
+'  евдЄ▓■╩╤д╖д┐дтд╬дЄ┤▐дрбе░╩▓╝╞▒д╕б╦дЄ╗╚═╤бж╩г└╜бж▓■╩╤бж║╞╟█╔█б╩░╩▓╝бд
+'  ═°═╤д╚╕╞д╓б╦д╣дыд│д╚дЄ╠╡╜■д╟╡Ў┬·д╣дыбе
+'  (1) ╦▄е╜е╒е╚ежезевдЄе╜б╝е╣е│б╝е╔д╬╖┴д╟═°═╤д╣ды╛ь╣чд╦д╧бд╛х╡нд╬├°║ю
+'      ╕в╔╜╝ибдд│д╬═°═╤╛Є╖ядкдшд╙▓╝╡нд╬╠╡╩▌╛┌╡м─ъдмбдд╜д╬д▐д▐д╬╖┴д╟е╜б╝
+'      е╣е│б╝е╔├цд╦┤▐д▐дьд╞дддыд│д╚бе
+'  (2) ╦▄е╜е╒е╚ежезевдЄ║╞═°═╤▓─╟╜д╩е╨еде╩еъе│б╝е╔б╩еъеэе▒б╝е┐е╓еыеке╓
+'      е╕езепе╚е╒ебедеыдфещеде╓ещеъд╩д╔б╦д╬╖┴д╟═°═╤д╣ды╛ь╣чд╦д╧бд═°═╤
+'      д╦╚╝дже╔енехесеєе╚б╩═°═╤╝╘е▐е╦ехевеыд╩д╔б╦д╦бд╛х╡нд╬├°║ю╕в╔╜╝ибд
+'      д│д╬═°═╤╛Є╖ядкдшд╙▓╝╡нд╬╠╡╩▌╛┌╡м─ъдЄ╖╟║▄д╣дыд│д╚бе
+'  (3) ╦▄е╜е╒е╚ежезевдЄ║╞═°═╤╔╘▓─╟╜д╩е╨еде╩еъе│б╝е╔д╬╖┴д▐д┐д╧╡б┤яд╦┴╚
+'      д▀╣■дєд└╖┴д╟═°═╤д╣ды╛ь╣чд╦д╧бд╝бд╬ддд║дьдлд╬╛Є╖ядЄ╦■д┐д╣д│д╚бе
+'    (a) ═°═╤д╦╚╝дже╔енехесеєе╚б╩═°═╤╝╘е▐е╦ехевеыд╩д╔б╦д╦бд╛х╡нд╬├°║ю
+'        ╕в╔╜╝ибдд│д╬═°═╤╛Є╖ядкдшд╙▓╝╡нд╬╠╡╩▌╛┌╡м─ъдЄ╖╟║▄д╣дыд│д╚бе
+'    (b) ═°═╤д╬╖┴┬╓дЄбд╩╠д╦─ъдсды╩¤╦бд╦дшд├д╞бд╛х╡н├°║ю╕в╝╘д╦╩є╣Ёд╣ды
+'        д│д╚бе
+'  (4) ╦▄е╜е╒е╚ежезевд╬═°═╤д╦дшдъ─╛└▄┼кд▐д┐д╧┤╓└▄┼кд╦└╕д╕дыдддлд╩ды┬╗
+'      │▓длдщдтбд╛х╡н├°║ю╕в╝╘дЄ╠╚└╒д╣дыд│д╚бе
+' 
+'  ╦▄е╜е╒е╚ежезевд╧бд╠╡╩▌╛┌д╟─є╢бд╡дьд╞дддыдтд╬д╟двдыбе╛х╡н├°║ю╕в╝╘д╧бд
+'  ╦▄е╜е╒е╚ежезевд╦┤╪д╖д╞бдд╜д╬┼м═╤▓─╟╜└ндт┤▐дсд╞бддддлд╩ды╩▌╛┌дт╣╘дя
+'  д╩ддбед▐д┐бд╦▄е╜е╒е╚ежезевд╬═°═╤д╦дшдъ─╛└▄┼кд▐д┐д╧┤╓└▄┼кд╦└╕д╕д┐дд
+'  длд╩ды┬╗│▓д╦┤╪д╖д╞дтбдд╜д╬└╒╟ддЄ╔щдяд╩ддбе
+'
+'  @(#) $Id: form1.frm,v 1.3 2002/04/10 11:26:20 takayuki Exp $
+'
+
 Private Sub SetLabelString(index As Integer, letter As String, color As ColorConstants)
     Label1(index) = letter
     Label1(index).ForeColor = color
@@ -90,7 +127,7 @@ Private Sub DeviceControl1_OnKernelExit()
     Dim i As Integer
     
     For i = 0 To 4
-        SetLabelString i, "ПIЧ╣", vbBlue
+        SetLabelString i, "╜к╬╗", vbBlue
     Next i
     
 End Sub
@@ -99,7 +136,7 @@ Private Sub DeviceControl1_OnKernelStart()
     Dim i As Integer
     
     For i = 0 To 4
-        SetLabelString i, "ОцУ╛С╥В┐", vbBlack
+        SetLabelString i, "╝ш╞└┬╘д┴", vbBlack
     Next i
 End Sub
 
@@ -111,11 +148,11 @@ Private Sub DeviceControl1_OnWrite(ByVal address As Long, ByVal sz As Long)
         
     Select Case (work And &HF0)
     Case &H10
-        SetLabelString i, "ОцУ╛С╥В┐", vbBlack
+        SetLabelString i, "╝ш╞└┬╘д┴", vbBlack
     Case &H20
-        SetLabelString i, "РHОЦ", vbRed
+        SetLabelString i, "┐й╗Ў", vbRed
     Case &H40
-        SetLabelString i, "ЛxМe", vbBlack
+        SetLabelString i, "╡┘╖╞", vbBlack
     End Select
 
 End Sub
@@ -124,7 +161,7 @@ Private Sub Form_Load()
     Dim i As Integer
     
     For i = 0 To 4
-        SetLabelString i, "ПIЧ╣", vbBlue
+        SetLabelString i, "╜к╬╗", vbBlue
     Next i
     
     DeviceControl1.Connect

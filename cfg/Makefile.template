@@ -3,12 +3,12 @@
 #      Toyohashi Open Platform for Embedded Real-Time Systems/
 #      Just Standard Profile Kernel
 # 
-#  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+#  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
 # 
 #  上記著作権者は，Free Software Foundation によって公表されている 
 #  GNU General Public License の Version 2 に記述されている条件か，以
-#  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+#  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
 #  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
 #  利用と呼ぶ）することを無償で許諾する．
 #  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,8 +32,8 @@
 #  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 #  かなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile.template,v 1.4 2001/11/12 13:58:44 hiro Exp $
-#
+#  @(#) $Id: Makefile.template,v 1.8 2002/04/10 12:25:12 takayuki Exp $
+# 
 
 #
 #  ソースファイルのディレクトリの定義
@@ -94,19 +94,22 @@ endif
 #  オブジェクトファイル名，ヘッダファイル名の定義
 #
 
-COMMONOBS = garbage.o message.o exception.o
-COMMONHDR = garbage.h message.h exception.h
+####  ####
 
-CFGOBS    = domain.o manager.o id.o multistream.o value.o staticapi.o \
-		serializer.o parser.o configurator.o
-CFGHDR    = domain.h manager.h id.h multistream.h value.h staticapi.h \
-		serializer.h parser.h
-CFGSRC    = jsp/toppers.cpp
+COMMONOBS = manager.o directorymap.o except.o garbage.o component.o
+COMMONHDR = directorymap.h except.h garbage.h component.h
+
+CFGOBS    = parser.o mpstrstream.o
+CFGHDR    = parser.h mpstrstream.h
+CFGSRC    = jsp/jsp_checkscript.cpp jsp/jsp_orti.cpp jsp/jsp_parser.cpp \
+			jsp/jsp_staticapi.cpp jsp/jsp_instanciate.cpp
 
 CHK       = $(TARGET_PREFIX)chk
-CHKOBS    = filecontainer.o chk-top.o fc_bfd.o
+CHKOBS    = fc_bfd.o filecontainer.o
 CHKHDR    = filecontainer.h
-CHKSRC    = jsp/chk_jsp.cpp
+CHKSRC    = jsp/jsp_check.cpp
+
+INCLUDE   := $(INCLUDE) -I./jsp
 
 ##############################################################################
 
@@ -119,7 +122,7 @@ realclean: clean
 	rm -f cfg chk *-chk
 
 cfg: $(CFGSRC) $(CFGOBS) $(COMMONOBS) Makefile.template
-	$(CC) $(CFLAGS) -o cfg $(CFGSRC) $(CFGOBS) $(COMMONOBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o cfg $(CFGSRC) $(CFGOBS) $(COMMONOBS)
 
 $(CHK): $(CHKSRC) $(CHKOBS) $(COMMONOBS) $(LIBBFD) $(LIBIBERTY) \
 		Makefile.template
@@ -130,7 +133,7 @@ $(CHKOBS): $(CHKHDR)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $(@:.o=.cpp)
 
 $(CFGOBS): $(CFGHDR)
-	$(CC) $(CFLAGS) -c $(@:.o=.cpp)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $(@:.o=.cpp)
 
 $(COMMONOBS): $(COMMONHDR)
-	$(CC) $(CFLAGS) -c $(@:.o=.cpp)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $(@:.o=.cpp)

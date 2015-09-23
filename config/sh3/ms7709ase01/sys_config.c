@@ -8,7 +8,7 @@
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.9 2001/11/09 08:35:55 honda Exp $
+ *  @(#) $Id: sys_config.c,v 1.11 2002/04/05 07:43:51 honda Exp $
  */
 
 
@@ -151,12 +151,12 @@ char
 partner_syscall(int callno, char put_char)
 {
     char get_char = 0x00;
-    Asm("mov %1, r0;
-         mov %2, r2;
-         .global _sysc_et;
-         _sysc_et:;
-         nop;
-         mov r0,%0"
+    Asm("mov %1, r0;\n"
+        "mov %2, r2;\n"
+        ".global _sysc_et;\n"
+        "_sysc_et:;\n"
+        "nop;\n"
+        "mov r0,%0\n"
         : "=r"(get_char)
         : "r"(callno),"r"(put_char)
         : "r0","r2");

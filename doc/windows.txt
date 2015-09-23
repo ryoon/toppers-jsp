@@ -2,19 +2,19 @@
         ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
     （Windows シミュレーション環境，タスク−スレッド対応モデル）
 
-        （Release 1.2 対応，最終更新: 13-Nov-2001）
+        （Release 1.3 対応，最終更新: 11-Apr-2001）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
  上記著作権者は，Free Software Foundation によって公表されている 
  GNU General Public License の Version 2 に記述されている条件か，以
- 下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ 下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  利用と呼ぶ）することを無償で許諾する．
  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -38,7 +38,7 @@
  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  かなる損害に関しても，その責任を負わない．
 
- @(#) $Id: windows.txt,v 1.12 2001/11/12 16:46:32 takayuki Exp $
+ @(#) $Id: windows.txt,v 1.14 2002/04/10 12:03:10 takayuki Exp $
 ------------------------------------------------------------------------
 
 このドキュメントでは，TOPPERS/JSP Windowsシミュレーション環境部分につ
@@ -54,7 +54,7 @@
 
 Windowsシミュレーション環境の実行環境としては，次のものを想定している．
 
-    ・Microsoft Windows 95/98/NT4/2000/XP Pro
+    ・Microsoft Windows 95/98/NT4/2000/XP Pro (x86)
         #一部の機能はMicrosoft Windows NT4/2000/XPのみに対応
         #一部の機能はCOM(ComponentObjectModel)実行環境でのみ利用可能
         #Windows XP Home Editionでの検証は行っていない
@@ -63,9 +63,10 @@ Windowsシミュレーション環境の実行環境としては，次のものを想定している．
     ・Microsoft Visual C++ 6.0
     ・cygwin 1.1.0 + gcc 2.95.2 (詳しい説明は割愛)
 
-また付属する追加機能を利用するためには次のものが必要になる場合がある．
+また付属する追加機能を利用するために、次のものが必要になる場合がある．
     ・Microsoft VisualBASIC 6.0
     ・COM実行環境 (Windows 98/NT4/2000 または Windows95 + DCOM for Win95)
+    ・Windows Scription Host 実行環境 (Windows98以降に標準搭載)
     ・Active Template Library 3.0 (Visual C++ 6.0に含まれる)
     ・Microsoft Foundation Class Library 6.0 (Visual C++ 6.0に含まれる)
 
@@ -77,8 +78,8 @@ TOPPERS/JSP Windowsシミュレーション環境の開発は次の環境で行われている．
     ・Microsoft Visual Studio 6.0 Enterprise
         + Microsoft Visual Studio 6.0 ServicePack5
         + Microsoft Visual C++ Processor Pack
-    ・Microsoft Visual Studio .NET beta 2 (.NET Framework SDK)
-
+    ・Microsoft Visual Studio .NET beta 2 (.NET Framework SP1)
+       #開発には用いていないが、同じ環境にインストールされている
 
 --------------------------
 1.2 サポートする機能の概要
@@ -373,27 +374,47 @@ cygwin + gcc
     NEWLIB (標準Cライブラリ 1.8.1にて確認)
     #詳細は割愛
 
-----------------------------------------
-4.1.1 Microsoft Visual C++を利用する場合
-----------------------------------------
+-----------------------------------------------
+4.1.1 Microsoft Visual C++を利用する場合 (自動)
+-----------------------------------------------
+
+開発を行っている環境がWindows Scripting Hostの実行環境を持つ場合、自動生
+成スクリプトが利用できる。
+
+注) 自動生成スクリプトは、各サブスクリプトを起動するために、
+WScript.WshShell.Runメソッドを利用している。一部のセキュリティソフトウェ
+アは上記メソッドを使用するスクリプトを悪質と判断し、実行をブロックする場
+合がある。
+
+自動生成スクリプトは、 jsp/WINDOWS/configure.vbs という名前で格納されて
+いる。このスクリプトを実行すると、コンフィギュレータの生成およびデバイス
+エミュレータの生成を行い、Visual C++を起動した後サンプルプロジェクトを開
+く。
+
+次のファイルを実行することで、個々の部品ごとに生成することも可能である。
+	コンフィギュレータ/構成チェッカ : jsp/cfg/vc_project/make.vbs
+	デバイスエミュレータ			: jsp/windev/make.vbs
+
+-----------------------------------------------
+4.1.2 Microsoft Visual C++を利用する場合 (手動)
+-----------------------------------------------
 
 まずコンフィギュレータを生成する．コンフィギュレータは/cfg/VC_Project/内
 にあるMicrosoft Visual C++プロジェクトファイルを開くことにより，諸設定を
 せずとも即ビルドが可能な状態になる．標準では，cfg.exeはjsp/cfg/cfg.exeと
 して作成されている．
 
-このとき、同時にカーネルチェッカも生成する。カーネルチェッカをビルドするには、
-メニューから「プロジェクト」「アクティブプロジェクトの設定」「checker」を選
-択し、ビルドメニューからビルドを選択する。カーネルチェッカは "Windows 
-ImageHlp API"を使用しているため、生成時にはライブラリIMAGEHLP.LIBが必要にな
-る。プロジェクトには標準的なパス(c:\Program Files\Microsoft Visual Studio\
-VC98\Lib\IMAGEHLP.LIB)が設定されているが、この場所にライブラリがない場合には、
-FileViewよりIMAGEHLP.LIBを削除した後、「ファイルをプロジェクトへ追加」を選択
-し、正しいIMAGEHLP.LIBをプロジェクトへ追加する。正常にビルドが終了すると、標
-準では、実行ファイルはjsp/cfg/chk.exeとして作成されている。
+このとき、同時にカーネルチェッカも生成する。カーネルチェッカをビルドする
+には、メニューから「プロジェクト」「アクティブプロジェクトの設定」「
+checker」を選択し、ビルドメニューからビルドを選択する。カーネルチェッカ
+は "Windows ImageHlp API"を使用しているため、生成時にはライブラリ
+IMAGEHLP.LIBが必要になる。サンプルプロジェクトファイルの設定には、プログ
+ラムが使用するライブラリモジュールとしてIMAGEHLP.LIBが追加されている。正
+常にビルドが終了すると、標準では、実行ファイルはjsp/cfg/chk.exeとして作
+成されている。
 
 TOPPERS/JSP Windowsシミュレーション環境の構築はMicrosoft Visual C++のプ
-ロジェクト ワークスペースを利用する．/config/WINDOWS/VC_Project内にある
+ロジェクト ワークスペースを利用する．/config/WINDOWS/vc_project内にある
 プロジェクトファイルおよびワークスペースを開くことで，構築に必要な設定を
 全て終えた状態で起動する．
 
@@ -409,17 +430,24 @@ hとkernel_cfg.cを作成させる必要がある．以下に設定法を示す．
           設定を選択する．
       2.  一般から「常にカスタムビルドステップを使用」を有効にする
       3.  カスタムビルドタブを選択肢，コマンド部に次のコマンドを打つ
-            cd $(InputDir)
-            cl /P /EP /I "../kernel" /I "../include" \
-              /I "../config/windows" $(InputName).cfg
-            ../cfg/cfg.exe < $(InputName).i
-           
+			---8<--- ここから ---8<---
+			cd $(InputDir)
+			cl /E /I "../kernel" /I "../include" /I "../config/windows" \
+				$(InputName).cfg | ..\cfg\cfg.exe -s -c -v -obj -lj -cpu windows
+			---8<--- ここまで ---8<---
            #行末に\のある行は行末の\を削除し、後続する行を続けて入力する
-           
+
       4.  出力部に次のファイルを打つ
             kernel_cfg.c
             kernel_id.h
-  
+      5.  メニューから「プロジェクト」「設定」を選択し、ダイアログ内のタブ
+          「ビルド後の処理」を選択する
+      6.  ビルド後の処理コマンドとして、次のコマンドを入力する。
+			---8<--- ここから ---8<---
+			cd ..
+			..\cfg\chk.exe -m toppers.exe -cs windows.chk -obj -v -lj
+			---8<--- ここまで ---8<---
+
   (b) コマンドラインから直接打つ場合
       1. Visual C++をインストールした場所のBinフォルダにある
           VCVARS32.BATを実行する
@@ -429,9 +457,10 @@ hとkernel_cfg.cを作成させる必要がある．以下に設定法を示す．
            
       2. コンフィギュレーションファイルのあるディレクトリで
          次のコマンドを入力する
-           cl /E /EP /I "../kernel" /I "../include" \
-             /I "../config/windows" <ファイル名> | ../cfg/cfg.exe
-
+			---8<--- ここから ---8<---
+			cl /E /I "../kernel" /I "../include" /I "../config/windows" \
+				<ファイル名> | ..\cfg\cfg.exe -s -c -v -obj -lj -cpu windows
+			---8<--- ここまで ---8<---
            #行末に\のある行は行末の\を削除し、後続する行を続けて入力する
 
 kernel_id.hとkernel_cfg.cが生成されたら，これらのファイルをプロジェクトに追
@@ -441,8 +470,6 @@ kernel_id.hとkernel_cfg.cが生成されたら，これらのファイルをプロジェクトに追
 ようになってる．ユーザプログラムはSource FilesとHeader Filesに格納される．サ
 ンプル以外のプログラムを利用される場合，この2つのフォルダに格納されているフ
 ァイルをプロジェクトから削除してから，新しいプログラムを追加する必要がある．
-
-
 
 
 --------------------------
@@ -767,12 +794,14 @@ sample1.cを改造して、現在動いているタスク番号を表示するようなデバイスを
   |       +- vwindows.h         : windows.h衝突回避用ヘッダファイル
   |
   +- [WINDOWS]
+      +- configure.vbs          : 自動生成スクリプト
       +- kernel_cfg.c           : コンフィギュレータ生成ファイル
       +- kernel_id.h            : 自動割当ID定義ファイル
       +- sample1.c              : サンプルプログラム
       +- sample1.h              : サンプルプログラム ヘッダー
       +- sample2.c              : サンプルプログラム2 哲学者問題
       +- sample2.h              : サンプルプログラム ヘッダー
+      +- windows.chk            : Windows用チェックスクリプトファイル
       +- [vc_project]
           +- Toppers.dsp        : Visual C++ プロジェクトファイル
           +- Toppers.dsw        : Visual C++ ワークスペース
@@ -783,6 +812,7 @@ sample1.cを改造して、現在動いているタスク番号を表示するようなデバイスを
 ---------------------------------------------------------
 
 [windev]
+  +- make.vbs                   : 自動生成スクリプト
   +- [devicemanager]            : デバイスマネージャ(COM)
   |   +- device.cpp             : デバイスオブジェクト
   |   +- device.h               : デバイスオブジェクト定義ファイル
@@ -837,7 +867,20 @@ sample1.cを改造して、現在動いているタスク番号を表示するようなデバイスを
 ------------------
 ７．バージョン履歴
 ------------------
-バージョンは3桁から成り、前2桁がJSPバージョンに相当し、最後はバグフィックスの回数を意味する。
+
+バージョンは3桁から成り、前2桁がJSPバージョンに相当し、最後はバグフィッ
+クスの回数を意味する。
+
+	2002年 4月 6日  Release 1.3
+		・Release 1.3に向けたさまざま調整
+			- WSH自動生成スクリプトの導入
+			- 新規コンフィギュレータへの対応
+			- コンフィギュレーションチェッカをデフォルトで使用するよう修正
+			- このドキュメントの修正
+
+	2001年11月15日  Release 1.2
+		・Release1.2をリリース
+			- 内部と外部のバージョンを合わせるため、rel 1.2をスキップ
 
     2001年11月12日  Release 1.1.6
         ・Release1.2に向けたさまざまな調整

@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.4 2001/10/30 11:10:44 hiro Exp $
+ *  @(#) $Id: sample1.c,v 1.9 2002/04/14 15:24:19 hiro Exp $
  */
 
 /* 
@@ -106,15 +106,16 @@ char message[3];
 /*
  *  ループ回数
  */
-int	task_loop;		/* タスク内でのループ回数 */
-int	tex_loop;		/* 例外処理ルーチン内でのループ回数 */
+UW	task_loop;		/* タスク内でのループ回数 */
+UW	tex_loop;		/* 例外処理ルーチン内でのループ回数 */
 
 /*
  *  並行実行されるタスク
  */
 void task(VP_INT exinf)
 {
-	INT	i, n = 0;
+	volatile UW	i;
+	INT	n = 0;
 	INT	tskno = (INT) exinf;
 	char	*graph[] = { "|", "  +", "    *" };
 	char	c;
@@ -173,7 +174,7 @@ void task(VP_INT exinf)
  */
 void tex_routine(TEXPTN texptn, VP_INT exinf)
 {
-	INT	i;
+	volatile UW	i;
 	INT	tskno = (INT) exinf;
 
 	syslog(LOG_NOTICE, "task%d receives exception 0x%04x. ",
@@ -189,6 +190,8 @@ void tex_routine(TEXPTN texptn, VP_INT exinf)
 /*
  *  CPU例外ハンドラ
  */
+#ifdef CPUEXC1
+
 void
 cpuexc_handler(VP p_excinf)
 {
@@ -221,6 +224,8 @@ cpuexc_handler(VP p_excinf)
 	}
 }
 
+#endif /* CPUEXC1 */
+
 /*
  *  周期ハンドラ
  *
@@ -241,7 +246,8 @@ void main_task(VP_INT exinf)
 {
 	char	buf[1];
 	ID	tskid = TASK1;
-	INT	i, tskno = 1;
+	volatile UW	i;
+	INT	tskno = 1;
 	ER_UINT	ercd;	
 	PRI	tskpri;
 	SYSTIM	stime1, stime2;

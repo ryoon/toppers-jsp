@@ -7,12 +7,12 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -36,7 +36,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h,v 1.1 2001/11/12 13:38:30 abe Exp $
+ *  @(#) $Id: sys_config.h,v 1.2 2002/04/10 10:40:53 honda Exp $
  */
 
 #ifndef _SYS_CONFIG_H_
@@ -57,32 +57,11 @@
 #define	SUPPORT_VXGET_TIM
 
 /*
- *  JSPカーネル動作時のメモリマップ (RAM デバッグ時)
- *      00020000 - 0003ffff     コード領域、データ領域(384KB)
- *               - 00080000     タスク独立部用スタック
- *               - 00080000     メモリ終了
- *
- */
-
-/*
  *   スタック領域の定義
  */
 
 #define STACKTOP    	0x000fff10		/* タスク独立部用スタックの初期値 */
 #define str_STACKTOP	_TO_STRING(STACKTOP)
- 
-/*
- *  シリアル割り込みが入力/出力で異なるかどうかの定義
- */
-
-#define SEPARATE_SIO_INT
-
-/*
- *  システムタスクに関する定義
- */
-
-#define	CONSOLE_PORTID	1	/* コンソール用に用いるシリアルポート番号 */
-#define	LOGTASK_PORTID	1	/* システムログを出力するシリアルポート番号 */
 
 /*
  *  システムタスクが使用するライブラリに関する定義
@@ -114,26 +93,33 @@ extern void	sys_exit(void);
  *  とを想定している．
  */
 
-extern void sys_putc(char c);
+extern void cpu_putc(char c);
+
+Inline void
+sys_putc(char c)
+{
+	cpu_putc(c);
+	};
 
 #endif /* _MACRO_ONLY */
 
 /*
- *  (1) CPU のクロック周波数
- *  (2) SCI の設定
- *  (3) ITU の設定
- *  (4) 外部アドレス空間制御
+ *  (1) シリアルポートの設定
+ *  (2) タイマーの設定
+ *  (3) 外部アドレス空間制御
+ */
+ 
+/*
+ *  シリアル割り込みが入力/出力で異なるかどうかの定義
  */
 
-#ifdef CONFIG_16MHz
-
-#define CPU_CLOCK	16000000		/* MHz */
-
-#endif	/* of #ifdef CONFIG_16MHz */
+#define SEPARATE_SIO_INT
 
 /*
- *  SCI の設定
+ *  サポートするシリアルディバイスの数、最大 2
  */
+
+#define NUM_PORT	2
 
 #define SYSTEM_SCI		H8SCI1
 
@@ -142,35 +128,76 @@ extern void sys_putc(char c);
 
 #define BAUD_RATE		9600			/* bps */
 
-#define INHNO_SERIAL_IN		IRQ_RXI1
-#define INHNO_SERIAL_OUT	IRQ_TXI1
-
 #define H8SMR_CKS		(H8SMR_CKS1|H8SMR_CKS0)	/* clock / 8 */
 
 #define H8BRR_RATE		((UB)((CPU_CLOCK/(32*(BAUD_RATE)))-1))
 #define SCI_SETUP_COUNT		((CPU_CLOCK)/(BAUD_RATE)/5)
 
+#define	CONSOLE_PORTID		SYSTEM_PORTID	/* コンソールに用いるシリアルポート番号     */
+#define	LOGTASK_PORTID		SYSTEM_PORTID	/* システムログを出力するシリアルポート番号 */
+
+#if NUM_PORT == 1
+
+#define	SYSTEM_PORTID		PORT_ID1
+
+#define HWPORT1_ADDR		SYSTEM_SCI
+
+#define INHNO_SERIAL_ERROR	IRQ_ERI1
+#define INHNO_SERIAL_IN		IRQ_RXI1
+#define INHNO_SERIAL_OUT	IRQ_TXI1
+
+#elif NUM_PORT == 2	/* of #if NUM_PORT == 1 */
+
+#define USER_SCI		H8SCI0
+
+#define USER_SCI_IPR		H8IPRB
+#define USER_SCI_IP_BIT		H8IPR_SCI0_BIT
+
+#define	USER_PORTID		PORT_ID1
+#define	SYSTEM_PORTID		PORT_ID2
+
+#define HWPORT1_ADDR		USER_SCI
+#define HWPORT2_ADDR		SYSTEM_SCI
+
+#define INHNO_SERIAL_ERROR	IRQ_ERI0
+#define INHNO_SERIAL_IN		IRQ_RXI0
+#define INHNO_SERIAL_OUT	IRQ_TXI0
+
+#define INHNO_SERIAL_ERROR2	IRQ_ERI1
+#define INHNO_SERIAL_IN2	IRQ_RXI1
+#define INHNO_SERIAL_OUT2	IRQ_TXI1
+
+#else	/* of #if NUM_PORT == 1 */
+
+#error NUM_PORT <= 2
+
+#endif	/* of #if NUM_PORT == 1 */
+
 /*
- *  ITU の設定
+ *  タイマの設定
  */
 
-#define SYSTEM_ITU		H8ITU0
-#define SYSTEM_STR		H8TSTR_STR0
-#define SYSTEM_STR_BIT		H8TSTR_STR0_BIT
-#define SYSTEM_GR		H8GRA
-#define SYSTEM_ITU_IE		H8TIER_IMIEA		/* interrupt mask */
-#define SYSTEM_ITU_IE_BIT	H8TIER_IMIEA_BIT
-#define SYSTEM_ITU_IF		H8TSR_IMIFA		/* match flag */
-#define SYSTEM_ITU_IF_BIT	H8TSR_IMIFA_BIT
+#define SYSTEM_TIMER		H8ITU0
+
+#define SYSTEM_TIMER_CNT	(SYSTEM_TIMER + H8TCNT)
+#define SYSTEM_TIMER_TCR	(SYSTEM_TIMER + H8TCR)
+#define SYSTEM_TIMER_TIOR	(SYSTEM_TIMER + H8TIOR)
+#define SYSTEM_TIMER_IER	(SYSTEM_TIMER + H8TIER)
+#define SYSTEM_TIMER_IFR	(SYSTEM_TIMER + H8TSR)
+#define SYSTEM_TIMER_TSTR	H8ITU_TSTR
+#define SYSTEM_TIMER_GR		(SYSTEM_TIMER + H8GRA)
+
+#define SYSTEM_TIMER_STR	H8TSTR_STR0
+#define SYSTEM_TIMER_STR_BIT	H8TSTR_STR0_BIT
+#define SYSTEM_TIMER_IE		H8TIER_IMIEA		/* interrupt mask */
+#define SYSTEM_TIMER_IE_BIT	H8TIER_IMIEA_BIT
+#define SYSTEM_TIMER_IF		H8TSR_IMIFA		/* match flag */
+#define SYSTEM_TIMER_IF_BIT	H8TSR_IMIFA_BIT
 
 #define INHNO_TIMER		IRQ_IMIA0
 
-#define H8TCR_CCLR		H8TCR_CCLR0		/* clear on GRA */
-#define H8TCR_CKEG		(0)			/* positive edge */
-							/* clock / 8 */
-#define H8TCR_TPSC		(H8TCR_TPSC1|H8TCR_TPSC0)
-#define H8TIOR_IOB		(0)			/* no output */
-#define H8TIOR_IOA		(0)			/* no output */
+#define SYSTEM_TIMER_TCR_BIT	(H8TCR_CCLR0 | H8TCR_TPSC1 | H8TCR_TPSC0)
+#define SYSTEM_TIMER_TIOR_BIT	(0)
 
 #define TIMER_CLOCK		((CPU_CLOCK)/8000)	/* 16MHz / 8 = 2MHz = 2000KHz */
 
@@ -182,9 +209,9 @@ extern void sys_putc(char c);
 
 #define	ENABLE_LOWER_DATA
 
-#define	ENABLE_P8_CS		(H8P8DDR_CS0_BIT|H8P8DDR_CS1_BIT|H8P8DDR_CS2_BIT|H8P8DDR_CS3_BIT)
-#define	ENABLE_PA_CS		(H8PADDR_CS4_BIT|H8PADDR_CS5_BIT|H8PADDR_CS6_BIT)
-#define ENABLE_PB_CS		 H8PBDDR_CS7_BIT
+#define	ENABLE_P8_CS		(H8P8DDR_CS0|H8P8DDR_CS1|H8P8DDR_CS2|H8P8DDR_CS3)
+#define	ENABLE_PA_CS		(H8PADDR_CS4|H8PADDR_CS5|H8PADDR_CS6)
+#define ENABLE_PB_CS		 H8PBDDR_CS7
 
 #endif	/* of #if 0 */
 

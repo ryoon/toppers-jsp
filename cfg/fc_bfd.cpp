@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,17 +32,16 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: fc_bfd.cpp,v 1.3 2001/11/12 14:59:27 takayuki Exp $
+ *  @(#) $Id: fc_bfd.cpp,v 1.6 2002/04/05 08:48:31 takayuki Exp $
  */
 
 
 #include "filecontainer.h"
 
-#include "exception.h"
-#include "message.h"
+#include "except.h"
 
-#include <bfd.h>
-#include <libiberty.h>
+#include "bfd.h"
+#include "libiberty.h"
 
 #include <string>
 #include <map>
@@ -79,7 +78,7 @@ filecontainer_BFD::filecontainer_BFD(void)
 	object = NULL;
 	symbol_table.clear();
 	symbol_container = NULL;
-	container = this;
+	instance = this;
 }
 
 filecontainer_BFD::~filecontainer_BFD(void)
@@ -111,10 +110,7 @@ bool filecontainer_BFD::attach_module(const char * filename)
 	target_list = (char **)bfd_target_list();
 	result = bfd_check_format_matches(object, bfd_object, &target_list);
 	if(result == 0)
-	{
-		Exception::Throw(Message("Internel error: BFD could not recognize the target file format.","内部エラー: BFDはファイルの読み出しに失敗しました"));
-		return false;
-	}
+		Exception("Internel error: BFD could not recognize the target file format.","内部エラー: BFDはファイルの読み出しに失敗しました");
 
 		//シンボルのハッシュもどき作成
 	symbols = (asymbol **)xmalloc( bfd_get_symtab_upper_bound(object) );
@@ -193,7 +189,7 @@ bool filecontainer_BFD::load_contents(void * dest, unsigned long address, unsign
 	}
 
 		//どこにもない
-	Exception::Throw(Message("Internel error: Memory read with unmapped address","内部エラー; マップされてないアドレスを使ってメモリリードが行われました"));
+	Exception("Internel error: Memory read with unmapped address","内部エラー; マップされてないアドレスを使ってメモリリードが行われました");
 
 	return false;
 }
@@ -208,10 +204,7 @@ unsigned long filecontainer_BFD::get_symbol_address(const char * symbol)
 	string symbol_name;
 
 	if(object == 0)
-	{
-		Exception::Throw(Message("Not initialized","初期化されてません"));
-		return 0;
-	}
+		Exception("Not initialized","初期化されてません");
 
 		//シンボル名を生成する ("_"とかの処理)
 	if(object->xvec->symbol_leading_char != '\x0')
@@ -220,10 +213,8 @@ unsigned long filecontainer_BFD::get_symbol_address(const char * symbol)
 
 	scope = symbol_table.find(symbol_name);
 	if(scope == symbol_table.end())
-	{
-		Exception::Throw(string(Message("Internal error: Unknown symbol [","内部エラー: 不明なシンボル [")) + symbol_name + "]");
 		return 0;
-	}
+		//Exception("Internal error: Unknown symbol [%s]","内部エラー: 不明なシンボル [%s]").format(symbol_name.c_str());
 
 		//Address = セクション内オフセット値 + セクションのVMA
 	return (*scope).second->value + (*scope).second->section->vma;

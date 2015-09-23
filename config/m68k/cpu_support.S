@@ -8,7 +8,7 @@
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.8 2001/10/16 10:41:07 hiro Exp $
+ *  @(#) $Id: cpu_support.S,v 1.10 2002/04/10 11:08:18 hiro Exp $
  */
 
 /*
@@ -56,7 +56,7 @@
 	.globl exit_and_dispatch
 dispatch:
 	movem.l %d2-%d7/%a2-%a6, -(%sp)	/* レジスタを保存 */
-	move.l runtsk, %a0		/* A0 ← runtsk */
+	move.l runtsk, %a0		/* A0 を runtsk に */
 	move.l %sp, TCB_msp(%a0)	/* タスクスタックを保存 */
 	move.l #dispatch_r, TCB_pc(%a0)	/* 実行再開番地を保存 */
 	jbra dispatcher

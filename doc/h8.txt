@@ -1,7 +1,7 @@
                ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                             （H8 ターゲット依存部）
    
-               （Release 1.2対応，最終更新: 13-Nov-2001）
+               （Release 1.3対応，最終更新: 10-Apl-2002）
    
    ------------------------------------------------------------------------ 
     TOPPERS/JSP Kernel
@@ -12,12 +12,12 @@
                                 Toyohashi Univ. of Technology, JAPAN
     Copyright (C) 2001 by Industrial Technology Institute,
                                 Miyagi Prefectural Government, JAPAN
-    Copyright (C) 2001 by Dep. of Computer Science and Engineering
+    Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
                      Tomakomai National College of Technology, JAPAN
    
     上記著作権者は，Free Software Foundation によって公表されている 
     GNU General Public License の Version 2 に記述されている条件か，以
-    下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+    下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
     アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
     利用と呼ぶ）することを無償で許諾する．
     (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -41,29 +41,31 @@
     ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
     かなる損害に関しても，その責任を負わない．
    
-    @(#) $Id: h8.txt,v 1.2 2001/11/13 07:31:48 abe Exp $
+    @(#) $Id: h8.txt,v 1.3 2002/04/10 10:40:53 honda Exp $
    ------------------------------------------------------------------------
 
 1.  H8 ターゲット依存部の概要
 
 1. 1  ターゲットシステムと開発環境
 
-  H8 プロセッサのターゲットシステムは、H8/3048F を搭載した以下のボード
-である。
+  H8 プロセッサのターゲットシステムは、H8/3048F と H8/3067F を搭載した
+以下のボードである。
 
    ・(株) 秋月電子通商製の AKI-H8/3048F
+   ・(株) 秋月電子通商製の AKI-H8/3067F
 
-なお、何もしないタスク 1 個の最小構成でも、 必要な RAM 容量は H8/3048F
-の内蔵 RAM 容量の 4[Kbyte] を超える。このため外部 RAM の増設が必要で、
-外部アドレス空間を有効にする必要がある。 現在の構成ではモード 5 の内蔵
-ROM 有効拡張 1M バイトモードを想定している。
+なお、何もしないタスク 1 個の最小構成でも、必要な RAM 容量は H8 の内蔵
+RAM 容量の 4[Kbyte] を超える。このため外部 RAM の増設が必要で、 外部ア
+ドレス空間を有効にする必要がある。 現在の構成では、H8/3048F がモード 5
+の内蔵 ROM 有効拡張 1M バイトモード、H8/3067F もモード 5 の内蔵 ROM 有
+効拡張 16M バイトモードを想定している。
   開発環境は、Windows 2000 上の cygwin の開発環境を用いた。また、 デバッ
 グモードとリリースモードでモジュールの実行方法が異なっている。デバッグ
-モードでは (株) 秋月電子通商製のモニターデバッカを H8/3048F の内蔵フラッ
-シュ ROM に書き込み、デバッグするモジュールを外部 RAM にロードしてデバッ
-グを行う。リリースモードでは、デバッグの終了したモジュールを内蔵フラッ
-シュ ROM に書き込むことを想定している。 デバッグモードとリリースモード
-の切り替えは、 ディレクトリ $(CPU)/$(SYS) にある Makefile.config の
+モードでは (株) 秋月電子通商製のモニターデバッカを H8 の内蔵フラッシュ
+ROM に書き込み、 デバッグするモジュールを外部 RAM にロードしてデバッグ
+を行う。リリースモードでは、デバッグの終了したモジュールを内蔵フラッシュ
+ROM に書き込むことを想定している。デバッグモードとリリースモードの切り
+替えは、 ディレクトリ $(CPU)/$(SYS) にある Makefile.config の
 AKI_MONITOR の定義による。
 
 1. 2  サポートする機能の概要
@@ -74,17 +76,19 @@ AKI_MONITOR の定義による。
 
 1. 3  他のターゲットへのポーティング
 
-  H8/300H シリーズであれば、 ポーティングは容易に出来ると思われるが、
-H8/3048F 以外は調査していない。
+  H8/300H シリーズであれば、ポーティングは容易に出来ると思われる。また
+H8S シリーズの H8S/2350 へのポーティングも行われており、将来的に H8 と
+H8S シリーズを統合する予定である。
 
 1. 4  シリアルポート (SCI)
 
-  H8/3048F には SCI0 と SCI1 の 2 本のシリアルポートがあり、
-sys_config.h に定義している NUM_PORT により何本使用するか指定できるが、
-現在の実装では 1 本のみ使用できる。 JSP カーネルのログ出力用には SCI1
-を使用している。 シリアルポートの設定を以下に示す。 
+  H8/3048F には SCI0 と SCI1 の 2 本、 H8/3067F には SCI0 から SCI2 の
+3 本のシリアルポートがあり、 sys_config.h に定義している NUM_PORT によ
+り何本使用するか指定できる。 現在の実装では 2 本まで使用できる。JSP カー
+ネルのログ出力用には SCI1 を使用している。シリアルポートの設定を以下に
+示す。
 
-   ・ボーレイト、9600[bps]
+   ・ボーレイト、H8/3048F は 9600[bps]、H8/3067F は 19200[bps]
    ・データ長、8 ビット
    ・ストップビット、1 ビット
    ・パリティなし
@@ -175,11 +179,11 @@ UI ビットで全体の割り込みを制御している。
   システムクロックドライバが isig_tim を呼出す周期は、 sys_defs.h 内の
 TIC_NUME と TIC_DENO で定義されており、ディフォルトは 1[ms] 周期である。
 この定義を変更することで、 isig_tim を呼出す周期を変更できる。ただし、
-H8/3048F のクロックが 16[MHz] の場合、 タイマの精度が 0.5[us] のため、
-0.5[us] 単位で端数になる値を設定すると、|isig_tim の呼出し周期に誤差が
-発生する。
-  ディフォルトのクロックディバイスは H8/3048F 内蔵の ITU0 を使用してい
-る。
+H8/3048F のクロックが 16[MHz]、 H8/3067F のクロックが 20[MHz] の場合、
+タイマの精度が 0.5[us] のため、 0.5[us] 単位で端数になる値を設定すると、
+|isig_tim の呼出し周期に誤差が発生する。
+  ディフォルトのクロックディバイスは H8/3048F が ITU0、 H8/3067F が 16
+ビットタイマユニット 0 を使用している。
 
 3. 2  性能評価用システム時刻参照機能
 
@@ -189,34 +193,59 @@ H8/3048F のクロックが 16[MHz] の場合、 タイマの精度が 0.5[us] のため、
 
 3. 3  シリアルインタフェースドライバ
 
-  H8/3048F には SCI0 と SCI1 の 2 本のシリアルポートがあり、
-sys_config.h に定義している NUM_PORT により何本使用するか指定できるが、
-現在の実装では 1 本のみ使用できる。 JSP カーネルのログ出力用には SCI1
-を使用している。
+  H8/3048F には SCI0 と SCI1 の 2 本、 H8/3067F には SCI0 から SCI2 の
+3 本のシリアルポートがあり、 sys_config.h に定義している NUM_PORT によ
+り何本使用するか指定できる。 現在の実装では 2 本まで使用できる。JSP カー
+ネルのログ出力用には SCI1 を使用している。
 
 3. 4  メモリマップ
+
+3. 4. 1  H8/3048F のメモリマップ
 
   外部アドレス空間を有効にする必要があるため、モード 5 の内蔵 ROM 有効
 拡張 1M バイトモードを想定している。
 
    (1)   デバッグ時
 
-            0x00000 - 0x1ffff  内蔵 ROM、(株) 秋月電子通商製のモニターデバッカ
-            0x20000 - 0x3ffff  内蔵 ROM、.text、.rodata
-            0x40000 - 0xfef0f  外部 RAM、.data、.bss
-            0xfef10 - 0xfefff  内蔵 RAM、(株) 秋月電子通商製のモニターデバッカ使用
-            0xff000 - 0xff0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
-            0xff100 - 0xfff0f  内蔵 RAM、タスク独立部用スタック
-            0xfff10 - 0xfff1b  外部 RAM、空き
-            0xfff1c - 0xfffff  内蔵 I/O レジスタ
+         0x00000 - 0x1ffff  内蔵 ROM、(株) 秋月電子通商製のモニターデバッカ
+         0x20000 - 0x3ffff  外部 RAM、.text、.rodata
+         0x40000 - 0xfef0f  外部 RAM、.data、.bss
+         0xfef10 - 0xfefff  内蔵 RAM、(株) 秋月電子通商製のモニターデバッカ使用
+         0xff000 - 0xff0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
+         0xff100 - 0xfff0f  内蔵 RAM、タスク独立部用スタック
+         0xfff10 - 0xfff1b  外部 RAM、空き
+         0xfff1c - 0xfffff  内蔵 I/O レジスタ
 
    (2)   リリース時
 
-            0x00000 - 0x1ffff  内蔵 ROM、.vectors、.text、.rodata
-            0x20000 - 0xfef0f  外部 RAM、.data、.bss
-            0xfef10 - 0xfff0f  内蔵 RAM、タスク独立部用スタック
-            0xfff10 - 0xfff1b  外部 RAM、空き
-            0xfff1c - 0xfffff  内蔵 I/O レジスタ
+         0x00000 - 0x1ffff  内蔵 ROM、.vectors、.text、.rodata
+         0x20000 - 0xfef0f  外部 RAM、.data、.bss
+         0xfef10 - 0xfff0f  内蔵 RAM、タスク独立部用スタック
+         0xfff10 - 0xfff1b  外部 RAM、空き
+         0xfff1c - 0xfffff  内蔵 I/O レジスタ
+
+3. 4. 2  H8/3067F のメモリマップ
+
+  外部アドレス空間を有効にする必要があるため、モード 5 の内蔵 ROM 有効
+拡張 16M バイトモードを想定している。
+
+   (1)   デバッグ時
+
+         0x000000 - 0x1fffff  内蔵 ROM、(株) 秋月電子通商製のモニターデバッカ
+         0x200000 - 0x2000ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
+         0x200100 - 0x207f23  外部 RAM、.text、.rodata、.data、.bss
+         0x207f24 - 0x207fff  外部 RAM、(株) 秋月電子通商製のモニターデバッカ使用
+         0xee0000 - 0xee0081  内蔵 I/O レジスタ
+         0xffef20 - 0xffff1f  内蔵 RAM、タスク独立部用スタック
+         0xffff20 - 0xffffe9  内蔵 I/O レジスタ
+
+   (2)   リリース時
+
+         0x000000 - 0x01ffff  内蔵 ROM、.vectors、.text、.rodata
+         0x200000 - 0x207fff  外部 RAM、.data、.bss
+         0xee0000 - 0xee0081  内蔵 I/O レジスタ
+         0xffef20 - 0xffff1f  内蔵 RAM、タスク独立部用スタック
+         0xffff20 - 0xffffe9  内蔵 I/O レジスタ
 
 4.  開発
 
@@ -242,18 +271,17 @@ configure のオプションには --disable-nls も指定すること。
            Cygwin 上でコンパイルする場合は CYGWIN = true を有効にする。
 
    (2)   all: jsp.S
-           H8/3048F の最終ターゲットは S レコードファイルのため、 all:
-         $(JSPOBJ) をコメントアウトし、all: jsp.S を有効にする。
+           最終ターゲットは S レコードファイルのため、 all: $(JSPOBJ)
+         をコメントアウトし、all: jsp.S を有効にする。
 
 4. 3  ターゲットへのダウンロードと実行
 
   ターゲットへのダウンロードと実行には、 (株) 秋月電子通商製のモニタデ
 バッカを使用する方法と直接 H8/3048F のフラッシュ ROM に書き込んで実行
-
 する方法がある。
 
-   (1)   (株) 秋月電子通商製のモニタデバッカを使用する方法 (デバッグモー
-         ド)
+   (1)   H8/3048F で (株) 秋月電子通商製のモニタデバッカを使用する方法
+         (デバッグモード)
            ディレクトリ $(CPU)/$(SYS) にある Makefile の AKI_MONITOR =
          true を有効にして make する。次に、H8/3048F の外部 RAM へのア
          クセスを有効にしなければならない。 RAM の構成により異なるが、
@@ -269,12 +297,18 @@ configure のオプションには --disable-nls も指定すること。
          最後に端末ソフトを使用して jsp.S を H8/3048F に転送し、実行す
          る。
 
-   (2)   内臓フラッシュ ROM に書き込んで実行する方法 (リリースモード)
+   (2)   H8/3067F で (株) 秋月電子通商製のモニタデバッカを使用する方法
+         (デバッグモード)
+           ディレクトリ $(CPU)/$(SYS) にある Makefile の AKI_MONITOR =
+         true を有効にして make する。H8/3067F では外部 RAM へのアクセ
+         スが、すでに有効になっているため、特に何もせずに、 端末ソフト
+         を使用して jsp.S を H8/3067F に転送し、実行することができる。
+
+   (3)   内臓フラッシュ ROM に書き込んで実行する方法 (リリースモード)
            ディレクトリ $(CPU)/$(SYS) にある Makefile.config のディレ
          クトリ $(CPU)/$(SYS) にある Makefile の AKI_MONITOR = true を
          コメントアウトして make する。次に、(株) 秋月電子通商製等のフ
-         ラッシュ ROM 書き込みプログラムで、 H8/3048F のフラッシュ ROM
-         に書き込む。
+         ラッシュ ROM 書き込みプログラムで、フラッシュ ROM に書き込む。
 
 4. 4  H8/3048F の外部 RAM の有効化
 
@@ -291,11 +325,33 @@ sys_config.h の以下の部分を適当に編集する。
    
    #define ENABLE_LOWER_DATA
    
-   #define ENABLE_P8_CS            (H8P8DDR_CS0_BIT|H8P8DDR_CS1_BIT|\
-                                    H8P8DDR_CS2_BIT|H8P8DDR_CS3_BIT)
-   #define ENABLE_PA_CS            (H8PADDR_CS4_BIT|H8PADDR_CS5_BIT|\
-                                    H8PADDR_CS6_BIT)
-   #define ENABLE_PB_CS             H8PBDDR_CS7_BIT
+   #define ENABLE_P8_CS    (H8P8DDR_CS0|H8P8DDR_CS1|\
+                            H8P8DDR_CS2|H8P8DDR_CS3)
+   #define ENABLE_PA_CS    (H8PADDR_CS4|H8PADDR_CS5|\
+                            H8PADDR_CS6)
+   #define ENABLE_PB_CS     H8PBDDR_CS7
+   
+   #endif      /* of #if 0 */
+
+4. 5  H8/3067F の外部 RAM の有効化
+
+  リリースモードでは、 sys_support.S の _hardware_init_hook で、アドレ
+スバス A0 から A23、 データバス D8 から D15、 チップセレクト CS0 から
+CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
+バスを有効にする場合は、sys_config.h の以下の部分を適当に編集する。
+
+   /*
+    *  外部アドレス空間制御
+    */
+   
+   #define ENABLE_P8_CS    (H8P8DDR_CS0|H8P8DDR_CS1|\
+                            H8P8DDR_CS2|H8P8DDR_CS3)
+   
+   #if 0
+   
+   #define ENABLE_LOWER_DATA
+   #define ENABLE_PB_CS    (H8PADDR_CS4|H8PADDR_CS5|\
+                            H8PADDR_CS6|H8PBDDR_CS7)
    
    #endif      /* of #if 0 */
 
@@ -328,3 +384,15 @@ sys_config.h の以下の部分を適当に編集する。
             sys_config.h     AKI-H8/3048F ボード依存部の構成定義
             sys_defs.h       AKI-H8/3048F ボード依存部のアプリケーション用定義
             sys_support.S    AKI-H8/3048F ボード依存部のアセンブリ関数
+
+   (3)   config/h8/akih8_3067f/
+           (株) 秋月電子通商製の AKI-H8/3067F ボードの依存部分
+
+            Makefile.config  Makefile の AKI-H8/3067F ボード依存定義
+            h8_3067f.h       H8/3048F プロセッサの定義
+            debug.ld         デバッグ用リンカスクリプト
+            release.ld       リリース用リンカスクリプト
+            sys_config.c     AKI-H8/3067F ボード依存部の C 関数
+            sys_config.h     AKI-H8/3067F ボード依存部の構成定義
+            sys_defs.h       AKI-H8/3067F ボード依存部のアプリケーション用定義
+            sys_support.S    AKI-H8/3067F ボード依存部のアセンブリ関数

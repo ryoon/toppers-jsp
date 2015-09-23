@@ -7,12 +7,12 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -36,7 +36,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.2 2001/11/12 15:23:41 abe Exp $
+ *  @(#) $Id: cpu_support.S,v 1.5 2002/04/14 11:36:50 hiro Exp $
  */
 
 #define _MACRO_ONLY
@@ -79,7 +79,16 @@ dispatch_r:
 	pop.l	er4
 	pop.l	er5
 	pop.l	er6
-	jmp	@_calltex
+	mov.l	@_runtsk, er0
+	mov.b	@(TCB_enatex, er0), r1l	/* runtsk->enatex のチェック	*/
+	btst	#TCB_enatex_bit, r1l
+	beq	dispatch_r_1
+	mov.l	@(TCB_texptn, er0), er1	/* runtsk->texptn のチェック	*/
+	beq	dispatch_r_1
+	jmp	@_call_texrtn
+
+dispatch_r_1:
+	rts
 
 	.global	_exit_and_dispatch
 _exit_and_dispatch:
@@ -150,7 +159,15 @@ ret_int:
  */
 
 ret_int_r:
-	jsr	@_calltex		/* タスク例外処理ルーチン起動	*/
+	mov.l	@_runtsk, er0
+	mov.b	@(TCB_enatex, er0), r1l	/* runtsk->enatex のチェック	*/
+	btst	#TCB_enatex_bit, r1l
+	beq	ret_int_r_1
+	mov.l	@(TCB_texptn, er0), er1	/* runtsk->texptn のチェック	*/
+	beq	ret_int_r_1
+	jsr	@_call_texrtn		/* タスク例外処理ルーチン起動	*/
+
+ret_int_r_1:
 	pop.l	er6			/* レジスタを復帰		*/
 	pop.l	er5
 	pop.l	er4
@@ -188,6 +205,8 @@ _no_reg_exception:
 	.globl _activate_r
 _activate_r:
 
+	mov.l	#_ext_tsk, er2
+	push.l	er2
 	mov.l	@_runtsk, er2
 	mov.l	@(TCB_tinib, er2), er2
 	mov.l	@(TINIB_task, er2), er1	/*  タスク起動番地		*/
@@ -201,7 +220,7 @@ _activate_r:
  */
 
 /*
- * ITU -- 何もしない。
+ * タイマ -- 何もしない。
  */
 
 	.globl _timer_handler_enable_int
@@ -212,6 +231,8 @@ _timer_handler_enable_int:
  * SCI -- 割込み優先レジスタの優先度を上げる。
  */
 
+#if NUM_PORT == 1
+
 	.globl _serial_in_handler_enable_int
 	.globl _serial_out_handler_enable_int
 _serial_in_handler_enable_int:
@@ -221,23 +242,41 @@ _serial_out_handler_enable_int:
 	mov.b	r0l, @SYSTEM_SCI_IPR
 	rts
 
+#else	/* of #if NUM_PORT == 1 */
+
+	.globl _serial_in_handler_enable_int
+	.globl _serial_out_handler_enable_int
+_serial_in_handler_enable_int:
+_serial_out_handler_enable_int:
+	mov.b	@USER_SCI_IPR, r0l
+	bset	#USER_SCI_IP_BIT, r0l
+	mov.b	r0l, @USER_SCI_IPR
+	mov.b	@SYSTEM_SCI_IPR, r0l
+	bset	#SYSTEM_SCI_IP_BIT, r0l
+	mov.b	r0l, @SYSTEM_SCI_IPR
+	rts
+
+#endif	/* of #if NUM_PORT == 1 */
+
 /*
  *  ハードウェア割り込み禁止
  */
 
 /*
- *  ITU -- Compare Match フラグをクリアーする。
+ *  タイマ -- Compare Match フラグをクリアーする。
  */
 
 	.globl _timer_handler_disable_int
 _timer_handler_disable_int:
-	mov.l	#(SYSTEM_ITU + H8TSR), er0
-	bclr	#SYSTEM_ITU_IF_BIT, @er0
+	mov.l	#SYSTEM_TIMER_IFR, er0
+	bclr	#SYSTEM_TIMER_IF_BIT, @er0
 	rts
 
 /*
  * SCI -- 割込み優先レジスタの優先度を下げる。
  */
+
+#if NUM_PORT == 1
 
 	.globl _serial_in_handler_disable_int
 	.globl _serial_out_handler_disable_int
@@ -247,3 +286,19 @@ _serial_out_handler_disable_int:
 	bclr	#SYSTEM_SCI_IP_BIT, r0l
 	mov.b	r0l, @SYSTEM_SCI_IPR
 	rts
+
+#else	/* of #if NUM_PORT == 1 */
+
+	.globl _serial_in_handler_disable_int
+	.globl _serial_out_handler_disable_int
+_serial_in_handler_disable_int:
+_serial_out_handler_disable_int:
+	mov.b	@USER_SCI_IPR, r0l
+	bclr	#USER_SCI_IP_BIT, r0l
+	mov.b	r0l, @USER_SCI_IPR
+	mov.b	@SYSTEM_SCI_IPR, r0l
+	bclr	#SYSTEM_SCI_IP_BIT, r0l
+	mov.b	r0l, @SYSTEM_SCI_IPR
+	rts
+
+#endif	/* of #if NUM_PORT == 1 */

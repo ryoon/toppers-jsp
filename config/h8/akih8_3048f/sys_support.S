@@ -7,12 +7,12 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -36,7 +36,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_support.S,v 1.2 2001/11/12 15:23:41 abe Exp $
+ *  @(#) $Id: sys_support.S,v 1.3 2002/04/10 10:40:53 honda Exp $
  */
 
 #define _MACRO_ONLY
@@ -53,6 +53,73 @@
 
 	.global _vectors
 _vectors:
+
+#ifdef AKI_MONITOR
+
+	.long	_start				/*  0, 0x0000: reset	*/
+	.long	0				/*  1, 0x0004: reserved	*/
+	.long	0				/*  2, 0x0008: reserved	*/
+	.long	0				/*  3, 0x000c: reserved	*/
+	.long	0				/*  4, 0x0010: reserved	*/
+	.long	0				/*  5, 0x0014: reserved	*/
+	.long	0				/*  6, 0x0018: reserved	*/
+	.long	0				/*  7, 0x001c: NMI	*/
+	.long	0				/*  8, 0x0020: trap	*/
+	.long	0				/*  9, 0x0024: trap	*/
+	.long	0				/* 10, 0x0028: trap	*/
+	.long	0				/* 11, 0x002c: trap	*/
+	.long	0				/* 12, 0x0030: IRQ0	*/
+	.long	0				/* 13, 0x0034: IRQ1	*/
+	.long	0				/* 14, 0x0038: IRQ2	*/
+	.long	0				/* 15, 0x003c: IRQ3	*/
+	.long	0				/* 16, 0x0040: IRQ4	*/
+	.long	0				/* 17, 0x0044: IRQ5	*/
+	.long	0				/* 18, 0x0048: reserved	*/
+	.long	0				/* 19, 0x004c: reserved	*/
+	.long	0				/* 20, 0x0050: WOVI	*/
+	.long	0				/* 21, 0x0054: CMI	*/
+	.long	0				/* 22, 0x0058: reserved	*/
+	.long	0				/* 23, 0x005c: reserved	*/
+	.long	_timer_handler_entry		/* 24, 0x0060: IMIA0	*/
+	.long	0				/* 25, 0x0064: IMIB0	*/
+	.long	0				/* 26, 0x0068: OVI0	*/
+	.long	0				/* 27, 0x006c: reserved	*/
+	.long	0				/* 28, 0x0070: IMIA1	*/
+	.long	0				/* 29, 0x0074: IMIB1	*/
+	.long	0				/* 30, 0x0078: OVI1	*/
+	.long	0				/* 31, 0x007c: reserved	*/
+	.long	0				/* 32, 0x0080: IMIA2	*/
+	.long	0				/* 33, 0x0084: IMIB2	*/
+	.long	0				/* 34, 0x0088: OVI2	*/
+	.long	0				/* 35, 0x008c: reserved	*/
+	.long	0				/* 36, 0x0090: IMIA3	*/
+	.long	0				/* 37, 0x0094: IMIB3	*/
+	.long	0				/* 38, 0x0098: OVI3	*/
+	.long	0				/* 39, 0x009c: reserved	*/
+	.long	0				/* 40, 0x00a0: IMIA4	*/
+	.long	0				/* 41, 0x00a4: IMIA4	*/
+	.long	0				/* 42, 0x00a8: OVI4	*/
+	.long	0				/* 43, 0x00ac: reserved	*/
+	.long	0				/* 44, 0x00b0: DEND0A	*/
+	.long	0				/* 45, 0x00b4: DEND0B	*/
+	.long	0				/* 46, 0x00b8: DEND1A	*/
+	.long	0				/* 47, 0x00bc: DEND1B	*/
+	.long	0				/* 48, 0x00c0: reserved	*/
+	.long	0				/* 49, 0x00c4: reserved	*/
+	.long	0				/* 50, 0x00c8: reserved	*/
+	.long	0				/* 51, 0x00cc: reserved	*/
+	.long	_serial_in_handler_entry	/* 52, 0x00d0: ERI0	*/
+	.long	_serial_in_handler_entry	/* 53, 0x00d4: RXI0	*/
+	.long	_serial_out_handler_entry	/* 54, 0x00d8: TXI0	*/
+	.long	0				/* 55, 0x00ec: TEI0	*/
+	.long	_serial_in_handler_entry	/* 56, 0x00e0: ERI1	*/
+	.long	_serial_in_handler_entry	/* 57, 0x00e4: RXI1	*/
+	.long	_serial_out_handler_entry	/* 58, 0x00e8: TXI1	*/
+	.long	0				/* 59, 0x00ec: TEI1	*/
+	.long	0				/* 60, 0x00f0: ADI	*/
+
+#else	/* of #ifdef AKI_MONITOR */
+
 	.long	_start				/*  0, 0x0000: reset	*/
 	.long	_no_reg_exception		/*  1, 0x0004: reserved	*/
 	.long	_no_reg_exception		/*  2, 0x0008: reserved	*/
@@ -105,15 +172,17 @@ _vectors:
 	.long	_no_reg_exception		/* 49, 0x00c4: reserved	*/
 	.long	_no_reg_exception		/* 50, 0x00c8: reserved	*/
 	.long	_no_reg_exception		/* 51, 0x00cc: reserved	*/
-	.long	_no_reg_exception		/* 52, 0x00d0: ERI0	*/
-	.long	_no_reg_exception		/* 53, 0x00d4: RXI0	*/
-	.long	_no_reg_exception		/* 54, 0x00d8: TXI0	*/
+	.long	_serial_in_handler_entry	/* 52, 0x00d0: ERI0	*/
+	.long	_serial_in_handler_entry	/* 53, 0x00d4: RXI0	*/
+	.long	_serial_out_handler_entry	/* 54, 0x00d8: TXI0	*/
 	.long	_no_reg_exception		/* 55, 0x00ec: TEI0	*/
 	.long	_serial_in_handler_entry	/* 56, 0x00e0: ERI1	*/
 	.long	_serial_in_handler_entry	/* 57, 0x00e4: RXI1	*/
 	.long	_serial_out_handler_entry	/* 58, 0x00e8: TXI1	*/
 	.long	_no_reg_exception		/* 59, 0x00ec: TEI1	*/
 	.long	_no_reg_exception		/* 60, 0x00f0: ADI	*/
+
+#endif	/* of #ifdef AKI_MONITOR */
 
 	.text
 	.align 2

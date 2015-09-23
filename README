@@ -1,5 +1,5 @@
 
-   TOPPERS/JSP Kernel（Release 1.2）
+   TOPPERS/JSP Kernel（Release 1.3）
        Toyohashi Open Platform for Embedded Real-Time Systems/
        Just Standard Profile Kernel
 
@@ -9,11 +9,12 @@ TOPPERS/JSPカーネルは，豊橋技術科学大学 組込みリアルタイムシステム研究
 通り，μITRON4.0仕様のスタンダードプロファイル規定に従って実装されてい
 ます．
 
-ターゲットプロセッサとして，現時点で，M68040，SH3/4，SH1，H8，ARM7TDMI，
-V850をサポートしています．カーネルのできる限り多くの部分をC言語で記述
-する，ターゲット独立部と依存部を明確に分離するなど，他のターゲットプロ
-セッサへのポーティングが容易な構造になっています．さらに，Linux上と
-Windows上で動作するシミュレーション環境を用意しています．
+ターゲットプロセッサとして，現時点で，M68040，SH3/4，SH1，H8，H8S，
+ARM7TDMI，V850，M32R，MicroBlaze，TMS320C54x，i386をサポートしています．
+カーネルのできる限り多くの部分をC言語で記述する，ターゲット独立部と依
+存部を明確に分離するなど，他のターゲットプロセッサへのポーティングが容
+易な構造になっています．さらに，Linux上とWindows上で動作するシミュレー
+ション環境を用意しています．
 
 TOPPERS/JSPカーネルは，フリーソフトウェアです．TOPPERS/JSPカーネルの配
 付キットの最新版は，以下のウェブサイトからダウンロードすることができま

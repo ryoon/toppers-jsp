@@ -1,24 +1,24 @@
 # Microsoft Developer Studio Project File - Name="configurator" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# **  ‘Ω∏§∑§ §§§«§Ø§¿§µ§§ **
+# ** ï“èWÇµÇ»Ç¢Ç≈Ç≠ÇæÇ≥Ç¢ **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
 
 CFG=configurator - Win32 Debug
-!MESSAGE §≥§Ï§œÕ≠∏˙§ é“é≤é∏éÃéßé≤éŸ§«§œ§¢§Í§ﬁ§ª§Û°£ §≥§ŒéÃéﬂé€éºéﬁé™é∏éƒ§ÚéÀéﬁéŸéƒéﬁ§π§Î§ø§·§À§œ NMAKE §Úª»Õ—§∑§∆§Ø§¿§µ§§°£
-!MESSAGE [é“é≤é∏éÃéßé≤éŸ§Œé¥é∏éΩéŒéﬂé∞éƒ] é∫éœé›éƒéﬁ§Úª»Õ—§∑§∆º¬π‘§∑§∆§Ø§¿§µ§§
+!MESSAGE Ç±ÇÍÇÕóLå¯Ç»“≤∏Ãß≤ŸÇ≈ÇÕÇ†ÇËÇ‹ÇπÇÒÅB Ç±ÇÃÃﬂ€ºﬁ™∏ƒÇÀﬁŸƒﬁÇ∑ÇÈÇΩÇﬂÇ…ÇÕ NMAKE ÇégópÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB
+!MESSAGE [“≤∏Ãß≤ŸÇÃ¥∏ΩŒﬂ∞ƒ] ∫œ›ƒﬁÇégópÇµÇƒé¿çsÇµÇƒÇ≠ÇæÇ≥Ç¢
 !MESSAGE 
 !MESSAGE NMAKE /f "configurator.mak".
 !MESSAGE 
-!MESSAGE NMAKE §Œº¬π‘ª˛§ÀπΩ¿Æ§ÚªÿƒÍ§«§≠§ﬁ§π
-!MESSAGE é∫éœé›éƒéﬁ é◊é≤é›æÂ§«éœé∏é€§Œ¿ﬂƒÍ§ÚƒÍµ¡§∑§ﬁ§π°£Œ„:
+!MESSAGE NMAKE ÇÃé¿çséûÇ…ç\ê¨ÇéwíËÇ≈Ç´Ç‹Ç∑
+!MESSAGE ∫œ›ƒﬁ ◊≤›è„Ç≈œ∏€ÇÃê›íËÇíËã`ÇµÇ‹Ç∑ÅBó·:
 !MESSAGE 
 !MESSAGE NMAKE /f "configurator.mak" CFG="configurator - Win32 Debug"
 !MESSAGE 
-!MESSAGE ¡™¬Ú≤ƒ«Ω§ éÀéﬁéŸéƒéﬁ é”é∞éƒéﬁ:
+!MESSAGE ëIëâ¬î\Ç»ÀﬁŸƒﬁ ”∞ƒﬁ:
 !MESSAGE 
-!MESSAGE "configurator - Win32 Release" ("Win32 (x86) Console Application" Õ—)
-!MESSAGE "configurator - Win32 Debug" ("Win32 (x86) Console Application" Õ—)
+!MESSAGE "configurator - Win32 Release" ("Win32 (x86) Console Application" óp)
+!MESSAGE "configurator - Win32 Debug" ("Win32 (x86) Console Application" óp)
 !MESSAGE 
 
 # Begin Project
@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /Gr /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /G6 /W2 /GX /O2 /I "." /I ".." /I "../jsp" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # ADD BASE RSC /l 0x411 /d "NDEBUG"
 # ADD RSC /l 0x411 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -53,6 +53,7 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386 /out:"../cfg.exe"
 
 !ELSEIF  "$(CFG)" == "configurator - Win32 Debug"
+
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
 # PROP BASE Output_Dir "Debug"
@@ -65,7 +66,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "." /I ".." /I "../jsp" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x411 /d "_DEBUG"
 # ADD RSC /l 0x411 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -74,8 +75,11 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /out:"../cfg.exe" /pdbtype:sept
+
 !ENDIF 
+
 # Begin Target
+
 # Name "configurator - Win32 Release"
 # Name "configurator - Win32 Debug"
 # Begin Group "Source Files"
@@ -83,15 +87,15 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\configurator.cpp
+SOURCE=..\component.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\domain.cpp
+SOURCE=..\directorymap.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\exception.cpp
+SOURCE=..\except.cpp
 # End Source File
 # Begin Source File
 
@@ -99,83 +103,15 @@ SOURCE=..\garbage.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\id.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\manager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\message.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\multistream.cpp
+SOURCE=..\mpstrstream.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\parser.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\serializer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\staticapi.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\value.cpp
-# End Source File
-# End Group
-# Begin Group "Header Files"
-
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=..\domain.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\exception.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\garbage.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\id.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\manager.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\message.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\multistream.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\parser.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\serializer.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\staticapi.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\value.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -185,13 +121,77 @@ SOURCE=..\value.h
 # Begin Group "Target depended"
 
 # PROP Default_Filter ""
+# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\jsp\toppers.cpp
+SOURCE=..\component.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\jsp\toppers.h
+SOURCE=..\defs.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\directorymap.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\except.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\garbage.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\mpstrstream.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\parser.h
+# End Source File
+# End Group
+# Begin Group "Target dependent"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\jsp\jsp_checkscript.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\jsp\jsp_classes.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\jsp\jsp_defs.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\jsp\jsp_instanciate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\jsp\jsp_orti.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\jsp\jsp_parser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\jsp\jsp_parser.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\jsp\jsp_staticapi.cpp
 # End Source File
 # End Group
 # End Target

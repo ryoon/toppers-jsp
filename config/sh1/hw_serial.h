@@ -3,14 +3,14 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  *
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001 by Industrial Technology Institute,
+ *  Copyright (C) 2001,2002 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，Free Software Foundation によって公表されている
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -34,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.h,v 1.2 2001/10/22 02:16:43 imai Exp $
+ *  @(#) $Id: hw_serial.h,v 1.4 2002/04/11 11:30:20 imai Exp $
  */
 
 #ifndef _HW_SERIAL_H_
@@ -104,6 +104,10 @@ static INT	initflag[NUM_PORT] = { 0 } ;	/* 初期化済フラグ */
 Inline BOOL
 hw_port_initialize(HWPORT *p)
 {
+#ifdef CQ_SH1_DEB
+    return(FALSE);
+#else /* CQ_SH1_DEB */
+
     int i;
 
     SCI.SCR0 &= ~(SCR_TE | SCR_RE);	/*  送受信停止  */
@@ -148,6 +152,7 @@ hw_port_initialize(HWPORT *p)
 
     *(p->initflag) = 1;			/* 初期化フラグ設定 */
     return(FALSE);
+#endif /* CQ_SH1_DEB */
 }
 
 /*

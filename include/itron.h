@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: itron.h,v 1.5 2001/11/15 13:14:31 hiro Exp $
+ *  @(#) $Id: itron.h,v 1.8 2002/04/10 11:57:59 hiro Exp $
  */
 
 /*
@@ -58,28 +58,48 @@
  */
 #ifndef _MACRO_ONLY
 
+#ifdef _16BIT_INT_			/* intが16ビットで，64ビットの */
+					/*      整数型がないコンパイラ */
 #define	__bool	int			/* ブール型 */
-#ifndef _MSC_VER
+#define	__int8	char			/* 8ビットの整数型 */
+#define	__int16	int			/* 16ビットの整数型 */
+#define	__int32	long			/* 32ビットの整数型 */
+
+#elif defined(_MSC_VER)
+
+#define	__int64	__int64
+#define	__bool	int			/* ブール型 */
+
+#else /* その他のコンパイラ */
+
+#define	__bool	int			/* ブール型 */
 #define	__int8	char			/* 8ビットの整数型 */
 #define	__int16	short			/* 16ビットの整数型 */
 #define	__int32	int			/* 32ビットの整数型 */
 #define __int64	long long		/* 64ビットの整数型 */
-#endif /* _MSC_VER */
+
+#endif /* その他のコンパイラ */
 
 typedef	signed __int8	B;		/* 符号付き8ビット整数 */
 typedef	signed __int16	H;		/* 符号付き16ビット整数 */
 typedef	signed __int32	W;		/* 符号付き32ビット整数 */
+#ifdef __int64
 typedef	signed __int64	D;		/* 符号付き64ビット整数 */
+#endif /* __int64 */
 
 typedef	unsigned __int8		UB;	/* 符号無し8ビット整数 */
 typedef	unsigned __int16 	UH;	/* 符号無し16ビット整数 */
 typedef	unsigned __int32	UW;	/* 符号無し32ビット整数 */
+#ifdef __int64
 typedef	unsigned __int64	UD;	/* 符号無し64ビット整数 */
+#endif /* __int64 */
 
 typedef	__int8		VB;		/* 型が定まらない8ビットの値 */
 typedef	__int16		VH;		/* 型が定まらない16ビットの値 */
 typedef	__int32		VW;		/* 型が定まらない32ビットの値 */
+#ifdef __int64
 typedef	__int64		VD;		/* 型が定まらない64ビットの値 */
+#endif /* __int64 */
 
 typedef	void		*VP;		/* 型が定まらないものへのポインタ */
 typedef	void		(*FP)();	/* プログラムの起動番地（ポインタ） */

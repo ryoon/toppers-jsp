@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,12 +32,14 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: garbage.h,v 1.3 2001/11/12 14:59:27 takayuki Exp $
+ *  @(#) $Id: garbage.h,v 1.5 2002/04/05 08:48:31 takayuki Exp $
  */
 
 
-#ifndef __CLEANER_H
-#define __CLEANER_H
+// $Header: /home/CVS/configurator/garbage.h,v 1.5 2002/04/05 08:48:31 takayuki Exp $
+
+#ifndef __GARBAGE_H
+#define __GARBAGE_H
 
 #include <list>
 
@@ -48,15 +50,15 @@ public:
 
 private:
 	static std::list<Garbage *> GarbageList;
-	iterator MySelf;
+	iterator mySelf;
 
 public:
 	Garbage(void);
 	virtual ~Garbage(void);
 
-	static iterator GetTailPosition(void);
-	static void Cleanup(iterator);
-	static void FinalCleanup(void);
+	static iterator getTailPosition(void);
+	static void cleanup(const iterator &);
+	static void finalCleanup(void);
 };
 
 #endif

@@ -3,12 +3,12 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: filecontainer.cpp,v 1.2 2001/11/12 14:59:27 takayuki Exp $
+ *  @(#) $Id: filecontainer.cpp,v 1.5 2002/04/14 08:54:25 takayuki Exp $
  */
 
 
@@ -42,13 +42,12 @@
 
 #include <stdio.h>
 
-#include "exception.h"
-#include "message.h"
+#include "except.h"
 #include "filecontainer.h"
 
 using namespace std;
 
-filecontainer * container;
+filecontainer * filecontainer::instance;
 
 static char * parse_uint(char * src, unsigned int * dest, unsigned int default_value = 0)
 {
@@ -68,10 +67,8 @@ bool filecontainer::attach_infofile(const char * filename)
 
 	f = fopen(filename,"rt");
 	if(f == NULL)
-	{
-		Exception::Throw(string(Message("Structure information file was not found. ","構造体情報ファイルが見つかりません ")) + "[" + filename + "]");
-		return false;
-	}
+		Exception("Structure information file(%s) was not found. ","構造体情報ファイル(%s)が見つかりません ").format(filename);
+
 	while(fgets(buffer, 255, f) != NULL)
 	{
 		work = buffer + strlen(buffer) -1;
@@ -107,7 +104,7 @@ bool filecontainer::attach_infofile(const char * filename)
 			break;
 
 		default:
-			Exception::Throw(string(Message("Unknown information type identifier found - [","未知の型識別子 - ")) + buffer[0] + "]");
+			Exception("Unknown information type identifier found - [%s]","未知の型識別子 - [%s]").format(buffer[0]);
 		}
 	}
 
@@ -124,12 +121,14 @@ bool filecontainer::load_variable(void * dest, unsigned int size, const char * n
 	if(scope == structure_information.end())
 		return false;
 
-	if(size > (*scope).second.size)
+	if((*scope).second.size > size)
 		return false;
 
 	if((*scope).second.size < size)
+    {
+		memset(dest, 0, size);
 		size = (*scope).second.size;
-
+	}
 	address = get_symbol_address(name);
 	if(address == 0 || !load_contents(dest, address + (*scope).second.offset, size))
 		return false;
@@ -167,27 +166,18 @@ struct variable_information filecontainer::get_variable_information(const char *
 {
 	struct variable_information result;
 	map<string, struct tagStructureInformation>::iterator scope;
-	const char * work;
-	bool is_member = false;
+	string work;
 
 	result.address = 0;
 	result.size = 0;
 
-	for(work = name; *work != '\x0'; work++)
-		if(*work == ':')
-		{
-			is_member = true;
-			break;
-		}
-
-	scope = structure_information.find(string(name));
+	work.assign(name);
+	scope = structure_information.find(work);
 	if(scope != structure_information.end())
 	{
-		if(!is_member)
+		if(work.find_first_of(':') == string::npos)
 		{
-			bool old = Exception::SetThrowControl(false);
 			result.address = this->get_symbol_address(name);
-			Exception::SetThrowControl(old);
 			if(result.address == 0)
 				result.value = (long)((*scope).second.size);
 			else

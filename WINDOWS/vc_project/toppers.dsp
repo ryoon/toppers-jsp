@@ -81,7 +81,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:no /map /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /incremental:no /map /debug /debugtype:both /machine:I386 /out:"../Toppers.exe" /pdbtype:sept
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=cd ..	..\cfg\chk.exe -m toppers.exe -cs windows.chk -obj -v -lj
+# End Special Build Tool
 
 !ENDIF 
 
@@ -430,13 +434,14 @@ SOURCE=..\sample1.cfg
 !ELSEIF  "$(CFG)" == "Toppers - Win32 Debug"
 
 # Begin Custom Build
-InputDir=\My Documents\Program sources\cygwin\Takayuki\cvs\jsp\WINDOWS
+InputDir=\home\takayuki\work\tmp_for_release\jsp\WINDOWS
 InputPath=..\sample1.cfg
 InputName=sample1
 
 BuildCmds= \
 	cd $(InputDir) \
-	cl /E /EP /I "../kernel" /I "../include" /I "../config/windows" $(InputName).cfg | ..\cfg\cfg.exe \
+	cl /E /I "../kernel" /I "../include" /I "../config/windows" $(InputName).cfg > $(InputName)_i.cfg \
+	..\cfg\cfg.exe -s $(InputName)_i.cfg -c -v -obj -lj -cpu windows \
 	
 
 "kernel_id.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"

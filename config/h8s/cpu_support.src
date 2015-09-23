@@ -1,0 +1,382 @@
+ ;/*
+ ;*  TOPPERS/JSP Kernel
+ ;*      Toyohashi Open Platform for Embedded Real-Time Systems/
+ ;*      Just Standard Profile Kernel
+ ;*
+ ;*  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ ;*                              Toyohashi Univ. of Technology, JAPAN
+ ;*  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+ ;*                   Tomakomai National College of Technology, JAPAN
+ ;*  Copyright (C) 2001,2002 by Industrial Technology Institute,
+ ;*                              Miyagi Prefectural Government, JAPAN
+ ;*
+ ;*  上記著作権者は，Free Software Foundation によって公表されている
+ ;*  GNU General Public License の Version 2 に記述されている条件か，以
+ ;*  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
+ ;*  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ ;*  利用と呼ぶ）することを無償で許諾する．
+ ;*  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
+ ;*      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
+ ;*      スコード中に含まれていること．
+ ;*  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ ;*      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ ;*      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ ;*      この利用条件および下記の無保証規定を掲載すること．
+ ;*  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ ;*      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
+ ;*    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
+ ;*        権表示，この利用条件および下記の無保証規定を掲載すること．
+ ;*    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
+ ;*        こと．
+ ;*  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ ;*      害からも，上記著作権者を免責すること．
+ ;*
+ ;*  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
+ ;*  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
+ ;*  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
+ ;*  かなる損害に関しても，その責任を負わない．
+ ;*
+ ;*  @(#) $Id: cpu_support.src,v 1.2 2002/04/13 13:14:45 imai Exp $
+ ;*/
+
+;/*  日立純正Cコンパイラ用アセンブラソース  */
+        .CPU 2000A:24
+	.SECTION P, CODE, ALIGN=2
+
+_MACRO_ONLY: .DEFINE  ""
+
+	.INCLUDE "sys_config_asm.h"
+	.INCLUDE "cpu_config_asm.h"
+	.INCLUDE "offset.h"
+;/*  要確認(cpu_config_asm.hにて定義すべきである。) */
+_runtsk:		.DEFINE 	"__kernel_runtsk"
+_call_texrtn		.DEFINE		"__kernel_call_texrtn"
+_enadsp:		.DEFINE 	"__kernel_enadsp"
+_task_intmask:		.DEFINE 	"__kernel_task_intmask"
+_schedtsk:		.DEFINE 	"__kernel_schedtsk"
+_exit_and_dispatch:	.DEFINE 	"__kernel_exit_and_dispatch"
+_activate_r:	        .DEFINE		"__kernel_activate_r"
+_dispatch: 		.DEFINE		"__kernel_dispatch"
+
+
+
+;/*                                                                      */
+;/*  タスクディスパッチャ                                                */
+;/*                                                                      */
+;/*    　_dispatch は、割込み外ネストカウンタ = 0,割込み禁止状態         */
+;/*    で呼び出さなければならない．_exit_and_dispatch も，割込みネスト   */
+;/*    カウンタ = 0・割込み禁止状態で呼び出すのが原則であるが，カーネル  */
+;/*    起動時に対応するため，割込みネストカウンタ = 1で呼び出した場合に  */
+;/*    も対応している．                                                  */
+
+	.GLOBAL _dispatch
+        .IMPORT _runtsk
+_dispatch:
+	push.l	er6			;/* er2〜6を保存 */
+	push.l	er5
+	push.l	er4
+	push.l	er3
+	push.l	er2
+	mov.l	@_runtsk, er0		;/* er0 <- runtsk		*/
+	mov.l	sp, @(TCB_sp, er0)	;/* タスクスタックポインタを保存	*/
+	mov.l	#dispatch_r, er1	;/* 実行再開番地			*/
+	mov.l	er1, @(TCB_pc, er0)
+	bra     dispatcher_1
+
+
+;/* Relse1.2での変更点 */
+
+        .IMPORT _call_texrtn
+	.IMPORT _intnest
+dispatch_r:
+	pop.l	er2			;/* er2〜6を復元 */
+	pop.l	er3
+	pop.l	er4
+	pop.l	er5
+	pop.l	er6
+                              ;/* タスク例外許可状態のチェック */
+        mov.l   @_runtsk, er0   ;/* er0←runtsk */
+        mov.b   @(TCB_enatex,er0),r1l
+        btst   #TCB_enatex_bit,r1l
+        ;/* er1=0->(CCR)Z=1 */
+        beq    _dispatcher_r_1
+                               ;/* タスク例外処理要求のチェック */
+        mov.w   @(TCB_texptn,er0),r1
+        or.w    r1,r1
+        beq     _dispatcher_r_1
+        jmp	@_call_texrtn	;/* タスク例外処理処理ルーチンの呼び出し */
+
+_dispatcher_r_1:
+        rts
+
+;/*  ext_tsk()で呼ばれる際にも、割込みネストカウンタのクリアを行っている   */
+;/*  ->不要                                                                */
+	.GLOBAL _exit_and_dispatch
+_exit_and_dispatch:
+	;/* 割り込み禁止で呼ばれる。 */
+	sub.l	er0, er0		;/* 割込みネストカウンタをクリア	*/
+	mov.l	er0, @_intnest
+
+         .IMPORT _schedtsk
+dispatcher_1:
+	;/* ここには割り込み禁止で来ること   */
+	mov.l	@_schedtsk, er0		;/* er0 <- schedtsk		*/
+	or.l	er0, er0		;/* schedtsk があるか？		*/
+	beq	dispatcher_2		;/* 無ければジャンプ		*/
+	mov.l	er0, @_runtsk		;/* schedtskをruntskに(タスクスイッチ）*/
+	mov.l	@(TCB_sp, er0), sp
+	mov.l	@(TCB_pc, er0), er0	;/* 実行再開番地を復帰		*/
+	jmp	@er0
+
+dispatcher_2:
+	;/*  ここで割込みモードに切り換えるのは，ここで発生する割込み処理 */
+	;/*  にどのスタックを使うかという問題の解決と，割込みハンドラ内で */
+	;/*  のタスクディスパッチの防止という二つの意味がある．           */
+	    			;/* スタックを割り込みスタックに切替え */
+	mov.l	#STACKTOP, sp
+				;/*  割込みネストカウンタを１にする */
+	sub.l	er0, er0
+	inc.l	#1, er0
+	mov.l	er0, @_intnest
+
+          .IMPORT _task_intmask
+          .IMPORT __kernel_reqflg
+dispatcher_2_enable_interrupt:
+	mov.b     @_task_intmask, r0l
+	ldc.b     r0l, exr              ;/* 割り込み許可		*/
+	sleep				;/* 割込み待ち		*/
+	ldc.b     #MAX_IPM, exr	        ;/* 割り込み禁止		*/
+
+                   ;/* Release1.2での変更点 */
+        mov.w   @__kernel_reqflg, r0		;/* reqflgのチェック  */
+        or.w    r0,r0				;/*  reqflgはBOOL型 -> int型(16bits)  */
+        beq     dispatcher_2_enable_interrupt
+        mov.w   #0,r0
+        mov.w     r0, @__kernel_reqflg		;/*  reqflgのクリア  */
+        mov.l   er0, @_intnest		;/* 割込みネストカウンタをクリア */
+        bra     dispatcher_1
+
+;/*                                                                 */
+;/*  割込みハンドラ出口処理                                         */
+;/*                                                                 */
+;/* 戻り先がタスクでreqflgがセットされている場合のみここにくる。    */
+;/* 割込みネストカウンタ = 0,割込み禁止状態,スクラッチレジスタを    */
+;/* 保存した状態で呼び出すこと。                                    */
+
+	.GLOBAL ret_int
+        .IMPORT _enadsp
+ret_int:
+
+				    ;/*  enadspはBOOL型 -> int型(16bits)  */
+	mov.w	@_enadsp, r0		;/* enadspのチェック		*/
+	or.w	r0, r0		;/* ディスパッチ禁止ならret_int_1へ	*/
+	beq	ret_int_1
+
+	mov.l	@_runtsk, er0		;/* er0 <- runtsk		*/
+	mov.l	@_schedtsk, er1		;/* er1 <- schedtsk		*/
+	cmp.l	er0, er1		;/* runtsk と schedtsk を比較	*/
+	beq	ret_int_1		;/* 同じならret_int_1へ		*/
+
+         ;/*  積和レジスタをサポートしている場合には、ここで退避  */
+					;/* タスクスタックポインタを保存	*/
+	mov.l	sp, @(TCB_sp, er0)
+	mov.l	#ret_int_r, er1  	;/* 実行再開番地			*/
+	mov.l	er1, @(TCB_pc, er0)
+        bra     dispatcher_1
+
+;/*  割込みの出口でディスパッチャからここに戻ってくる   */
+
+
+                                          ;/* Release1.2での変更点 */
+ret_int_r:
+                  ;/*  積和レジスタをサポートしている場合には、ここで復元  */
+
+ret_int_1:
+                                         ;/* タスク例外許可状態のチェック */
+        mov.l   @_runtsk, er0   ;/* er0←runtsk */
+        mov.b   @(TCB_enatex,er0),r1l
+        btst   #TCB_enatex_bit,r1l
+        ;/* er1=0->(CCR)Z=1 */
+        beq    ret_int_2
+                                         ;/* タスク例外処理要求のチェック */
+        mov.w   @(TCB_texptn,er0),r1
+        or.w    r1,r1
+        beq     ret_int_2
+	jsr	@_call_texrtn		;/* タスク例外処理ルーチン起動	*/
+
+ret_int_2:
+	.AIFDEF SUPPORT_CHG_IPM
+                                     ;/*  戻り先の割込みマスクを */
+ 				     ;/* task_intmaskにする */
+                                     ;/*  スタックの先頭からEXRまでのオフセットは28（下記参照) */
+                                     ;/*  汎用レジスタは8ビットレジスタとして使用  */
+			             ;/*  EXRのトレースビットTを保存していない  */
+        mov.b   @_task_intmask, r1l  ;/*  スタックに積んであるEXRに上書き  */
+ 	mov.b   r1l,  @(28, er7)     ;/* er7 = sp  */   
+	.AENDI ;/* SUPPORT_CHG_IPM */
+                                        ;/* レジスタを復帰		*/
+	pop.l	er6		        ;/*   +0:er6  */
+	pop.l	er5           		;/*   +4:er5  */
+	pop.l	er4  			;/*   +8:er4  */
+	pop.l	er3			;/*  +12:er3  */
+	pop.l	er2			;/*  +16:er2  */
+	pop.l	er1			;/*  +20:er1  */
+	pop.l	er0			;/*  +24:er0  */
+					;/*  +28:EXR  */
+        rte
+
+;/*                                                               */
+;/*  no_reg_exception()                                           */
+;/*  CPU例外として登録されていない例外が発生すると呼び出される。  */
+;/*  例外が発生した時点のPC,ER0〜7を出力してカーネル              */
+;/*  を停止する。                                                 */
+	.GLOBAL _no_reg_exception
+        .IMPORT _cpu_experr
+_no_reg_exception:
+
+	push.l	er6		;/*  ER0〜6を保存			*/
+	push.l	er5
+	push.l	er4
+	push.l	er3
+	push.l	er2
+	push.l	er1
+	push.l	er0
+
+	mov.l	sp, er0		;/*  引数設定				*/
+				;/*  SP は -32 で、発生時点の値		*/
+	jsr	@_cpu_experr	;/*  cpu_experr()の呼び出し		*/
+
+;/*  タスク起動処理  */
+
+	.GLOBAL _activate_r
+_activate_r:
+        mov.b   @_task_intmask, r0l
+        ldc.b   r0l, exr	;/*  割込み許可(割込み許可直後に割込みが
+                                ;      発生してタスクスイッチが起こったと
+                                ;      しても、ここに戻くるときには、
+                                ;      runtskは元に戻っている。)	*/
+	mov.l	@_runtsk, er2
+	mov.l	@(TCB_tinib, er2), er2
+	mov.l	@(TINIB_task, er2), er1	;/*  タスク起動番地		*/
+					;/*  拡張情報（タスクへの引数）	*/
+	mov.l	@(TINIB_exinf, er2), er0
+	jmp	@er1
+
+
+;
+;/*  H8版では、以下に「ハードウェア割込み禁止･許可(SCI、TPU）」と「割込み優先度を      */
+;/*  上げる(SCI)」設定が記述されている。H8S版にて、割込みモード0をサポートする際には、 */
+;/*  必要となる設定であると思われる。                                                  */                  */
+;
+;/*  ハードウェア割り込み許可  */
+;
+;/*  ITU -- 何もしない  */ 
+;/*                                           */
+;/*	.GLOBAL _timer_handler_enable_int    */
+;/*_timer_handler_enable_int:                 */
+;/*	rts                                  */
+;
+;/* SCI -- 割込み優先レジスタの優先度を上げる   */
+;/*                                             */
+;/*	.GLOBAL _serial_in_handler_enable_int  */
+;/*	.GLOBAL _serial_out_handler_enable_int */
+;/*        .IMPORT SYSTEM_SCI_IPR               */
+;/*        .IMPORT SYSTEM_SCI_IP_BIT            */
+;/*  _serial_in_handler_enable_int:             */
+;/*  _serial_out_handler_enable_int:            */
+;/*	mov.b	@SYSTEM_SCI_IPR, r0l           */
+;/*	bset	#SYSTEM_SCI_IP_BIT, r0l        */
+;/*	mov.b	r0l, @SYSTEM_SCI_IPR           */
+;/*	rts                                    */
+;
+;/*  割込み制御モード0をサポートする際に必要に  */
+;/*     なる  					*/
+;/*  ハードウェア割り込み禁止  */
+;
+;/*  ITU -- Compare Match フラグをクリアーする。 */
+;
+;/*  使用していない  */
+;/*                                              */
+;/*	.GLOBAL _timer_handler_disable_int      */
+;/*        .IMPORT SYSTEM_ITU                    */
+;/*        .IMPORT H8TSR                         */
+;/*        .IMPORT SYSTEM_TPU_IF_BIT             */
+;/* _timer_handler_disable_int:                  */
+;/*	mov.l	#(SYSTEM_ITU + H8TSR), er0      */
+;/*	bclr	#SYSTEM_TPU_IF_BIT, @er0        */
+;/*	rts                                     */
+;
+;/*  SCI -- 割込み優先レジスタの優先度を下げる。 */
+;
+;/*  使用していない  */
+;/*                                              */
+;/*	.GLOBAL _serial_in_handler_disable_int  */
+;/*	.GLOBAL _serial_out_handler_disable_int */
+;/*        .IMPORT SYSTEM_SCI_IPR                */
+;/*        .IMPORT SYSTEM_SCI_IP_BIT             */
+;/* _serial_in_handler_disable_int:              */
+;/* _serial_out_handler_disable_int:             */
+;/*	mov.b	@SYSTEM_SCI_IPR, r0l            */
+;/*	bclr	#SYSTEM_SCI_IP_BIT, r0l         */
+;/*	mov.b	r0l, @SYSTEM_SCI_IPR            */
+;/*	rts                                     */
+;
+
+;  日立コンパイラ
+;　　　C言語内でインラインアセンブラを用いると
+;　　　デバッガがアセンブラレベルでないと表示できない
+
+;/*
+; *  コンデションコードレジスタ（CCR）の現在値の読出し
+; */
+
+	.GLOBAL _current_ccr
+_current_ccr:
+       stc.b	ccr, r0l
+       rts
+
+;/*
+; *  コンディションコードレジスタ（CCR）の現在値の変更
+; */
+        .GLOBAL _set_ccr
+_set_ccr:
+       ldc.b	r0l, ccr
+       rts
+
+;/*
+; *  エクステンドレジスタ（EXR）の現在値の読出し
+; */
+
+	.GLOBAL _current_exr
+_current_exr:
+	stc.b	exr, r0l
+	rts
+
+;/*
+; *  コンデションコードレジスタ（EXR）の現在値の変更
+; */
+
+	.GLOBAL _set_exr
+_set_exr:
+	ldc.b	r0l, exr
+	rts
+
+;/*
+; * ビットをクリアー
+; */
+
+	.GLOBAL _bitclr
+_bitclr:
+	bclr	r1l, @er0
+        rts
+
+;/*
+; * ビットをセット
+; */
+
+	.GLOBAL _bitset
+_bitset:
+	bset	r1l, @er0
+	rts
+
+	.END

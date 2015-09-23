@@ -3,14 +3,14 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  *
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001 by Industrial Technology Institute,
+ *  Copyright (C) 2001,2002 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，Free Software Foundation によって公表されている
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -34,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_config.c,v 1.3 2001/11/02 11:13:39 imai Exp $
+ *  @(#) $Id: cpu_config.c,v 1.5 2002/04/11 11:30:20 imai Exp $
  */
 
 
@@ -90,7 +90,7 @@ cpu_initialize()
 	/*
 	 *  割込み／CPU例外ネストカウンタの初期化
 	 */
-	intnest = 0;
+	intnest = 1;
 
 #ifndef WITH_STUB
 
@@ -105,26 +105,19 @@ cpu_initialize()
 
 #endif	/*  WITH_STUB  */
 
+#ifndef CQ_SH1_DEB
 #ifdef EXCVT_KERNEL
 	/*
 	 *  ベクタテーブルの初期化
 	 */
-	{
-		FP *src, *dst, *end;
-
-		src = (FP *)EXCVT_ORIG;
-		dst = (FP *)EXCVT_KERNEL;
-		end = dst + EXCVT_SIZE;
-
-		while (dst != end) {
-			*dst++ = *src++;
-		}
-	}
+	memcpy(EXCVT_KERNEL, EXCVT_ORIG, EXCVT_SIZE*sizeof(VP));
+	
 	/*
 	 *  ベクタベースレジスタの初期化
 	 */
 	set_vbr(EXCVT_KERNEL);
 #endif /* EXCVT_KERNEL */
+#endif /* CQ_SH1_DEB */
 
 }
 
@@ -212,4 +205,25 @@ void cpu_experr(EXCSTACK *sp)
     syslog(LOG_EMERG, "r15 = %08x", (sp->r15)+19*4);
 
     while(1);
+}
+
+
+/*
+ *  メモリブロック操作ライブラリ
+ *	(ItIsからの流用)
+ *
+ *  関数の仕様は，ANSI C ライブラリの仕様と同じ．標準ライブラリのものを
+ *  使った方が効率が良い可能性がある．
+ *
+ */
+VP
+_dummy_memcpy(VP dest, VP src, UINT len)
+{
+	VB	*d = dest;
+	VB	*s = src;
+
+	while (len-- > 0) {
+		*d++ = *s++;
+	}
+	return(dest);
 }

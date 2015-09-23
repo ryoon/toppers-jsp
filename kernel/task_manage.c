@@ -8,7 +8,7 @@
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -32,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task_manage.c,v 1.3 2001/09/05 16:12:29 hiro Exp $
+ *  @(#) $Id: task_manage.c,v 1.5 2002/03/26 08:19:38 hiro Exp $
  */
 
 /*
@@ -113,7 +113,7 @@ SYSCALL ER_UINT
 can_act(ID tskid)
 {
 	TCB	*tcb;
-	UINT	actcnt;
+	ER_UINT	actcnt;
 
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);

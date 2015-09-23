@@ -1,19 +1,19 @@
 
 	      ＝ JSPカーネル コンフィギュレータ仕様 ＝
 
-             （Release 1.2対応，最終更新: 13-Nov-2001）
+             （Release 1.3対応，最終更新: 9-Apr-2002）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
  上記著作権者は，Free Software Foundation によって公表されている 
  GNU General Public License の Version 2 に記述されている条件か，以
- 下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ 下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  利用と呼ぶ）することを無償で許諾する．
  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -37,7 +37,7 @@
  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  かなる損害に関しても，その責任を負わない．
 
- @(#) $Id: configurator.txt,v 1.9 2001/11/15 13:10:57 hiro Exp $
+ @(#) $Id: configurator.txt,v 1.13 2002/04/14 15:27:12 hiro Exp $
 ------------------------------------------------------------------------
 
 
@@ -168,7 +168,7 @@ const XXXINIB xxxinib_table[TNUM_XXXID] = {
 オブジェクトのコントロールブロックの定義を生成する．具体的には，オブジェ
 クトの省略記号を「XXX／xxx」とすると，次のような行を生成する．
 
-XXXCB xxxcb_table[TNUM_OBJID];
+XXXCB xxxcb_table[TNUM_XXXID];
 
 (3-1) タスクに関する定義
 
@@ -198,7 +198,7 @@ DEF_TEX(tskid, { texatr, texrtn });
 タスク毎に，指定されたサイズのスタック領域を定義する．具体的には，上記
 の静的APIに対して，次の定義を生成する．
 
-static VP <スタック領域の変数名>[TCOUNT_VP(stksz)]:
+static VP <スタック領域の変数名>[TCOUNT_VP(stksz)];
 
 ここで，<スタック領域の変数名> は，タスク毎に異なる識別子を生成して用
 いる．
@@ -302,7 +302,11 @@ CRE_DTQ(dtqid, { dtqatr, dtqcnt, dtq });
 各データキュー毎に，必要なサイズのデータキュー領域を定義する．具体的に
 は，上記の静的APIに対して，次の定義を生成する．
 
+#if (dtqcnt) > 0
 static VP_INT <データキュー領域の変数名>[dtqcnt];
+#else
+#define <データキュー領域の変数名> NULL
+#endif
 
 ここで，<データキュー領域の変数名> は，データキュー毎に異なる識別子を
 生成して用いる．
@@ -442,7 +446,7 @@ CRE_CYC(cycid, { cycatr, exinf, cychdr, cyctim, cycphs });
 には，次のような行を生成する．
 
 #define	TNUM_INHNO <定義する割込みハンドラの数>
-const INHNO	tnum_inhno = TNUM_INHNO;
+const UINT	tnum_inhno = TNUM_INHNO;
 
 (4-3) 割込みハンドラの出入口処理
 
@@ -500,7 +504,7 @@ inhno が割込みハンドラ番号として正しくない場合にもエラーとすべきだが，
 的には，次のような行を生成する．
 
 #define	TNUM_EXCNO <定義するCPU例外ハンドラの数>
-const EXCNO	tnum_excno = TNUM_EXCNO;
+const UINT	tnum_excno = TNUM_EXCNO;
 
 (5-3) CPU例外ハンドラの出入口処理
 

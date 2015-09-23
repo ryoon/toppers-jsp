@@ -7,12 +7,12 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
  *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
@@ -36,7 +36,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: makeoffset.c,v 1.1 2001/11/12 13:38:30 abe Exp $
+ *  @(#) $Id: makeoffset.c,v 1.4 2002/04/14 11:36:50 hiro Exp $
  */
 
 #include "jsp_kernel.h"
@@ -66,7 +66,22 @@ makeoffset()
         OFFSET_DEF (TCB, tinib);
 	OFFSET_DEF2(TCB, tskctxb.sp, sp);
         OFFSET_DEF2(TCB, tskctxb.pc, pc);
+        OFFSET_DEF (TCB, texptn);
 
         OFFSET_DEF (TINIB, task);
         OFFSET_DEF (TINIB, exinf);
 }
+
+asm("! BIT_REF");
+UW	ref_4 = 0;
+UH	ref_2 = 0;
+UB	ref_1 = 0;
+asm("! END");
+
+asm("! BIT_BB");
+TCB	TCB_enatex = {
+		{ NULL, NULL }, NULL, 0, 0,
+		FALSE, FALSE, TRUE,
+		0, NULL, { NULL, NULL }
+	};
+asm("! END");

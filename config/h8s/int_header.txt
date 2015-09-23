@@ -1,0 +1,144 @@
+ ;/*
+ ;*  TOPPERS/JSP Kernel
+ ;*      Toyohashi Open Platform for Embedded Real-Time Systems/
+ ;*      Just Standard Profile Kernel
+ ;*
+ ;*  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ ;*                              Toyohashi Univ. of Technology, JAPAN
+ ;*  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+ ;*                   Tomakomai National College of Technology, JAPAN
+ ;*  Copyright (C) 2001,2002 by Industrial Technology Institute,
+ ;*                              Miyagi Prefectural Government, JAPAN
+ ;*
+ ;*  上記著作権者は，Free Software Foundation によって公表されている
+ ;*  GNU General Public License の Version 2 に記述されている条件か，以
+ ;*  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
+ ;*  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ ;*  利用と呼ぶ）することを無償で許諾する．
+ ;*  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
+ ;*      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
+ ;*      スコード中に含まれていること．
+ ;*  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ ;*      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ ;*      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ ;*      この利用条件および下記の無保証規定を掲載すること．
+ ;*  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ ;*      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
+ ;*    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
+ ;*        権表示，この利用条件および下記の無保証規定を掲載すること．
+ ;*    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
+ ;*        こと．
+ ;*  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ ;*      害からも，上記著作権者を免責すること．
+ ;*
+ ;*  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
+ ;*  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
+ ;*  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
+ ;*  かなる損害に関しても，その責任を負わない．
+ ;*
+ ;*  @(#) $Id: int_header.txt,v 1.3 2002/04/13 13:14:45 imai Exp $
+ ;*/
+
+        .SECTION P, CODE,ALIGN=2
+        .INCLUDE  "cpu_config_asm.h"
+	.INCLUDE  "sys_config_asm.h"
+	.GLOBAL _inthdr_entry
+	.IMPORT _inthdr
+
+_inthdr_entry:
+			/*  必要最小限のレジスタをスタックに待避        */ 
+	push.l	er0							
+	push.l	er1							
+                        /*  exrをer1にコピー                            */ 
+       stc.b     exr, r1l                                              
+                        /*  ------------割込み禁止----------------------*/ 
+       ldc.b     #MAX_IPM, exr                                   
+                        /*  er2をスタックに退避　　　　　　　　　　　　 */ 
+       push.l  er2                                                     
+			/*  割込みネストカウンタのチェック 		*/ 
+	mov.l	@_intnest, er0						
+	mov.l	er0, er2   						
+				/*  割込みネストカウンタを +1           */ 
+	inc.l	#1, er0							
+	mov.l	er0, @_intnest						
+				/* 割込み発生時のコンテキストを判定  	*/ 
+	or.l	er2, er2   						
+				/* 多重割込みならジャンプ   		*/ 
+	bne	_interrupt_from_int_inthdr				
+   /* H8版では、ここで「 個別ハードウェア割り込み禁止」                 */ 
+   /*	jsr	@_inthdr_disable_int					*/ 
+				/* スタック入れ替え元の			*/ 
+				/* タスクスタックポインタを保存        	*/ 
+	mov.l	sp, er0							
+				/* 割込みスタックに切り替え		*/ 
+	mov.l	#STACKTOP, sp					
+				/*------- 割り込み許可----------------- */
+	ldc.b     r1l, exr                				
+				/*  残りのレジスタを保存                */						
+	mov.l	er3, @-er0						
+	mov.l	er4, @-er0						
+	mov.l	er5, @-er0						
+	mov.l	er6, @-er0						
+                       /*    割込みスタックにタスクスタックのSPを退避   */ 
+	push.l	er0							
+	jsr	@_inthdr						
+				/* --------割り込み禁止---------------- */ 
+	ldc.b     #MAX_IPM, exr            			
+     /*  H8版では、ここで「個別ハードウェア割り込み許可」     		*/ 
+     /* jsr	@_inthdr_enable_int					*/ 
+				/* 割込みネストカウンタを-1 */		   
+	mov.l	@_intnest, er0					  	
+	dec.l	#1, er0							
+	mov.l	er0, @_intnest						
+				/* スタック切替え  			*/ 
+	mov.l	@sp, sp							
+				/* reqflgのチェック     */ 
+        mov.w	@__kernel_reqflg, r0		        		
+			/* reqflgがFALSEならret_to_task_intに飛ぶ 	*/ 
+        or.w	r0, r0		/*  reqflgはBOOL型 -> int型(16bits)  */
+	beq	_ret_to_task_int_inthdr				
+				/*  reqflgをクリア     	*/ 
+	sub.w	r0, r0						
+        mov.w	r0, @__kernel_reqflg
+				/*  ret_intへジャンプ  			*/ 
+	jmp	@_kernel_ret_int					
+									   
+									   
+/*   多重割込みの処理 							*/ 
+/* 	割込み発生時のコンテキストを判別後、割り込み禁止		*/ 
+/* 	の状態でここに飛んでくる 					*/ 
+/* 	（割込みネストカウンタのインクリメントは済んでいる） 		*/ 
+									   
+_interrupt_from_int_inthdr:						
+				/*  個別ハードウェア割り込み禁止 */
+  /*	jsr	@_inthdr_disable_int					*/ 
+				/* 割り込み許可				*/ 
+	ldc.b     r1l, exr        				
+				/*  残りのレジスタを保存	  	*/ 							
+	push.l	er3							
+	push.l	er4							
+	push.l	er5							
+	push.l	er6							
+	jsr	@_inthdr						
+				/* 割り込み禁止				*/ 
+	ldc.b     #MAX_IPM, exr             			
+				/*  個別ハードウェア割り込み許可 */	   
+  /*	jsr	@_inthdr_enable_int					*/ 
+				/* 割込みネストカウンタを -1 */		   
+	mov.l	@_intnest, er0					  	
+	dec.l	#1, er0							
+	mov.l	er0, @_intnest						
+									   
+									   
+/*   reqflgがFALSEの場合の処理 						*/ 
+									   
+_ret_to_task_int_inthdr:					   
+	pop.l	er6		/*  レジスタ復元  			*/ 
+	pop.l	er5							   
+	pop.l	er4							   
+	pop.l	er3							   
+	pop.l	er2							   
+	pop.l	er1							   
+	pop.l	er0							   
+	rte			/*  割込み元に戻る  			*/ 
+
