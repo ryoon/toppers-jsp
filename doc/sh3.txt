@@ -1,15 +1,15 @@
 
 	    ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
-		    （SH3 ターゲット依存部）
+    		    （SH3 ターゲット依存部）
 
-	    （Release 1.0β対応，最終更新: 14-Nov-2000）
+	    （Release 1.1β対応，最終更新: 24-Feb-2001）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -32,7 +32,7 @@
  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  かなる損害に関しても，その責任を負わない．
 
- @(#) $Id: sh3.txt,v 1.3 2000/11/21 10:52:27 honda Exp $
+ @(#) $Id: sh3.txt,v 1.8 2001/02/23 20:36:19 honda Exp $
 ------------------------------------------------------------------------
 
 
@@ -190,9 +190,9 @@ SH3依存の割込みマスクの変更・参照のためのサービスコールの仕様は次の
 【機能】
 
 IPM(Interrupt Priority Mask)を ipm で指定された値に設定する。指定した
-値が 0〜6 以外の場合、E_PARエラーとなる。IPM を 1〜MAX_IPM -1 に設定し
-た場合でも、ディスパッチは禁止されない。また、設定した IPM の値は、ディ
-スパッチ禁止後も引き継がれる。
+値が 0〜15ないし16以外の場合、E_PARエラーとなる。IPM を 1〜MAX_IPM -1 
+に設定した場合でも、ディスパッチは禁止されない。また、設定した IPM の
+値は、ディスパッチ禁止後も引き継がれる。
 
 なお、このサービスコールを用いて、IPM を MAX_IPM (すべての割込みを禁止)
 に設定することはできない。IPM を MAX_IPM にしたい場合には、loc_cpu を
@@ -225,12 +225,47 @@ IPM(Interrupt Priority Mask)を ipm で指定された値に設定する。指定した
 び出すことができる。非タスクコンテキストや CPUロック状態で呼び出した場
 合には、E_CTXエラーとなる。
 
+
 2.3 CPU例外管理機能とCPU例外ハンドラ
 
 DEF_EXC で指定する割込みハンドラ番号(excno)は、SH3 での 例外事象レジス
 タに設定される例外コード番号を表し、そのデータ型(EXCNO)は unsigned int
 型に定義されている。DEF_EXC で、例外コード番号として有効でない値や、
 CPU例外に対応しない番号を指定した場合の動作は保証されない。
+
+CPU例外ハンドラに渡されるp_excinfは，CPU例外発生じのコンテキストを保存
+したスタックへのポインタが渡される．スタックの構造を以下に示す．
+
+
+      ----------------------
+     |         R7           |  <-- p_excinf
+      ----------------------
+     |         R6           |
+      ----------------------
+     |         R5           |
+      ----------------------
+     |         R4           |
+      ----------------------
+     |         R3           |
+      ----------------------
+     |         R2           |
+      ----------------------
+     |         R1           |
+      ----------------------
+     |         R0           |
+      ----------------------
+     |         SR           |
+      ----------------------
+     |         PR           |
+      ----------------------
+     |         PC           |
+      ----------------------
+
+また，CPU例外発生時のPCの値はインクリメントされる．そのため，CPU例外ハ
+ンドラから復帰を行うと，CPU例外発生した命令の次の命令から実行を再開す
+る．
+
+
 
 2.4 スタートアップモジュール
 
@@ -283,6 +318,26 @@ kernel_start へ分岐し、カーネルを起動する。kernel_start からリターンし
 に書き込んだデータは書き変る恐れがある。
 
 
+2.5 MACHとMACL
+
+MACHとMACLについては，gccに-mhitachiオプションをつけると，関数でMACHと
+MACLを使用する場合，スタックに保存してから使用し，関数を抜けると元に戻
+すため，割込みでは保存していない．また，自らディスパッチャを呼び出し，
+ディスパッチする場合は，関数呼び出しになるため，この呼び出しにまたがっ
+て，これらのレジスタを使うことはないため保存していない．そのためアセン
+ブラのコードを使用する場合もこのルールに従う必要がある．
+
+
+2.6 GBR
+
+gccはGBRを使用しないため，割込みハンドラの入口では保存していない．割込
+みハンドラ内でGBRを使う場合はアプリケーション側でGBRの待避/保存を行う
+必要がある．また，上記のMACHとMACLと同じ理由により，自らディスパッチャ
+を呼び出す場合にも保存していない．なお，割込みからのディスパッチ(受動
+的ディスパッチ)では保存している．
+
+
+
 ３．システム依存部の機能
 
 3.1 システムクロックドライバ(CARD-E09A,MU200-RSH3,DVE-SH7700)
@@ -331,171 +386,70 @@ Chip に内蔵されている16550互換のシリアルをサポートしてる。MU200-RSH3
 はスタブのワークエリアとなっており、使用することができない．
 
 
-
 ４．開発環境の構築
 
-4.1 開発環境の概要
-
-カーネルをインストールするには、JSPカーネルの配布キットに含まれる以外
-に、以下のツールおよびライブラリが必要である。
-
-    GNU開発環境
-	GCC-CORE（Cコンパイラ。動作確認は 2.95.2）
-	BINUTILS（アセンブラ、リンカなど。動作確認は 2.10）
-	NEWLIB（標準Cライブラリ。動作確認は 1.8.1）
-    perl（動作確認は 5.005）
-    GNU Make（動作確認は 3.77）
-
-アプリケーションが標準Cライブラリを使用しない場合には NEWLIB は無くて
-もよいが、GCC をインストールする際に NEWLIB があった方が都合がよいため、
-NEWLIB も含めてインストールする方法を標準とする。
-
-4.2 開発環境の構築方法
-
-上記の開発環境は、すべてフリーのソースコードから構築することができる。
-この節では、UNIXマシン（動作確認は Linux）上で開発環境を構築する手順を
-説明する。
-
-(1) 準備作業
-
-準備作業として、ホスト上に必要なツールをインストールする。具体的には、
-perl と GNU Make（以下の説明では makeコマンドが GNU Make であるものと
-する）のインストールが必要である。さらに、開発環境の構築に使うために、
-ホスト上にも最新の GCC をインストールしておくことが望ましい。
-
-なお、JSPカーネルの配布キットに含まれる perlスクリプトは、perl のプロ
-グラムが /usr/bin/perl にあるものと仮定して記述している。perl のプログ
-ラムのパスがこれと異なる場合は、各 perlスクリプトの先頭の perl の絶対
-パスを修正する必要がある。
-
-(2) ディレクトリの決定
-
-開発環境を構築するために、以下のディレクトリを用意する。
-
-    <PREFIX>		開発環境をインストールするディレクトリ
-    <BINUTILS-SRCDIR>	BINUTILS のソースを展開するディレクトリ
-    <BINUTILS-OBJDIR>	BITUTILS のオブジェクトを生成するディレクトリ
-    <GCC-SRCDIR>	GCC-CORE のソースを展開するディレクトリ
-    <GCC-OBJDIR>	GCC-CORE のオブジェクトを生成するディレクトリ
-    <NEWLIB-SRCDIR>	NEWLIB のソースを展開するディレクトリ
-    <NEWLIB-OBJDIR>	NEWLIB のオブジェクトを生成するディレクトリ
-
-(3) BINUTILS のインストール（2.10）
-
-次の手順に従って、BINUTILS をインストールする。
-
-    % cd <BINUTILS-OBJDIR>
-    % <BINUTILS-SRCDIR>/configure \
-		--target=sh-hitachi-elf \
-		--prefix=<PREFIX>
-    % make
-    % make install
-
-(4) GCC-CORE のインストール（2.95.2）
-
-次の手順に従って、GCC-CORE をインストールする。
-
-    % mkdir <GCC-OBJDIR>
-    % cd <GCC-OBJDIR>
-    % <GCC-SRCDIR>/configure \
-		--target=sh-hitachi-elf \
-		--prefix=<PREFIX> \
-		--with-gnu-as --with-gnu-ld --with-newlib \
-		--with-headers=<NEWLIB-SRCDIR>/newlib/libc/include
-    % make
-    % make install
-
-(5) NEWLIB のインストール（1.8.1）
-
-次の手順に従って、NEWLIB をインストールする。
-
-    % mkdir <NEWLIB-OBJDIR>
-    % cd <NEWLIB-OBJDIR>
-    % <NEWLIB-SRCDIR>/configure \
-		--target=sh-hitachi-elf \
-		--prefix=<PREFIX>
-    % make
-    % make install
-
-4.3 Windows上での開発環境
-
-Cygwin を用いることで、上記の開発環境を Windows上にインストールするこ
-とができる。
-
-(1) Cygwinのインストール（1.1.4）
-
-Cygwin1.1 は、http://sourceware.cygnus.com や Ring Server
-（http://www.ring.gr.jp）などからダウンロードすることができる。Cygwin
-をインストールしたら、以下のコマンドを実行して、シリアルインタフェース
-を RAWデバイスとして使えるようにする。
-
-    % mkdir /dev	
-    % mount \\.\com1 /dev/com1
-    % mount \\.\com2 /dev/com2
-
-(2) perl のインストール（5.6.0）
-
-Cygwin環境用の perl が、http://cygutils.netpedia.net/V1.1 の
-perl-5.6.0.cygwin1.1.tar.bz2 にある。これをダウンロードし、以下の手順
-でインストールする。
-
-    % cd /
-    % bunzip2 perl-5.6.0.cygwin1.1.tar.bz2
-    % tar xvf perl-5.6.0.cygwin1.1.tar
-    % ln -s /usr/local/bin/perl /usr/bin/perl
-
-4.4 ターゲットへのダウンロードと実行
-
-ユーザズマニュアルの手順にしたがって、JSPカーネルおよびアプリケーショ
-ンプログラムが構築できると、ターゲットシステムへダウンロードして実行す
-る必要がある。ダウンロードと実行の方法には、ROMモニタを用いる方法と、
-gdb＋スタブを用いる方法がある。
-
-(A) ROMモニタを用いる方法
-
-ターゲットシステムが ROMモニタを持っている場合には、バイナリ形式または
-モトローラ S形式のファイルを、ROMモニタのダウンロードコマンドを使って
-ダウンロードし、実行コマンドを使ってダウンロードした番地から実行すれば
-よい。
+開発環境の構築方法については，GNU開発環境構築マニュアルを参照すること．
 
 
-(B) スタブを用いる方法
+５．その他
 
-JSPカーネルと一緒に使えるように改造したスタブのソースは、JSPカーネルの
-ウェブサイトからダウンロードすることができる。スタブをダウンロードした
-ら、READMEファイルに従ってスタブを構築し、ROM またはフラッシュメモリに
-書き込む。
+5.1 ディレクトリ・ファイル構成
 
-gdb＋スタブを用いてプログラムをダウンロード・実行する手順は次の通り。
+SH3 ターゲット依存部の各ファイルの概要は次の通り．
 
-    % sh-hitachi-elf-gdb jsp
-    GNU gdb 4.18
-    Copyright 1998 Free Software Foundation, Inc.
-    .......... 以下メッセージが続く ..........
-    (gdb) 
-
-gdb が起動したら、次のコマンドを実行して、ターゲットシステムと接続する。
-
-    (gdb) set remotebaud BPS
-    (gdb) target remote /dev/ttyXX
-
-BPS、/dev/ttyXX には、それぞれターゲットシステムを接続しているシリアル
-ポートのボーレートと、デバイス名を指定する。次に、load コマンドにより、
-プログラムをダウンロードする。
-
-    (gdb) load
-
-プログラムの実行は、continue コマンドで行う。
-
-    (gdb) continue
-
-プログラムの実行中にコントロール-C を入力すると、プログラムを停止させ
-て gdb に制御が戻る。ただし、割込み禁止状態では、コントロール-C で停止
-させることはできない。
+    config/sh3/
+	Makefile.config	MakefileのSH3依存定義
+	cpu_defs.h	    プロセッサ依存部のアプリケーション用定義
+	cpu_config.h	プロセッサ依存部の構成定義
+	cpu_config.c	プロセッサ依存部の関数
+	cpu_support.S	プロセッサ依存部のサブルーチン
+	cpu_context.h	コンテキスト操作
+	makeoffset.c	offset.h 生成サポートプログラム
+	cpu_insn.h	    低レベルのプロセッサ操作ルーチン
+	start.S		    スタートアップモジュール
+	shelf.ld	    ビッグエンディアン用リンカスクリプト
+	shlelf.ld       リトルエンディアン用リンカスクリプト
+	hw_timer.h      タイマ操作ルーチン
+    sh3.h           SH3の定義
 
 
+    config/sh3/card_e09a/
+	Makefile.config	MakefileのDVE-68K/40依存定義
+	sys_defs.h	システム依存部のアプリケーション用定義
+	sys_config.h	システム依存部の構成定義
+	sys_config.c	システム依存部の関数
+	sys_support.S	システム依存部のサブルーチン
+	hw_timer.h	タイマ操作ルーチン
+	hw_serial.h	シリアルインタフェースデバイス操作ルーチン
+	dve68k.h	DVE-68K/40 ハードウェア定義
 
-５.その他
+
+    config/sh3/dvesh7700/
+	Makefile.config	MakefileのCARD-E09A依存定義
+	card_e09a.h     CARD-E09Aハードウェア定義
+	hw_serial.h	    シリアルインタフェースデバイス操作ルーチン
+    pce_header.S    バイナリの先頭に置くヘッダーファイル
+	sys_config.c	システム依存部の関数
+	sys_config.h	システム依存部の構成定義
+	sys_defs.h      システム依存部のアプリケーション用定義
+	sys_support.S	システム依存部のサブルーチン
 
 
+    config/sh3/rsh3/
+	Makefile.config	MakefileのRSH3依存定義
+	hw_serial.h	    シリアルインタフェースデバイス操作ルーチン
+	rsh3.h	        RSH3 ハードウェア定義
+	sys_config.c	システム依存部の関数
+	sys_config.h	システム依存部の構成定義
+	sys_defs.h	    システム依存部のアプリケーション用定義
+	sys_support.S	システム依存部のサブルーチン
 
+    
+    config/sh3/dvesh7700
+	Makefile.config	MakefileのDVESH7700依存定義
+	dvesh7700.h	    DVESH7700 ハードウェア定義
+	hw_serial.h	    シリアルインタフェースデバイス操作ルーチン
+	sys_config.c	システム依存部の関数
+	sys_config.h	システム依存部の構成定義
+	sys_defs.h	    システム依存部のアプリケーション用定義
+	sys_support.S	システム依存部のサブルーチン

@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: toppers.cpp,v 1.12 2000/11/24 09:24:55 takayuki Exp $
+ *  @(#) $Id: toppers.cpp,v 1.14 2001/02/23 17:14:31 takayuki Exp $
  */
 
 #ifdef _MSC_VER
@@ -250,7 +250,7 @@ Array * Object::LoadParameters(Array * src, int id, int start, int end, int offs
 
 	dest = &InitialParameter[id];
 	if(src->Size() <= end + offset)
-		throw Exception("Too few parameters");
+		throw Exception(MSG_TOOFEWPARAM);
 
 	do
 	{
@@ -269,7 +269,7 @@ int Object::AssignObjectID(Valient & src)
 	{
 	case Valient::STRING:
 		if(misc.IsDefined(string(src.GetString())))
-			throw Exception("Target object already exists");
+			throw Exception(MSG_ALREADYEXISTED);
 
 		id = Identifier.GetNewID();
 		misc.AddDefinition(string(src.GetString()),Valient(id));
@@ -277,10 +277,10 @@ int Object::AssignObjectID(Valient & src)
 	case Valient::INTEGER:
 		id = src.GetInteger();
 		if(Identifier.IsAssigned(id))
-			throw Exception("Target object ID is already assigned");
+			throw Exception(MSG_ALREADYASSIGNED);
 		break;
 	default:
-		throw Exception("Illegal object identifier");
+		throw Exception(MSG_ILLEGALIDENTIFIER);
 	}
 
 	Identifier.Assign(id);
@@ -296,22 +296,22 @@ int Object::GetAssignedObjectID(Valient & src)
 	{
 	case Valient::STRING:
 		if(!misc.IsDefined(string(src.GetString())))
-			throw Exception("Target object does not exist");
+			throw Exception(MSG_NOTEXIST);
 	
 		misc.GetDefinision(string(src.GetString()),work);
 		if(!(work == Valient::INTEGER))
-			throw Exception("Illegal object identifier");
+			throw Exception(MSG_ILLEGALIDENTIFIER);
 		id = work.GetInteger();
 		break;
 	case Valient::INTEGER:
 		id = src.GetInteger();
 		break;
 	default:
-		throw Exception("Illegal object identifier");
+		throw Exception(MSG_ILLEGALIDENTIFIER);
 	}
 
 	if(!Identifier.IsAssigned(id))
-		throw Exception("Target object does not exist");
+		throw Exception(MSG_NOTEXIST);
 
 	return id;
 }
@@ -319,7 +319,7 @@ int Object::GetAssignedObjectID(Valient & src)
 void Object::Check(bool & cont)
 {
 	if(!Identifier.IsAvailable())
-		throw Exception("Illegal object identifier\n  (Discontinuous, Negative numbers, Out of range, etc.)");
+		throw Exception(MSG_ILLEGALIDENTIFIER MSG_ILLEGALIDENTIFIER2);
 }
 
 void Object::OutputHeaderBlock(ostream * dest, char * shortname, char * longname, char * sp)
@@ -389,7 +389,7 @@ void Object::CreateBufferDefinition(ostream * out, int pos, char * type, char * 
 	{
 		param = &(*scope).second;
 		if( string((*param)[pos].GetString()).compare("NULL") != 0)
-			throw Exception("Non-NULL value assigned as object's buffer");
+			throw Exception(MSG_NONNULLASSIGNED);
 
 		sprintf(buffer,"_%s%d",prefix,(*scope).first);
 		(*param)[pos] = buffer;
@@ -444,7 +444,7 @@ void Task::Body(MultiStream & dest)
 
 			//スタック
 		if(string(((*param)[STACK]).GetString()).compare("NULL") != 0)
-			throw Exception("Non-NULL value assigned as task stack");
+			throw Exception(MSG_NONNULLASSIGNED);
 
 		sprintf(buffer,"_stack%d",(*scope).first);
 		(*param)[STACK] = buffer;
@@ -619,7 +619,7 @@ void FixedsizeMemoryPool::Body(MultiStream & dest)
 	{
 		param = &(*scope).second;
 		if(string((*param)[MPF].GetString()).compare("NULL") != 0)
-			throw Exception("Non-NULL value assigned as buffer of memory pool");
+			throw Exception(MSG_NONNULLASSIGNED);
 
 		sprintf(buffer,"_mpf%d",(*scope).first);
 		(*param)[MPF] = buffer;
@@ -635,7 +635,7 @@ void FixedsizeMemoryPool::Body(MultiStream & dest)
 		(*out) << '\t';
 		if(scope != InitialParameter.begin())
 			(*out) << ',';
-		(*out) << '{' << (*param)[ATR] << ",TCOUNT_VP(" << (*param)[SZ] << ")," << (*param)[MPF] << "(VP)(((VB *)" << (*param)[MPF] << ") + sizeof(" << (*param)[MPF] << "))}" << endl;
+		(*out) << '{' << (*param)[ATR] << ",TROUND_VP(" << (*param)[SZ] << ")," << (*param)[MPF] << ",(VP)(((VB *)" << (*param)[MPF] << ") + sizeof(" << (*param)[MPF] << "))}" << endl;
 		scope ++;
 	}
 	OutputFooterBlock(out,"mpf");

@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.2 2000/11/18 04:47:46 honda Exp $
+ *  @(#) $Id: sample1.c,v 1.5 2001/02/23 21:51:55 honda Exp $
  */
 
 /* 
@@ -134,11 +134,11 @@ void task(VP_INT exinf)
 			syscall(dly_tsk(10000));
 			break;
 		case 'z':
-			syslog(LOG_NOTICE, "zerodiv = %d", *DUMMY);
+			syslog(LOG_NOTICE, "load = %d", *DUMMY);
 			break;
 		case 'Z':
 			loc_cpu();
-			syslog(LOG_NOTICE, "zerodiv = %d", *DUMMY);
+			syslog(LOG_NOTICE, "load = %d", *DUMMY);
 			unl_cpu();
 			break;
 		default:
@@ -171,7 +171,7 @@ LoadAddressError_handler(VP p_excinf)
 	ID	tskid;
 /*	VW	*frame = p_excinf; */
 
-	syslog(LOG_NOTICE, "Zero Divide Stack Frame: %08x",p_excinf);
+	syslog(LOG_NOTICE, "Load Error Stack Frame: %08x",p_excinf);
 	syslog(LOG_NOTICE,
 		"vxsns_loc = %d vxsns_ctx = %d vxsns_dsp = %d vxsns_dpn = %d",
 		vxsns_loc(p_excinf), vxsns_ctx(p_excinf),

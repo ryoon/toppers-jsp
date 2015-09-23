@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.2 2001/02/23 17:36:29 takayuki Exp $
  */
 
 /*
@@ -35,6 +35,8 @@
 
 #ifndef _CPU_DEFS_H_
 #define _CPU_DEFS_H_
+
+#define WINDOWS
 
 #include "itron.h"
 #include "vwindows.h"

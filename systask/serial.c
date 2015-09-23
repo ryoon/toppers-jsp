@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serial.c,v 1.1 2000/11/14 14:44:25 hiro Exp $
+ *  @(#) $Id: serial.c,v 1.2 2000/12/13 01:01:56 hiro Exp $
  */
 
 /*
@@ -267,10 +267,10 @@ serial_getc(SPCB *spcb, char *c)
 ER_UINT
 serial_read(ID portid, char *buf, UINT len)
 {
-	SPCB	*spcb;
-	BOOL	buffer_empty;
-	char	c;
-	int	i;
+	SPCB		*spcb;
+	BOOL		buffer_empty;
+	char		c;
+	unsigned int	i;
 
 	if (sns_dpn()) {		/* コンテキストのチェック */
 		return(E_CTX);
@@ -345,9 +345,9 @@ serial_putc(SPCB *spcb, char c)
 ER_UINT
 serial_write(ID portid, char *buf, UINT len)
 {
-	SPCB	*spcb;
-	BOOL	buffer_full;
-	int	i;
+	SPCB		*spcb;
+	BOOL		buffer_full;
+	unsigned int	i;
 
 	if (sns_dpn()) {		/* コンテキストのチェック */
 		return(E_CTX);

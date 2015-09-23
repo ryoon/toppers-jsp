@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.1 2000/11/14 16:29:53 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.7 2001/02/23 21:14:08 honda Exp $
  */
 
 
@@ -56,13 +56,13 @@ UW	int_intmask;
 /*
  * 割り込みハンドラ/優先度の疑似テーブル
  */
-FP  int_table[0x99];
-VW  int_plevel_table[0x99];
+FP  int_table[0x50];
+VW  int_plevel_table[0x50];
 
 /*
  * CPU例外ハンドラの疑似テーブル
  */
-FP	exc_table[0x1E];
+FP	exc_table[(0x1E0 >> 5) + 1];
 
 /*
  *  プロセッサ依存の初期化
@@ -70,8 +70,6 @@ FP	exc_table[0x1E];
 void
 cpu_initialize()
 {
-    INT i;
-
     /*
      *  タスクコンテキストでの割込みマスクの初期化
      */
@@ -83,18 +81,21 @@ cpu_initialize()
     /*
      * 割り込みコントローラの初期化 
      */
-    *ICR0 = 0x0000;     
-    *ICR1 = 0x0000;
-    *ICR2 = 0x0000;     
-    *PINTER = 0x0000;     
+    *ICR0 = 0x0000;
     *IPRA = 0x0000;     
     *IPRB = 0x0000;
+    
+#ifndef SH7708    
+    *ICR1 = 0x0000;
+    *ICR2 = 0x0000;     
+    *PINTER = 0x0000;
     *IPRC = 0x0000;
     *IPRD = 0x0000;
     *IPRE = 0x0000;
     *IRR0 = 0x0000;   
     *IRR1 = 0x0000;
     *IRR2 = 0x0000;
+#endif
     
     /*
      *  ベクタベースレジスターの初期化
@@ -102,21 +103,6 @@ cpu_initialize()
     set_vbr(BASE_VBR);
 #endif
 
-    /*
-     *  割り込みハンドラ/優先度疑似テーブルの初期化
-     */
-    for(i = 0; i < 0x99; i++){
-        int_table[0x99] = 0;
-        int_plevel_table[0x99]  = 0;
-    }
-    
-    /*
-     *  CPU例外疑似ベクタテーブルの初期化
-     */
-    for(i = 0; i < 0x1E; i++){
-        exc_table[i] = 0;
-    }
-    
 }
 
 
@@ -127,6 +113,20 @@ cpu_initialize()
 void
 cpu_terminate()
 {
+}
+
+
+/*
+ * Trapa以外の例外で登録されていない例外が発生すると呼び出される
+ */
+void cpu_expevt(VW expevt,VW spc,VW ssr,VW pr)
+{
+    syslog(LOG_EMERG, "Expevt error occurs.");
+
+    syslog(LOG_EMERG, "Expevt = %08x SPC = %08x SR = %08x PR=%08X",expevt,spc,
+             ssr,pr);
+    while(1);
+    exit();
 }
 
 #ifdef SUPPORT_CHG_IPM
@@ -174,18 +174,6 @@ get_ipm(IPM *p_ipm)
 
 
             
-/*
- * Trapa以外の例外で登録されていない例外が発生すると呼び出される
- */
-void cpu_expevt(VW expevt,VW spc,VW ssr,VW pr)
-{
-    syslog(LOG_EMERG, "Expevt error occurs.");
-
-    syslog(LOG_EMERG, "Expevt = %08x SPC = %08x SR = %08x PR=%08X",expevt,spc,
-             ssr,pr);
-    while(1);
-    exit();
-}
 
 
 

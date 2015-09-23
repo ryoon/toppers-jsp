@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.1 2000/11/14 14:44:14 hiro Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.2 2001/02/23 18:00:38 hiro Exp $
  */
 
 /*
@@ -35,6 +35,8 @@
 
 #ifndef _CPU_DEFS_H_
 #define _CPU_DEFS_H_
+
+#define M68K
 
 #ifndef _MACRO_ONLY
 

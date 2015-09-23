@@ -26,9 +26,15 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: sys_defs.h,v 1.6 2001/02/23 17:36:29 takayuki Exp $
  */
+
 #ifndef __SYS_DEFS_H
 #define __SYS_DEFS_H
+
+#define WIN32_THREADMODEL
+
+#define DEBUG_ENABLE
+#define DEVICE_ENABLE
 
 #endif

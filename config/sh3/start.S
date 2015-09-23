@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.1 2000/11/14 16:29:53 honda Exp $
+ *  @(#) $Id: start.S,v 1.2 2000/12/08 22:18:54 honda Exp $
  */
 #define _MACRO_ONLY
 #include "sys_config.h"
@@ -110,7 +110,7 @@ start_3:
 	mov.l   __idata_start_k,r1
 	mov.l   __idata_end_k,r2
 	cmp/eq  r1,r2
-	bt      start_3
+	bt      start_5
 	mov.l   __data_start_k,r0
 start_4:	
 	mov.l   @r1+,r4

@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: banner.c,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: banner.c,v 1.2 2001/02/23 21:28:54 hiro Exp $
  */
 
 /*
@@ -37,7 +37,7 @@
 
 static char const banner[] = "\n"
 "JSP Kernel Release %d.%d (patchlevel = %d) for %s (%s, %s)\n"
-"Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory\n"
+"Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory\n"
 "                            Toyohashi Univ. of Technology, JAPAN\n";
 
 void

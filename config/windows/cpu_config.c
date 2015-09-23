@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: cpu_config.c,v 1.3 2001/01/09 06:54:40 takayuki Exp $
  */
 
 /*
@@ -77,32 +77,6 @@ exit_and_dispatch()
  *  プロセッサ依存の初期化
  */
 
-/*
- * 最上位レベルWindows構造化例外ハンドラ
- */
-
-LONG WINAPI
-HALExceptionHandler( EXCEPTION_POINTERS * exc )
-{
-	int i;
-
-	if((CPUStatus & CPU_STAT_EXC) == 0)
-	{
-		CPUStatus |= CPU_STAT_EXC;
-		for(i=0;i<EXC_MAXITEMS;i++)
-		{
-			if(ExceptionLevel[i].ExceptionCode == exc->ExceptionRecord->ExceptionCode)
-			{
-				i = EXCEPTION_CONTINUE_SEARCH;
-				( * ((void (*)(void *,int *))ExceptionLevel[i].Routine)) (exc,&i);
-				return i;
-			}
-		}
-		CPUStatus &= ~CPU_STAT_EXC;
-	}
-	return EXCEPTION_CONTINUE_SEARCH;
-}
-
 void
 cpu_initialize()
 {
@@ -113,7 +87,6 @@ cpu_initialize()
 	 * 最上位例外ハンドラの設定
 	 */
 	ini_exc();
-	SetUnhandledExceptionFilter(HALExceptionHandler);
 
 	/*
 	 *  割込みエミュレータの初期化
@@ -124,16 +97,9 @@ cpu_initialize()
 /*
  *  プロセッサ依存の終了処理
  */
-extern HANDLE PrimaryDialogHandle;
-
 void
 cpu_terminate()
-{
-	fin_int();
-	SetUnhandledExceptionFilter((void *)0l);
-	fin_exc();
-	DeleteCriticalSection(&CPULock);
-}
+{	HALQuitRequest();	}
 
 
 /*
@@ -146,7 +112,9 @@ activate_r( LPVOID param)
 {
 	TCB * tcb = (TCB *)param;
 	__try{
+		CoInitialize(NULL);
 		(*tcb->tinib->task)(tcb->tinib->exinf);
+		CoUninitialize();
 	}
 	__except( HALExceptionHandler(GetExceptionInformation()) )
 	{}

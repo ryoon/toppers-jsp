@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.2 2000/11/18 04:47:46 honda Exp $
+ *  @(#) $Id: sample1.c,v 1.6 2001/02/23 21:51:55 honda Exp $
  */
 
 /* 
@@ -79,6 +79,7 @@
  *        レディキューを回転させる．
  *  'c' : 周期ハンドラを動作させる．
  *  'C' : 周期ハンドラを停止させる．
+ *  'V' : vxget_tim で性能評価用システム時刻を2回読む．
  *  'v' : 発行したシステムコールを表示する．
  *  'q' : 発行したシステムコールを表示しない（デフォルト）．
  */
@@ -86,6 +87,11 @@
 #include <jsp_services.h>
 #include "kernel_id.h"
 #include "sample1.h"
+
+/*
+ *  CPU例外処理の確認のためのダミー
+ */
+#define DUMMY ((volatile int *)0xFFFFFEC1) 
 
 /*
  *  並行実行されるタスクへのメッセージ領域
@@ -102,11 +108,13 @@ void task(VP_INT exinf)
 	char	*graph[] = { "|", "  +", "    *" };
 	char	c;
 
+
 	ena_tex();
 	while (1) {
-                syslog(LOG_NOTICE, "task%d is running (%03d).   %s",
+		syslog(LOG_NOTICE, "task%d is running (%03d).   %s",
 					tskno, ++n, graph[tskno-1]);
 		for (i = 0; i < TASK_LOOP; i++);
+
 		c = message[tskno-1];
 		message[tskno-1] = 0;
 		switch (c) {
@@ -126,11 +134,11 @@ void task(VP_INT exinf)
 			syscall(dly_tsk(10000));
 			break;
 		case 'z':
-			syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0);
+			syslog(LOG_NOTICE, "load = %d", *DUMMY);
 			break;
 		case 'Z':
 			loc_cpu();
-			syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0);
+			syslog(LOG_NOTICE, "load = %d", *DUMMY);
 			unl_cpu();
 			break;
 		default:
@@ -153,21 +161,20 @@ void tex_routine(TEXPTN texptn, VP_INT exinf)
 }
 
 /*
- *  ゼロ除算に対するCPU例外ハンドラ
- */
+ *  CPUロードアドレスエラーハンドラ
+ */  
+
+
 void
-zerodiv_handler(VP p_excinf)
+LoadAddressError_handler(VP p_excinf)
 {
 	ID	tskid;
-	VW	*frame = p_excinf;
-
-	syslog(LOG_NOTICE, "Zero Divide Stack Frame: %08x %08x %08x",
-				*frame, *(frame+1), *(frame+2));
+    
+	syslog(LOG_NOTICE, "Load Error Stack Frame: %08x",p_excinf);
 	syslog(LOG_NOTICE,
 		"vxsns_loc = %d vxsns_ctx = %d vxsns_dsp = %d vxsns_dpn = %d",
 		vxsns_loc(p_excinf), vxsns_ctx(p_excinf),
 		vxsns_dsp(p_excinf), vxsns_dpn(p_excinf));
-
 	if (!vxsns_loc(p_excinf) && !vxsns_ctx(p_excinf)) {
 		syscall(iget_tid(&tskid));
 		syscall(iras_tex(tskid, 0x8000));
@@ -197,13 +204,12 @@ void main_task(VP_INT exinf)
 	INT	tskno = 1;
 	ER_UINT	ercd;	
 	PRI	tskpri;
-
-
+	SYSUTIM	utime1, utime2;
 
 	syslog(LOG_NOTICE, "Sample task starts (exinf = %d).", exinf);
 
 	serial_ioctl(0, (IOCTL_CRLF | IOCTL_RAW | IOCTL_IXON | IOCTL_IXOFF));
-    
+        
 	act_tsk(TASK1);
 	act_tsk(TASK2);
 	act_tsk(TASK3);
@@ -315,6 +321,12 @@ void main_task(VP_INT exinf)
 			break;
 		case 'C':
 			stp_cyc(CYCHDR1);
+			break;
+		case 'V':
+			syscall(vxget_tim(&utime1));
+			syscall(vxget_tim(&utime2));
+			syslog(LOG_NOTICE, "utime1 = %d, utime2 = %d",
+						(UINT) utime1, (UINT) utime2);
 			break;
 		case 'v':
 			setlogmask(LOG_UPTO(LOG_INFO));

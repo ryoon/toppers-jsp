@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: cpu_config.h,v 1.2 2000/12/25 14:07:58 takayuki Exp $
  */
 
 /*
@@ -112,6 +112,7 @@ sense_lock()
  */
 
 #include "debugout.h"
+#include "device.h"
 
 Inline void
 i_lock_cpu()
@@ -238,7 +239,7 @@ extern void	cpu_initialize(void);
  */
 extern void	cpu_terminate(void);
 
-
+/* Windows Dedicated Routines */
 extern LONG WINAPI HALExceptionHandler( EXCEPTION_POINTERS * exc );
 
 #endif /* _MACRO_ONLY */

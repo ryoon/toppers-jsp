@@ -26,13 +26,14 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: exception.h,v 1.2 2000/11/14 15:56:26 takayuki Exp $
+ *  @(#) $Id: exception.h,v 1.3 2001/02/23 16:52:17 takayuki Exp $
  */
 
 #ifndef __EXCEPTION_H
 #define __EXCEPTION_H
 
 #include <string>
+#include "msg.h"
 
 class Exception
 {
@@ -41,7 +42,7 @@ protected:
 
 public:
 	Exception(void) 
-		{ Reason = "原因不明のエラー"; };
+		{ Reason = MSG_UNKNOWN; };
 	Exception(const char * src)
 		{ Reason = src; };
 	Exception(const std::string & src)

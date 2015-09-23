@@ -3,7 +3,7 @@
 #      Toyohashi Open Platform for Embedded Real-Time Systems/
 #      Just Standard Profile Kernel
 # 
-#  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+#  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
 # 
 #  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
 #  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 #  かなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile,v 1.2 2000/11/18 04:47:46 honda Exp $
+#  @(#) $Id: Makefile,v 1.4 2001/02/23 20:57:12 honda Exp $
 # 
 
 
@@ -56,7 +56,8 @@ include ../config/$(CPU)/$(SYS)/Makefile.config
 #  共通コンパイルオプションの定義
 #
 INCLUDES = -I. -I../include -I../config/$(CPU) -I../config/$(CPU)/$(SYS)
-CFLAGS := $(CFLAGS) $(INCLUDES) -g -Wall -DWITH_STUB
+CDEFS  := $(CDEFS) -DWITH_STUB
+CFLAGS := $(CFLAGS) $(CDEFS) $(INCLUDES) -g -Wall 
 LDFLAGS := -nostdlib $(LDFLAGS)
 LIBS = -lgcc
 
@@ -114,7 +115,7 @@ all: jsp.bin
 #  カーネルのコンフィギュレーションファイルの生成
 #
 kernel_cfg.c: $(UTASK_CFG)
-	$(CPP) $(INCLUDES) $(UTASK_CFG) | ../cfg/cfg
+	$(CPP) $(INCLUDES) $(CDEFS) $(UTASK_CFG) | ../cfg/cfg
 
 #
 #  offset.h の生成規則

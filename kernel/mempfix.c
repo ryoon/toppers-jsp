@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: mempfix.c,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: mempfix.c,v 1.2 2000/12/22 07:53:11 hiro Exp $
  */
 
 /*
@@ -103,7 +103,7 @@ get_block(MPFCB *mpfcb, VP *p_blk)
 	}
 	else if (mpfcb->unused < mpfcb->mpfinib->limit) {
 		*p_blk = mpfcb->unused;
-		(VB *)(mpfcb->unused) += mpfcb->mpfinib->blksz;
+		mpfcb->unused = (VB *)(mpfcb->unused) + mpfcb->mpfinib->blksz;
 		return(TRUE);
 	}
 	return(FALSE);

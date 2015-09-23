@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.c,v 1.2 2000/11/24 03:57:05 takayuki Exp $
+ *  @(#) $Id: start.c,v 1.5 2001/02/23 15:44:39 takayuki Exp $
  */
 #include "jsp_kernel.h"
 #include "task.h"
@@ -37,13 +37,23 @@
 #include "shellapi.h"
 #include "resource.h"
 
+
+struct tagDestructionProcedureQueue
+{
+	struct tagDestructionProcedureQueue * Next;
+	void (*DestructionProcedure)(void *);
+	void * Parameter;
+};
+
 extern void kernel_start();
 extern void kernel_exit();
 
-HANDLE ProcessInstance;
-HANDLE PrimaryDialogHandle;
+HINSTANCE ProcessInstance;
 HANDLE PrimaryThreadHandle;
+HWND PrimaryDialogHandle;
 HANDLE CurrentRunningThreadHandle;
+
+struct tagDestructionProcedureQueue * DestructionProcedureQueue;
 
  /*
   * カーネルスタータ
@@ -103,12 +113,15 @@ HALMessageHandler(WPARAM wParam,LPARAM lParam)
 			TCB * tcb = (TCB *)lParam;
 			TerminateThread(tcb->tskctxb.ThreadHandle,0);
 			CloseHandle(tcb->tskctxb.ThreadHandle);
+			tcb->tskctxb.ThreadHandle = INVALID_HANDLE_VALUE;
 		}else
 		{
 			if(CurrentRunningThreadHandle != INVALID_HANDLE_VALUE)
 			{
 				TerminateThread(CurrentRunningThreadHandle,0);
 				CloseHandle(CurrentRunningThreadHandle);
+				if(runtsk != 0)
+					runtsk->tskctxb.ThreadHandle = INVALID_HANDLE_VALUE;
 				CurrentRunningThreadHandle = INVALID_HANDLE_VALUE;
 			}
 		}
@@ -162,6 +175,47 @@ HALMessageHandler(WPARAM wParam,LPARAM lParam)
 			((void (*)(void *))(*work))(*(work+1));
 			break;
 		}
+	case HALMSG_ADDDESTRUCTIONPROCEDURE:
+		{
+			struct tagDestructionProcedureQueue * scope;
+			void ** work = (void **)lParam;
+
+			scope = DestructionProcedureQueue;
+
+			if((DestructionProcedureQueue = GlobalAlloc(GMEM_FIXED, sizeof(struct tagDestructionProcedureQueue))) != NULL)
+			{
+				DestructionProcedureQueue->DestructionProcedure = *(work);
+				DestructionProcedureQueue->Parameter = *(work+1);
+				DestructionProcedureQueue->Next = scope;
+			}
+			break;
+		}
+	case HALMSG_QUITREQUEST:
+		{
+			struct tagDestructionProcedureQueue * destqueue;
+			void * destarea;
+
+			hw_timer_terminate();
+
+			if(CurrentRunningThreadHandle != NULL)
+				SuspendThread(CurrentRunningThreadHandle);
+
+			destqueue = DestructionProcedureQueue;
+			while(destqueue != NULL)
+			{
+				(*destqueue->DestructionProcedure)(destqueue->Parameter);
+				destarea = destqueue;
+				destqueue = destqueue->Next;
+				GlobalFree((HGLOBAL)destarea);
+			}
+
+			fin_int();
+			fin_exc();
+			DeleteCriticalSection(&CPULock);
+
+			DestroyWindow(PrimaryDialogHandle);
+			break;
+		}
 
 	default:
 		return FALSE;
@@ -190,6 +244,8 @@ LRESULT CALLBACK PrimaryDialogProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lPara
 			DWORD ThreadID;
 			NOTIFYICONDATA nid;
 
+			PrimaryDialogHandle = hDlg;
+
 			nid.cbSize = sizeof(NOTIFYICONDATA);
 			nid.uFlags = NIF_ICON|NIF_TIP|NIF_MESSAGE;
 			nid.uID = ID_NOTIFYICON;
@@ -206,18 +262,19 @@ LRESULT CALLBACK PrimaryDialogProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lPara
 		}
 	case WM_CLOSE:
 			kernel_exit();
-			DestroyWindow(hDlg);
 			break;
 
 	case WM_DESTROY:
 		{
 			NOTIFYICONDATA nid;
+
 			nid.cbSize = sizeof(NOTIFYICONDATA);
 			nid.uID = ID_NOTIFYICON;
 			nid.hWnd = hDlg;
 			Shell_NotifyIcon(NIM_DELETE,&nid);
 			InvalidateRect(GetDesktopWindow(),NULL,FALSE);
 			UpdateWindow(GetDesktopWindow());
+			PrimaryThreadHandle = INVALID_HANDLE_VALUE;
 			PostQuitMessage(0);
 			break;
 		}
@@ -241,11 +298,13 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 		return 0;
 
 	ProcessInstance = hInstance;
+	DestructionProcedureQueue = NULL;
 
 	OnDebug InitializeDebugServices(hInstance,PrimaryDialogHandle);
-	
+	OnDevice InitializeDeviceSupportModule();
+
 	CurrentRunningThreadHandle = INVALID_HANDLE_VALUE;
-	PrimaryDialogHandle = CreateDialog(hInstance,"PrimaryDialog",NULL,PrimaryDialogProc);
+	CreateDialog(hInstance,"PrimaryDialog",NULL,PrimaryDialogProc);
 	ShowWindow(PrimaryDialogHandle,SW_HIDE);
 
 	OnDebug ShowWindow(PrimaryDialogHandle,SW_SHOW);
@@ -254,9 +313,25 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
+		if(msg.message == WM_QUIT)
+			msg.message = 0;
 	}
 
+	OnDevice FinalizeDeviceSupportModule();
 	OnDebug FinalizeDebugServices();
+
+	{
+		int i;
+			for(i=0;i<_kernel_tmax_tskid;i++)
+			{
+				if(_kernel_tcb_table[i].tskctxb.ThreadHandle != INVALID_HANDLE_VALUE)
+				{
+					TerminateThread(_kernel_tcb_table[i].tskctxb.ThreadHandle,0);
+					CloseHandle(_kernel_tcb_table[i].tskctxb.ThreadHandle);
+					_kernel_tcb_table[i].tskctxb.ThreadHandle = INVALID_HANDLE_VALUE;
+				}
+			}
+	}
 
 	CoUninitialize();
 	ExitProcess(msg.wParam);

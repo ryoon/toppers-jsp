@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: staticapi.h,v 1.3 2000/11/24 09:14:47 takayuki Exp $
+ *  @(#) $Id: staticapi.h,v 1.4 2001/02/23 16:52:17 takayuki Exp $
  */
 
 //------------------------------------------------------------
@@ -60,25 +60,25 @@ public:
 inline void StaticAPI::CheckParameterCount(Array & param,unsigned int start, unsigned int end)
 {
 	if((param.Size() < start) || (end != 0 && param.Size() > end))
-		throw Exception("Too few or Too much parameters");
+		throw Exception(MSG_TOOFEWPARAM MSG_OR MSG_TOOMANYPARAM);
 }
 
 inline void StaticAPI::CheckParameterType(Array & param,unsigned int offset, Valient::tagType type)
 {
 	if(param.Size() > offset || param.GetValuePtr(offset) == 0l || !(param[offset] == type))
-		throw Exception("Parameter type is not match");
+		throw Exception(MSG_ILLEGALTYPE);
 }
 
 inline void StaticAPI::CheckParameterType(Array & param,unsigned int offset, Array::tagType type)
 {
 	if((type != Array::EMPTY) && param.IsArray(offset) != (type == Array::ARRAY) ? true : false)
-		throw Exception("Parameter type is not match");
+		throw Exception(MSG_ILLEGALTYPE);
 }
 
 inline void StaticAPI::CheckParameter(Array * param, char * format)
 {
 	if(CheckParameter_Primitive(param,format)!=0l)
-		throw Exception("Internal error : Illegal parameter descriptor (Unterminated descriptor)");
+		throw Exception(MSG_INTERNAL " : " MSG_ILLEGALPRAMDESC);
 }
 
 #endif

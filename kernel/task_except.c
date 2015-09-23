@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task_except.c,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: task_except.c,v 1.2 2000/11/29 10:39:16 hiro Exp $
  */
 
 /*
@@ -62,11 +62,8 @@ ras_tex(ID tskid, TEXPTN rasptn)
 		 *  理ルーチンが呼び出されているはずである．
 		 */
 		assert(runtsk->texptn == 0);
+		runtsk->texptn = rasptn;
 		runtsk->enatex = FALSE;
-		t_unlock_cpu();
-		(*runtsk->tinib->texrtn)(rasptn, runtsk->tinib->exinf);
-		t_lock_cpu();
-
 		call_texrtn();
 		ercd = E_OK;
 	}

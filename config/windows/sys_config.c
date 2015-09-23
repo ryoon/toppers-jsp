@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: sys_config.c,v 1.3 2001/01/09 06:54:40 takayuki Exp $
  */
 
 
@@ -47,18 +47,10 @@ sys_initialize(void)
  * ターゲットシステムの修了
  */
 
-extern HANDLE PrimaryDialogHandle;
-
-void sys_exit_handler(void * param)
-{
-	DestroyWindow(PrimaryDialogHandle);
-}
 
 void
 sys_exit(void)
-{
-	HALExecuteProcedure(sys_exit_handler,0l);
-}
+{}
 
 /*
  *  ターゲットシステムの文字出力
@@ -68,5 +60,5 @@ extern ER_UINT serial_write(ID portid,char * buf, unsigned int len);
 void
 sys_putc(char c)
 {
-	serial_write(CONSOLE_PORTID,&c,1);
+//	serial_write(CONSOLE_PORTID,&c,1);
 }

@@ -1,0 +1,253 @@
+
+                  ＝ GNU開発環境構築マニュアル ＝
+
+            （Release 1.1β対応，最終更新: 24-Feb-2001）
+
+------------------------------------------------------------------------ 
+ TOPPERS/JSP Kernel
+     Toyohashi Open Platform for Embedded Real-Time Systems/
+     Just Standard Profile Kernel
+
+ Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+                             Toyohashi Univ. of Technology, JAPAN
+
+ 上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
+ フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
+ 布（以下，利用と呼ぶ）することを無償で許諾する．
+ (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
+     権表示，この利用条件および下記の無保証規定が，そのままの形でソー
+     スコード中に含まれていること．
+ (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
+     用する場合には，次のいずれかの条件を満たすこと．
+   (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
+       権表示，この利用条件および下記の無保証規定を掲載すること．
+   (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
+       こと．
+ (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+     害からも，上記著作権者を免責すること．
+
+ 本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
+ 本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
+ ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
+ かなる損害に関しても，その責任を負わない．
+
+ @(#) $Id: gnu_install.txt,v 1.2 2001/02/23 20:13:13 hiro Exp $
+------------------------------------------------------------------------
+
+
+１．GNU開発環境の構築
+
+1.1 開発環境の概要
+
+カーネルをインストールするには，JSPカーネルの配布キットに含まれる以外
+に，以下のツールおよびライブラリが必要である．
+
+    GNU開発環境
+       BINUTILS（アセンブラ，リンカなど．動作確認は 2.10）
+       GCC-CORE（Cコンパイラ．動作確認は 2.95.2）
+       GDB（デバッガ．動作確認は4.18）
+    NEWLIB（標準Cライブラリ．動作確認は 1.8.1）
+    perl（動作確認は 5.005）
+    GNU Make（動作確認は 3.77）
+
+アプリケーションが標準Cライブラリを使用しない場合には NEWLIB は必要な
+いが，GCC をインストールする際に NEWLIB があった方が都合がよいため，
+NEWLIB も含めてインストールする方法を標準とする．ターゲットへのダウン
+ロードと実行を ROMモニタ（GDB に対応していないもの）によって行う場合に
+は，GDB をインストールする必要はない．
+
+perl と GNU Make は，ほとんどの Linux と Cygwin では標準でインストール
+されるため，新たにインストールする必要はない．インストールされている 
+perl または make のバージョンを知りたい場合には，-v オプションをつけて
+実行すればよい（-v オプションをサポートしていない make は GNU make で
+はない）．なお，以下の説明では，makeコマンドが GNU Make であるものとす
+る．
+
+また，これらの開発環境を Windows上に構築するためには Cygwin を用いる．
+
+    Cygwin（動作確認は 1.1.4）
+
+これらのツールおよびライブラリのソースコードは，次のサイトから入手する
+ことができる．
+
+    BINUTILS，GCC-CORE，GDB，GNU Make:
+        GNUプロジェクト     http://www.gnu.org/
+        Ring Server         http://www.ring.gr.jp/
+
+    NEWLIB:
+        Red Hat             http://sources.redhat.com/
+                    または  ftp://sources.redhat.com/pub/newlib/
+
+    Cygwin:
+        Red Hat             http://sources.redhat.com/
+                    または  ftp://sources.redhat.com/pub/cygwin/
+        Ring Server         http://www.ring.gr.jp/
+
+1.2 開発環境の構築方法
+
+この節では，開発環境の構築方法を説明する．開発環境を Windows上に構築す
+る場合には，あらかじめ Cygwin をインストールしておくことが必要である．
+Cygwin のインストール時の注意事項は，1.3節で述べる．
+
+(1) 準備作業
+
+ホスト上に必要なツールが足りない場合には，あらかじめインストールしてお
+く．具体的には，perl と GNU Make が必要である．さらに，開発環境の構築
+に使うために，ホスト上にも最新の GCC をインストールしておくことが望ま
+しい．
+
+なお，JSPカーネルの配布キットに含まれる perlスクリプトは，perl のプロ
+グラムが /usr/bin/perl にあるものと仮定して記述している．perl のプログ
+ラムのパスがこれと異なる場合は，各 perlスクリプトの先頭の perl の絶対
+パスを修正する必要がある．
+
+(2) ソースファイルの展開
+
+BINUTILS，GCC-CORE，GDB，NEWLIB のソースファイルを展開する．以下では，
+展開により作成されたディレクトリ名をそれぞれ次のように表記する．
+
+    <BINUTILS-SRCDIR>   BINUTILS のソースを展開したディレクトリ
+    <GCC-SRCDIR>        GCC-CORE のソースを展開したディレクトリ
+    <GDB-SRCDIR>        GDB のソースを展開したディレクトリ
+    <NEWLIB-SRCDIR>     NEWLIB のソースを展開したディレクトリ
+
+(3) 開発環境構築のためのディレクトリの決定
+
+開発環境を構築するために，以下のディレクトリを用意する．
+
+    <PREFIX>            開発環境をインストールするディレクトリ
+    <BINUTILS-OBJDIR>   BITUTILS のオブジェクトを生成するディレクトリ
+    <GCC-OBJDIR>        GCC-CORE のオブジェクトを生成するディレクトリ
+    <GDB-OBJDIR>        GDB のオブジェクトを生成するディレクトリ
+    <NEWLIB-OBJDIR>     NEWLIB のオブジェクトを生成するディレクトリ
+
+<PREFIX>/bin が実行パスに含まれるようにシェルの設定を行っておく．また，
+make install は，<PREFIX> 以下に書き込み権限があるユーザで行う必要があ
+る．
+
+(4) ターゲットの選択
+
+ターゲットプロセッサに応じて，ターゲット環境を選択する．具体的には，次
+の通り．
+
+    プロセッサ      ターゲット環境（<TARGET>）
+    M68040          m68k-unknown-elf
+    SH1, SH3        sh-hitachi-elf
+    V850            v850-nec-elf
+
+以下，ターゲット環境を表す文字列を <TARGET> と表記する．
+
+なお，ターゲットによっては，ツールまたはライブラリのソースコードの修正
+が必要な場合がある．修正内容については，ターゲット毎のマニュアルに記述
+する．
+
+(5) BINUTILS のインストール（2.10）
+
+BINUTILS は，GCC-CORE のインストールに必要なため，GCC-CORE に先だって
+インストールする．BINUTILS のインストール手順は次の通り．
+
+    % mkdir <BINUTILS-OBJDIR>
+    % cd <BINUTILS-OBJDIR>
+    % <BINUTILS-SRCDIR>/configure --target=<TARGET> --prefix=<PREFIX>
+    % make
+    % make install
+
+(6) GCC-CORE のインストール（2.95.2）
+
+NEWLIB のインストールには GCC-CORE が必要なため，GCC-CORE のインストー
+ルを先に行う．configure は，newlib のヘッダーファイルを <PREFIX> 以下
+にインストールするため，<PREFIX> 以下に書き込み権限のあるユーザーで行
+う必要がある．GCC-CORE のインストール手順は次の通り．
+
+    % mkdir <GCC-OBJDIR>
+    % cd <GCC-OBJDIR>
+    % <GCC-SRCDIR>/configure \
+        --target=<TARGET> --prefix=<PREFIX> \
+        --with-gnu-as --with-gnu-ld --with-newlib \
+        --with-headers=<NEWLIB-SRCDIR>/newlib/libc/include
+    % make
+    % make install
+
+(7) GDB のインストール（4.182）
+
+次の手順に従って，GDB をインストールする．
+
+    % mkdir <GDB-OBJDIR>
+    % cd <GDB-OBJDIR>
+    % <GDB-SRCDIR>/configure --target=<TARGET> --prefix=<PREFIX>
+    % make
+    % make install
+
+(8) NEWLIB のインストール（1.8.1）
+
+次の手順に従って，NEWLIB をインストールする．
+
+    % mkdir <NEWLIB-OBJDIR>
+    % cd <NEWLIB-OBJDIR>
+    % <NEWLIB-SRCDIR>/configure --target=<TARGET> --prefix=<PREFIX>
+    % make
+    % make install
+
+1.3 Windows上での開発環境の構築
+
+開発環境を Windows上にインストールするには，1.2節の作業に先だって，
+Cygwin をインストールしておく必要がある．Cygwin をインストールしたら，
+以下のコマンドを実行してシリアルインタフェースを RAWデバイスとして使え
+るようにする．
+
+    % mkdir /dev    
+    % mount \\.\com1 /dev/com1
+    % mount \\.\com2 /dev/com2
+
+
+２．ターゲットへのダウンロードと実行
+
+ユーザズマニュアルの手順にしたがって，JSPカーネルおよびアプリケーショ
+ンプログラムが構築できると，ターゲットシステムへダウンロードして実行す
+る．ダウンロードと実行の方法には，ROMモニタを用いる方法と，gdb＋スタブ
+を用いる方法がある．
+
+(A) ROMモニタを用いる方法
+
+ターゲットシステムが ROMモニタを持っている場合には，バイナリ形式または
+モトローラ S形式のファイルを，ROMモニタのダウンロードコマンドを使って
+ダウンロードし，実行コマンドを使ってダウンロードした番地から実行すれば
+よい．
+
+(B) スタブを用いる方法
+
+JSPカーネルと一緒に使えるように改造したスタブのソースコードは，JSPカー
+ネルのウェブサイトからダウンロードすることができる．スタブをダウンロー
+ドしたら，READMEファイルに従ってスタブを構築し，ROM またはフラッシュメ
+モリに書き込む．
+
+gdb＋スタブを用いてプログラムをダウンロード・実行する手順は次の通り．
+
+    % <TARGET>-gdb jsp
+    GNU gdb 4.18
+    Copyright 1998 Free Software Foundation, Inc.
+    .......... 以下メッセージが続く ..........
+    (gdb) 
+
+gdb が起動したら，次のコマンドを実行して，ターゲットシステムと接続する．
+
+    (gdb) set remotebaud <BPS>
+    (gdb) target remote /dev/ttyXX
+
+<BPS>，/dev/ttyXX には，それぞれ，ターゲットシステムを接続しているシリ
+アルポートのボーレートと，デバイス名を指定する．次に，load コマンドに
+より，プログラムをダウンロードする．
+
+    (gdb) load
+
+プログラムの実行は，continue コマンドで行う．
+
+    (gdb) continue
+
+ターゲットシステムによっては，プログラムの実行中にコントロール-C を入
+力する，または NMI をかけることで，プログラムを停止させて gdb に制御が
+戻すことができる．ただし，割込み禁止状態では，コントロール-C で停止さ
+せることはできない．詳しくは，スタブの READMEファイルまたはターゲット
+毎のマニュアルを参照すること．
+
+以上

@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c.without_stub,v 1.2 2000/11/18 04:47:46 honda Exp $
+ *  @(#) $Id: sample1.c,v 1.5 2000/11/27 15:09:44 takayuki Exp $
  */
 
 /* 
@@ -89,14 +89,11 @@
 #include "sample1.h"
 
 /*
- *  CPU例外処理の確認のためのダミー
- */
-#define DUMMY ((volatile int *)0xFFFFFEC1) 
-
-/*
  *  並行実行されるタスクへのメッセージ領域
  */
 char message[3];
+
+unsigned int tsk_ident;
 
 /*
  *  並行実行されるタスク
@@ -108,12 +105,12 @@ void task(VP_INT exinf)
 	char	*graph[] = { "|", "  +", "    *" };
 	char	c;
 
-
 	ena_tex();
 	while (1) {
 		syslog(LOG_NOTICE, "task%d is running (%03d).   %s",
 					tskno, ++n, graph[tskno-1]);
-		for (i = 0; i < TASK_LOOP; i++);
+		for (i = 0; i < TASK_LOOP; i++)
+			tsk_ident = (unsigned int)tskno;
 
 		c = message[tskno-1];
 		message[tskno-1] = 0;
@@ -134,11 +131,11 @@ void task(VP_INT exinf)
 			syscall(dly_tsk(10000));
 			break;
 		case 'z':
-			syslog(LOG_NOTICE, "zerodiv = %d", *DUMMY);
+			syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0);
 			break;
 		case 'Z':
 			loc_cpu();
-			syslog(LOG_NOTICE, "zerodiv = %d", *DUMMY);
+			syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0);
 			unl_cpu();
 			break;
 		default:
@@ -161,21 +158,21 @@ void tex_routine(TEXPTN texptn, VP_INT exinf)
 }
 
 /*
- *  CPUロードアドレスエラーハンドラ
- */  
-
-
+ *  ゼロ除算に対するCPU例外ハンドラ
+ */
 void
-LoadAddressError_handler(VP p_excinf)
+zerodiv_handler(VP p_excinf)
 {
 	ID	tskid;
-/*	VW	*frame = p_excinf; */
+	VW	*frame = p_excinf;
 
-	syslog(LOG_NOTICE, "Zero Divide Stack Frame: %08x",p_excinf);
+	syslog(LOG_NOTICE, "Zero Divide Stack Frame: %08x %08x %08x",
+				*frame, *(frame+1), *(frame+2));
 	syslog(LOG_NOTICE,
 		"vxsns_loc = %d vxsns_ctx = %d vxsns_dsp = %d vxsns_dpn = %d",
 		vxsns_loc(p_excinf), vxsns_ctx(p_excinf),
 		vxsns_dsp(p_excinf), vxsns_dpn(p_excinf));
+
 	if (!vxsns_loc(p_excinf) && !vxsns_ctx(p_excinf)) {
 		syscall(iget_tid(&tskid));
 		syscall(iras_tex(tskid, 0x8000));
@@ -209,14 +206,16 @@ void main_task(VP_INT exinf)
 
 	syslog(LOG_NOTICE, "Sample task starts (exinf = %d).", exinf);
 
-	serial_ioctl(0, (IOCTL_CRLF | IOCTL_RAW | IOCTL_IXON | IOCTL_IXOFF));
-        
+	//serial_ioctl(0, (IOCTL_CRLF | IOCTL_RAW | IOCTL_IXON | IOCTL_IXOFF));
+
 	act_tsk(TASK1);
 	act_tsk(TASK2);
 	act_tsk(TASK3);
+	sta_cyc(CYCHDR1);
+	slp_tsk();
 
 	do {
-		serial_read(0, buf, 1);
+		//serial_read(0, buf, 1);
 		switch (buf[0]) {
 		case 'e':
 		case 's':

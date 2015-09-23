@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.1 2000/11/14 16:29:53 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.9 2001/02/23 21:14:08 honda Exp $
  */
 
 
@@ -67,7 +67,7 @@
  *  TCB 関連の定義
  *
  *  cpu_context.h に入れる方がエレガントだが，参照の依存性の関係で，
- *  cpu_contexg.h には入れられない．
+ *  cpu_context.h には入れられない．
  */
 
 /*
@@ -237,17 +237,17 @@ typedef struct exc_vector_entry {
 
 /*
  *  割り込みハンドラの疑似テーブル
- *  SHはベクタテーブルを持たないため割り込み処理で例外要因を
+ *  SH3以降はベクタテーブルを持たないため割り込み処理で例外要因を
  *  オフセットにこれら疑似テーブルよりハンドラの実行番地及び
  *  割り込みマスクの値を取得する
  */
-extern FP	int_table[0x99];
-extern VW   int_plevel_table[0x99];
+extern FP	int_table[0x50];
+extern VW   int_plevel_table[0x50];
 
 /*
  *  CPU例外ハンドラの疑似テーブル
  */
-extern FP	exc_table[0x1E];
+extern FP	exc_table[(0x1E0 >> 5) + 1];
 
 /*
  *
@@ -267,7 +267,7 @@ extern FP interrupt();
 Inline void
 define_inh(INHNO inhno, FP inthdr)
 {
-        int_table[inhno >> 4] = inthdr;
+        int_table[inhno >> 5] = inthdr;
 #ifdef WITH_STUB
         Asm("mov #0x8,r0;  mov %0,r4; mov %1,r5; trapa #0x3f"
 	    : /* no output */
@@ -284,7 +284,7 @@ define_inh(INHNO inhno, FP inthdr)
 Inline void
 define_exc(EXCNO excno, FP exchdr)
 {
-        exc_table[excno >> 4] = exchdr;
+        exc_table[excno >> 5] = exchdr;
 #ifdef WITH_STUB
         Asm("mov #0x8,r0;  mov %0,r4; mov %1,r5;  trapa #0x3f"
 	    : /* no output */
@@ -301,7 +301,7 @@ define_exc(EXCNO excno, FP exchdr)
 Inline void
 define_int_plevel(UINT dintno, UW plevel)
 {
-    int_plevel_table[dintno >> 4] = (plevel << 4) | 0x40000000;
+    int_plevel_table[dintno >> 5] = (plevel << 4) | 0x40000000;
 }
 
 
@@ -331,7 +331,7 @@ define_int_plevel(UINT dintno, UW plevel)
  */
 
 /*
- *  CPU例外の発生した時のディスパッチ
+ *  CPU例外の発生した時のコンテキスト判定
  */
 Inline BOOL
 exc_sense_context(VP p_excinf)
@@ -339,7 +339,7 @@ exc_sense_context(VP p_excinf)
     UW  nest;
     Asm("stc r7_bank,%0":"=r"(nest));
         
-	return(nest > 0);
+	return(nest > 1);
 }
 
 /*
@@ -348,7 +348,7 @@ exc_sense_context(VP p_excinf)
 Inline BOOL
 exc_sense_lock(VP p_excinf)
 {
-	return(((UW)p_excinf & 0x00000f0) == MAX_IPM << 4);
+	return((*((UW *)p_excinf + 8) & 0x00000f0) == MAX_IPM << 4);
 }
 
 /*

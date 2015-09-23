@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serial_console.c,v 1.2 2000/11/24 03:57:05 takayuki Exp $
+ *  @(#) $Id: serial_console.c,v 1.5 2001/02/23 16:01:07 takayuki Exp $
  */
 /*
  * エディットボックスを使ったシリアルインターフェースモジュール
@@ -37,6 +37,8 @@
 #include "kernel_id.h"
 #include "hal_msg.h"
 #include "resource.h"
+
+#define SERMSG_CREATE WM_APP
 
 #define TRANSLATE_PORTID(x) \
 	x = (x != 0) ? (x) : CONSOLE_PORTID 
@@ -79,7 +81,6 @@ SPCB spcb[NUM_PORT] =
 };
 
 extern HINSTANCE ProcessInstance;
-extern HANDLE PrimaryDialogHandle;
 
 #define NEXT(x) (((x)+1) & (SERIAL_INPUTBUFFERSIZE-1))
 
@@ -102,12 +103,21 @@ __forceinline __declspec(naked) void * __fastcall MemoryCopy(void * dest, void *
 #define MemoryCopy memcpy
 #endif
 
+Inline void
+CloseAllHandles(SPCB * cb)
+{
+	if(cb->Handle != 0l)
+	{
+		DestroyWindow(cb->Handle);
+		cb->Handle = 0l;
+	}
+}
 
 static LRESULT CALLBACK ConsoleProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lParam)
 {
 	switch(Msg)
 	{
-	case WM_USER+0x10:
+	case SERMSG_CREATE:
 		{
 			SPCB * work;
 			work = (SPCB *)lParam;
@@ -122,7 +132,6 @@ static LRESULT CALLBACK ConsoleProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lPar
 		{
 			SPCB * scope;
 			scope = (SPCB *)GetWindowLong(hDlg,GWL_USERDATA);
-			CloseHandle(scope->Handle);
 			scope->Handle = 0l;
 			break;
 		}
@@ -161,17 +170,24 @@ static LRESULT CALLBACK ConsoleProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lPar
 static LRESULT KeyEventTrapper(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	SPCB * scope;
-	HWND parent;
-	parent = GetParent(hWnd);
 	
 	if(Msg == WM_CHAR)
 	{
-		SendMessage(parent,WM_CHAR,wParam,lParam);
+		scope = (SPCB *)GetWindowLong(hWnd,GWL_USERDATA);
+		PostMessage(scope->Handle,WM_CHAR,wParam,lParam);
 		return TRUE;
 	}
 
 	scope = (SPCB *)GetWindowLong(hWnd, GWL_USERDATA);
 	return CallWindowProc(scope->DefWndProc,hWnd,Msg,wParam,lParam);
+}
+
+
+static void SerialConsole_FinalRelease(void * param)
+{
+	SPCB * cb = (SPCB *)param;
+	if(cb->Handle != 0l)
+		DestroyWindow(cb->Handle);
 }
 
 	/*この関数はPrimaryThreadによって実行される
@@ -180,20 +196,12 @@ static LRESULT KeyEventTrapper(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam
 static void CreateSerialConsole(SPCB * cb)
 {
 	cb->Handle = CreateDialog(ProcessInstance, MAKEINTRESOURCE(CONSOLEDIALOG), PrimaryDialogHandle, ConsoleProc);
-	SendMessage(cb->Handle,WM_USER+0x10,0,(LPARAM)cb);
+	SendMessage(cb->Handle,SERMSG_CREATE,0,(LPARAM)cb);
 	UpdateWindow(cb->Handle);
+	HALAddDestructionProcedure(SerialConsole_FinalRelease,cb);
 }
 
 
-Inline void
-CloseAllHandles(SPCB * cb)
-{
-	if(cb->Handle != 0l)
-	{
-		DestroyWindow(cb->Handle);
-		cb->Handle = 0l;
-	}
-}
 
 
 /*

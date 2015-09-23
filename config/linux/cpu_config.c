@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.1 2000/11/14 16:29:31 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.3 2001/02/23 21:15:02 honda Exp $
  */
 
 /*
@@ -187,10 +187,7 @@ activate_r()
 #endif /* SUPPORT_CHG_IMS */
     (*runtsk->tinib->task)(runtsk->tinib->exinf);
     
-    /*
-     *  タスクの終了時に ext_tsk を呼ぶので，ここへは戻らない．
-     */
-    assert(0);
+    ext_tsk();
 }
 
 

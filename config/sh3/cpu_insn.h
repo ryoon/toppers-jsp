@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_insn.h,v 1.1 2000/11/14 16:29:53 honda Exp $
+ *  @(#) $Id: cpu_insn.h,v 1.2 2001/01/19 17:50:29 honda Exp $
  */
 
 #ifndef	_CPU_INSN_H_
@@ -54,7 +54,7 @@ current_sr(void)
 Inline void
 set_sr(UW sr)
 {
-	Asm("ldc %0, sr" : : "r"(sr) : "memory");
+	Asm("ldc %0, sr" : : "r"(sr) );
 }
 
 
@@ -69,7 +69,7 @@ disint(void)
 
 
 /*
- *  すべての割込みを許可禁止(アセンブラで書いた方がいいかも)
+ *  すべての割込みを許可(アセンブラで書いた方がいいかも)
  */
 Inline void
 enaint()
@@ -95,7 +95,7 @@ Inline VP
 Inline void
 set_vbr(VP vbr)
 {
-    Asm("ldc  %0, vbr" : : "r"(vbr) : "memory");
+    Asm("ldc  %0, vbr" : : "r"(vbr) );
 }
 
 

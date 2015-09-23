@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.2 2000/11/18 04:47:46 honda Exp $
+ *  @(#) $Id: sample1.c,v 1.5 2001/02/23 21:15:58 honda Exp $
  */
 
 /* 
@@ -136,11 +136,11 @@ void task(VP_INT exinf)
 			syscall(dly_tsk(10000));
 			break;
 		case 'z':
-			syslog(LOG_NOTICE, "zerodiv = %d", *DUMMY);
+			syslog(LOG_NOTICE, "load = %d", *DUMMY);
 			break;
 		case 'Z':
 			loc_cpu();
-			syslog(LOG_NOTICE, "zerodiv = %d", *DUMMY);
+			syslog(LOG_NOTICE, "load = %d", *DUMMY);
 			unl_cpu();
 			break;
 		default:
@@ -171,9 +171,8 @@ void
 LoadAddressError_handler(VP p_excinf)
 {
 	ID	tskid;
-/*	VW	*frame = p_excinf; */
-
-	syslog(LOG_NOTICE, "Zero Divide Stack Frame: %08x",p_excinf);
+    
+	syslog(LOG_NOTICE, "Load Stack Frame: %08x",p_excinf);
 	syslog(LOG_NOTICE,
 		"vxsns_loc = %d vxsns_ctx = %d vxsns_dsp = %d vxsns_dpn = %d",
 		vxsns_loc(p_excinf), vxsns_ctx(p_excinf),
@@ -211,17 +210,23 @@ void main_task(VP_INT exinf)
 
 	syslog(LOG_NOTICE, "Sample task starts (exinf = %d).", exinf);
 
-
+#ifndef WITH_STUB        
+	serial_ioctl(0, (IOCTL_CRLF | IOCTL_RAW | IOCTL_IXON | IOCTL_IXOFF));
+#endif
     
 	act_tsk(TASK1);
 	act_tsk(TASK2);
 	act_tsk(TASK3);
+
+#ifdef WITH_STUB            
     sta_cyc(CYCHDR1);    
     slp_tsk();
-
+#endif         
     
 	do {
-/*		serial_read(0, buf, 1); */
+#ifndef WITH_STUB        
+		serial_read(0, buf, 1);
+#endif         
 		switch (buf[0]) {
 		case 'e':
 		case 's':

@@ -26,14 +26,13 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serial_mailbox.c,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: serial_mailbox.c,v 1.2 2001/01/09 06:54:40 takayuki Exp $
  */
 /*
  * Windowsのメールスロットを使ったシリアルインターフェースモジュール
  *  (注)普通のシリアル(COMデバイス)は使えません
  */
 
-#include "Debug.h"
 #include <jsp_services.h>
 #include "kernel_id.h"
 
@@ -51,12 +50,12 @@
 #define SIO_POLINTERVAL 300
 
 	/* プロトタイピング */
-void	serial_initialize(ID portid);
+void	serial_initialize(VP_INT portid);
 ER		serial_open(ID portid);
 int		serial_close(ID portid, int flush);
 ER_UINT serial_read(ID portid, char *buf, unsigned int len);
 ER_UINT serial_write(ID portid, char *buf, unsigned int len);
-int		serial_ioctl(ID portid, int req, int arg);
+ER		serial_ioctl(ID portid, UINT ioctl);
 void	serial_handler(void);
 
 typedef struct serial_port_control_block {
@@ -124,9 +123,9 @@ CloseAllHandles(SPCB * cb)
  *  シリアルインタフェースドライバの起動
  */
 void
-serial_initialize(ID portid)
+serial_initialize(VP_INT portid)
 {
-	syscall(serial_open(portid));
+	syscall(serial_open((int)portid));
 	syslog(LOG_NOTICE, "Serial driver service starts on port %d.", portid);
 }
 
@@ -246,7 +245,7 @@ serial_write(ID portid,char * buf, unsigned int len)
 }
 
 int
-serial_ioctl(ID portid,int req,int arg)
+serial_ioctl(ID portid,UINT ioctl)
 {
 	return E_OK;
 }

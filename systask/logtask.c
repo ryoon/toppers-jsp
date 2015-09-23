@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: logtask.c,v 1.1 2000/11/14 14:44:25 hiro Exp $
+ *  @(#) $Id: logtask.c,v 1.2 2000/12/22 07:57:12 hiro Exp $
  */
 
 /*
@@ -61,7 +61,7 @@ logtask(VP_INT exinf)
 			if ((c = syslog_read()) < 0) {
 				break;
 			}
-			logtask_buffer[len++] = c;
+			logtask_buffer[len++] = (char) c;
 			if (c == '\n') {
 				break;
 			}

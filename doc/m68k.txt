@@ -1,15 +1,15 @@
 
 	    ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
-		    （68040 ターゲット依存部）
+		    （M68040 ターゲット依存部）
 
-	    （Release 1.0β対応，最終更新: 15-Nov-2000）
+	    （Release 1.1β対応，最終更新: 24-Feb-2001）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -32,43 +32,43 @@
  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  かなる損害に関しても，その責任を負わない．
 
- @(#) $Id: m68k.txt,v 1.2 2000/11/14 15:48:31 hiro Exp $
+ @(#) $Id: m68k.txt,v 1.3 2001/02/23 20:15:00 hiro Exp $
 ------------------------------------------------------------------------
 
 
-１．68040 ターゲット依存部の概要
+１．M68040 ターゲット依存部の概要
 
 1.1 ターゲットシステムと開発環境
 
-68040プロセッサのターゲットシステムとしては，(株)電産製の DVE-68K/40
-CPUボード（CPU: 68LC040）のみをサポートしている．
+M68040プロセッサのターゲットシステムとしては，(株)電産製の DVE-68K/40
+CPUボード（CPU: MC68LC040）のみをサポートしている．
 
 開発環境には，GCC などの GNU開発環境を用い，オブジェクトファイルフォー
 マットは ELF を標準とする．
 
 1.2 サポートする機能の概要
 
-68040依存の機能として，割込みマスクの変更・参照（chg_ixx，get_ixx）を
+M68040依存の機能として，割込みマスクの変更・参照（chg_ixx，get_ixx）を
 サポートしている．また，DVE-68K/40 CPUボード依存の機能として，性能評価
 用システム時刻参照機能（vxget_tim）をサポートしている．割込みの禁止と
 許可（dis_int，ena_int）はサポートしていない．
 
 1.3 他のターゲットへのポーティング
 
-現バージョンでは，FPU を持たない 68LC040 のみをサポートしている．FPU 
-を用いない場合には，FPU内蔵の 68040 にも適用可能なはずである．FPUを活
+現バージョンでは，FPU を持たない MC68LC040 のみをサポートしている．FPU 
+を用いない場合には，FPU内蔵の M68040 にも適用可能なはずである．FPUを活
 用したい場合には，ディスパッチャで FPUレジスタを保存／復帰する必要があ
 るなど，若干の改造が必要である．
 
 他の m68k 系列のプロセッサへのポーティングについては，マスタースタック
-と別に割込みスタックを持つ 68020 以降のプロセッサへは比較的容易にポー
+と別に割込みスタックを持つ M68020 以降のプロセッサへは比較的容易にポー
 ティング可能と思われるが，それより前のプロセッサへのポーティングは面倒
 であると予想される．
 
 
-２．68040 プロセッサ依存部の機能
+２．M68040 プロセッサ依存部の機能
 
-この節では，カーネルおよびシステムサービスの機能の中で，68040依存の部
+この節では，カーネルおよびシステムサービスの機能の中で，M68040依存の部
 分について解説する．
 
 2.1 データ型
@@ -81,12 +81,12 @@ signed int型および unsigned int型のサイズは 32ビットである．
 ルーチン内では，NMI 以外の割込みはすべて禁止されている．具体的には，
 IPM（Interrupt Priority Mask）が 7 に設定される．
 
-DEF_INH で指定する割込みハンドラ番号（inhno）は，68040 での例外ベクタ
+DEF_INH で指定する割込みハンドラ番号（inhno）は，M68040 での例外ベクタ
 番号を表し，そのデータ型（INHNO）は unsigned int型に定義されている．
 DEF_INH で，例外ベクタ番号として有効でない値や，外部割込みに対応しない
 番号を指定した場合の動作は保証されない．
 
-68040依存の機能として，SR（Status Register）中の IPM（Interrupt
+M68040依存の機能として，SR（Status Register）中の IPM（Interrupt
 Priority Mask）の値を変更するためのサービスコール chg_ipm と，参照する
 ためのサービスコール get_ipm をサポートしている．なお，IPM の値を表す
 データ型 IPM は，unsigned int型に定義されている．
@@ -104,7 +104,7 @@ chg_ipm をサポートするために，割込みハンドラの出入口処理などにオーバヘッ
 ビスコールをサポートするかどうかを切り替えられるようにしている．
 SUPPORT_CHG_IPM は，cpu_config.h の中で #define されている．
 
-68040依存の割込みマスクの変更・参照のためのサービスコールの仕様は次の
+M68040依存の割込みマスクの変更・参照のためのサービスコールの仕様は次の
 通り．
 
 (1) chg_ipm			割込みマスクの変更
@@ -162,15 +162,15 @@ IPM（Interrupt Priority Mask）を ipm で指定された値に設定する．指定し
 
 2.3 CPU例外管理機能とCPU例外ハンドラ
 
-DEF_EXC で指定する割込みハンドラ番号（excno）は，68040 での例外ベクタ
+DEF_EXC で指定する割込みハンドラ番号（excno）は，M68040 での例外ベクタ
 番号を表し，そのデータ型（EXCNO）は unsigned int型に定義されている．
 DEF_EXC で，例外ベクタ番号として有効でない値や，CPU例外に対応しない番
 号を指定した場合の動作は保証されない．
 
 2.4 スタートアップモジュール
 
-68040依存のスタートアップモジュール（start.S）では，次の初期化処理を行
-う．
+M68040依存のスタートアップモジュール（start.S）では，次の初期化処理を
+行う．
 
 (A) プロセッサモードの初期化とスタックポインタの初期化
 
@@ -248,127 +248,17 @@ DVE-68K/40依存部では，CPUボード上のメモリが 4MB の場合を想定し，コード
 
 ４．開発環境の構築
 
-4.1 開発環境の概要
-
-カーネルをインストールするには，JSPカーネルの配布キットに含まれる以外
-に，以下のツールおよびライブラリが必要である．
-
-    GNU開発環境
-	GCC-CORE（Cコンパイラ．動作確認は 2.95.2）
-	BINUTILS（アセンブラ，リンカなど．動作確認は 2.10）
-	NEWLIB（標準Cライブラリ．動作確認は 1.8.1）
-    perl（動作確認は 5.005）
-    GNU Make（動作確認は 3.77）
-
-アプリケーションが標準Cライブラリを使用しない場合には NEWLIB は無くて
-もよいが，GCC をインストールする際に NEWLIB があった方が都合がよいため，
-NEWLIB も含めてインストールする方法を標準とする．
-
-4.2 開発環境の構築方法
-
-上記の開発環境は，すべてフリーのソースコードから構築することができる．
-この節では，UNIXマシン（動作確認は Linux）上で開発環境を構築する手順を
-説明する．
-
-(1) 準備作業
-
-準備作業として，ホスト上に必要なツールをインストールする．具体的には，
-perl と GNU Make（以下の説明では makeコマンドが GNU Make であるものと
-する）のインストールが必要である．さらに，開発環境の構築に使うために，
-ホスト上にも最新の GCC をインストールしておくことが望ましい．
-
-なお，JSPカーネルの配布キットに含まれる perlスクリプトは，perl のプロ
-グラムが /usr/bin/perl にあるものと仮定して記述している．perl のプログ
-ラムのパスがこれと異なる場合は，各 perlスクリプトの先頭の perl の絶対
-パスを修正する必要がある．
-
-(2) ディレクトリの決定
-
-開発環境を構築するために，以下のディレクトリを用意する．
-
-    <PREFIX>		開発環境をインストールするディレクトリ
-    <BINUTILS-SRCDIR>	BINUTILS のソースを展開するディレクトリ
-    <BINUTILS-OBJDIR>	BITUTILS のオブジェクトを生成するディレクトリ
-    <GCC-SRCDIR>	GCC-CORE のソースを展開するディレクトリ
-    <GCC-OBJDIR>	GCC-CORE のオブジェクトを生成するディレクトリ
-    <NEWLIB-SRCDIR>	NEWLIB のソースを展開するディレクトリ
-    <NEWLIB-OBJDIR>	NEWLIB のオブジェクトを生成するディレクトリ
-
-(3) BINUTILS のインストール（2.10）
-
-次の手順に従って，BINUTILS をインストールする．
-
-    % cd <BINUTILS-OBJDIR>
-    % <BINUTILS-SRCDIR>/configure \
-		--target=m68k-unknown-elf \
-		--prefix=<PREFIX>
-    % make
-    % make install
-
-(4) GCC-CORE のインストール（2.95.2）
-
-次の手順に従って，GCC-CORE をインストールする．
-
-    % mkdir <GCC-OBJDIR>
-    % cd <GCC-OBJDIR>
-    % <GCC-SRCDIR>/configure \
-		--target=m68k-unknown-elf \
-		--prefix=<PREFIX> \
-		--with-gnu-as --with-gnu-ld --with-newlib \
-		--with-headers=<NEWLIB-SRCDIR>/newlib/libc/include
-    % make
-    % make install
-
-(5) NEWLIB のインストール（1.8.1）
-
-次の手順に従って，NEWLIB をインストールする．
-
-    % mkdir <NEWLIB-OBJDIR>
-    % cd <NEWLIB-OBJDIR>
-    % <NEWLIB-SRCDIR>/configure \
-		--target=m68k-unknown-elf \
-		--prefix=<PREFIX>
-    % make
-    % make install
-
-4.3 Windows上での開発環境
-
-Cygwin を用いることで，上記の開発環境を Windows上にインストールするこ
-とができる．具体的には，BINUTILS，GCC-CORE，NEWLIB をインストールする
-前に，Cygwin をインストールする．Cygwin と perl のインストール時の注意
-事項は次の通り．
-
-(1) Cygwinのインストール（1.1.4）
-
-Cygwin は，http://sourceware.cygnus.com や Ring Server
-（http://www.ring.gr.jp）などからダウンロードすることができる．Cygwin
-をインストールしたら，以下のコマンドを実行して，シリアルインタフェース
-を RAWデバイスとして使えるようにする．
-
-    % mkdir /dev	
-    % mount \\.\com1 /dev/com1
-    % mount \\.\com2 /dev/com2
-
-(2) perl のインストール（5.6.0）
-
-Cygwin環境用の perl が，http://cygutils.netpedia.net/V1.1 の
-perl-5.6.0.cygwin1.1.tar.bz2 にある．これをダウンロードし，以下の手順
-でインストールする．
-
-    % cd /
-    % bunzip2 perl-5.6.0.cygwin1.1.tar.bz2
-    % tar xvf perl-5.6.0.cygwin1.1.tar
-    % ln -s /usr/local/bin/perl /usr/bin/perl
+開発環境の構築方法については，GNU開発環境構築マニュアルを参照すること．
 
 
 ５．その他
 
 5.1 ディレクトリ・ファイル構成
 
-68040 ターゲット依存部の各ファイルの概要は次の通り．
+M68040 ターゲット依存部の各ファイルの概要は次の通り．
 
     config/m68k/
-	Makefile.config	Makefileの68040依存定義
+	Makefile.config	Makefile の M68040依存定義
 	cpu_defs.h	プロセッサ依存部のアプリケーション用定義
 	cpu_config.h	プロセッサ依存部の構成定義
 	cpu_config.c	プロセッサ依存部の関数
@@ -380,7 +270,7 @@ perl-5.6.0.cygwin1.1.tar.bz2 にある．これをダウンロードし，以下の手順
 	m68kelf.ld	リンカスクリプト
 
     config/m68k/dve68k/
-	Makefile.config	MakefileのDVE-68K/40依存定義
+	Makefile.config	Makefile の DVE-68K/40依存定義
 	sys_defs.h	システム依存部のアプリケーション用定義
 	sys_config.h	システム依存部の構成定義
 	sys_config.c	システム依存部の関数
@@ -391,17 +281,11 @@ perl-5.6.0.cygwin1.1.tar.bz2 にある．これをダウンロードし，以下の手順
 
 5.2 ターゲットへのダウンロードと実行
 
-ユーザズマニュアルの手順にしたがって，JSPカーネルおよびアプリケーショ
-ンプログラムが構築できると，ターゲットシステムへダウンロードして実行す
-る必要がある．ダウンロードと実行の方法には，ROMモニタを用いる方法と，
-gdb＋スタブを用いる方法がある．
+ターゲットへのダウンロードと実行手順については，GNU開発環境構築マニュ
+アルに説明されているが，以下では，M68040 および DVE-68K/40 CPUボードの
+場合に特有の事項について説明する．
 
 (A) ROMモニタを用いる方法
-
-ターゲットシステムが ROMモニタを持っている場合には，バイナリ形式または
-モトローラ S形式のファイルを，ROMモニタのダウンロードコマンドを使って
-ダウンロードし，実行コマンドを使ってダウンロードした番地から実行すれば
-よい．
 
 DVE-68K/40 CPUボードの場合，別売りの ROMモニタとそれに対応した端末ソフ
 トを用いると，R コマンドでバイナリ形式のファイルをダウンロードすること
@@ -416,35 +300,8 @@ DVE-68K/40 CPUボードの場合，別売りの ROMモニタとそれに対応した端末ソフ
 
 (B) スタブを用いる方法
 
-JSPカーネルと一緒に使えるように改造したスタブのソースは，JSPカーネルの
-ウェブサイトからダウンロードすることができる．スタブをダウンロードした
-ら，READMEファイルに従ってスタブを構築し，ROM またはフラッシュメモリに
-書き込む．
-
-gdb＋スタブを用いてプログラムをダウンロード・実行する手順は次の通り．
-
-    % m68k-unknown-elf-gdb jsp
-    GNU gdb 4.18
-    Copyright 1998 Free Software Foundation, Inc.
-    .......... 以下メッセージが続く ..........
-    (gdb) 
-
-gdb が起動したら，次のコマンドを実行して，ターゲットシステムと接続する．
-
-    (gdb) set remotebaud 38400
-    (gdb) target remote /dev/ttyXX
-
-/dev/ttyXX には，ターゲットシステムを接続しているシリアルポートのデバ
-イス名を指定する．次に，load コマンドにより，プログラムをダウンロード
-する．
-
-    (gdb) load
-
-プログラムの実行は，continue コマンドで行う．
-
-    (gdb) continue
-
-プログラムを実行中に NMI をかける（DVE-68K/40 CPUボードでは，ABORTスイッ
-チを押す）ことで，プログラムを停止させて，gdb に制御を戻すことができる．
+M68040 では，プログラムを実行中に NMI をかける（DVE-68K/40 CPUボードで
+は，ABORTスイッチを押す）ことで，プログラムを停止させて，gdb に制御を
+戻すことができる．
 
 以上

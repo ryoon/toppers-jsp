@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: multistream.cpp,v 1.4 2000/11/14 16:57:33 takayuki Exp $
+ *  @(#) $Id: multistream.cpp,v 1.5 2001/02/23 16:52:17 takayuki Exp $
  */
 
 #include "multistream.h"
@@ -77,7 +77,7 @@ fstream * MultiStream::operator [](const string & name)
 	if(scope == Stream.end())
 	{
 		if(!Add(name))
-			throw Exception(string("File [") + name + "] could not create.");
+			throw Exception(string(MSG_COULDNOTCREATE " [") + name + "]");
 		return Stream[name];
 	}
 

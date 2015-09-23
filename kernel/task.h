@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task.h,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: task.h,v 1.3 2001/02/23 22:04:59 hiro Exp $
  */
 
 /*
@@ -348,7 +348,9 @@ call_texrtn()
 		runtsk->texptn = 0;
 		t_unlock_cpu();
 		(*runtsk->tinib->texrtn)(texptn, runtsk->tinib->exinf);
-		t_lock_cpu();
+		if (!t_sense_lock()) {
+			t_lock_cpu();
+		}
 	}
 	runtsk->enatex = TRUE;
 }

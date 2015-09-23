@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.1 2000/11/14 16:29:53 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.12 2001/02/23 21:14:08 honda Exp $
  */
 
 
@@ -44,7 +44,7 @@
 		
 /*
  *  例外/割り込み出入り口処理ルーチン
- *  SHはベクタテーブルを持たず、例外,TRAPAが発生するとVBR+0x100番地を、
+ *  SH3はベクタテーブルを持たず、例外,TRAPAが発生するとVBR+0x100番地を、
  *  内部/外部/NMI割り込みが発生すると、VBR+0x600番地を実行する。
  */
 /*	.little */
@@ -106,16 +106,18 @@ _general_exception:
 	bf/s   _exception_from_int /* 例外/割り込みハンドラならジャンプ       */
 	add    #0x01,r7	         /* 例外/割り込みネスト回数をインクリメント   */
 	mov    r15,r1            /* 戻り先が割り込みハンドラでないのでスタック*/
-        mov.l  _stacktop_exc,r15 /* を入れ替え元のスタックポインタを保存      */  
+	mov.l  _stacktop_exc,r15 /* を入れ替え元のスタックポインタを保存      */  
 	mov.l  r1,@-r15            
 	mov.l  _expevt,r0        /* 割り込み許可すると消えるレジスタを保存    */
-	mov.l  @r0,r5            /* EXPECTレジスタを取得		      */
-	stc    ssr,r4	         /* CPU例外ハンドラへの引数                   */
-	ldc    r4,r4_bank        /* 割り込み許可と共にレジスタバンクを切り替え*/
-	ldc    r5,r5_bank	 /* るためコピー                              */
-	mov.l  _mask_md_exc,r2   /* 割り込み許可、レジスタバンクを切り替え    */
+	mov.l  @r0,r5            /* EXPECTレジスタを取得		              */
+	ldc    r1,r4_bank        /* CPU例外ハンドラへの引数                   */	
+	ldc    r5,r5_bank	     /* るためコピー                              */
+	mov.l  _unmak_rb_bl_exc,r2 /* BLビットを0に，レジスタバンクを切り替え */
+	stc    sr,r3
+	and    r3,r2			
 	ldc    r2,sr               
-	shlr2  r5                /* EXPECTを2ビット右シフト	              */
+	shlr2  r5                /* EXPECTを3ビット右シフト	              */
+	shlr   r5                
 	mov.l  _exc_table_k,r0   /* exc_tableのアドレスをr0に                 */
 	mov.l  @(r0,r5),r2       /* ハンドラのアドレスを取得                  */
 	tst    r2,r2             /* ハンドラが登録されていない例外なら        */
@@ -123,15 +125,15 @@ _general_exception:
 	jsr    @r2               /* CPU例外ハンドラへ                         */
 	nop
 	mov.l  _mask_md_ipm_exc,r0
-	ldc    r0,sr	         /* 割り込み禁止                              */	
+	ldc    r0,sr	         /* 割り込み禁止                              */
 	stc    r7_bank,r7        /* 例外/割り込みのネスト回数をデクリメント   */
 	dt     r7
 	ldc    r7,r7_bank
 	mov.l  _reqflg_exc,r2    /* reqflgのチェック                          */
-        mov.l  @r2,r1
+	mov.l  @r2,r1
 	tst    r1,r1             /* reqflgがFALSEならret_totask_excに飛び     */
 	bt/s   _ret_to_task_exc  /* タスクに戻る                              */
-	mov.l  @r15+,r15         /* 戻り先がタスクなのでスタックを戻す        */	
+	mov.l  @r15,r15          /* 戻り先がタスクなのでスタックを戻す        */
 	xor    r0,r0	         /* reqflgをクリア                            */
 	bra    ret_exc
 	mov.l  r0,@r2              	
@@ -147,12 +149,14 @@ _general_exception:
 _exception_from_int:
 	mov.l   _expevt,r0       /* 割り込み許可すると消えるレジスタを保存    */
 	mov.l   @r0,r5           /* EXPECTレジスタを取得                      */
-	stc     ssr,r4	         /* CPU例外ハンドラへの引数                   */
-	ldc     r4,r4_bank       /* 割り込み許可と共にレジスタバンクを切り替え*/
-	ldc     r5,r5_bank	 /* るためコピー                              */
-	mov.l   _mask_md_exc,r2  /* 割り込み許可、レジスタバンクを切り替え    */
+	ldc     r15,r4_bank      /* CPU例外ハンドラへの引数                   */		
+	ldc     r5,r5_bank	     /* るためコピー                              */
+	mov.l   _unmak_rb_bl_exc,r2 /* BLビットを0に，レジスタバンクを切り替え */
+	stc     sr,r3
+	and     r3,r2			
 	ldc     r2,sr               
-	shlr2   r5               /* EXPECTを2ビット右シフト                   */
+	shlr2   r5               /* EXPECTを3ビット右シフト                   */
+	shlr    r5                	
 	mov.l   _exc_table_k,r0  /* exc_tableのアドレスをr0に                 */
 	mov.l   @(r0,r5),r2      /* ハンドラのアドレスを取得                  */
 	tst     r2,r2            /* ハンドラが登録されていない例外なら        */
@@ -203,8 +207,8 @@ _expevt:
 	.long  EXPEVT
 _exc_table_k:	
 	.long  _exc_table
-_mask_md_exc:	
-	.long  0x40000000
+_unmak_rb_bl_exc:		
+	.long  0x4fffffff
 _mask_md_ipm_exc:	
 	.long  0x40000000 + MAX_IPM << 4	
 _reqflg_exc:
@@ -230,8 +234,8 @@ _cpu_expevt_k:
 	.global _dispatch
 _dispatch:
 	sts.l  pr,@-r15         /* pr,r8〜r15 をスタックに保存           */
-	mov.l  r14,@-r15        /* r0〜r7は呼び出し元で保存しているため  */          
-	mov.l  r13,@-r15        /* 保存する必要が無い                    */        
+	mov.l  r14,@-r15        /* r0〜r7は呼び出し元で保存しているため  */    
+	mov.l  r13,@-r15        /* 保存する必要が無い                    */    
 	mov.l  r12,@-r15
 	mov.l  r11,@-r15
 	mov.l  r10,@-r15
@@ -239,13 +243,11 @@ _dispatch:
 	mov.l  r8, @-r15
 	mov.l  _runtsk_dis,r2   /* r0 <- runtsk                          */
 	mov.l  @r2,r0
-	mov    #TCB_sp,r9       /* TCB_spが127以下ならイミディエイトでOK */
-	mov.l  r15,@(r0,r9)     /* タスクスタックを保存                  */
-	mov    #TCB_pc,r8       /* TCB_spが127以下ならイミディエイトでOK */	
+	mov.l  r15,@(TCB_sp,r0) /* タスクスタックをTCBに保存 60以下ならOK*/		
 	mov.l  dispatch_r_k,r1  /* 実行再開番地を保存                    */
-	mov.l  r1,@(r0,r8)      
-	bra    dispatcher_1
-        nop
+	mov.l  r1,@(TCB_pc,r0)  /* 実行再開番地をTCBに保存  60以下ならOK */
+	bra    dispatcher_1  
+    nop
 
 dispatch_r:	
 	mov.l  @r15+,r8         /* レジスタを復帰                       */
@@ -276,11 +278,9 @@ dispatcher_1:
 	bt     dispatcher_2         /* 無ければジャンプ                 */
 	mov.l  _runtsk_dis,r2
 	mov.l  r0,@r2               /* schedtskをruntskに               */
-	mov    #TCB_sp,r9
-	mov.l  @(r0,r9),r15         /* タスクスタックを復帰             */
-	mov    #TCB_pc,r8
-	mov.l  @(r0,r8),r1          /* 実行再開番地を復帰               */
-	jmp    @r1
+	mov.l  @(TCB_sp,r0),r15     /* TCBからタスクスタックを復帰      */
+	mov.l  @(TCB_pc,r0),r1      /* TCBから実行再開番地を復帰        */
+	jmp    @r1 
 	nop
 dispatcher_2:
 	/*
@@ -317,130 +317,6 @@ _stacktop_dis:
 	.long STACKTOP            /* タスク独立部のスタックの初期値	*/
 
 
-
-		
-		
-/*
- *  Exception 600 vector
- *  割り込みが発生すると実行される。		
- *
- *
- *  SHは割り込みが発生するとすべてVBR+0x600番地からプログラムを実行するため、
- *  ここに配置するルーチンでまずスタックの切り替え、レジスタの保存,IPMの設定,
- *  割り込み要因の判定を行いその後BLビットを0にして割り込みハンドラを呼ぶ必要
- *  がある。
- *  割り込み要因に対応した割り込みハンドラの開始番地は配列int_table[]に登録し
- *  て呼び出す。オフセットの計算は、割り込み要因レジスタを右に2ビットシフトし
- *  て行う。割り込み要因レジスタはSH7708ではINVENTレジスタにセットされるが、
- *  SH7709およびSH7709AではINVENT2にセットされるため、ifdefにより切り分けてい
- *  る。また、一部のディバイスについて割り込み要因レジスタで渡される値とIPMと
- *  の間には関係がないため、各割り込み要因に対応したIPMを持つSRの内容を配列
- *  int_plevel_table[]に登録してそれを読み出す。
- *
- *  reqflg をチェックする前に割込みを禁止しないと，reqflg をチェック後
- *  に起動された割込みハンドラ内でディスパッチが要求された場合に，ディ
- *  スパッチされない．
- */
-
-	.org	0x0600            /* _BASE_VBR + 0x0600番地に配置 */
-	.align 2
-	.global _interrupt
-_interrupt:
-	stc.l   spc,@-r15         /* 多重割り込みが入ると消えてしまうので */
-	sts.l   pr,@-r15          /* spc,pr,ssr,r0〜r7をスタックに保存    */  
-	stc.l   ssr,@-r15   
-	stc.l   r0_bank,@-r15
-	stc.l   r1_bank,@-r15
-	stc.l   r2_bank,@-r15
-	stc.l   r3_bank,@-r15
-	stc.l   r4_bank,@-r15
-	stc.l   r5_bank,@-r15
-	stc.l   r6_bank,@-r15    
-	stc.l   r7_bank,@-r15
-	tst     r7,r7               /* 割り込み発生時のコンテキストを判定  */  
-	bf/s    _interrupt_from_int /* 例外/割り込みハンドラならジャンプ   */
-	add     #0x01,r7            /* 割り込みのネスト回数をインクリメント*/
-	mov     r15,r1              /* スタックを入れ替え元のスタックポイ  */
-	mov.l   _stacktop_k,r15	    /* ンタを保存                          */
-	mov.l   r1,@-r15            
-	mov.l   _intevt,r0          /* 例外要因レジスタを取得              */
-	mov.l   @r0,r4              
-	shlr2   r4                  /* 2ビット右シフトしオフセットを求める */
-	mov.l   _int_plevel_table_k,r0 
-	mov.l   @(r0,r4),r5         /* 割り込みの優先度を取得	           */
-	mov.l   _int_table_k,r0    
-	mov.l   @(r0,r4),r2         /* 割り込みハンドラのアドレスを取得    */
-	ldc     r2,r2_bank	    /* バンク1に切り替えるためコピー       */	
-	ldc     r5,sr               /* これ以降割り込みを受け付ける。      */
-	jsr     @r2                 /* 割り込みハンドラへ                  */
-	nop
-	mov.l  _mask_md_ipm_ret,r0
-	ldc    r0,sr	         /* 割り込み禁止                           */	
-	stc    r7_bank,r7        /* 例外/割り込みのネスト回数をデクリメント*/
-	dt     r7
-	ldc    r7,r7_bank
-	mov.l  _reqflg_k,r4      /* reqflgのチェック                       */
-        mov.l  @r4,r1
-	tst    r1,r1             /* reqflgがFALSEならret_to_task_intに飛ぶ */
-	bt/s   _ret_to_task_int  /* タスクに戻る                           */
-	mov.l  @r15+,r15         /* 戻り先がタスクなのでスタックを戻す     */	
-	xor    r0,r0
-	mov.l  r0,@r4            /* reqflgをクリア	                   */
-	bra    ret_int
-	nop
-
-_interrupt_from_int:
-	mov.l   _intevt,r0             /* 例外要因INTEVT2レジスタを取得    */
-	mov.l   @r0,r4
-	shlr2   r4                     /* オフセットを求める               */
-	mov.l   _int_plevel_table_k,r0 
-	mov.l   @(r0,r4),r5            /* 割り込みの優先度を取得	   */
-	mov.l   _int_table_k,r0        
-	mov.l   @(r0,r4),r2            /* 割り込みハンドラのアドレスを取得 */
-	ldc     r2,r2_bank             /* バンク1に切り替えるためコピー    */
-	ldc     r5,sr                  /* これ以降割り込みを受け付ける。   */
-	jsr     @r2                    /* 割り込みハンドラへ               */
-	nop
-	mov.l  _mask_md_ipm_ret,r0
-	ldc    r0,sr	         /* 割り込み禁止                           */
-	stc    r7_bank,r7        /* 例外/割り込みのネスト回数をデクリメント*/
-	dt     r7
-	ldc    r7,r7_bank
-_ret_to_task_int:	         
-	mov.l  @r15+,r7          /* r0〜r1,ssr,pr,spcを復帰し割り込み元に戻る */
-	mov.l  @r15+,r6
-	mov.l  @r15+,r5
-	mov.l  @r15+,r4
-	mov.l  @r15+,r3
-	mov.l  @r15+,r2
-	mov.l  @r15+,r1
-	mov.l  @r15+,r0
-	ldc.l  @r15+,ssr
-	lds.l  @r15+,pr
-	ldc.l  @r15+,spc
-	rte
-	nop
-	.align  4
-_stacktop_k:	
-	.long  STACKTOP            /* タスク独立部のスタックの初期値  */
-_intevt:		
-#ifdef SH7708	
-	.long  INTEVT
-#else
-	.long  INTEVT2
-#endif	
-_int_table_k:	
-	.long    _int_table       
-_int_plevel_table_k:	
-	.long	_int_plevel_table 
-_reqflg_k:
-	.long  _reqflg
-_mask_md_ipm_ret:	
-	.long  0x40000000 + MAX_IPM << 4
-
-
-
-	
 /* 
  *  割り込みハンドラ/CPU例外ハンドラ出口処理
  *
@@ -458,19 +334,20 @@ ret_int:
 	mov.l  _runtsk_ret,r1   /* r0 <- runtsk                    */
 	mov.l  @r1,r0           
 	mov.l  _enadsp_ret,r2   /* enadspのチェック                */
-	tst    r2,r2           
+	mov.l  @r2,r3
+	tst    r3,r3           
 	bt     ret_int_1           
 	mov.l  _schedtsk_ret,r4 /* r5 <- schedtsk                  */ 
 	mov.l  @r4,r5
 	cmp/eq r0,r5            /* runtsk と schedtsk を比較       */
 	bt     ret_int_1
-        mov.l  r14,@-r15	/* 残りのレジスタを保存            */
-        mov.l  r13,@-r15					
-        mov.l  r12,@-r15					
-        mov.l  r11,@-r15					
-        mov.l  r10,@-r15					
-        mov.l  r9,@-r15					
-        mov.l  r8,@-r15
+    mov.l  r14,@-r15	/* 残りのレジスタを保存            */
+    mov.l  r13,@-r15					
+    mov.l  r12,@-r15					
+    mov.l  r11,@-r15					
+    mov.l  r10,@-r15					
+    mov.l  r9,@-r15					
+    mov.l  r8,@-r15
 	sts.l  mach,@-r15					
 	sts.l  macl,@-r15					
 	stc.l  gbr,@-r15					
@@ -522,12 +399,10 @@ ret_int_1:
 	.align 4
 _calltex_ret:	
 	.long _calltex
-_reqflg_ret:
-	.long _reqflg
 _runtsk_ret:
 	.long _runtsk
 _schedtsk_ret:	
-	.long _schedtsk_ret	
+	.long _schedtsk
 _enadsp_ret:	
 	.long _enadsp
 ret_int_r_k:
@@ -558,6 +433,133 @@ _activate_r:
 	nop
 	.align 4
 _unmask_ipm:
-	.long  0x40000000	
+	.long  0xffffff0f
+#ifdef SUPPORT_CHG_IPM		
 _task_intmask_k:
 	.long _task_intmask
+#endif /* SUPPORT_CHG_IPM */
+		
+		
+/*
+ *  Exception 600 vector
+ *  割り込みが発生すると実行される。		
+ *
+ *
+ *  SH3は割り込みが発生するとすべてVBR+0x600番地からプログラムを実行するため、
+ *  ここに配置するルーチンでまずスタックの切り替え、レジスタの保存,IPMの設定,
+ *  割り込み要因の判定を行いその後BLビットを0にして割り込みハンドラを呼ぶ必要
+ *  がある。
+ *  割り込み要因に対応した割り込みハンドラの開始番地は配列int_table[]に登録し
+ *  て呼び出す。オフセットの計算は、割り込み要因レジスタを右に2ビットシフトし
+ *  て行う。割り込み要因レジスタはSH7708ではINVENTレジスタにセットされるが、
+ *  SH7709およびSH7709AではINVENT2にセットされるため、ifdefにより切り分けてい
+ *  る。また、一部のディバイスについて割り込み要因レジスタで渡される値とIPMと
+ *  の間には関係がないため、各割り込み要因に対応したIPMを持つSRの内容を配列
+ *  int_plevel_table[]に登録してそれを読み出す。
+ *
+ *  reqflg をチェックする前に割込みを禁止しないと，reqflg をチェック後
+ *  に起動された割込みハンドラ内でディスパッチが要求された場合に，ディ
+ *  スパッチされない．
+ */
+
+	.org	0x0600            /* _BASE_VBR + 0x0600番地に配置 */
+	.align 2
+	.global _interrupt
+_interrupt:
+	stc.l   spc,@-r15         /* 多重割り込みが入ると消えてしまうので */
+	sts.l   pr,@-r15          /* spc,pr,ssr,r0〜r7をスタックに保存    */  
+	stc.l   ssr,@-r15   
+	stc.l   r0_bank,@-r15
+	stc.l   r1_bank,@-r15
+	stc.l   r2_bank,@-r15
+	stc.l   r3_bank,@-r15
+	stc.l   r4_bank,@-r15
+	stc.l   r5_bank,@-r15
+	stc.l   r6_bank,@-r15    
+	stc.l   r7_bank,@-r15
+	tst     r7,r7               /* 割り込み発生時のコンテキストを判定  */  
+	bf/s    _interrupt_from_int /* 例外/割り込みハンドラならジャンプ   */
+	add     #0x01,r7            /* 割り込みのネスト回数をインクリメント*/
+	mov     r15,r1              /* スタックを入れ替え元のスタックポイ  */
+	mov.l   _stacktop_k,r15	    /* ンタを保存                          */
+	mov.l   r1,@-r15            
+	mov.l   _intevt,r0          /* 例外要因レジスタを取得              */
+	mov.l   @r0,r4              
+	shlr2   r4                  /* 3ビット右シフトしオフセットを求める */
+	shlr    r4                  
+	mov.l   _int_plevel_table_k,r0 
+	mov.l   @(r0,r4),r5         /* 割り込みの優先度を取得	           */
+	mov.l   _int_table_k,r0    
+	mov.l   @(r0,r4),r2         /* 割り込みハンドラのアドレスを取得    */
+	ldc     r2,r2_bank	    /* バンク1に切り替えるためコピー       */	
+	ldc     r5,sr               /* これ以降割り込みを受け付ける。      */
+	jsr     @r2                 /* 割り込みハンドラへ                  */
+	nop
+	mov.l  _mask_md_ipm_ret,r0
+	ldc    r0,sr	         /* 割り込み禁止                           */	
+	stc    r7_bank,r7        /* 例外/割り込みのネスト回数をデクリメント*/
+	dt     r7
+	ldc    r7,r7_bank
+	mov.l  _reqflg_k,r4      /* reqflgのチェック                       */
+    mov.l  @r4,r1
+	tst    r1,r1             /* reqflgがFALSEならret_to_task_intに飛ぶ */
+	bt/s   _ret_to_task_int  /* タスクに戻る                           */
+	mov.l  @r15,r15          /* 戻り先がタスクなのでスタックを戻す     */	
+	xor    r0,r0
+	mov.l  r0,@r4            /* reqflgをクリア	                   */
+	bra    ret_int
+	nop
+
+_interrupt_from_int:
+	mov.l   _intevt,r0             /* 例外要因INTEVT2レジスタを取得    */
+	mov.l   @r0,r4
+	shlr2   r4                     /* オフセットを求める               */
+	shlr    r4                     /* オフセットを求める               */	
+	mov.l   _int_plevel_table_k,r0 
+	mov.l   @(r0,r4),r5            /* 割り込みの優先度を取得	   */
+	mov.l   _int_table_k,r0        
+	mov.l   @(r0,r4),r2            /* 割り込みハンドラのアドレスを取得 */
+	ldc     r2,r2_bank             /* バンク1に切り替えるためコピー    */
+	ldc     r5,sr                  /* これ以降割り込みを受け付ける。   */
+	jsr     @r2                    /* 割り込みハンドラへ               */
+	nop
+	mov.l  _mask_md_ipm_ret,r0
+	ldc    r0,sr	         /* 割り込み禁止                           */
+	stc    r7_bank,r7        /* 例外/割り込みのネスト回数をデクリメント*/
+	dt     r7
+	ldc    r7,r7_bank
+_ret_to_task_int:	         
+	mov.l  @r15+,r7          /* r0〜r1,ssr,pr,spcを復帰し割り込み元に戻る */
+	mov.l  @r15+,r6
+	mov.l  @r15+,r5
+	mov.l  @r15+,r4
+	mov.l  @r15+,r3
+	mov.l  @r15+,r2
+	mov.l  @r15+,r1
+	mov.l  @r15+,r0
+	ldc.l  @r15+,ssr
+	lds.l  @r15+,pr
+	ldc.l  @r15+,spc
+	rte
+	nop
+	.align  4
+_stacktop_k:	
+	.long  STACKTOP            /* タスク独立部のスタックの初期値  */
+_intevt:		
+#ifdef SH7708	
+	.long  INTEVT
+#else
+	.long  INTEVT2
+#endif	
+_int_table_k:	
+	.long    _int_table       
+_int_plevel_table_k:	
+	.long	_int_plevel_table 
+_reqflg_k:
+	.long  _reqflg
+_mask_md_ipm_ret:	
+	.long  0x40000000 + MAX_IPM << 4
+
+
+
+	

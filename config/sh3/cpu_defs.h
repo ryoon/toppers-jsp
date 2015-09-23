@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.1 2000/11/14 16:29:53 honda Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.5 2001/02/23 21:14:08 honda Exp $
  */
 
 #ifndef _CPU_DEFS_H_
@@ -58,14 +58,8 @@ extern ER	ena_int(INTNO intno);
 /*
  *  ターゲットシステム依存のサービスコール
  */
-#ifndef _MACRO_ONLY
-
 typedef	UD  SYSUTIM;	/* 性能評価用システム時刻 */
-
 extern ER   vxget_tim(SYSUTIM *pk_sysutim);
-
-#endif /* _MACRO_ONLY */
-
 
 
 

@@ -26,11 +26,12 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.c,v 1.1 2000/11/14 16:31:38 takayuki Exp $
+ *  @(#) $Id: cpu_defs.c,v 1.2 2000/12/25 14:07:58 takayuki Exp $
  */
 
 #include "hal_msg.h"
 #include "cpu_defs.h"
+#include "cpu_config.h"
 
 
 /*
@@ -45,6 +46,7 @@ unsigned int CurrentInterruptLevel;
 
 struct tagExceptionLevel ExceptionLevel[EXC_MAXITEMS];
 
+static LPTOP_LEVEL_EXCEPTION_FILTER AnotherExceptionFilter;
 
 static unsigned int
 isns_int( unsigned int ipl )
@@ -160,7 +162,7 @@ fin_int(void)
 	}
 	CurrentInterruptLevel = 0;
 	LeaveCriticalSection(&InterruptCriticalSection);
-	DeleteCriticalSection(&InterruptCriticalSection);
+	//DeleteCriticalSection(&InterruptCriticalSection);
 }
 
 BOOL
@@ -249,6 +251,35 @@ get_ims(unsigned int *p_ims)
 }
 
 
+/*
+ * 最上位レベルWindows構造化例外ハンドラ
+
+ */
+
+
+
+LONG WINAPI
+HALExceptionHandler( EXCEPTION_POINTERS * exc )
+{
+	int i;
+
+	if((CPUStatus & CPU_STAT_EXC) == 0)
+	{
+		CPUStatus |= CPU_STAT_EXC;
+		for(i=0;i<EXC_MAXITEMS;i++)
+		{
+			if(ExceptionLevel[i].ExceptionCode == exc->ExceptionRecord->ExceptionCode)
+			{
+				i = EXCEPTION_CONTINUE_SEARCH;
+				( * ((void (*)(void *,int *))ExceptionLevel[i].Routine)) (exc,&i);
+				return i;
+			}
+		}
+		CPUStatus &= ~CPU_STAT_EXC;
+	}
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 BOOL
 ini_exc(void)
 {
@@ -259,6 +290,9 @@ ini_exc(void)
 		ExceptionLevel[i].ExceptionCode = 0;
 		ExceptionLevel[i].Routine = 0l;
 	}
+
+	AnotherExceptionFilter = SetUnhandledExceptionFilter(HALExceptionHandler);
+	
 	return TRUE;
 }
 

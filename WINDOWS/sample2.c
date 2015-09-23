@@ -1,14 +1,16 @@
 /*
- *  @(#) $Id: sample2.c,v 1.3 2000/11/14 17:24:36 takayuki Exp $
+ *  @(#) $Id: sample2.c,v 1.4 2001/02/23 15:45:20 takayuki Exp $
  */
 
 /*
  * TOPPERS/JSP サンプルプログラム  - 5人の哲学者による哲学者問題 -
- *         Last update : 13th, November, 2000
+ *    デバイスエミュレーション デモ
+ *         Last update : 23rd, February, 2001
  */
 
 #include <jsp_services.h>
 #include "kernel_id.h"
+#include "device.h"
 
 void task(VP_INT exinf)
 {
@@ -56,6 +58,8 @@ void main_task(VP_INT exinf)
 		wai_flg(1, 0xf0, TWF_ORW, &ptn);
 		if((ptn & 0xf) >= 5)
 			continue;
+
+		OnDevice DeviceWrite(100,4,&ptn);
 
 		if( buffer[ptn & 0xf] != patternchar[(ptn >> 4) & 0xf] )
 		{

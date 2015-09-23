@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: staticapi.cpp,v 1.3 2000/11/14 16:57:33 takayuki Exp $
+ *  @(#) $Id: staticapi.cpp,v 1.4 2001/02/23 16:52:17 takayuki Exp $
  */
 
 #include "staticapi.h"
@@ -45,10 +45,10 @@ char * StaticAPI::CheckParameter_Primitive(Array * param, char * format)
 		{
 		case '{':
 			if(!param->IsArray(position))
-				throw Exception("Given parameter did not match the prototype.");
+				throw Exception(MSG_ILLEGALTYPE);
 
 			if((format = CheckParameter_Primitive(param->GetArrayPtr(position),format+1)) == '\x0')
-				throw Exception("Internal: Parameter descriptor syntax error (Unsuitable parenthesis)");
+				throw Exception(MSG_INTERNAL " : " MSG_SYNTAXERROR);
 
 			if(*format == '\x0')
 				return 0l;
@@ -60,10 +60,10 @@ char * StaticAPI::CheckParameter_Primitive(Array * param, char * format)
 		case '\x0':
 			work = param->GetValuePtr(position);
 			if(work == 0l)
-				throw Exception("Geven parameter is too few.");
+				throw Exception(MSG_TOOFEWPARAM);
 			
 			if((flag & (1 << (int)work->GetType())) == 0)
-				throw Exception("Given parameter did not match the prototype.");
+				throw Exception(MSG_ILLEGALTYPE);
 			
 			if( *format == '}' )
 				return format+1;
@@ -99,7 +99,7 @@ char * StaticAPI::CheckParameter_Primitive(Array * param, char * format)
 			flag |= 1 << Valient::POINTER;
 			break;
 		default:
-			throw Exception("Internal: Parameter descriptor syntax error (Illegal character)");
+			throw Exception(MSG_INTERNAL " : " MSG_SYNTAXERROR);
 		}
 
 		format ++;

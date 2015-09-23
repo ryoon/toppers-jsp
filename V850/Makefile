@@ -26,15 +26,14 @@
 #  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 #  かなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile.without_stub,v 1.2 2000/11/18 04:47:46 honda Exp $
+#  @(#) $Id: Makefile,v 1.6 2001/02/23 18:23:45 takayuki Exp $
 # 
-
 
 #
 #  ターゲット名の定義
 #
-CPU = sh3
-SYS = dvesh7700
+CPU = v850
+SYS = upd703000
 
 #
 #  Cygwin上でコンパイルするかどうかの設定
@@ -56,7 +55,8 @@ include ../config/$(CPU)/$(SYS)/Makefile.config
 #  共通コンパイルオプションの定義
 #
 INCLUDES = -I. -I../include -I../config/$(CPU) -I../config/$(CPU)/$(SYS)
-CFLAGS := $(CFLAGS) $(INCLUDES) -g -Wall 
+CDEFS := 
+CFLAGS := $(CFLAGS) $(CDEFS) $(INCLUDES) -g -Wall -ffixed-r2
 LDFLAGS := -nostdlib $(LDFLAGS)
 LIBS = -lgcc
 
@@ -77,7 +77,7 @@ UTASK_LIBS =
 #
 STASK_DIR = ../systask:../libjsp
 STASK_ASMOBJS =
-STASK_COBJS = syslog.o timer.o serial.o logtask.o \
+STASK_COBJS = syslog.o timer.o \
 	      jsp_perror.o strerror.o
 STASK_CFLAGS = -I../systask
 STASK_LIBS =
@@ -108,13 +108,14 @@ endif
 #
 all: jsp.bin
 
+
 ##### 以下は編集しないこと #####
 
 #
 #  カーネルのコンフィギュレーションファイルの生成
 #
 kernel_cfg.c: $(UTASK_CFG)
-	$(CPP) $(INCLUDES) $(UTASK_CFG) | ../cfg/cfg
+	$(CPP) $(INCLUDES) $(CDEFS) $(UTASK_CFG) | ../cfg/cfg
 
 #
 #  offset.h の生成規則

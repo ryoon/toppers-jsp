@@ -2,14 +2,14 @@
                ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                        (Linux シュミレーション環境)
 
-       	    （Release 1.0β対応，最終更新: 14-Nov-2000）
+	    （Release 1.1β対応，最終更新: 24-Feb-2001）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -32,7 +32,7 @@
  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  かなる損害に関しても，その責任を負わない．
 
- @(#) $Id: linux.txt,v 1.2 2000/11/14 16:50:11 honda Exp $
+ @(#) $Id: linux.txt,v 1.4 2001/02/23 22:15:22 hiro Exp $
 ------------------------------------------------------------------------
 
 
@@ -256,7 +256,7 @@ GDB の場合には、次のコマンドにより、ID が TSKID のタスクが関数 FUNC を
 法では、ID が TSKID のタスクが実行中に起動された割込みハンドラが FUNC 
 を呼び出した場合にも停止する）。
 
-    (gdb) break FUNC if ctxtsk->tskid==TSKID
+    (gdb) break FUNC if _kernel_runtsk == &_kernel_tcb_table[TSKID-1]
 
 
 

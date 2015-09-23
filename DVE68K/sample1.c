@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.2 2000/11/18 02:19:43 hiro Exp $
+ *  @(#) $Id: sample1.c,v 1.4 2001/02/23 22:17:14 hiro Exp $
  */
 
 /* 
@@ -79,6 +79,8 @@
  *        レディキューを回転させる．
  *  'c' : 周期ハンドラを動作させる．
  *  'C' : 周期ハンドラを停止させる．
+ *  'z' : ゼロ除算例外を発生させる．
+ *  'Z' : CPUロック状態でゼロ除算例外を発生させる．
  *  'V' : vxget_tim で性能評価用システム時刻を2回読む．
  *  'v' : 発行したシステムコールを表示する．
  *  'q' : 発行したシステムコールを表示しない（デフォルト）．

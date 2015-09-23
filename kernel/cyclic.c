@@ -26,7 +26,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cyclic.c,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: cyclic.c,v 1.2 2000/12/22 07:53:11 hiro Exp $
  */
 
 /*
@@ -59,12 +59,16 @@ extern CYCCB	cyccb_table[];
 #define get_cyccb(cycid)	(&(cyccb_table[INDEX_CYC(cycid)]))
 
 /*
+ *  周期ハンドラ起動ルーチン (前方参照のための定義)
+ */
+static void	call_cychdr(CYCCB *cyccb);
+
+/*
  *  周期ハンドラ起動のためのタイムイベントブロックの登録
  */
 static void
 tmevtb_enqueue_cyc(CYCCB *cyccb, EVTTIM evttim)
 {
-	static void	call_cychdr(CYCCB *cyccb);	/* 前方参照 */
 
 	tmevtb_enqueue_evttim(&(cyccb->tmevtb), evttim,
 				(CBACK) call_cychdr, (VP) cyccb);
