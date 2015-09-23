@@ -8,19 +8,25 @@
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  *
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -28,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_support.S,v 1.1 2001/05/04 09:07:50 imai Exp $
+ *  @(#) $Id: cpu_support.S,v 1.2 2001/10/22 02:16:43 imai Exp $
  */
 
 
@@ -66,11 +72,24 @@
 #endif
 
 
+#if TCB_enatex > 15
+ ここでアセンブルエラー
+#endif
+
+#if TCB_enatex_mask > 0x80
+ ここでアセンブルエラー
+#endif
+
+#if !CHECK_IMMEDIATE_ADDRESSING(TCB_texptn)
+ TCB_texptn
+ ここでアセンブルエラー
+#endif
+
 /*
  *  タスクディスパッチャ
  *
- *    　_dispatch は、割込み／CPU例外ネストカウンタ = 0,割込み禁止状態
- *    で呼び出さなければならない．_exit_and_dispatch も，割込みネスト
+ *    　dispatch は、割込み／CPU例外ネストカウンタ = 0,割込み禁止状態
+ *    で呼び出さなければならない．exit_and_dispatch も，割込みネスト
  *    カウンタ = 0・割込み禁止状態で呼び出すのが原則であるが，カーネル
  *    起動時に対応するため，割込みネストカウンタ = 1で呼び出した場合に
  *    も対応している．
@@ -120,14 +139,25 @@ dispatch_r:
 	mov.l  @r15+,r11
 	mov.l  @r15+,r10
 	mov.l  @r15+,r9
-	mov.l  _calltex_dis,r1 /* タスク例外ルーチンの呼び出し          */
-	jmp    @r1
-	mov.l  @r15+,r8		/*  遅延スロット　			*/
+	mov.l  @r15+,r8
+	mov.l  _runtsk_dis,r0	/*  runtsk->enatexのチェック  		*/
+	mov.l  @r0,r1
+	mov.b  @(TCB_enatex,r1),r0
+	and    #TCB_enatex_mask,r0
+	tst    r0,r0
+	bt     _dispatcher_r_1
+	mov.l  @(TCB_texptn,r1),r2	/*  runtsk->texptnのチェック  	*/
+	tst    r2,r2
+	bt     _dispatcher_r_1
+	mov.l  _call_texrtn_dis,r1 /* タスク例外処理ルーチン起動	*/
+	jmp    @r1		/*（dispatch()呼び出し元にリターンする）*/
+	nop			/*  遅延スロット　			*/
+_dispatcher_r_1:
+	rts			/*  dispatch()呼び出し元へのリターン  	*/
+	nop			/*  遅延スロット　			*/
 
 	.global _exit_and_dispatch
 _exit_and_dispatch:
-	mov.l  _mask_ipm_dis,r9  /* 割り込み禁止                     	*/
-	ldc    r9,sr
 				/*  割込みネストカウンタをクリア  	*/
 	mov.l  _intnest_dis, r1
 	mov    #0,r0
@@ -177,22 +207,39 @@ dispatcher_2:
 	mov.l  _intnest_dis,r0
 	mov    #1,r1
 	mov.l  r1,@r0
-
-	mov    #0,r9      	    /* 割り込み許可                     */
+dispatcher_2_enable_interrupt:
+				    /* 割り込み許可                     */
+#ifdef SUPPORT_CHG_IPM
+				    /*  タスクコンテキストの割り込み  	*/
+				    /*  マスクを設定  			*/
+	mov.l  _task_intmask_dis,r2
+	mov.l  @r2,r3
+	ldc    r3,sr
+#else /* SUPPORT_CHG_IPM */
+	mov    #0,r9      	    /*  IPM←0                     	*/
 	ldc    r9,sr
+#endif /* SUPPORT_CHG_IPM */
+
 	sleep    		    /* 割込み待ち                       */
 	mov.l  _mask_ipm_dis,r8     /* 割り込み禁止                     */
 	ldc    r8,sr
+	mov.l  _reqflg_dis,r4	    /* reqflgのチェック   		*/
+	mov.l  @r4,r5		    /* TRUEならば、もう1度割り込み待ち  */
+	tst    r5,r5
+	bt     dispatcher_2_enable_interrupt
+	/*  遅延スロットなし  */
+	mov    #0,r6		    /* reqflgのクリア   		*/
+	mov.l  r6,@r4
 	bra    dispatcher_1
-	mov.l  r9,@r0		    /*  遅延スロット  */
+	mov.l  r6,@r0		    /*  遅延スロット  */
 				    /*  割込みネストカウンタをクリア 	*/
 	.align 4
 _runtsk_dis:
 	.long _runtsk
 _schedtsk_dis:
 	.long _schedtsk
-_calltex_dis:
-	.long _calltex
+_call_texrtn_dis:
+	.long _call_texrtn
 _mask_ipm_dis:
 	.long MAX_IPM << 4	/* 割込み禁止時のSRの値  		*/
 dispatch_r_k:
@@ -202,8 +249,10 @@ _stacktop_dis:
 
 _intnest_dis:	  		/* 割込み／CPU例外ネストカウンタ  	*/
 	.long _intnest
-
-
+_task_intmask_dis:		/* タスクコンテキストの割込みマスク   	*/
+	.long _task_intmask
+_reqflg_dis:
+	.long _reqflg
 /*
  *  割込みハンドラ/CPU例外ハンドラ出口処理
  *
@@ -214,8 +263,8 @@ _intnest_dis:	  		/* 割込み／CPU例外ネストカウンタ  	*/
  */
 	.text
 	.align 2
-	.globl ret_int
-ret_int:
+	.globl _ret_int
+_ret_int:
 	mov.l  _runtsk_ret,r1   /* r0 <- runtsk                    */
 	mov.l  @r1,r0
 	mov.l  _enadsp_ret,r2   /* enadspのチェック                */
@@ -277,22 +326,34 @@ ret_int_r:
 	mov.l  @r15+,r9
 	mov.l  @r15+,r8
 ret_int_1:
-	mov.l  _calltex_ret,r2    /* タスク例外処理ルーチン起動      */
-	jsr    @r2
-	nop
-#ifdef SUPPORT_CHG_IPM		/*  chg_ipm()をサポートする場合 */
-	mov    #40,r0		/*  スタックの先頭からsrまでの  */
-				/*  オフセット （下記参照）	*/
-	mov.l  @(r0,r15),r1	/*  r1←スタックに積まれたsr  	*/
+	mov.l  _runtsk_ret,r0	/*  runtsk->enatexのチェック  		*/
+	mov.l  @r0,r1
+	mov.b  @(TCB_enatex,r1),r0
+	and    #TCB_enatex_mask,r0
+	tst    r0,r0
+	bt     ret_int_2
+	mov.l  @(TCB_texptn,r1),r2	/*  runtsk->texptnのチェック  	*/
+	tst    r2,r2
+	bt     ret_int_2
+	mov.l  _call_texrtn_ret,r1 /* タスク例外処理ルーチン起動	*/
+	jsr    @r1
+	nop			/*  遅延スロット　			*/
+
+				/*  戻り先の割込みマスクを  		*/
+#ifdef SUPPORT_CHG_IPM		/*  task_intmaskにする 			*/
+	mov    #40,r0		/*  	スタックの先頭からsrまでの  	*/
+				/*  	オフセット （下記参照）		*/
+	mov.l  @(r0,r15),r1	/*  	r1←スタックに積まれたsr  	*/
 	mov.l  _unmask_ipm,r2
 	and    r2,r1
 	mov.l  _task_intmask_k,r2
 	mov.l  @r2,r3
 	or     r3,r1
-	mov.l  r1,@(r0,r15)	/*  スタックに積んであるsrに上書き  */
-#endif /* SUPPORT_CHG_IMP */
-				/* pr,スクラッチレジスタを復帰 */
-				/*  スタックの先頭からのオフセット  */
+	mov.l  r1,@(r0,r15)	/*  スタックに積んであるsrに上書き  	*/
+#endif /* SUPPORT_CHG_IPM */
+
+ret_int_2:			/* pr,スクラッチレジスタを復帰 		*/
+				/*  スタックの先頭からのオフセット  	*/
 	lds.l  @r15+,pr		/*   +0:PR  */
 	mov.l  @r15+,r7		/*   +4:r7  */
 	mov.l  @r15+,r6		/*   +8:r6  */
@@ -307,8 +368,8 @@ ret_int_1:
 	rte
 	nop			/*  遅延スロット  */
 	.align 4
-_calltex_ret:
-	.long _calltex
+_call_texrtn_ret:
+	.long _call_texrtn
 _runtsk_ret:
 	.long _runtsk
 _schedtsk_ret:
@@ -323,7 +384,7 @@ _unmask_ipm:
 	.long  ~0xf0		/*  ipmビット以外すべて１  */
 _task_intmask_k:
 	.long _task_intmask
-#endif /* SUPPORT_CHG_IMP */
+#endif /* SUPPORT_CHG_IPM */
 
 
 /*
@@ -383,7 +444,7 @@ _cpu_experr_k:
 	.globl _activate_r
 _activate_r:
 				/* 割り込み許可の準備 		*/
-#ifndef SUPPORT_CHG_IPM
+#ifndef SUPPORT_CHG_IPM		/*  （t_unlock_cpu相当の処理） 	*/
 	mov   #0,r1		/*  IPM以外のビットも破壊される */
 #else  /* SUPPORT_CHG_IPM */
         mov.l _task_intmask_act,r0

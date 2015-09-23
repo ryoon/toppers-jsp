@@ -3,22 +3,28 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている 
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  * 
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -26,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serial.c,v 1.2 2000/12/13 01:01:56 hiro Exp $
+ *  @(#) $Id: serial.c,v 1.7 2001/11/12 13:23:22 hiro Exp $
  */
 
 /*
@@ -48,7 +54,8 @@ serial_initialize(VP_INT portid)
 	in_inirtn = TRUE;
 	syscall(serial_open((ID) portid));
 	in_inirtn = FALSE;
-	syslog(LOG_NOTICE, "Serial driver service starts on port %d.", portid);
+	syslog_1(LOG_NOTICE, "Serial driver service starts on port %d.",
+							portid);
 }
 
 /*
@@ -97,7 +104,7 @@ static BOOL	serial_putc(SPCB *spcb, char c);
  *  シリアルポート管理ブロックの定義と初期化
  */
 
-SPCB spcb_table[NUM_PORT] = {
+static SPCB spcb_table[NUM_PORT] = {
 	{ 0, HWPORT1, SEM_SERIAL1_IN, SEM_SERIAL1_OUT },
 #if NUM_PORT > 1
 	{ 0, HWPORT2, SEM_SERIAL2_IN, SEM_SERIAL2_OUT },
@@ -174,7 +181,7 @@ serial_close(ID portid, BOOL flush)
 	int	i;
 
 	if (!(1 <= portid && portid <= NUM_PORT)) {
-		return(E_PAR);		/* ポート番号のチェック */
+		return(E_ID);		/* ポート番号のチェック */
 	}
 
 	spcb = get_spcb(portid);
@@ -213,7 +220,7 @@ serial_close(ID portid, BOOL flush)
 #define	IXOFF_STOP	64	/* STOPを送る残りバッファエリア */
 #define	IXOFF_START	128	/* STARTを送る残りバッファエリア */
 
-#define	in_buf_area(p)							\
+#define	in_buf_area(spcb)						\
 		((spcb->in_read_ptr >= spcb->in_write_ptr) ?		\
 		 (spcb->in_read_ptr - spcb->in_write_ptr) :		\
 		 (spcb->in_read_ptr + SERIAL_BUFSZ - spcb->in_write_ptr))
@@ -276,7 +283,7 @@ serial_read(ID portid, char *buf, UINT len)
 		return(E_CTX);
 	}
 	if (!(0 <= portid && portid <= NUM_PORT)) {
-		return(E_PAR);		/* ポート番号のチェック */
+		return(E_ID);		/* ポート番号のチェック */
 	}
 
 	spcb = get_spcb_def(portid);
@@ -353,7 +360,7 @@ serial_write(ID portid, char *buf, UINT len)
 		return(E_CTX);
 	}
 	if (!(0 <= portid && portid <= NUM_PORT)) {
-		return(E_PAR);		/* ポート番号のチェック */
+		return(E_ID);		/* ポート番号のチェック */
 	}
 
 	spcb = get_spcb_def(portid);
@@ -387,7 +394,7 @@ serial_ioctl(ID portid, UINT ioctl)
 		return(E_CTX);
 	}
 	if (!(0 <= portid && portid <= NUM_PORT)) {
-		return(E_PAR);		/* ポート番号のチェック */
+		return(E_ID);		/* ポート番号のチェック */
 	}
 
 	spcb = get_spcb_def(portid);
@@ -437,13 +444,11 @@ serial_handler_in(ID portid)
 
 			if ((spcb->ioctl & IOCTL_IXOFF) != 0
 					&& !(spcb->ixoff_stopped)
-					&& (in_buf_area(p) < IXOFF_STOP)) {
-				spcb->ixoff_stopped = TRUE;
-				if (!(spcb->send_enabled)) {
-					hw_port_sendstart(&(spcb->hwport));
-					spcb->send_enabled = TRUE;
+					&& (in_buf_area(spcb) < IXOFF_STOP)) {
+				if (!enable_send(spcb, STOP)) {
+					spcb->ixoff_send = STOP;
 				}
-				spcb->ixoff_send = STOP;
+				spcb->ixoff_stopped = TRUE;
 			}
 		}
 	}

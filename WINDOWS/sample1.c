@@ -1,5 +1,38 @@
 /*
- *  @(#) $Id: sample1.c,v 1.3 2000/11/20 05:47:43 takayuki Exp $
+ *  TOPPERS/JSP Kernel
+ *      Toyohashi Open Platform for Embedded Real-Time Systems/
+ *      Just Standard Profile Kernel
+ * 
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *                              Toyohashi Univ. of Technology, JAPAN
+ * 
+ *  上記著作権者は，Free Software Foundation によって公表されている 
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
+ *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
+ *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
+ *      スコード中に含まれていること．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
+ *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
+ *        権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
+ *        こと．
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *      害からも，上記著作権者を免責すること．
+ * 
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
+ *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
+ *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
+ *  かなる損害に関しても，その責任を負わない．
+ * 
+ *  @(#) $Id: sample1.c,v 1.4 2001/11/12 14:54:57 takayuki Exp $
  */
 
 /* 
@@ -84,7 +117,7 @@ void task(VP_INT exinf)
 
 	ena_tex();
 	while (1) {
-		syslog(LOG_NOTICE, "task%d is running (%03d).   %s",
+		syslog_3(LOG_NOTICE, "task%d is running (%03d).   %s",
 					tskno, ++n, graph[tskno-1]);
 		for (i = 0; i < TASK_LOOP; i++);
 
@@ -92,26 +125,28 @@ void task(VP_INT exinf)
 		message[tskno-1] = 0;
 		switch (c) {
 		case 'e':
-			syslog(LOG_INFO, "#%d#ext_tsk()", tskno);
+			syslog_1(LOG_INFO, "#%d#ext_tsk()", tskno);
 			ext_tsk();
 		case 's':
-			syslog(LOG_INFO, "#%d#slp_tsk()", tskno);
+			syslog_1(LOG_INFO, "#%d#slp_tsk()", tskno);
 			syscall(slp_tsk());
 			break;
 		case 'S':
-			syslog(LOG_INFO, "#%d#tslp_tsk(10000)", tskno);
+			syslog_1(LOG_INFO, "#%d#tslp_tsk(10000)", tskno);
 			syscall(tslp_tsk(10000));
 			break;
 		case 'd':
-			syslog(LOG_INFO, "#%d#dly_tsk(10000)", tskno);
+			syslog_1(LOG_INFO, "#%d#dly_tsk(10000)", tskno);
 			syscall(dly_tsk(10));
 			break;
 		case 'z':
-			syslog(LOG_NOTICE, "zerodiv = %d", *DUMMY);
+			__asm  xor eax, eax
+			__asm  idiv eax
 			break;
 		case 'Z':
 			loc_cpu();
-			syslog(LOG_NOTICE, "zerodiv = %d", *DUMMY);
+			__asm  xor eax, eax
+			__asm  idiv eax
 			unl_cpu();
 			break;
 		default:
@@ -128,29 +163,9 @@ void tex_routine(TEXPTN texptn, VP_INT exinf)
 	INT	i;
 	INT	tskno = (INT) exinf;
 
-	syslog(LOG_NOTICE, "task%d receives exception 0x%04x. ",
+	syslog_2(LOG_NOTICE, "task%d receives exception 0x%04x. ",
 					tskno, texptn);
 	for (i = 0; i < TEX_LOOP; i++);
-}
-
-/*
- *  CPUロードアドレスエラーハンドラ
- */  
-
-void
-LoadAddressError_handler(VP p_excinf)
-{
-	ID	tskid;
-
-	syslog(LOG_NOTICE, "Zero Divide Stack Frame: %08x",p_excinf);
-	syslog(LOG_NOTICE,
-		"vxsns_loc = %d vxsns_ctx = %d vxsns_dsp = %d vxsns_dpn = %d",
-		vxsns_loc(p_excinf), vxsns_ctx(p_excinf),
-		vxsns_dsp(p_excinf), vxsns_dpn(p_excinf));
-	if (!vxsns_loc(p_excinf) && !vxsns_ctx(p_excinf)) {
-		syscall(iget_tid(&tskid));
-		syscall(iras_tex(tskid, 0x8000));
-	}
 }
 
 /*
@@ -158,14 +173,12 @@ LoadAddressError_handler(VP p_excinf)
  */
 
 void
-zerodiv_handler(VP p_excinf)
+exc_handler(EXCEPTION_POINTERS * p_excinf, int * exc)
 {
 	ID	tskid;
-	VW	*frame = p_excinf;
 
-	syslog(LOG_NOTICE, "Zero Divide Stack Frame: %08x %08x %08x",
-				*frame, *(frame+1), *(frame+2));
-	syslog(LOG_NOTICE,
+	syslog_0(LOG_NOTICE, "CPU Exception Raised");
+	syslog_4(LOG_NOTICE,
 		"vxsns_loc = %d vxsns_ctx = %d vxsns_dsp = %d vxsns_dpn = %d",
 		vxsns_loc(p_excinf), vxsns_ctx(p_excinf),
 		vxsns_dsp(p_excinf), vxsns_dpn(p_excinf));
@@ -174,6 +187,9 @@ zerodiv_handler(VP p_excinf)
 		syscall(iget_tid(&tskid));
 		syscall(iras_tex(tskid, 0x8000));
 	}
+
+	p_excinf->ContextRecord->Eip += 2;
+	*exc = EXCEPTION_CONTINUE_EXECUTION; 
 }
 
 /*
@@ -201,7 +217,7 @@ void main_task(VP_INT exinf)
 	PRI	tskpri;
 	SYSUTIM	utime1, utime2;
 
-	syslog(LOG_NOTICE, "Sample task starts (exinf = %d).", exinf);
+	syslog_1(LOG_NOTICE, "Sample task starts (exinf = %d).", exinf);
 
 	serial_ioctl(0, (IOCTL_CRLF | IOCTL_RAW | IOCTL_IXON | IOCTL_IXOFF));
         
@@ -233,80 +249,80 @@ void main_task(VP_INT exinf)
 			tskid = TASK3;
 			break;
 		case 'a':
-			syslog(LOG_INFO, "#act_tsk(%d)", tskno);
+			syslog_1(LOG_INFO, "#act_tsk(%d)", tskno);
 			syscall(act_tsk(tskid));
 			break;
 		case 'A':
-			syslog(LOG_INFO, "#can_act(%d)", tskno);
+			syslog_1(LOG_INFO, "#can_act(%d)", tskno);
 			syscall(ercd = can_act(tskid));
 			if (MERCD(ercd) >= 0) {
-				syslog(LOG_NOTICE, "can_act(%d) returns %d",
+				syslog_2(LOG_NOTICE, "can_act(%d) returns %d",
 						tskid, ercd);
 			}
 			break;
 		case 't':
-			syslog(LOG_INFO, "#ter_tsk(%d)", tskno);
+			syslog_1(LOG_INFO, "#ter_tsk(%d)", tskno);
 			syscall(ter_tsk(tskid));
 			break;
 		case '>':
-			syslog(LOG_INFO, "#chg_pri(%d, HIGH_PRIORITY)", tskno);
+			syslog_1(LOG_INFO, "#chg_pri(%d, HIGH_PRIORITY)", tskno);
 							
 			chg_pri(tskid, HIGH_PRIORITY);
 			break;
 		case '=':
-			syslog(LOG_INFO, "#chg_pri(%d, MID_PRIORITY)", tskno);
+			syslog_1(LOG_INFO, "#chg_pri(%d, MID_PRIORITY)", tskno);
 			chg_pri(tskid, MID_PRIORITY);
 			break;
 		case '<':
-			syslog(LOG_INFO, "#chg_pri(%d, LOW_PRIORITY)", tskno);
+			syslog_1(LOG_INFO, "#chg_pri(%d, LOW_PRIORITY)", tskno);
 			chg_pri(tskid, LOW_PRIORITY);
 			break;
 		case 'G':
-			syslog(LOG_INFO, "#get_pri(%d, &tskpri)", tskno);
+			syslog_1(LOG_INFO, "#get_pri(%d, &tskpri)", tskno);
 			syscall(ercd = get_pri(tskid, &tskpri));
 			if (MERCD(ercd) >= 0) {
-				syslog(LOG_NOTICE, "priority of task %d is %d",
+				syslog_2(LOG_NOTICE, "priority of task %d is %d",
 						tskid, tskpri);
 			}
 			break;
 		case 'w':
-			syslog(LOG_INFO, "#wup_tsk(%d)", tskno);
+			syslog_1(LOG_INFO, "#wup_tsk(%d)", tskno);
 			syscall(wup_tsk(tskid));
 			break;
 		case 'W':
-			syslog(LOG_INFO, "#can_wup(%d)", tskno);
+			syslog_1(LOG_INFO, "#can_wup(%d)", tskno);
 			syscall(ercd = can_wup(tskid));
 			if (MERCD(ercd) >= 0) {
-				syslog(LOG_NOTICE, "can_wup(%d) returns %d",
+				syslog_2(LOG_NOTICE, "can_wup(%d) returns %d",
 						tskid, ercd);
 			}
 			break;
 		case 'l':
-			syslog(LOG_INFO, "#rel_wai(%d)", tskno);
+			syslog_1(LOG_INFO, "#rel_wai(%d)", tskno);
 			syscall(rel_wai(tskid));
 			break;
 		case 'u':
-			syslog(LOG_INFO, "#sus_tsk(%d)", tskno);
+			syslog_1(LOG_INFO, "#sus_tsk(%d)", tskno);
 			syscall(sus_tsk(tskid));
 			break;
 		case 'm':
-			syslog(LOG_INFO, "#rsm_tsk(%d)", tskno);
+			syslog_1(LOG_INFO, "#rsm_tsk(%d)", tskno);
 			syscall(rsm_tsk(tskid));
 			break;
 		case 'M':
-			syslog(LOG_INFO, "#frsm_tsk(%d)", tskno);
+			syslog_1(LOG_INFO, "#frsm_tsk(%d)", tskno);
 			syscall(frsm_tsk(tskid));
 			break;
 		case 'x':
-			syslog(LOG_INFO, "#ras_tsk(%d, 0x0001)", tskno);
+			syslog_1(LOG_INFO, "#ras_tsk(%d, 0x0001)", tskno);
 			syscall(ras_tex(tskid, 0x0001));
 			break;
 		case 'X':
-			syslog(LOG_INFO, "#ras_tsk(%d, 0x0002)", tskno);
+			syslog_1(LOG_INFO, "#ras_tsk(%d, 0x0002)", tskno);
 			syscall(ras_tex(tskid, 0x0002));
 			break;
 		case 'r':
-			syslog(LOG_INFO, "#rot_rdq(three priorities)");
+			syslog_0(LOG_INFO, "#rot_rdq(three priorities)");
 			rot_rdq(HIGH_PRIORITY);
 			rot_rdq(MID_PRIORITY);
 			rot_rdq(LOW_PRIORITY);
@@ -320,20 +336,14 @@ void main_task(VP_INT exinf)
 		case 'V':
 			syscall(vxget_tim(&utime1));
 			syscall(vxget_tim(&utime2));
-			syslog(LOG_NOTICE, "utime1 = %d, utime2 = %d",
+			syslog_2(LOG_NOTICE, "utime1 = %d, utime2 = %d",
 						(UINT) utime1, (UINT) utime2);
-			break;
-		case 'v':
-			setlogmask(LOG_UPTO(LOG_INFO));
-			break;
-		case 'q':
-			setlogmask(LOG_UPTO(LOG_NOTICE));
 			break;
 		default:
 			break;
 		}
 	} while (buf[0] != '\003' && buf[0] != 'Q');
 
-	syslog(LOG_NOTICE, "Sample task ends.");
+	syslog_0(LOG_NOTICE, "Sample task ends.");
 	kernel_exit();
 }

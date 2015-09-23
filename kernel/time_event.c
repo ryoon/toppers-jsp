@@ -3,22 +3,28 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている 
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  * 
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -26,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: time_event.c,v 1.1 2000/11/14 14:44:21 hiro Exp $
+ *  @(#) $Id: time_event.c,v 1.3 2001/09/13 15:07:25 hiro Exp $
  */
 
 /*
@@ -36,6 +42,11 @@
 #include "jsp_kernel.h"
 #include "check.h"
 #include "time_event.h"
+
+/*
+ *  システム時刻のオフセット
+ */
+SYSTIM	systim_offset;
 
 /*
  *  現在のシステム時刻（単位: ミリ秒）
@@ -64,12 +75,11 @@ EVTTIM	base_time;
 #endif /* TIC_DENO != 1 */
 
 /*
- *  タイムイベントヒープの最初の未使用領域のインデックス
+ *  タイムイベントヒープの最後の使用領域のインデックス
  *
- *  タイムイベントヒープに登録されているタイムイベントの数に 1 を加え
- *  たものになる．
+ *  タイムイベントヒープに登録されているタイムイベントの数に一致する．
  */
-static UINT	limit_index;
+static UINT	last_index;
 
 /*
  *  タイムイベントヒープ操作マクロ
@@ -94,7 +104,7 @@ static UINT	limit_index;
 void
 tmevt_initialize()
 {
-	limit_index = 1;
+	systim_offset = 0;
 	current_time = 0;
 #if TIC_DENO == 1
 	next_time = current_time + TIC_NUME;
@@ -104,6 +114,7 @@ tmevt_initialize()
 	next_subtime %= TIC_DENO;
 	base_time = (EVTTIM)(next_time + (next_subtime > 0 ? 1 : 0));
 #endif /* TIC_DENO == 1 */
+	last_index = 0;
 }
 
 /*
@@ -154,13 +165,13 @@ tmevt_down(UINT index, EVTTIM time)
 {
 	UINT	child;
 
-	while ((child = LCHILD(index)) < limit_index) {
+	while ((child = LCHILD(index)) <= last_index) {
 		/*
 		 *  左右の子ノードのイベント発生時刻を比較し，早い方の
 		 *  子ノードの位置を child に設定する．以下の子ノード
 		 *  は，ここで選ばれた方の子ノードのこと．
 		 */
-		if (child + 1 < limit_index
+		if (child + 1 <= last_index
 			&& EVTTIM_LT(TMEVT_NODE(child + 1).time,
 				  TMEVT_NODE(child).time)) {
 			child = child + 1;
@@ -200,9 +211,9 @@ tmevtb_insert(TMEVTB *tmevtb, EVTTIM time)
 	UINT	index;
 
 	/*
-	 *  limit_index から上に挿入位置を探す．
+	 *  last_index をインクリメントし，そこから上に挿入位置を探す．
 	 */
-	index = tmevt_up(limit_index, time);
+	index = tmevt_up(++last_index, time);
 
 	/*
 	 *  タイムイベントを index の位置に挿入する．
@@ -210,7 +221,6 @@ tmevtb_insert(TMEVTB *tmevtb, EVTTIM time)
 	TMEVT_NODE(index).time = time;
 	TMEVT_NODE(index).tmevtb = tmevtb;
 	tmevtb->index = index;
-	limit_index += 1;
 }
 
 /*
@@ -221,10 +231,17 @@ tmevtb_delete(TMEVTB *tmevtb)
 {
 	UINT	index = tmevtb->index;
 	UINT	parent;
-	EVTTIM	event_time = TMEVT_NODE(limit_index - 1).time;
+	EVTTIM	event_time = TMEVT_NODE(last_index).time;
 
 	/*
-	 *  削除したノードの位置に最後のノード（limit_index - 1の位置
+	 *  削除によりタイムイベントヒープが空になる場合は何もしない．
+	 */
+	if (--last_index == 0) {
+		return;
+	}
+
+	/*
+	 *  削除したノードの位置に最後のノード（last_index + 1 の位置
 	 *  のノード）を挿入し，それを適切な位置へ移動させる．実際には，
 	 *  最後のノードを実際に挿入するのではなく，削除したノードの位
 	 *  置が空ノードになるので，最後のノードを挿入すべき位置へ向け
@@ -257,9 +274,8 @@ tmevtb_delete(TMEVTB *tmevtb)
 	/*
 	 *  最後のノードを index の位置に挿入する．
 	 */ 
-	TMEVT_NODE(index) = TMEVT_NODE(limit_index - 1);
+	TMEVT_NODE(index) = TMEVT_NODE(last_index + 1);
 	TMEVT_NODE(index).tmevtb->index = index;
-	limit_index -= 1;
 }
 
 /*
@@ -269,10 +285,17 @@ Inline void
 tmevtb_delete_top()
 {
 	UINT	index;
-	EVTTIM	event_time = TMEVT_NODE(limit_index - 1).time;
+	EVTTIM	event_time = TMEVT_NODE(last_index).time;
 
 	/*
-	 *  ルートノードに最後のノード（limit_index - 1の位置のノード）
+	 *  削除によりタイムイベントヒープが空になる場合は何もしない．
+	 */
+	if (--last_index == 0) {
+		return;
+	}
+
+	/*
+	 *  ルートノードに最後のノード（last_index + 1 の位置のノード）
 	 *  を挿入し，それを適切な位置へ移動させる．実際には，最後のノー
 	 *  ドを実際に挿入するのではなく，ルートノードが空ノードになる
 	 *  ので，最後のノードを挿入すべき位置へ向けて空ノードを移動さ
@@ -283,9 +306,8 @@ tmevtb_delete_top()
 	/*
 	 *  最後のノードを index の位置に挿入する．
 	 */ 
-	TMEVT_NODE(index) = TMEVT_NODE(limit_index - 1);
+	TMEVT_NODE(index) = TMEVT_NODE(last_index + 1);
 	TMEVT_NODE(index).tmevtb->index = index;
-	limit_index -= 1;
 }
 
 /*
@@ -307,10 +329,16 @@ isig_tim()
 	 *  ベントを，タイムイベントヒープから削除し，コールバック関数
 	 *  を呼び出す．
 	 */
-	while (limit_index > 1 && EVTTIM_LE(TMEVT_NODE(1).time, next_time)) {
+	while (last_index > 0 && EVTTIM_LE(TMEVT_NODE(1).time, next_time)) {
 		tmevtb = TMEVT_NODE(1).tmevtb;
 		tmevtb_delete_top();
 		(*(tmevtb->callback))(tmevtb->arg);
+
+		/*
+		 *  ここで優先度の高い割込みを受け付ける．
+		 */
+		i_unlock_cpu();
+		i_lock_cpu();
 	}
 
 	/*

@@ -3,22 +3,28 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている 
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  * 
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -26,15 +32,37 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.4 2001/03/26 02:47:46 hiro Exp $
+ *  @(#) $Id: cpu_config.h,v 1.8 2001/10/08 08:46:54 hiro Exp $
  */
 
 /*
- *	プロセッサ依存モジュール（68040用）
+ *	プロセッサ依存モジュール（M68040用）
  */
 
 #ifndef _CPU_CONFIG_H_
 #define _CPU_CONFIG_H_
+
+/*
+ *  カーネルの内部識別名のリネーム
+ */
+#ifndef OMIT_RENAME
+
+#define activate_r		_kernel_activate_r
+#define ret_int			_kernel_ret_int
+#define ret_exc			_kernel_ret_exc
+#define task_intmask		_kernel_task_intmask
+#define int_intmask		_kernel_int_intmask
+
+#ifdef LABEL_ASM
+
+#define _activate_r		__kernel_activate_r
+#define _ret_int		__kernel_ret_int
+#define _ret_exc		__kernel_ret_exc
+#define _task_intmask		__kernel_task_intmask
+#define _int_intmask		__kernel_int_intmask
+
+#endif /* LABEL_ASM */
+#endif /* OMIT_RENAME */
 
 /*
  *  プロセッサの特殊命令のインライン関数定義
@@ -281,7 +309,7 @@ extern void exchdr##_entry(VP sp);	\
 asm(".text				\n" \
 #exchdr "_entry:			\n" \
 "	movem.l %d0-%d1/%a0-%a1, -(%sp)	\n" /* スクラッチレジスタを保存 */ \
-"	lea.l (16,%sp), %a0		\n" /* 例外フレームの先頭を A0 に */ \
+"	lea.l 16(%sp), %a0		\n" /* 例外フレームの先頭を A0 に */ \
 "	move.w %sr, %d0			\n" /* SR を D0 に */ \
 "	and.w #~0x1000, %sr		\n" /* 割込みモード */ \
 "	move.l %d0, -(%sp)		\n" /* 元の SR をスタックに保存 */ \
@@ -324,8 +352,9 @@ exc_sense_lock(VP p_excinf)
 /*
  *  ラベルの別名を定義するためのマクロ
  */
-#define	LABEL_ALIAS(new_label, defined_label) \
+#define	_LABEL_ALIAS(new_label, defined_label) \
 	asm(".globl " #new_label "\n" #new_label " = " #defined_label);
+#define LABEL_ALIAS(x, y) _LABEL_ALIAS(x, y)
 
 /*
  *  プロセッサ依存の初期化

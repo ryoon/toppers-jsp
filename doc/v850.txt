@@ -1,8 +1,9 @@
 
         ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
-             (NEC V850 およびその互換プロセッサ)
+                    (NEC V850 プロセッサ)
+                Midas Lab : RTE-V850E/MA1-CB
 
-        （Release 1.1β対応，最終更新: 24-Feb-2001）
+        （Release 1.2 対応，最終更新: 15-Nov-2001）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
@@ -12,19 +13,25 @@
  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
- 上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- 布（以下，利用と呼ぶ）することを無償で許諾する．
+ 上記著作権者は，Free Software Foundation によって公表されている 
+ GNU General Public License の Version 2 に記述されている条件か，以
+ 下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ 利用と呼ぶ）することを無償で許諾する．
  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
      スコード中に含まれていること．
- (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
-     用する場合には，次のいずれかの条件を満たすこと．
+ (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+     ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+     に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+     この利用条件および下記の無保証規定を掲載すること．
+ (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+     み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
        権表示，この利用条件および下記の無保証規定を掲載すること．
    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
        こと．
- (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
      害からも，上記著作権者を免責すること．
 
  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -32,7 +39,7 @@
  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  かなる損害に関しても，その責任を負わない．
 
- @(#) $Id: v850.txt,v 1.5 2001/02/23 20:21:27 takayuki Exp $
+ @(#) $Id: v850.txt,v 1.7 2001/11/15 14:32:45 takayuki Exp $
 ------------------------------------------------------------------------
 
 
@@ -44,7 +51,7 @@
 
 V850環境の実行環境としては，次のものを想定している．
 
-    ・NEC V850チップ搭載ターゲットボード
+    ・Midas lab. RTE-V850E/MA1-CB
 
 また開発環境として次のものを想定している．
     ・Soralis/BSD/Linux(POSIX) または 
@@ -56,13 +63,11 @@ V850環境の実行環境としては，次のものを想定している．
 
 TOPPERS/JSP V850の開発は 次の環境で行われている．
 
-    ・Microsoft Windows 2000 Professional
-        + Microsoft Windows 2000 ServicePack1
-    ・Redhat Inc. cygwin 1.1.0
+    ・Microsoft Windows XP Professional
+    ・Redhat Inc. cygwin 1.3.5
     ・Vine Linux 2.2
     ・GNU binutils-2.10 v850-nec-elf
     ・GNU gcc-2.95.2 v850-nec-elf + newlib 1.8.2
-        #gccには修正を加えている
 
 1.2 サポートする機能の概要
 
@@ -91,10 +96,7 @@ TOPPERS/JSP V850の開発は 次の環境で行われている．
 
     ・汎用レジスタ R2 は 割込みスタックレジスタとして予約
         汎用レジスタR2はプログラムの全体を通じて利用することはできない
-         #gccに細工が必要となる
-
-    ・シリアル入出力
-        シリアル入出力は現在サポート外である．
+        JSPカーネルでは、R2を割込み時スタックポインタとして利用している
 
 
 ２．V850環境に依存した機能
@@ -113,15 +115,14 @@ int型 および unsigned int型のサイズは32ビットである．
 
 3.1 メモリマップ
 
-・uPD703000
-コード領域
-    0x00000000 - 0x0000025f : ベクタテーブル
-    0x00000260 -            : プログラムコード
-データ領域
-    0x00ffb000 - 0xfffff000 : RAM
+・RTE-V850E/MA1-CB
+    0x00000000 - 0x0000038f : ベクタテーブル
+    0x00000390 -            : プログラムコード (外部ROM)
+    0x00800000 -            : プログラムデータ (SDRAM)
+    0x0fffc000 - 0x0fffe7ff : システムスタック (内蔵RAM)
 
-スタック領域は0xfffff000からアドレス値が減少する方向へ進む．
-データ領域は0x00ffb000からアドレス値が増加する方向へ確保される．
+スタック領域は内蔵RAM領域の末尾からアドレス値が減少する方向へ進む．
+データ領域は所定の領域からアドレス値が増加する方向へ確保される．
  #正確には上位8ビットは空間としての意味をなさないため，
  #実質は16kBほど確保されている．
 
@@ -135,48 +136,44 @@ int型 および unsigned int型のサイズは32ビットである．
 
 3.2.1 メモリマップドレジスタのアドレス値設定
 
-TOPPERS/JSP V850環境では次のレジスタを参照している．
-
-タイマ制御レジスタ          TMC     (TIMERMODECONTROL)
-タイマコンペアレジスタ      CM      (COMPAREREGISTER)
-タイマ割込み制御レジスタ    TMIC    (TIMERINTCONTROL)
-タイマカウンタ              TM      (TIMERCOUNTER)
-実行中割込み優先度レジスタ  ISPR    (INSERPRIREG)
-
+TOPPERS/JSP V850環境ではいくつかの制御レジスタを参照している．
 これらは全てシステム依存部用ディレクトリのsys_defs.hで定義されている．
 利用者は必要に応じてこれらの値を修正すること．
 
 3.2.2 タイマー値の設定
 
-TOPPERS/JSP V850環境では標準で5msごとに割込みを発生させている．
+TOPPERS/JSP V850環境では標準で1msごとに割込みを発生させている．
+
 割込みを発生させるまでの時間はタイマコンペアレジスタの値をマニュアルに
 したがって調整することで帰ることができる．
 
-config/v850/(sys)/sys_defs.h:53
-        /* uPD703000 25MHz で 5msec */
-    #define COMPAREVALUE        0x100
+config/v850/rtev850ema1cb/sys_defs.h:52
 
-またタイムティック自体を修正する場合はsys_defs.h:81,82のTIC_NUMEおよび
+	/* RTE-V850E/MA1-CB 50MHz で 1msec */
+#define TIMER_PORT            0
+#define TIMER_INT_PRIORITY    0
+#define TIMER_PRESCALER       2      /* clk = f/16 */
+#define TIMER_COMPAREVALUE    3125
+
+またタイムティック自体を修正する場合はsys_defs.h:138,139のTIC_NUMEおよび
 TIC_DENOを修正する．それぞれは次式に従う．
 
 タイムティック(ms) = TIC_NUME(ms) / TIC_DENO(ms)
 
 3.2.3 RAM開始番地の設定
 
-RAMの開始番地を変更するにはconfig/v850/v850elf.ld:28を修正する．
-標準では0x00ffb000に設定されている．
-
-config/v850/v850elf.ld
-    . = 0x00ffb000;
+config/v850/rtev850ema1cb/v850elf.ldのMEMORY部の内容を修正することで、メモリ
+のサイズおよび位置を変えることができる。また、各セクションの末尾にある 
+"> SDRAM" または "> EXTROM"を変えることで、配置する空間を変えることも可能である。
 
 3.2.4 イニシャルスタックポインタの設定
 
-起動時に設定される初期スタックポインタの番地はconfig/v850/(sys)/sys_
-config.h:54のSTACKTOPに記述されている．このSTACKTOPには4バイトアライン
+起動時に設定される初期スタックポインタの番地はconfig/v850/rtev850ema1cb/sys_
+config.h:66のSTACKTOPに記述されている．このSTACKTOPには4バイトアライン
 された値を格納する．
 
-config/v850/(sys)/sys_config.h:54
-    #define STACKTOP 0xfffff000 /* 非タスクコンテキスト用のスタックの初期値 */
+config/v850/(sys)/sys_config.h:66
+	#define	STACKTOP 0x0fffe800	/* 非タスクコンテキスト用のスタックの初期値 */
 
 スタックはプリデクリメントスタックであるため，STACKTOPで示されたアドレス
 には何も格納されないことに注意されたい．
@@ -184,7 +181,7 @@ config/v850/(sys)/sys_config.h:54
 3.2.5 その他の設定
 
     ・タイマ割り込みの番号
-        config/v850/(sys)/hw_timer.h:44 INHNO_TIMER宣言
+        config/v850/(sys)/hw_timer.h:52 INHNO_TIMER宣言
             タイマが発生する割込みの番号
 
 
@@ -203,31 +200,31 @@ config/v850/(sys)/sys_config.h:54
   +- [doc]
   |   +- v850.txt  : このファイル
   +- [config]
-  |   +- [v850]
-  |       +- cpu_config.h    : プロセッサ依存モジュール
-  |       +- cpu_config.c    : プロセッサ依存モジュール
-  |       +- cpu_context.h   : タスクコンテキスト操作ルーチン
-  |       +- cpu_defs.h      : CPU依存情報定義ファイル
-  |       +- cpu_support.S   : CPU依存アセンブラコーディング部
-  |       +- Makefile.config : CPU依存Makefile
-  |       +- makeoffset.c    : 構造体オフセット位置取得用
-  |       +- start.S         : スタートアップ / 割込みハンドラ
-  |       +- v850asm.inc     : アセンブラ用インクルードファイル
-  |       +- v850elf.ld      : v850-nec-elfリンカスクリプト
-  |       +- [upd703000]
-  |           +- Makefile.config : システム依存Makefile
-  |           +- hw_timer.h      : タイマ操作
-  |           +- sys_config.h    : システム依存モジュール
-  |           +- sys_config.c    : システム依存モジュール
-  |           +- sys_defs.h      : システム依存定義ファイル
-  |           +- sys_support.S   : システム依存アセンブラ部
-  +- [V850]
-      +- sample1.cfg : サンプルプログラム 構成情報ファイル
-      +- sample1.h   : サンプルプログラム ヘッダー
-      +- sample1.c   : サンプルプログラム
+      +- [v850]
+          +- cpu_config.h    : プロセッサ依存モジュール
+          +- cpu_config.c    : プロセッサ依存モジュール
+          +- cpu_context.h   : タスクコンテキスト操作ルーチン
+          +- cpu_defs.h      : CPU依存情報定義ファイル
+          +- cpu_support.S   : CPU依存アセンブラコーディング部
+          +- Makefile.config : CPU依存Makefile
+          +- makeoffset.c    : 構造体オフセット位置取得用
+          +- start.S         : スタートアップ / 割込みハンドラ
+          +- v850asm.inc     : アセンブラ用インクルードファイル
+          +- [rtev850ema1cb]
+              +- Makefile.config : システム依存Makefile
+              +- hw_timer.h      : タイマ操作   (V850E内蔵タイマD)
+              +- hw_serial.h     : シリアル操作 (V850E内蔵非同期SIO)
+              +- sys_config.h    : システム依存モジュール
+              +- sys_config.c    : システム依存モジュール
+              +- sys_defs.h      : システム依存定義ファイル
+              +- sys_support.S   : システム依存アセンブラ部
+              +- v850elf.ld      : リンカスクリプト
 
 
 ６．バージョン履歴
+	2001年11月15日  Release 1.2
+		・RTE-V850E/MA1-CBのサポート
+
 	2001年 2月23日  Release 1.1
 		TOPPERS/JSP release 1.1 に合わせていろいろ修正
 		・gcc -ffix-REGの存在を知り、この文章とMakefileを修正

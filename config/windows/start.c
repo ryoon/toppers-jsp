@@ -3,22 +3,28 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている 
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  * 
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -26,8 +32,10 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.c,v 1.5 2001/02/23 15:44:39 takayuki Exp $
+ *  @(#) $Id: start.c,v 1.6 2001/11/12 14:55:23 takayuki Exp $
  */
+
+
 #include "jsp_kernel.h"
 #include "task.h"
 #include "vwindows.h"
@@ -52,6 +60,7 @@ HINSTANCE ProcessInstance;
 HANDLE PrimaryThreadHandle;
 HWND PrimaryDialogHandle;
 HANDLE CurrentRunningThreadHandle;
+HANDLE ForceShutdownHandle = INVALID_HANDLE_VALUE;
 
 struct tagDestructionProcedureQueue * DestructionProcedureQueue;
 
@@ -65,6 +74,14 @@ DWORD WINAPI
 KernelStarter(LPVOID param)
 {
 	kernel_start();
+	return 0;
+}
+
+DWORD WINAPI
+ForceShutdownHandler(LPVOID param)
+{
+	Sleep(10000);
+	ExitProcess(0);
 	return 0;
 }
 
@@ -102,6 +119,8 @@ PrimaryDialogCommandHandler(WPARAM wParam, LPARAM lParam)
 
 	return TRUE;
 }
+
+
 Inline LRESULT CALLBACK
 HALMessageHandler(WPARAM wParam,LPARAM lParam)
 {
@@ -195,6 +214,8 @@ HALMessageHandler(WPARAM wParam,LPARAM lParam)
 			struct tagDestructionProcedureQueue * destqueue;
 			void * destarea;
 
+			ForceShutdownHandle = CreateThread(NULL, 0, ForceShutdownHandler, 0, NULL, NULL);
+
 			hw_timer_terminate();
 
 			if(CurrentRunningThreadHandle != NULL)
@@ -269,11 +290,10 @@ LRESULT CALLBACK PrimaryDialogProc(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lPara
 			NOTIFYICONDATA nid;
 
 			nid.cbSize = sizeof(NOTIFYICONDATA);
+			nid.hWnd = PrimaryThreadHandle;
 			nid.uID = ID_NOTIFYICON;
-			nid.hWnd = hDlg;
 			Shell_NotifyIcon(NIM_DELETE,&nid);
-			InvalidateRect(GetDesktopWindow(),NULL,FALSE);
-			UpdateWindow(GetDesktopWindow());
+
 			PrimaryThreadHandle = INVALID_HANDLE_VALUE;
 			PostQuitMessage(0);
 			break;
@@ -334,6 +354,13 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpCmdLine,i
 	}
 
 	CoUninitialize();
+
+	if(ForceShutdownHandle != INVALID_HANDLE_VALUE)
+	{
+		TerminateThread(ForceShutdownHandle,0);
+		CloseHandle(ForceShutdownHandle);
+	}
+
 	ExitProcess(msg.wParam);
 	return msg.wParam;
 }

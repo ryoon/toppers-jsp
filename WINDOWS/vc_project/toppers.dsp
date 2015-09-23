@@ -98,7 +98,20 @@ SOURCE=..\kernel_cfg.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\sample1.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\sample2.c
+
+!IF  "$(CFG)" == "Toppers - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Toppers - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -107,6 +120,10 @@ SOURCE=..\sample2.c
 # Begin Source File
 
 SOURCE=..\kernel_id.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\sample1.h
 # End Source File
 # Begin Source File
 
@@ -222,6 +239,10 @@ SOURCE=..\..\kernel\sys_manage.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\kernel\syslog.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\kernel\task.c
 # End Source File
 # Begin Source File
@@ -307,10 +328,6 @@ SOURCE=..\..\include\timer.h
 # Begin Source File
 
 SOURCE=..\..\systask\logtask.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\systask\syslog.c
 # End Source File
 # Begin Source File
 
@@ -406,17 +423,16 @@ SOURCE=..\..\config\windows\vwindows.h
 # PROP Default_Filter "cfg"
 # Begin Source File
 
-SOURCE=..\sample2.cfg
+SOURCE=..\sample1.cfg
 
 !IF  "$(CFG)" == "Toppers - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "Toppers - Win32 Debug"
 
-# PROP Ignore_Default_Tool 1
 # Begin Custom Build
-InputDir=\Sources\Program sources\CVS home\jsp\WINDOWS
-InputPath=..\sample2.cfg
-InputName=sample2
+InputDir=\My Documents\Program sources\cygwin\Takayuki\cvs\jsp\WINDOWS
+InputPath=..\sample1.cfg
+InputName=sample1
 
 BuildCmds= \
 	cd $(InputDir) \
@@ -429,6 +445,19 @@ BuildCmds= \
 "kernel_cfg.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
    $(BuildCmds)
 # End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\sample2.cfg
+
+!IF  "$(CFG)" == "Toppers - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Toppers - Win32 Debug"
+
+# PROP Exclude_From_Build 1
 
 !ENDIF 
 

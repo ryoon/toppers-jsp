@@ -6,19 +6,25 @@
  *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている 
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  * 
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -26,7 +32,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.11 2001/05/02 09:37:23 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.16 2001/11/05 13:31:13 honda Exp $
  */
 
 
@@ -38,15 +44,36 @@
 #ifndef _CPU_CONFIG_H_
 #define _CPU_CONFIG_H_
 
+/*
+ *  カーネルの内部識別名のリネーム
+ */
+#ifndef OMIT_RENAME
+
+#define activate_r      _kernel_activate_r
+#define ret_int         _kernel_ret_int
+#define ret_exc         _kernel_ret_exc
+#define task_intmask    _kernel_task_intmask
+#define int_intmask     _kernel_int_intmask
+
+#ifdef LABEL_ASM
+
+#define _activate_r     __kernel_activate_r
+#define _ret_int        __kernel_ret_int
+#define _ret_exc        __kernel_ret_exc
+#define _task_intmask   __kernel_task_intmask
+#define _int_intmask    __kernel_int_intmask
+
+#endif /* LABEL_ASM */
+#endif /* OMIT_RENAME */
 
 /*
  *  設定可能な最高優先度
  */
-#ifdef WITH_STUB
+#ifdef GDB_STUB
 #define MAX_IPM  0xe
 #else
 #define MAX_IPM  0xf
-#endif
+#endif 
 
 
 /*
@@ -268,12 +295,12 @@ Inline void
 define_inh(INHNO inhno, FP inthdr)
 {
         int_table[inhno >> 5] = inthdr;
-#ifdef WITH_STUB
+#ifdef GDB_STUB
         Asm("mov #0x8,r0;  mov %0,r4; mov %1,r5; trapa #0x3f"
 	    : /* no output */
 	    : "r"(inhno),"r"(interrupt)
 	    : "r0", "r4", "r5");
-#endif
+#endif /* GDB_STUB */
 }
 
 /*
@@ -285,12 +312,12 @@ Inline void
 define_exc(EXCNO excno, FP exchdr)
 {
         exc_table[excno >> 5] = exchdr;
-#ifdef WITH_STUB
+#ifdef  GDB_STUB 
         Asm("mov #0x8,r0;  mov %0,r4; mov %1,r5;  trapa #0x3f"
 	    : /* no output */
 	    : "r"(excno),"r"(general_exception)
 	    : "r0", "r4", "r5");
-#endif
+#endif /* GDB_STUB */
 }
 
 
@@ -349,14 +376,16 @@ exc_sense_context(VP p_excinf)
 Inline BOOL
 exc_sense_lock(VP p_excinf)
 {
-	return((*((UW *)p_excinf + 8) & 0x00000f0) == MAX_IPM << 4);
+	return((*((UW *)p_excinf + 11) & 0x00000f0) == MAX_IPM << 4);
 }
 
 /*
  *  ラベルの別名を定義するためのマクロ
  */
-#define	LABEL_ALIAS(new_label, defined_label) \
-	asm(".globl _" #new_label "\n_" #new_label " = _" #defined_label);
+#define _LABEL_ALIAS(new_label, defined_label) \
+        asm(".globl _" #new_label "\n_" #new_label " = _" #defined_label);
+#define LABEL_ALIAS(x, y) _LABEL_ALIAS(x, y)
+
 
 /*
  *  プロセッサ依存の初期化
@@ -374,9 +403,11 @@ extern void	cpu_terminate(void);
 extern void     cpu_putc(char c);
 
 /*
- * 例外発生時のログ出力
+ * 未登録の割込み/例外発生時のログ出力
  */
 extern void     cpu_expevt(VW,VW,VW,VW);
+extern void     cpu_interrupt(VW,VW,VW,VW);
+extern void     no_reg_interrupt(void);
 
 
 /*

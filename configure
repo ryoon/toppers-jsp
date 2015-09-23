@@ -1,0 +1,206 @@
+#! /usr/bin/perl
+#
+#  TOPPERS/JSP Kernel
+#      Toyohashi Open Platform for Embedded Real-Time Systems/
+#      Just Standard Profile Kernel
+# 
+#  Copyright (C) 2001 by Embedded and Real-Time Systems Laboratory
+#                              Toyohashi Univ. of Technology, JAPAN
+# 
+#  上記著作権者は，Free Software Foundation によって公表されている 
+#  GNU General Public License の Version 2 に記述されている条件か，以
+#  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+#  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+#  利用と呼ぶ）することを無償で許諾する．
+#  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
+#      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
+#      スコード中に含まれていること．
+#  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+#      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+#      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+#      この利用条件および下記の無保証規定を掲載すること．
+#  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+#      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
+#    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
+#        権表示，この利用条件および下記の無保証規定を掲載すること．
+#    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
+#        こと．
+#  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+#      害からも，上記著作権者を免責すること．
+# 
+#  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
+#  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
+#  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
+#  かなる損害に関しても，その責任を負わない．
+# 
+#  @(#) $Id: configure,v 1.6 2001/10/22 01:46:59 hiro Exp $
+# 
+
+require "getopt.pl";
+
+#  オプションの定義
+#
+#  -C <cpu>		プロセッサ名（必須）
+#  -S <sys>		システム名
+#  -A <uname>		アプリケーションプログラム名
+#  -U <utask>		他のアプリケーションプログラムファイル
+#			（.o ファイル名で指定．複数指定可）
+#  -P <prefix>		開発環境インストール時の PREFIX
+#  -m			コンフィギュレータの make を行わない
+#  -d			カーネルの make depend を行う
+
+#  使用例(1)
+#
+#  % ../configure -C m68k -S dve68k -A test1 -U test_support.o -P /usr/local
+#
+#  使用例(2)
+#
+#  % ../configure -C linux
+#	アプリケーションプログラムは sample1，PREFIX は /usr/local になる．
+
+#
+#  オプションの処理
+#
+do Getopt("CSAUP");
+unless ($opt_C) {
+	print STDERR "configure: -C option is mandatory\n";
+	exit(1);
+}
+
+$cpu = $opt_C;
+$sys = $opt_S ? $opt_S : "";
+$uname = $opt_A ? $opt_A : "sample1";
+$utask = $opt_U ? $opt_U : "";
+$prefix = $opt_P ? $opt_P : "/usr/local";
+
+#
+#  ファイルを変換する
+#
+sub convert {
+	local($infile, $outfile) = @_;
+	local($line, $varname, $varval);
+
+	print STDERR "configure: Generating $outfile from $infile.\n";
+	unless (open(INFILE, $infile)) {
+		print STDERR "configure: can't open $infile\n";
+		exit(1);
+	}
+	unless (open(OUTFILE, "> ".$outfile)) {
+		print STDERR "configure: can't open $outfile\n";
+		exit(1);
+	}
+
+	while ($line = <INFILE>) {
+		chop $line;
+		while ($line =~ /^(.*)\@\(([A-Za-z_]+)\)(.*)$/) {
+			$line = $1.$vartable{$2}.$3;
+		}
+		print OUTFILE $line,"\n";
+	}
+
+	close(INFILE);
+	close(OUTFILE);
+}
+
+#
+#  サンプルを見つけてファイルを生成する
+#
+sub generate {
+	local($file, $mandatory) = @_;
+	local($path);
+
+	if ($sys) {
+		$path = $sampledir.$file.".".$sys;
+		if (-f $path) {
+			do convert($path, $file);
+			return;
+		}
+	}	
+
+	$path = $sampledir.$file.".".$cpu;
+	if (-f $path) {
+		do convert($path, $file);
+		return;
+	}	
+
+	$path = $sampledir.$file;
+	if ($mandatory || -f $path) {
+		do convert($path, $file);
+	}	
+}
+
+#
+#  変数の初期化
+#
+
+%vartable = ();
+$vartable{"CPU"} = $cpu;
+$vartable{"SYS"} = $sys;
+$vartable{"UNAME"} = $uname;
+$vartable{"UTASK"} = $utask;
+$vartable{"PREFIX"} = $prefix;
+
+$pwd = `pwd`; chop $pwd;
+if ($0 =~ /(.*)\/configure/) {
+	$jspdir = $1;
+	if ($jspdir =~ /^\//) {
+		$jspabsdir = $jspdir;
+	}
+	else {
+		$jspabsdir = $pwd."/".$jspdir;
+	}
+}
+else {
+	$jspabsdir = $jspdir = $pwd;
+}
+$vartable{"JSPDIR"} = $jspdir;
+$vartable{"JSPABSDIR"} = $jspabsdir;
+$sampledir = $jspdir."/sample/";
+
+#
+#  ファイルのチェック
+#
+
+if (! -d $jspdir."/config/".$cpu) {
+	print STDERR "configure: $jspdir/config/$cpu not exist\n";
+	exit(1);
+}
+if ($sys && ! -d $jspdir."/config/".$cpu."/".$sys) {
+	print STDERR "configure: $jspdir/config/$cpu/$sys not exist\n";
+	exit(1);
+}
+
+#
+#  Makefile とアプリケーションファイルの生成
+#
+
+do generate("Makefile", 1);
+do generate($uname.".c", 0);
+do generate($uname.".h", 0);
+do generate($uname.".cfg", 0);
+
+#
+#  コンフィギュレータの Makefile の生成と make
+#
+
+if ($sys) {
+	$makefile = "Makefile.".$cpu."-".$sys;
+}
+else {
+	$makefile = "Makefile.".$cpu;
+}
+do convert($jspdir."/cfg/Makefile.template", $jspdir."/cfg/$makefile");
+
+unless ($opt_m) {
+	print STDERR "configure: Generating configuration tools.\n";
+	system("cd $jspdir/cfg; make -f $makefile");
+}
+
+#
+#  依存関係ファイルの生成
+#
+
+if ($opt_d) {
+	print STDERR "configure: Generating a dependency file.\n";
+	system("make depend");
+}

@@ -3,22 +3,28 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている 
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  * 
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -26,11 +32,12 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.4 2001/05/09 04:56:11 takayuki Exp $
+ *  @(#) $Id: cpu_config.h,v 1.6 2001/11/15 14:52:51 takayuki Exp $
  */
 
+
 /*
- *	プロセッサ依存モジュール（Linux用）
+ *	プロセッサ依存モジュール（Windows用）
  */
 
 #ifndef _CPU_CONFIG_H_
@@ -40,11 +47,6 @@
  *  Windows-HAL独自のインクルードファイル
  */
 
-#include "cpu_defs.h"
-#include "hal_msg.h"
-#include "vwindows.h"
-
-#ifndef _MACRO_ONLY
 
 /*
  *  chg_ims/ref_ims をサポートするかどうかの定義
@@ -63,6 +65,12 @@
  */
 #define	TBIT_TCB_PRIORITY	8	/* priority フィールドのビット幅 */
 #define	TBIT_TCB_TSTAT		8	/* tstat フィールドのビット幅 */
+
+#ifndef _MACRO_ONLY
+
+#include "cpu_defs.h"
+#include "hal_msg.h"
+#include "vwindows.h"
 
 /*
  *  タスクコンテキストブロックの定義
@@ -98,7 +106,7 @@ sense_context()
 Inline BOOL
 sense_lock()
 {
-	return (CPUStatus & CPU_STAT_LOCK) != 0 ? TRUE : FALSE;
+	return (CPUStatus & (CPU_STAT_LOCK|CPU_STAT_EXC)) != 0 ? TRUE : FALSE;
 }
 
 #define t_sense_lock	sense_lock

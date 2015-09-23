@@ -8,19 +8,25 @@
  *  Copyright (C) 2001 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  *
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -28,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_config.h,v 1.1 2001/05/04 09:07:50 imai Exp $
+ *  @(#) $Id: cpu_config.h,v 1.3 2001/11/02 11:13:39 imai Exp $
  */
 
 
@@ -43,6 +49,31 @@
 #include "sh1.h"	/*  内部レジスタの型が必要  */
 
 /*
+ *  カーネルの内部識別名のリネーム
+ */
+#ifndef OMIT_RENAME
+
+#define activate_r		_kernel_activate_r
+#define ret_int			_kernel_ret_int
+#define ret_exc			_kernel_ret_exc
+#define task_intmask		_kernel_task_intmask
+#define int_intmask		_kernel_int_intmask
+#define intnest			_kernel_intnest
+
+#ifdef LABEL_ASM
+
+#define _activate_r		__kernel_activate_r
+#define _ret_int		__kernel_ret_int
+#define _ret_exc		__kernel_ret_exc
+#define _task_intmask		__kernel_task_intmask
+#define _int_intmask		__kernel_int_intmask
+#define _intnest		__kernel_intnest
+
+
+#endif /* LABEL_ASM */
+#endif /* OMIT_RENAME */
+
+/*
  *  設定可能な最高優先度
  */
 #ifdef WITH_STUB
@@ -51,7 +82,10 @@
 #define MAX_IPM  0xf	/* スタブなしの場合は最高優先度でCPUロック */
 #endif /*  WITH_STUB  */
 
-#define str_MAX_IPM  _TO_STRING(MAX_IPM)
+#define str_MAX_IPM  	_TO_STRING(MAX_IPM)
+#define str_intnest  	_TO_STRING(_intnest)
+#define str_reqflg  	_TO_STRING(_reqflg)
+#define str_ret_int  	_TO_STRING(_ret_int)
 
 
 /*
@@ -78,7 +112,6 @@
  */
 #define	TBIT_TCB_PRIORITY	8	/* priority フィールドのビット幅 */
 #define	TBIT_TCB_TSTAT		8	/* tstat フィールドのビット幅 */
-#define	TBIT_TCB_TWAIT		8	/* twait フィールドのビット幅 */
 
 #ifndef _MACRO_ONLY
 /*
@@ -255,7 +288,6 @@ extern EXCVE BASE_VBR[EXCVT_SIZE];
 
 #define EXCVT_KERNEL	BASE_VBR
 #define EXCVT_ORIG	0
-#define EXCVT_LEN 	(sizeof(FP)*EXCVT_SIZE)
 
 /*
  *
@@ -493,17 +525,17 @@ asm(".text								\n"\
 									   \
 "	.align  4	    \n"						   \
 "_stacktop_k_"#inthdr":     \n"	/* タスク独立部のスタックの初期値  	*/ \
-"	.long  "str_STACKTOP" \n"						   \
+"	.long  "str_STACKTOP" \n"					   \
 "_intnest_k_"#inthdr":	    \n"	/*  割込み／CPU例外ネストカウンタ  	*/ \
-"	.long  _intnest	    \n"				  		   \
+"	.long  "str_intnest"	    \n"				  	   \
 "_reqflg_k_"#inthdr":	    \n"						   \
-"	.long  __kernel_reqflg \n"					   \
+"	.long  "str_reqflg" \n"						   \
 "_mask_ipm_"#inthdr":	    \n"	/*  割込み禁止用マスク  		*/ \
 "	.long  "str_MAX_IPM" << 4 \n"	/*  ipm以外のビットはゼロで良い	*/ \
 "_c_routine_"#inthdr":	    \n"						   \
 "	.long  _"#inthdr"   \n" /*  C言語ルーチンの先頭アドレス  	*/ \
 "ret_int_"#inthdr":	    \n"	/*  出口処理ret_intのアドレス  		*/ \
-"	.long  _kernel_ret_int \n"			  		   \
+"	.long  "str_ret_int"\n"				  		   \
 )
 /*  _INTHDR_ENTRY()マクロ　ここまで  */
 
@@ -567,8 +599,9 @@ exc_sense_lock(VP p_excinf)
 /*
  *  ラベルの別名を定義するためのマクロ
  */
-#define	LABEL_ALIAS(new_label, defined_label) \
+#define	_LABEL_ALIAS(new_label, defined_label) \
 	asm(".globl _" #new_label "\n_" #new_label " = _" #defined_label);
+#define LABEL_ALIAS(x, y) _LABEL_ALIAS(x, y)
 
 /*
  *  プロセッサ依存の初期化

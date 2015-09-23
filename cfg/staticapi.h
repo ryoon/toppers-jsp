@@ -3,22 +3,28 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，以下の条件を満たす場合に限り，本ソフトウェア（本ソ
- *  フトウェアを改変したものを含む．以下同じ）を使用・複製・改変・再配
- *  布（以下，利用と呼ぶ）することを無償で許諾する．
+ *  上記著作権者は，Free Software Foundation によって公表されている 
+ *  GNU General Public License の Version 2 に記述されている条件か，以
+ *  下の条件のいずれかを満たす場合に限り，本ソフトウェア（本ソフトウェ
+ *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアをバイナリコードの形または機器に組み込んだ形で利
- *      用する場合には，次のいずれかの条件を満たすこと．
+ *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
+ *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
+ *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
+ *      この利用条件および下記の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
+ *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
  *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
  *        権表示，この利用条件および下記の無保証規定を掲載すること．
  *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
  *        こと．
- *  (3) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
+ *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者を免責すること．
  * 
  *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
@@ -26,8 +32,9 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: staticapi.h,v 1.5 2001/03/24 08:22:56 takayuki Exp $
+ *  @(#) $Id: staticapi.h,v 1.8 2001/11/12 14:59:27 takayuki Exp $
  */
+
 
 //------------------------------------------------------------
 // StaticAPI - class definition
@@ -36,55 +43,43 @@
 #ifndef __STATICAPI_H
 #define __STATICAPI_H
 
-#include "array.h"
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
+#include "value.h"
 #include "exception.h"
+#include "parser.h"
+#include <map>
+#include <string>
 
 class StaticAPI
 {
-friend class Manager;
-protected:
-	class Manager * const parent;
-
-
-private:
-	char * CheckParameter_Primitive(Array *,char *);
-protected:
-	void CheckParameter(Array *, char *);
-	void CheckParameterCount(Array &,unsigned int, unsigned int=0);
-	void CheckParameterType(Array &,unsigned int,Valient::tagType);
-	void CheckParameterType(Array &,unsigned int,Array::tagType);
-
 public:
-	StaticAPI(void) : parent(0) {};
+	bool Enabled;
+
+	StaticAPI(void) { Enabled = true; };
 	virtual ~StaticAPI(void) {};
 
-	virtual char * GetAPIName(void) =0;
-	virtual void Body(Array & Parameter) =0;
+	virtual const char * GetAPIName(void) =0;
+	virtual void Body(class Manager *, Array *) =0;
 };
 
-inline void StaticAPI::CheckParameterCount(Array & param,unsigned int start, unsigned int end)
+class StaticAPIContainer : public ParserComponent
 {
-	if((param.Size() < start) || (end != 0 && param.Size() > end))
-		throw Exception(MSG_TOOFEWPARAM MSG_OR MSG_TOOMANYPARAM);
-}
+protected:
+	std::map<std::string, StaticAPI *> API;
 
-inline void StaticAPI::CheckParameterType(Array & param,unsigned int offset, Valient::tagType type)
-{
-	if(param.Size() > offset || param.GetValuePtr(offset) == 0l || !(param[offset] == type))
-		throw Exception(MSG_ILLEGALTYPE);
-}
+	void ParseParameterBlock(class Manager *, Parser *, Array *, Token);
 
-inline void StaticAPI::CheckParameterType(Array & param,unsigned int offset, Array::tagType type)
-{
-	if((type != Array::EMPTY) && param.IsArray(offset) != (type == Array::ARRAY) ? true : false)
-		throw Exception(MSG_ILLEGALTYPE);
-}
+public:
+	StaticAPIContainer(void);
+	virtual ~StaticAPIContainer(void);
 
-inline void StaticAPI::CheckParameter(Array * param, char * format)
-{
-	if(CheckParameter_Primitive(param,format)!=0l)
-		throw Exception(MSG_INTERNAL " : " MSG_ILLEGALPRAMDESC);
-}
+	virtual void Parse(class Manager *, Parser *);
+
+	bool Add(StaticAPI *);
+};
 
 #endif
 
