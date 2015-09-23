@@ -135,7 +135,7 @@ JSPカーネルは，現時点で，以下のターゲットプロセッサ／ターゲットシステ
         TMS320C54x（TSM320C5402）TMS320VC5402 DSK（TI）
 
     xstormy16               GNU開発環境
-        Xstormy16               三洋マイコン開発ツール（三洋電機）
+        Xstormy16               Xstormy16開発ツール（ON Semiconductor）
 
     m16c-renesas            Renesas社の開発環境
         M16C（M30620FCAFP-CPU） OASKS16（オークス電子）
@@ -1806,7 +1806,7 @@ ercd で示されるメインエラーコードに対応するエラーコードの文字列を返す．
         tms320c54x/     TMS320C54x プロセッサ依存ファイル
             c5402dsk/           TMS320VC5402 DSK システム依存ファイル
         xstormy16/      Xstormy16 プロセッサ依存ファイル
-           simulator/           三洋マイコン開発ツール環境 依存ファイル
+           simulator/           Xstormy16開発ツール環境 依存ファイル
         mips3/          MIPS3 プロセッサ依存ファイル
             vr4131/             VR4131 システム依存ファイル
             vr5500/             VR5500 システム依存ファイル
