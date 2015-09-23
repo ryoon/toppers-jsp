@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.3 2005/11/24 12:41:23 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.4 2006/08/03 04:15:57 honda Exp $
  */
 
 /*
@@ -77,4 +77,45 @@ cpu_terminate(void)
 #ifndef EXTERNAL_SOFT_HOOK
 const VP_INT software_init_hook = 0;
 #endif  /* EXTERNAL_SOFT_HOOK */
+
+
+/*
+ * 割り込み制御レジスタ割り込み優先度変更
+ *
+ * 割り込み制御レジスタは，そのレジスタに対応する割込み要求が発生しない箇所で
+ * 変更する必要がある．そのため，割込みを禁止した後，変更する必要がある．
+ * 割込みを禁止して割込み制御レジスタを変更する場合は，使用する命令に注意する
+ * 必要がある．
+ * IRビット以外を変更する場合には，AND,OR,BCLR,BSET命令を使用すること．
+ * IRビットはMOV命令を使用すること．
+ * また，Iフラグを用いて割込みを禁止する場合は，許可する前に数命令おくこと．
+ * 詳細は，M16Cハードウェアマニュアルの
+ *       "使用上の注意->割り込み->割込み制御レジスタの変更"
+ * を参照のこと． 
+ */
+void
+set_ic_ilvl(VP addr, UB val){
+    BOOL    locked;
+    
+    locked = sense_lock();
+    if (!(locked)) {
+        sense_context() ? i_lock_cpu() : t_lock_cpu();
+    }
+    
+    _asm("PUSH.W A0");
+    _asm("PUSH.B R0L");
+    _asm("MOV.W $$[FB], A0", addr);
+    _asm("MOV.B $$[FB], R0L", val);
+    _asm("AND.B #08H, [A0]");
+    _asm("OR.B  R0L, [A0]");
+    _asm("NOP");
+    _asm("NOP");    
+    _asm("POP.B R0L");
+    _asm("POP.W A0");
+
+    if (!(locked)) {
+        sense_context() ? i_unlock_cpu() : t_unlock_cpu();
+    }
+    
+}
 

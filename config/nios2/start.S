@@ -33,17 +33,12 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.4 2005/03/11 07:37:57 honda Exp $
+ *  @(#) $Id: start.S,v 1.5 2006/01/13 07:01:03 honda Exp $
  */
 
 #define _MACRO_ONLY
 #include <t_config.h>
 #include <sys_defs.h>
-
-#define NIOS2_ICACHE_SIZE 4096
-#define NIOS2_DCACHE_SIZE 0
-#define NIOS2_ICACHE_LINE_SIZE 32
-#define NIOS2_DCACHE_LINE_SIZE 4
 
 
      .section .entry, "xa"
@@ -72,10 +67,58 @@ __reset:
     .popsection
 #endif /* NIOS2_ICACHE_SIZE > 0 */
 
+#ifndef BOOT_ROM
     movhi r3, %hiadj(_start)
     addi r3, r3, %lo(_start)
     jmp r3    
+#else
+    br _boot_rom
+#endif  /* BOOT_ROM */
 
+
+#ifdef BOOT_ROM
+    .section .text
+    .align 2
+    .globl _
+    .type _boot_rom, @function
+_boot_rom:
+#if NIOS2_DCACHE_SIZE > 0
+#if NIOS2_DCACHE_SIZE > 0x8000
+    movhi r2, %hi(NIOS2_DCACHE_SIZE)
+#else
+    movui r2, NIOS2_DCACHE_SIZE
+#endif
+0:
+    initd 0(r2)
+    addi r2, r2, -NIOS2_DCACHE_LINE_SIZE
+    bgt r2, zero, 0b
+1:
+    .pushsection .debug_alt_sim_info
+    .int 2, 1, 0b, 1b
+    .popsection
+#endif /* NIOS2_DCACHE_SIZE > 0 */
+
+_boot_rom_1:
+    movhi   r3, %hiadj(ROM_BASE)  /* r3 source */
+    addi    r3, r3, %lo(ROM_BASE)
+    movhi   r4, %hiadj(RAM_BASE)  /* r4 destination */
+    addi    r4, r4, %lo(RAM_BASE)
+    movhi   r2, %hiadj(_edata)
+    addi    r2, r2, %lo(_edata)
+
+_flash_copy:    
+    ldw     r5, 0(r3)
+    addi    r3, r3, 1
+    stw     r5, 0(r4)
+    addi    r4, r4, 1
+    bgeu    r2, r4, _flash_copy
+
+    movhi r2, %hiadj(_start)
+    addi  r2, r2, %lo(_start)
+    jmp   r2    
+     nop
+    
+#endif /* BOOT_ROM */
 
 
     .section .text

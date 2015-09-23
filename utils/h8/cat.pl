@@ -8,7 +8,7 @@
 #                              Toyohashi Univ. of Technology, JAPAN
 #  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
 #              Graduate School of Information Science, Nagoya Univ., JAPAN
-#  Copyright (C) 2005 by Industrial Technology Institute,
+#  Copyright (C) 2005-2007 by Industrial Technology Institute,
 #                              Miyagi Prefectural Government, JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -38,7 +38,7 @@
 #  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 #  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: cat.pl,v 1.3 2005/11/07 01:49:53 honda Exp $
+#  @(#) $Id: cat.pl,v 1.4 2007/03/23 07:19:00 honda Exp $
 # 
 
 

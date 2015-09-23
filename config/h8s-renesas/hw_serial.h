@@ -7,7 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -49,7 +49,7 @@
 /*
  *  SIOの割込みハンドラのベクタ番号
  */
-/* ポート１ */
+/* ポート1 */
 #ifndef OMIT_SCI0
 #define INHNO_SERIAL1_ERROR	IRQ_ERI0
 #define INHNO_SERIAL1_IN	IRQ_RXI0
@@ -57,30 +57,50 @@
 #endif /* OMIT_SCI0 */
 
 #if TNUM_PORT >= 2
-/* ポート２ */
+/* ポート2 */
 #define INHNO_SERIAL2_ERROR	IRQ_ERI1
 #define INHNO_SERIAL2_IN	IRQ_RXI1
 #define INHNO_SERIAL2_OUT	IRQ_TXI1
 #endif /* TNUM_PORT */
+
+#if TNUM_PORT >= 3
+/* ポート3 */
+#define INHNO_SERIAL3_ERROR	IRQ_ERI2
+#define INHNO_SERIAL3_IN	IRQ_RXI2
+#define INHNO_SERIAL3_OUT	IRQ_TXI2
+#endif /* TNUM_PORT */
+
 
 /*
  *  モジュールストップモードコントロールレジスタのビット定義
  */
 #ifndef OMIT_SCI0
 
-#if TNUM_SIOP ==1
+#if TNUM_SIOP == 1
 #define MSTPCR_SCI	MSTPCR_SCI0
-#else /* TNUM_SIOP ==1 */
+#endif /* TNUM_SIOP == 1 */
+
+#if TNUM_SIOP == 2
 #define MSTPCR_SCI	(MSTPCR_SCI0 | MSTPCR_SCI1)
-#endif /* TNUM_SIOP ==1 */
+#endif /* TNUM_SIOP == 2 */
+
+#if TNUM_SIOP == 3
+#define MSTPCR_SCI	(MSTPCR_SCI0 | MSTPCR_SCI1 | MSTPCR_SCI2)
+#endif /* TNUM_SIOP == 3 */
 
 #else /* OMIT_SCI0 */
 
-#if TNUM_SIOP ==1
+#if TNUM_SIOP == 1
 #error Invalid serial port ID.
-#else /* TNUM_SIOP ==1 */
+#endif /* TNUM_SIOP == 1 */
+
+#if TNUM_SIOP == 2
 #define MSTPCR_SCI	MSTPCR_SCI1
-#endif /* TNUM_SIOP ==1 */
+#endif /* TNUM_SIOP == 2 */
+
+#if TNUM_SIOP == 3
+#define MSTPCR_SCI	(MSTPCR_SCI1 | MSTPCR_SCI2)
+#endif /* TNUM_SIOP == 3 */
 
 #endif /* OMIT_SCI0 */
 
@@ -132,6 +152,11 @@ sio_opn_por(ID siopid, VP_INT exinf)
 #if TNUM_SIOP >= 2
 		icu_set_ilv( IPRK, IPR_UPR, SCI1_INT_LVL );
 #endif /* TNUM_SIOP >= 2 */
+
+#if TNUM_SIOP >= 3
+		icu_set_ilv( IPRK, IPR_LOW, SCI0_INT_LVL );
+#endif /* TNUM_SIOP >= 3 */
+
 	}
 	return(siopcb);
 }
@@ -161,6 +186,11 @@ sio_cls_por(SIOPCB *siopcb)
 #if TNUM_SIOP >= 2
 		icu_set_ilv( IPRK, IPR_UPR, 0 );
 #endif /* TNUM_SIOP >= 2 */
+
+#if TNUM_SIOP >= 3
+		icu_set_ilv( IPRK, IPR_LOW, 0 );
+#endif /* TNUM_SIOP >= 3 */
+
 	}
 }
 
@@ -172,16 +202,24 @@ sio_cls_por(SIOPCB *siopcb)
  *    sio1_handler_out   : 送信割込みハンドラ
  *    sio1_handler_error : 受信エラー割込みハンドラ
  */
-/* ポート１ */
+/* ポート1 */
 #define	sio1_handler_in		h8s_sci0_isr_in
 #define	sio1_handler_out	h8s_sci0_isr_out
 #define	sio1_handler_error	h8s_sci0_isr_error
+
 #if TNUM_SIOP >= 2
-/* ポート２ */
+/* ポート2 */
 #define	sio2_handler_in		h8s_sci1_isr_in
 #define	sio2_handler_out	h8s_sci1_isr_out
 #define	sio2_handler_error	h8s_sci1_isr_error
 #endif /* TNUM_SIOP >= 2 */
+
+#if TNUM_SIOP >= 3
+/* ポート3 */
+#define	sio3_handler_in		h8s_sci2_isr_in
+#define	sio3_handler_out	h8s_sci2_isr_out
+#define	sio3_handler_error	h8s_sci2_isr_error
+#endif /* TNUM_SIOP >= 3 */
 
 /*
  *  シリアルI/Oポートへの文字送信

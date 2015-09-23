@@ -35,7 +35,7 @@
 #  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 #  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: Makefile,v 1.33 2005/12/06 03:06:03 honda Exp $
+#  @(#) $Id: Makefile,v 1.34 2007/01/05 02:44:45 honda Exp $
 # 
 
 #
@@ -273,12 +273,6 @@ $(OBJFILE): Makefile.depend $(ALL_OBJS) $(MAKE_KERNEL) $(OBJNAME).chk
 	$(OBJCOPY) -O srec -S $(OBJFILE) $(OBJNAME).srec
 	$(SRCDIR)/cfg/chk -m $(OBJNAME).syms,$(OBJNAME).srec \
 			-obj -cs $(OBJNAME).chk -cpu $(CPU) -system $(SYS)
-
-#
-#  PARTNER-J のためのファイル
-#
-$(OBJNAME).out: $(OBJFILE)
-	cp $(OBJFILE) $(OBJNAME).out
 
 #
 #  バイナリファイルの生成

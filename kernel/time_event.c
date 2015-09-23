@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2006 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: time_event.c,v 1.7 2003/06/04 01:46:16 hiro Exp $
+ *  @(#) $Id: time_event.c,v 1.9 2006/02/12 05:28:07 hiro Exp $
  */
 
 /*
@@ -96,7 +98,7 @@ UINT	last_index;
  *  タイマモジュールの初期化
  */
 void
-tmevt_initialize()
+tmevt_initialize(void)
 {
 	systim_offset = 0;
 	current_time = 0;
@@ -293,7 +295,7 @@ tmevtb_delete(TMEVTB *tmevtb)
  *  タイムイベントヒープの先頭のノードの削除
  */
 Inline void
-tmevtb_delete_top()
+tmevtb_delete_top(void)
 {
 	UINT	index;
 	EVTTIM	event_time = TMEVT_NODE(last_index).time;
@@ -330,7 +332,7 @@ tmevtb_delete_top()
 #ifdef __isig_tim
 
 SYSCALL ER
-isig_tim()
+isig_tim(void)
 {
 	TMEVTB	*tmevtb;
 	ER	ercd;
@@ -367,9 +369,12 @@ isig_tim()
 #if TIC_DENO == 1
 	next_time = current_time + TIC_NUME;
 #else /* TIC_DENO == 1 */
-	next_subtime += TIC_NUME;
-	next_time = current_time + next_subtime / TIC_DENO;
-	next_subtime %= TIC_DENO;
+	next_subtime += TIC_NUME % TIC_DENO;
+	next_time = current_time + TIC_NUME / TIC_DENO;
+	if (next_subtime >= TIC_DENO) {
+		next_subtime -= TIC_DENO;
+		next_time += 1u;
+	}
 #endif /* TIC_DENO == 1 */
 
 	ercd = E_OK;

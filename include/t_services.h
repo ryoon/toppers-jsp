@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005,2006 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: t_services.h,v 1.6 2005/11/12 15:01:15 hiro Exp $
+ *  @(#) $Id: t_services.h,v 1.7 2006/01/13 00:34:58 hiro Exp $
  */
 
 /*
@@ -102,8 +102,8 @@ _t_panic(const char *file, int line, const char *expr, ER ercd)
 	return(ercd);
 }
 
-#define	syscall(s)	_t_perror(__FILE__, __LINE__, #s, (s));
-#define	_syscall(s)	_t_panic(__FILE__, __LINE__, #s, (s));
+#define syscall(s)	_t_perror(__FILE__, __LINE__, #s, (s))
+#define _syscall(s)	_t_panic(__FILE__, __LINE__, #s, (s))
 
 #endif /* _MACRO_ONLY */
 

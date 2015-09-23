@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sfruart.c,v 1.3 2005/11/24 12:41:23 honda Exp $
+ *  @(#) $Id: sfruart.c,v 1.4 2007/01/05 02:33:59 honda Exp $
  */
 
 /*
@@ -145,8 +145,8 @@ sfruart_opn_por(ID siopid, VP_INT exinf)
 	/*
 	 *  シリアル割込みの設定
 	 */
-	sil_wrb_mem((VP)(siopinib->hint+TADR_SFR_S0TIC_OFFSET), siopcb->tic);
-	sil_wrb_mem((VP)(siopinib->hint+TADR_SFR_S0RIC_OFFSET), RB_LEVEL);
+	set_ic_ilvl((VP)(siopinib->hint+TADR_SFR_S0TIC_OFFSET), siopcb->tic);
+	set_ic_ilvl((VP)(siopinib->hint+TADR_SFR_S0RIC_OFFSET), RB_LEVEL);
 	siopcb->cr1 = TBIT_UiC1_TE;
 	sil_wrb_mem((VP)(siopinib->cntrl+TADR_SFR_UC1_OFFSET), siopcb->cr1);
 
@@ -175,7 +175,7 @@ sfruart_cls_por(SIOPCB *siopcb)
 
 	siopinib = siopcb->siopinib;
 	siopcb->tic = 0;
-	sil_wrb_mem((VP)(siopinib->hint+TADR_SFR_S0TIC_OFFSET), siopcb->tic);
+	set_ic_ilvl((VP)(siopinib->hint+TADR_SFR_S0TIC_OFFSET), siopcb->tic);
 	sil_wrb_mem((VP)(siopinib->hint+TADR_SFR_S0RIC_OFFSET), 0);
 	siopcb->cr1 = C1_DEF;
 	sil_wrb_mem((VP)(siopinib->cntrl+TADR_SFR_UC1_OFFSET), siopcb->cr1);
@@ -215,7 +215,7 @@ sfruart_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 	switch (cbrtn) {
 	case SIO_ERDY_SND:
 		siopcb->tic = TB_LEVEL;
-		sil_wrb_mem((VP)(siopcb->siopinib->hint+TADR_SFR_S0TIC_OFFSET), siopcb->tic);
+		set_ic_ilvl((VP)(siopcb->siopinib->hint+TADR_SFR_S0TIC_OFFSET), siopcb->tic);
 		break;
 	case SIO_ERDY_RCV:
 		siopcb->cr1 |= TBIT_UiC1_RE;
@@ -235,7 +235,7 @@ sfruart_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 	switch (cbrtn) {
 	case SIO_ERDY_SND:
 		siopcb->tic = 0;
-		sil_wrb_mem((VP)(siopcb->siopinib->hint+TADR_SFR_S0TIC_OFFSET), siopcb->tic);
+		set_ic_ilvl((VP)(siopcb->siopinib->hint+TADR_SFR_S0TIC_OFFSET), siopcb->tic);
 		break;
 	case SIO_ERDY_RCV:
 		siopcb->cr1 &= ~TBIT_UiC1_RE;

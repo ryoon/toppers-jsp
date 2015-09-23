@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2005 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.16 2005/11/07 01:49:53 honda Exp $
+ *  @(#) $Id: start.S,v 1.17 2007/03/23 07:22:15 honda Exp $
  */
 #define _MACRO_ONLY
 #include <t_config.h>
@@ -107,6 +107,9 @@ start_2:
 	 *
 	 *  __idata_start から __idata_end までを，__data_start 以降に
 	 *  コピーする．
+	 *  
+	 *  eepmov.w命令を使う方が効率的だが、最大転送バイト数が
+	 *  65,535バイトに制限されるため、使用していない。
 	 */
 	mov.l	#__idata_start, er0
 	mov.l	#__idata_end, er1

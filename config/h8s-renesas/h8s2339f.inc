@@ -5,10 +5,10 @@
 ;
 ;  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
 ;                              Toyohashi Univ. of Technology, JAPAN
-;  Copyright (C) 2001-2004 by Industrial Technology Institute,
-;                              Miyagi Prefectural Government, JAPAN
 ;  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
 ;                   Tomakomai National College of Technology, JAPAN
+;  Copyright (C) 2001-2007 by Industrial Technology Institute,
+;                              Miyagi Prefectural Government, JAPAN
 ;
 ;  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation
 ;  によって公表されている GNU General Public License の Version 2 に記
@@ -37,7 +37,7 @@
 ;  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 ;  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 ;
-;  @(#) $Id: h8s2339f.inc,v 1.1 2005/12/12 09:00:13 honda Exp $
+;  @(#) $Id: h8s2339f.inc,v 1.2 2007/03/23 07:59:26 honda Exp $
 ;
 
 ;  H8S/2339F用定義（アセンブラ用）

@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: log_output.c,v 1.10 2005/11/26 05:56:50 hiro Exp $
+ *  @(#) $Id: log_output.c,v 1.11 2007/03/27 08:56:12 hiro Exp $
  */
 
 /*
@@ -183,10 +183,18 @@ syslog_print(SYSLOG *p_log, void (*putc)(char))
 	}
 }
 
+static void
+syslog_lostmsg(INT lost, void (*putc)(char))
+{
+	VP_INT	lostinfo[1];
+
+	lostinfo[0] = (VP_INT) lost;
+	syslog_printf("%d messages are lost.", lostinfo, putc);
+}
+
 void
 syslog_output(void (*putc)(char))
 {
-	static const char	lostmsg[] = "%d messages are lost.";
 	SYSLOG	log;
 	INT	lostnum, n;
 
@@ -197,12 +205,12 @@ syslog_output(void (*putc)(char))
 			continue;
 		}
 		if (lostnum > 0) {
-			syslog_printf(lostmsg, (VP_INT *) &lostnum, putc);
+			syslog_lostmsg(lostnum, putc);
 			lostnum = 0;
 		}
 		syslog_print(&log, putc);
 	}
 	if (lostnum > 0) {
-		syslog_printf(lostmsg, (VP_INT *) &lostnum, putc);
+		syslog_lostmsg(lostnum, putc);
 	}
 }

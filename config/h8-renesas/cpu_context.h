@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_context.h,v 1.6 2005/11/13 14:05:01 honda Exp $
+ *  @(#) $Id: cpu_context.h,v 1.7 2007/03/23 07:58:33 honda Exp $
  */
 
 #ifndef _CPU_CONTEXT_H_
@@ -61,8 +61,6 @@
  *  状態に設定する処理を，create_context と activate_context で行えば
  *  よい．多くの処理はどちらの関数で行ってもよい．
  */
-Inline void create_context(TCB *tcb);
-
 Inline void
 create_context(TCB *tcb)
 {
@@ -79,7 +77,6 @@ create_context(TCB *tcb)
  *
  */
 extern void activate_r(void);
-Inline void activate_context(TCB *tcb);
 
 Inline void
 activate_context(TCB *tcb)

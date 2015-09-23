@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: kernel.h,v 1.21 2005/11/15 02:41:20 honda Exp $
+ *  @(#) $Id: kernel.h,v 1.22 2007/05/08 07:33:51 honda Exp $
  */
 
 /*
@@ -285,7 +285,7 @@ extern BOOL	vsns_ini(void) throw();
 #define	TKERNEL_MAKER	0x0118u		/* カーネルのメーカーコード */
 #define	TKERNEL_PRID	0x0001u		/* カーネルの識別番号 */
 #define	TKERNEL_SPVER	0x5402u		/* ITRON仕様のバージョン番号 */
-#define	TKERNEL_PRVER	0x1042u		/* カーネルのバージョン番号 */
+#define	TKERNEL_PRVER	0x1043u		/* カーネルのバージョン番号 */
 
 /*
  *  キューイング／ネスト回数の最大値

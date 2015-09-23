@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_timer.h,v 1.6 2005/11/13 14:05:01 honda Exp $
+ *  @(#) $Id: hw_timer.h,v 1.7 2007/03/23 07:58:33 honda Exp $
  */
 
 #ifndef _HW_TIMER_H_
@@ -101,15 +101,13 @@ typedef UH      CLOCK;
  *      hw_timer.hをインクルードしたファイルですべて実体化されて
  *　　　メモリ領域を占有してしまうため、実体はcpu_config.cに記述する。
  */
-extern IRC TIMER_IRC;
+extern const IRC TIMER_IRC;
 
 
 /*
  *  タイマ割込み要求のクリア
  *      TCRレジスタのIMFAビットは1回読み出した後に０を書き込む
  */
-Inline void hw_timer_int_clear(void);
-
 Inline void
 hw_timer_int_clear(void)
 {
@@ -122,8 +120,6 @@ hw_timer_int_clear(void)
  *
  *  タイマを初期化し，周期的なタイマ割込み要求を発生させる．
  */
-Inline void hw_timer_initialize(void);
-
 Inline void
 hw_timer_initialize(void)
 {
@@ -159,8 +155,6 @@ hw_timer_initialize(void)
 /*
  *  タイマの停止処理
  */
-Inline void hw_timer_terminate(void);
-
 Inline void
 hw_timer_terminate(void)
 {
@@ -175,8 +169,6 @@ hw_timer_terminate(void)
  *
  *  割込み禁止区間中で呼び出すこと．
  */
-Inline CLOCK hw_timer_get_current(void);
-
 Inline CLOCK
 hw_timer_get_current(void)
 {
@@ -186,8 +178,6 @@ hw_timer_get_current(void)
 /*
  *  タイマ割込み要求のチェック
  */
-Inline BOOL hw_timer_fetch_interrupt(void);
-
 Inline BOOL
 hw_timer_fetch_interrupt(void)
 {

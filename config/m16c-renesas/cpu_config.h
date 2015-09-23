@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.3 2005/11/24 12:41:23 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.4 2006/08/03 04:15:57 honda Exp $
  */
 
 
@@ -291,6 +291,11 @@ extern void	cpu_initialize(void);
  *  プロセッサ依存の終了時処理(cpu_config.c)
  */
 extern void	cpu_terminate(void);
+
+/*
+ * 割り込み制御レジスタ割り込み優先度変更
+ */
+extern void set_ic_ilvl(VP addr, UB val);
 
 #endif /* _MACRO_ONLY */
 #endif /* _CPU_CONFIG_H_ */

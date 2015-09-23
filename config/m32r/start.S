@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2007 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,81 +35,79 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.7 2003/12/15 05:50:05 takayuki Exp $
+
+ *  @(#) $Id: start.S,v 1.10 2007/05/30 03:56:47 honda Exp $
  */
 
 #define _MACRO_ONLY
 
 #include <m32rasm.inc>
 #include <s_services.h>
-
-/**************************/
-/* スタートアップルーチン */
-/**************************/
-
+		
+/*
+ *  スタートアップルーチン 
+ */
 	.text
 	.align 4
-	.globl _start
-_start:
+	.globl start
 
+start:
 	.extern		kernel_start
 	.extern		hardware_init_hook
+	.extern		software_init_hook
+	.extern 	reset
 
-	ldidx	r8
+	/* pswの初期化 */
+	ldi		r0, 0	
+	mvtc	r0, psw
 
 	/* 割込みスタックポインタの初期化 */
-	lds		r15, r8, __stack
+	lea		r15, __stack
+	
+	/* EITベースレジスタの設定 */
+	lea		r0, reset
+	mvtc	r0, cr5
 
 	/* ハードウェア初期化ルーチンの起動 */
-	lds		r0, r8, hardware_init_hook
+	lea		r0, hardware_init_hook
 	beqz	r0, L1
 	jl		r0
 
 L1:
 	/* .bssセクションのクリア */
 	xor		r0, r0
-	lds		r1, r8, __sbss
-	lds		r2, r8, __ebss
-	bl		L2
-L2:
+	lea		r1, __sbss
+	lea		r2, __ebss
 	beq		r1, r2, L3
+L2:
 	st		r0, @-r2
-	jmp		r14
-L3:
+	bne		r1, r2, L2
 
+L3:
 	/* .dataセクションの初期化 */
-	lds		r1, r8, __sidata
-	lds		r2, r8, __eidata
-	lds		r3, r8, __sdata
+	lea		r1, __sidata
+	lea		r2, __eidata
+	lea		r3, __sdata
 
 	addi	r3, -4
 	beq		r1, r2, L5
 L4:	ld		r0, @r1+
 	st		r0, @+r3
 	bne		r1, r2, L4
-L5:
 
-	/* 初期化ルーチンの起動 */
-	lds		r0, r8, software_init_hook
+L5:
+	/* ソフトウェア初期化ルーチンの起動 */
+	lea		r0, software_init_hook
 	beqz	r0, L6
 	jl		r0
+
 L6:
+	/* 割込みマスクの設定 */
+	ld24 	r0, ICUIMASK + 1
+	ldi 	r1, 7				/* すべての割込み要求を受付け */
+	stb 	r1, @r0 			
 
 	/* カーネル起動 */
 	bl		kernel_start
 
 L7:	bra		L7
-
-
-
-
-begin_table
-	entry	__stack
-	entry	hardware_init_hook
-	entry	software_init_hook
-	entry	__sbss
-	entry	__ebss
-	entry	__sidata
-	entry	__eidata
-	entry	__sdata
-end_table

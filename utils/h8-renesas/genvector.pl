@@ -8,7 +8,7 @@
 #                              Toyohashi Univ. of Technology, JAPAN
 #  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
 #              Graduate School of Information Science, Nagoya Univ., JAPAN
-#  Copyright (C) 2005 by Industrial Technology Institute,
+#  Copyright (C) 2005-2007 by Industrial Technology Institute,
 #                              Miyagi Prefectural Government, JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -38,14 +38,14 @@
 #  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 #  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: genvector.pl,v 1.4 2005/12/07 01:49:24 honda Exp $
+#  @(#) $Id: genvector.pl,v 1.5 2007/03/23 07:25:47 honda Exp $
 # 
 
 
 #
 #  ベクタテーブル生成スクリプト
-#  　make depend時に生成されるtmp_script.plを読み込むことによって
-#  　実行できるようになる
+#  　直前に生成されるtmp_script.plを読み込むことによって実行できるようになる。
+#
 
 require "getopt.pl";
 
@@ -54,12 +54,51 @@ require "getopt.pl";
 #  -s <vector size>	ベクターテーブルのサイズ
 
 #
+#  tmp_script.pl内から呼ばれる関数の定義
+#  　割込みハンドラをベクタテーブルに登録する。
+#
+sub define_inh {
+	my($inhno, $inthdr) = @_;
+	
+	if ($inhno == 0) {
+		print STDERR <<ERRMESSAGE
+In generating vector.src
+Error in DEF_INH($inhno, {TA_HLNG, $inthdr});
+\t Macro of interrupt handler number $inhno isn't defined.
+\t If you define macro $inhno in header files,
+\t it's necessary to use "#include" directive in configuration files
+\t to genarate vector.src. 
+\t (And it's also necessary to use static API "INCLUDE()" 
+\t in configuration files to genarate kernel_cfg.c. )
+\t Check configuration files and header files.
+
+ERRMESSAGE
+		;
+		exit(1);
+	}
+	else {
+		# ベクタテーブルに割込みハンドラを登録
+		#　　 割込みハンドラ名の前後に"__kernel_"と"_entry"を付加
+		$vector_table[$inhno] = "__kernel_" . $inthdr . "_entry";
+	}
+}	
+
+#
 #  オプションの処理
 #
 do Getopt("s");
 
+if ($opt_s == 0) {
+	print STDERR "genvector.pl:\n";
+	print STDERR "\t -s option(vector size) is necessary.\n";
+	print STDERR "\t check jsp/tools/\$(CPU)/configuration/call_configurator.bat.\n";
+	print STDERR "\t \$(CPU) is H8-RENESAS or H8S-RENESAS.\n";
+	exit(1);
+}
+
 $vector_size = $opt_s;
 
+# すべてのベクタを「未登録」として初期化
 for ($i=0; $i<$vector_size; $i++) {
 	$vector_table[$i] = "_no_reg_exception";
 }
@@ -67,54 +106,11 @@ for ($i=0; $i<$vector_size; $i++) {
 # リセットベクタの定義
 $vector_table[0] = "_start";
 
-# 自動生成されたスクリプトの読み込み
+# 自動生成されたスクリプトの読み込みと実行
 require "./tmp_script.pl";
 
 # ベクタテーブルの出力
 for ($i=0; $i<$vector_size; $i++) {
-	if ($vector_table[$i] =~ /(_start)|(_no_reg_exception)/) {
-		printf "\t.DATA.L %s\t;  %d, 0x%02x\n", $vector_table[$i] , $i, $i;
-	} else {
-		printf "\t.DATA.L __kernel_%s_entry\t;  %d, 0x%02x\n", 
-							$vector_table[$i] , $i, $i;
-	}
+	printf "\t.DATA.L %s\t;  %d, 0x%02x\n", $vector_table[$i] , $i, $i;
 }
-
-#
-# 割込みの入口処理の出力
-#
-print <<INTENTRY
-
-;
-;  割込みの入口処理の定義
-;    このファイルにはユーザー定義の割込みハンドラ（C言語ルーチン）名を
-;    記述する
-;
-        .SECTION P, CODE, ALIGN=2
-
-;
-;    割込みの入口処理を生成するマクロの使い方
-;      （割込み要因毎に異なる部分）
-;
-;    マクロINTHDR_ENTRY C_ROUTINE, INTMASK
-;      パラメータ
-;          C_ROUTINE：C言語ルーチンの関数名（先頭の'_'は付けない）
-;          INTMASK：  割込み許可時に割込みマスクに設定する値
-;                      IPM_LEVEL1、IPM_LEVEL2のいずれかにすること
-;                      自分と同じレベルの割込みをマスクするため、
-;                      IPMには１つ上のレベルを設定する。
-;
-
-INTENTRY
-;
-
-for ($i=0; $i<$vector_size; $i++) {
-	if ($vector_table[$i] !~ /(_start)|(_no_reg_exception)/) {
-		printf " INTHDR_ENTRY %s, %s_intmask\n", 
-				$vector_table[$i] , $vector_table[$i];
-	}
-}
-
-
-print "\n .END\n";
 

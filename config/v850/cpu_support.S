@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.8 2005/12/12 09:08:16 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.10 2007/01/05 02:10:17 honda Exp $
  */
 
 /*
@@ -50,19 +50,33 @@
 /*
  *  タスクディスパッチャ
  */
-
 Function	__kernel_dispatch
 
-		/*
-		 * コンテキストの退避 
-		 *  30 20 21 22 23 24 25 26 27 28 29 31
-		 */
-
+	/*
+	 * コンテキストの退避 
+	 */
 	Push	ep
-
-		/* 保存対象レジスタの保存 */
-	addi	-44, sp, sp
+	addi	-120, sp, sp
 	mov	sp, ep
+	sst.w	r1, 116[ep]
+	sst.w	r2, 112[ep]
+	sst.w	r3, 108[ep]
+	sst.w	r4, 104[ep]
+	sst.w	r5, 100[ep]
+	sst.w	r6,  96[ep]
+	sst.w	r7,  92[ep]
+	sst.w	r8,  88[ep]
+	sst.w	r9,  84[ep]
+	sst.w	r10, 80[ep]
+	sst.w	r11, 76[ep]
+	sst.w	r12, 72[ep]
+	sst.w	r13, 68[ep]
+	sst.w	r14, 64[ep]
+	sst.w	r15, 60[ep]
+	sst.w	r16, 56[ep]
+	sst.w	r17, 52[ep]
+	sst.w	r18, 48[ep]
+	sst.w	r19, 44[ep]
 	sst.w	r20, 40[ep]
 	sst.w	r21, 36[ep]
 	sst.w	r22, 32[ep]
@@ -71,11 +85,11 @@ Function	__kernel_dispatch
 	sst.w	r25, 20[ep]
 	sst.w	r26, 16[ep]
 	sst.w	r27, 12[ep]
-	sst.w	r28, 8[ep]
-	sst.w	r29, 4[ep]
-	sst.w	r31, 0[ep]
-	
-		/* スタックと次の起動番地を保存 */
+	sst.w	r28,  8[ep]
+	sst.w	r29,  4[ep]
+	sst.w	r31,  0[ep]
+
+	/* スタックと次の起動番地を保存 */
 	Lea	__kernel_runtsk, ep
 	sld.w	0[ep], ep
 	sst.w	sp, TCB_sp[ep]
@@ -84,40 +98,35 @@ Function	__kernel_dispatch
 	stsr	psw, r10
 	sst.w	r10, TCB_psw[ep]
 
-		/*
-		 * 次のタスクの準備 __kernel_exit_and_dispatch
-		 *
-		 *  特にexit固有の処理はしてないので 強制ディスパッチにも使ってる
-		 */
-Label __kernel_exit_and_dispatch
-
-		/* intnestをクリア */
-	Lea	_intnest, r10
-	st.w	r0, 0[r10]
-
-		/* 割込みスタックの退避 */
-	cmp	r2, r0
-	bnz	1f
-	mov	r3, r2
-
-		/* 次に起動すべきタスクの読み出し */
-1:
+	/*
+	 * 次のタスクの準備 __kernel_dispatch_1
+	 *  ここは割り込み禁止状態で来る必要がある。
+	 */
+Label	__kernel_dispatch_1
+	/* runtsk = schedtsk */
 	Lea	__kernel_schedtsk, r10
 	ld.w	0[r10], r10
+	Lea	__kernel_runtsk, r11
+	st.w	r10, 0[r11]
 	cmp	r10,r0
 	bne	1f
 
-		/* 次に起動すべきタスクがない */
-	mov	r2, r3
+	/*
+	 * 起動すべきタスクはない...アイドルループ
+	 */
 
-		/* intnestを１にする */
+	/* 割り込みスタックに切り替え */
+	Lea	STACKTOP, sp
+	/* intnestを１にする */
 	mov	r0, r10
 	add	1, r10
 	Lea	_intnest, r11
 	st.w	r10, 0[r11]
 
-		/* 割り込み待ち */
+	/* 割り込み待ち */
 	ei
+	nop
+	nop
 	nop
 	nop
 	nop
@@ -125,54 +134,74 @@ Label __kernel_exit_and_dispatch
 	nop
 	di
 
-		/* intnestをクリアする */
+	/* intnestをクリアする */
 	Lea	_intnest, r10
 	st.w	r0, 0[r10]
 
-	jr	1b
+	br	__kernel_dispatch_1
+
 1:
-
-		/* runtsk = schedtsk; */
-	Lea	__kernel_runtsk, r11
-	st.w	r10, 0[r11]
-
-		/* スタックと次の起動番地を復帰 */
+	/* スタックと次の起動番地を復帰 */
 	mov	r10, ep
 	sld.w	TCB_pc[ep], r31
-	sld.w	TCB_sp[ep], r3
+	sld.w	TCB_sp[ep], sp
 	sld.w	TCB_psw[ep], r10
 	ldsr	r10, psw
 	jmp	r31
 
-		/* ディスパッチャの復帰ルーチン */
-Label dispatch_r
+	/* ディスパッチャの復帰ルーチン */
+Label	dispatch_r
+	Lea	__kernel_runtsk, r10
+	ld.w	0[r10], r10
+	ld.w	TCB_enatex[r10], r11
+	tst1	TCB_enatex_bit, 0[r11]
+	be	1f
+	ld.w	TCB_texptn[r10], r11
+	cmp	r0, r11
+	be	1f
 
-		/* タスク例外 */
+	/* タスク例外 */
 	jarl	__kernel_calltex, r31
-	
-		/* 退避したコンテキストの復帰 */
+1:
 	mov	sp, ep
-	sld.w	 40[ep],r20
-	sld.w	 36[ep],r21
-	sld.w	 32[ep],r22
-	sld.w	 28[ep],r23
-	sld.w	 24[ep],r24
-	sld.w	 20[ep],r25
-	sld.w	 16[ep],r26
-	sld.w	 12[ep],r27
-	sld.w	 8[ep],r28
-	sld.w	 4[ep],r29
-	sld.w	 0[ep],r31
-	addi	44, sp, sp
-
-	Pop	ep
+	sld.w	116[ep], r1
+	sld.w	112[ep], r2
+	sld.w	108[ep], r3
+	sld.w	104[ep], r4
+	sld.w	100[ep], r5
+	sld.w	 96[ep], r6
+	sld.w	 92[ep], r7
+	sld.w	 88[ep], r8
+	sld.w	 84[ep], r9
+	sld.w	 80[ep], r10
+	sld.w	 76[ep], r11
+	sld.w	 72[ep], r12
+	sld.w	 68[ep], r13
+	sld.w	 64[ep], r14
+	sld.w	 60[ep], r15
+	sld.w	 56[ep], r16
+	sld.w	 52[ep], r17
+	sld.w	 48[ep], r18
+	sld.w	 44[ep], r19
+	sld.w	 40[ep], r20
+	sld.w	 36[ep], r21
+	sld.w	 32[ep], r22
+	sld.w	 28[ep], r23
+	sld.w	 24[ep], r24
+	sld.w	 20[ep], r25
+	sld.w	 16[ep], r26
+	sld.w	 12[ep], r27
+	sld.w	  8[ep], r28
+	sld.w	  4[ep], r29
+	sld.w	  0[ep], r31
+	addi	120, ep, sp
+	Pop     ep
 	jmp	r31
 
 /*
  *  タスク起動時処理
  */
-
-Function __kernel_activate_r
+Function	__kernel_activate_r
 
 	Lea	__kernel_runtsk, ep
 	ld.w	0[ep], ep
@@ -186,12 +215,15 @@ Function __kernel_activate_r
 	jmp	r10
 
 /*
- *  割込みハンドラ／CPU例外ハンドラ出口処理
- *
- *  ret_int は割込みモード・割込み禁止状態で，ret_exc はマスタモード・
- *  割込み禁止状態で呼び出さなければならない．また ret_exc は，スクラッ
- *  チレジスタを保存した状態で呼び出すこと．
+ *  現在のコンテキストを捨ててディスパッチ
+ *    CPUロック状態で呼び出さなければならない
  */
+Function	__kernel_exit_and_dispatch
+	di
+	Lea	_intnest, r10
+	st.w	r0, 0[r10]
+	br	__kernel_dispatch_1
+
 
 .extern _InterruptHandlerEntry
 .extern __kernel_runtsk
@@ -199,59 +231,20 @@ Function __kernel_activate_r
 
 /*
  * 割込みハンドラ
- *
- *  ハンドラ起動前に返却値格納レジスタとスクラッチレジスタを退避する．
- *  割込みハンドラ内でタスクスイッチが発生したときのみ全てのレジスタ
- *  を退避する．
- *
- * それぞれ状況に応じて次のような処理を行う
- * ・ハンドラがない場合
- *    作業域作成 -> ハンドラ読出 -> 作業域破棄
- *
- * ・ハンドラがあり、多重割込みである場合
- *    作業域作成 -> ハンドラ読出 -> レジスタA群退避 -> ハンドラ起動
- *     -> レジスタA群復帰 -> 作業域破棄
- *
- * ・ハンドラがあり、タスクから割込みがかかり、ハンドラ内で切替がない場合
- *    作業域作成 -> ハンドラ読出 -> レジスタA群退避 -> スタック切替
- *     -> ハンドラ起動 -> タスク例外起動 -> レジスタA群退避
- *     -> 作業域破棄
- *
- * ・ハンドラがあり、タスクから割込みがかかり、ハンドラ内で切替がある場合
- *    作業域作成 -> ハンドラ読出 -> レジスタA群退避 -> スタック切替
- *     -> ハンドラ起動 -> レジスタB群退避 -> ディスパッチャ
- *     -> レジスタB群復帰 -> タスク例外起動 -> レジスタA群退避
- *     -> 作業域破棄
- *
- * 退避レジスタ格納順序 (アドレス上位から順)
- *  R10 R11
- *  R1-R9
- *  R11-R19
- *  R31
- *  EIPC EIPSW
  */
+Function	vector_handler
 
-	.data
-	.align 4
-__intcount:	.long 0
+	/* 作業領域の作成 */
+	addi	-16,  sp, sp
+	st.w	 ep, 12[sp]
+	st.w	r10,  8[sp]
+	st.w	r11,  4[sp]
+	st.w	r12,  0[sp]
 
-	Function vector_handler
-
-		/* 作業領域の作成 */
-	add	-8,   sp
-	st.w	r10, 4[sp]
-	st.w	r11, 0[sp]
-
-		/* intnestをインクリメント */
-	Lea	_intnest, r11
-	ld.w	0[r11], r10
-	add	1, r10
-	st.w	r10, 0[r11]
-
-		/*
-		 * ハンドラ起動番地の読み出し
-		 *    R10 : ハンドラの番地
-		 */
+	/*
+	 * ハンドラ起動番地の読み出し
+	 *    R10 : ハンドラの番地
+	 */
 	stsr	ecr, r10
 	shr	2, r10
 	add	-4, r10
@@ -259,90 +252,91 @@ __intcount:	.long 0
 	add	r10, r11
 	ld.w	0[r11], r10
 
-		/* ハンドラが無ければ即終了 */
-	cmp	0,r10
+	/* ハンドラが無ければ即終了 */
+	cmp	r0,r10
 	bne	1f
 
+	/* 割り込みハンドラが登録されていない場合：
+	   ここでr6を破壊して、Ｃの関数を呼んでいるから他のレジスタも破壊
+	   される可能性が強いが、たいてい、cpu_experr()の中でhaltさせて
+	   いるか無限ループしているのでこの関数からは戻ってこない。戻って
+	   くるようにしたいなら他のレジスタも保存したほうがよい */
 	stsr	ecr, r6
 	jarl	_cpu_experr, r31
-	be	end_handler
+	br	end_handler
 
 1:
 	/*
-	 * レジスタ退避 
-	 *
-	 * 格納順序 : (10 11) ^ 12..19 6..9 31 eipc eipsw | (sp)
+	 * 残りのレジスタ退避 
 	 */
-
-	mov	r30, r11		/* epを使いたいのでちょっと退避 */
-	addi	-80, r3, r30
-	mov	r30, r3			/* スタックに反映 */
-	sst.w	r1,  76[ep]
-	sst.w	r2,  72[ep]
-	sst.w	r3,  68[ep]
-	sst.w	r4,  64[ep]
-	sst.w	r5,  60[ep]
-	sst.w	r6,  56[ep]
-	sst.w	r7,  52[ep]
-	sst.w	r8,  48[ep]
-	sst.w	r9,  44[ep]
-	sst.w	r12, 40[ep]
-	sst.w	r13, 36[ep]
-	sst.w	r14, 32[ep]
-	sst.w	r15, 28[ep]
-	sst.w	r16, 24[ep]
-	sst.w	r17, 20[ep]
-	sst.w	r18, 16[ep]
-	sst.w	r19, 12[ep]
+	addi	-116, sp, ep
+	mov	ep, sp			/* スタックに反映 */
+	sst.w	r1, 112[ep]
+	sst.w	r2, 108[ep]
+	sst.w	r3, 104[ep]
+	sst.w	r4, 100[ep]
+	sst.w	r5,  96[ep]
+	sst.w	r6,  92[ep]
+	sst.w	r7,  88[ep]
+	sst.w	r8,  84[ep]
+	sst.w	r9,  80[ep]
+	sst.w	r13, 76[ep]
+	sst.w	r14, 72[ep]
+	sst.w	r15, 68[ep]
+	sst.w	r16, 64[ep]
+	sst.w	r17, 60[ep]
+	sst.w	r18, 56[ep]
+	sst.w	r19, 52[ep]
+	sst.w	r20, 48[ep]
+	sst.w	r21, 44[ep]
+	sst.w	r22, 40[ep]
+	sst.w	r23, 36[ep]
+	sst.w	r24, 32[ep]
+	sst.w	r25, 28[ep]
+	sst.w	r26, 24[ep]
+	sst.w	r27, 20[ep]
+	sst.w	r28, 16[ep]
+	sst.w	r29, 12[ep]
 	sst.w	r31,  8[ep]
-	stsr	eipc, r6		/* 多重割込み対策 */
+	stsr	eipc,   r6		/* 多重割込み対策 */
 	sst.w	r6 ,  4[ep]
-	stsr	eipsw, r6
+	stsr	eipsw,  r6
 	sst.w	r6 ,  0[ep]
-	mov	r11,  r30		/* ep復帰 */
 
-		/*
-		 * コンテキストチェックとスタック切り替え
-		 */
-
-		/* 多重割り込みチェック */
+	/* 多重割り込みチェックとネストカウンタをインクリメント */
 	Lea	_intnest, r11
-	ld.w	0[r11], r11
-	cmp	1, r11
+	ld.w	0[r11], r6
+	add	1, r6
+	st.w	r6, 0[r11]
+	cmp	1, r6
 	ble	1f
-	
-		/* 多重割込み */
-	st.w	r3, -4[r3]
-	add	-4, r3
+
+	/* 多重割込み...すでに割り込みスタックになっている */
 	jr	2f
 1:
-		/* タスクコンテキスト上での割込み */
+	/* 多重割込みでない */
+	/* スタック切り替え */
+	mov	sp, r11
+	Lea	STACKTOP, sp
+	Push	r11
 
-		/* 現在のスタック位置を割り込みスタック上に保存 */
-	st.w	r3, -4[r2]
-
-		/* スタック切り替え */
-	addi	-4,r2, r3
-
-2:
-
-		/*
-		 * ハンドラ起動
-		 */
-
-	Lea	ret_int, r31
-
+	Lea	end_int, r31
+	/* 割り込み許可 */
 	ei
-
+	/* ハンドラ起動 */
 	jmp	r10
 
 	/*
 	 * 割り込みからの復帰処理
 	 */
-Label	ret_int
+Label	end_int
+	/* 割り込み禁止 */
 	di
 
-		/* intnestをディクリメント */
+	/* スタックの復帰 */
+	ld.w	0[sp], sp
+
+	/* intnestをディクリメント */
 	Lea	_intnest, r11
 	ld.w	0[r11], r10
 	mov	1, r11
@@ -350,173 +344,153 @@ Label	ret_int
 	Lea	_intnest, r11
 	st.w	r10, 0[r11]
 
-		/* スタックの復帰 */
-	ld.w	0[r3],sp
-
-
-		/* どこへ飛んでくのかチェック */
-	Lea	_intnest, r11
-	ld.w	0[r11], r10
-	cmp	r0, r10
-	bne	recover_from_int
-
-		/* 
-		 * タスクへ飛んでく場合ならreqflgをチェック
-		 * 要求があれば全レジスタを保存してタスクディスパッチャへ
-		 */
+	/* 
+	 * タスクディスパッチャ要求があるか？
+	 */
 	Lea	__kernel_reqflg, r10
 	ld.w	0[r10], r11
 	cmp	r0, r11
-	bnz	getting_ready_for_contextswitch
+	bz	recover_from_int
+	st.w	r0, 0[r10]
+	jr	ret_int
 
-recover_from_int_with_tskctx:
-		/* タスクに飛んでいく前にタスク例外 */
-	jarl	__kernel_calltex, r31
+2:
+	Lea	end_int_nest, r31
+	/* 割り込み許可 */
+	ei
+	/* ハンドラ起動 */
+	jmp	r10
+
+	/*
+	 * 割り込みからの復帰処理
+	 */
+Label	end_int_nest
+	/* 割り込み禁止 */
+	di
+
+	/* intnestをディクリメント */
+	Lea	_intnest, r11
+	ld.w	0[r11], r10
+	mov	1, r11
+	sub	r11, r10
+	Lea	_intnest, r11
+	st.w	r10, 0[r11]
 
 recover_from_int:
 	/*
 	 * レジスタ復帰 
-	 *
-	 * 格納順序 : (10 11) 12..19 6..9 31 eipc eipsw ^ | (sp)
 	 */
+	mov	sp, ep
 
-	mov	r30, r11		/* epを使いたいのでちょっと退避 */
-	mov	r3,  r30
-	sld.w	4[ep],r10
-	ldsr	r10, eipc
-	sld.w	0[ep],r10
-	ldsr	r10, eipsw
+	sld.w	112[ep], r1
+	sld.w	108[ep], r2
+	sld.w	104[ep], r3
+	sld.w	100[ep], r4
+	sld.w	 96[ep], r5
+	sld.w	 92[ep], r6
+	sld.w	 88[ep], r7
+	sld.w	 84[ep], r8
+	sld.w	 80[ep], r9
+	sld.w	 76[ep], r13
+	sld.w	 72[ep], r14
+	sld.w	 68[ep], r15
+	sld.w	 64[ep], r16
+	sld.w	 60[ep], r17
+	sld.w	 56[ep], r18
+	sld.w	 52[ep], r19
+	sld.w	 48[ep], r20
+	sld.w	 44[ep], r21
+	sld.w	 40[ep], r22
+	sld.w	 36[ep], r23
+	sld.w	 32[ep], r24
+	sld.w	 28[ep], r25
+	sld.w	 24[ep], r26
+	sld.w	 20[ep], r27
+	sld.w	 16[ep], r28
+	sld.w	 12[ep], r29
+	sld.w	  8[ep], r31
+	sld.w	  4[ep], r10
+	ldsr	    r10, eipc
+	sld.w	  0[ep], r10
+	ldsr	    r10, eipsw
 
-	sld.w	76[ep], r1
-	sld.w	72[ep], r2
-	sld.w	68[ep], r3
-	sld.w	64[ep], r4
-	sld.w	60[ep], r5
-	sld.w	56[ep], r6
-	sld.w	52[ep], r7
-	sld.w	48[ep], r8
-	sld.w	44[ep], r9
-	sld.w	40[ep], r12
-	sld.w	36[ep], r13
-	sld.w	32[ep], r14
-	sld.w	28[ep], r15
-	sld.w	24[ep], r16
-	sld.w	20[ep], r17
-	sld.w	16[ep], r18
-	sld.w	12[ep], r19
-	sld.w	 8[ep], r31
-
-	addi	80, r30, r3
-	mov	r11, r30
+	addi	116, ep, sp
 
 
 end_handler:
 	/*
 	 * 作業領域の復帰
-	 *
-	 * 格納順序 : 10 11 ^ (12..19 6..9 31 eipc eipsw | sp)
 	 */
-
-	add	8, sp
-	ld.w	-4[sp], r10
-	ld.w	-8[sp], r11
-	
+	addi	 16, sp, sp
+	ld.w	 -4[sp], ep
+	ld.w	 -8[sp], r10
+	ld.w	-12[sp], r11
+	ld.w	-16[sp], r12
 	reti
 
 
-	/*
-	 * タスクスイッチ発生に伴う全レジスタ退避
-	 *
-	 * 格納順序 : (10 11 12..19 6..9 31 eipc eipsw | sp) ^ 
-	 *            30 20..29 1 4..9
-	 */
-getting_ready_for_contextswitch:
+/*
+ * 割り込みにともなうタスクディスパッチの判定
+ */
+ret_int:
+	/* ディスパッチ禁止？ */
+	Lea	__kernel_enadsp, r10
+	ld.w	0[r10], r10
+	cmp	r0, r10
+	be	ret_int_r
 
-		/* reqflg = 0 */
-	st.w	r0, 0[r10]
-	
-	st.w	ep, -4[sp]		/*epを使いたいので真っ先に退避 */
-	addi	-68, sp, ep
-	sst.w	r20, 64[ep]
-	sst.w	r21, 60[ep]
-	sst.w	r22, 56[ep]
-	sst.w	r23, 52[ep]
-	sst.w	r24, 48[ep]
-	sst.w	r25, 44[ep]
-	sst.w	r26, 40[ep]
-	sst.w	r27, 36[ep]
-	sst.w	r28, 32[ep]
-	sst.w	r29, 28[ep]
-	sst.w	 r1, 24[ep]
-	sst.w	 r4, 20[ep]
-	sst.w	 r5, 16[ep]
-	sst.w	 r6, 12[ep]
-	sst.w	 r7,  8[ep]
-	sst.w	 r8,  4[ep]
-	sst.w	 r9,  0[ep]
-	mov		ep, sp
+	/* タスク切り替えの必要があるか？ */
+	Lea	__kernel_schedtsk, r10
+	ld.w	0[r10], r10
+	Lea	__kernel_runtsk, r11
+	ld.w	0[r11], r11
+	cmp	r10,r11
+	be	ret_int_r
 
-		/* TCBの中身を修正して復帰情報を設定 */
+	/* TCBの中身を修正して復帰情報を設定 */
+	mov	ep, r11
 	Lea	__kernel_runtsk, ep
-	sld.w	0[ep], ep				/* ep = _kernel_runtsk */
-	
-	sst.w	r3, TCB_sp[ep]
-	Lea	recover_from_contextswitch, r10
+	sld.w	0[ep], ep			/* ep = _kernel_runtsk */
+
+	sst.w	sp, TCB_sp[ep]
+	Lea	ret_int_r, r10
 	sst.w	r10, TCB_pc[ep]
 	stsr	psw, r10
 	sst.w	r10, TCB_psw[ep]
-	
-		/* タスクディスパッチャへ */
-	Lea	__kernel_exit_and_dispatch, r10
-	ldsr	r10, eipc
-	/* カーネル内で割込み禁止にすべきなのに割込み許可になっている */
-	/* 箇所があり、割込みのタイミングによってはシステムが破綻します。*/
+	mov	r11, ep
+
+	/* タスクディスパッチャへ */
 	stsr	eipsw, r10
-	ori	0x20,r10,r10
+	ori	0x20, r10, r10
 	ldsr	r10, eipsw
-    	reti
+	Lea	__kernel_dispatch_1, r10
+	ldsr	r10, eipc
+	reti
 
-
-	/*
-	 * 割込み脱出時コンテキストスイッチの復帰ルーチン
-	 *
-	 * 格納順序 : (10 11 12..19 6..9 31 eipc eipsw | sp 
-	 *             30 20..29 1 4..9) ^
-	 */
-recover_from_contextswitch:
+ret_int_r:
 	di
 
-		/* 退避したレジスタの一部復帰 */
-	mov		sp, ep
-	sld.w	64[ep], r20
-	sld.w	60[ep], r21
-	sld.w	56[ep], r22
-	sld.w	52[ep], r23
-	sld.w	48[ep], r24
-	sld.w	44[ep], r25
-	sld.w	40[ep], r26
-	sld.w	36[ep], r27
-	sld.w	32[ep], r28
-	sld.w	28[ep], r29
-	sld.w	24[ep], r1
-	sld.w	20[ep], r4
-	sld.w	16[ep], r5
-	sld.w	12[ep], r6
-	sld.w	 8[ep], r7
-	sld.w	 4[ep], r8
-	sld.w	 0[ep], r9
-	addi	68, sp, sp
+	Lea	__kernel_runtsk, r10
+	ld.w	0[r10], r10
+	ld.w	TCB_enatex[r10], r11
+	tst1	TCB_enatex_bit, 0[r11]
+	be	1f
+	ld.w	TCB_texptn[r10], r11
+	cmp	r0, r11
+	be	1f
 
-		/* おおもとの復帰処理へ飛ばす */
-	jr recover_from_int_with_tskctx
+	/* タスク例外 */
+	jarl	__kernel_calltex, r31
+1:
+	/* おおもとの復帰処理へ飛ばす */
+	jr	recover_from_int
 
 /*
  * CPUロック状態の取得
  *
  *   割込み禁止ならCPUロック状態
  */
-
-Function _sense_lock
+Function	_sense_lock
 	stsr	psw, r10
 	shr	5, r10
 	andi	1, r10, r10

@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: h8.h,v 1.6 2005/11/13 14:05:01 honda Exp $
+ *  @(#) $Id: h8.h,v 1.7 2007/03/23 07:58:33 honda Exp $
  */
 
 #ifndef _H8_H_
@@ -59,7 +59,5 @@
 #define CCR_DISINT_ALL          (CCR_I | CCR_UI)
 #define CCR_ENAINT_ALL          (0xffu & ~CCR_DISINT_ALL)
 
-/*  I/Oポートの本数  */
-#define H8PORT_NUM              12u
 
 #endif /* _H8_H_ */

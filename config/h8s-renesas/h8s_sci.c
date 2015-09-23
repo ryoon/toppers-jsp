@@ -7,7 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -50,6 +50,8 @@
 /* ベースアドレス */
 #define SCI0_BASE_ADDR	0xff78	/* チャネル０ */
 #define SCI1_BASE_ADDR	0xff80	/* チャネル１ */
+#define SCI2_BASE_ADDR	0xff88	/* チャネル２ */
+
 /* レジスタオフセット */
 #define SMR		0	/* シリアルモードレジスタ */
 #define BRR		1	/* ビットレートレジスタ */
@@ -107,21 +109,12 @@
 #define	MPB	BIT1
 #define	MPBT	BIT0
 
-/*
- *  SCI用システムインタフェースレイヤ
- *
- *   base : ポートのベースアドレス
- *   offset : レジスタオフセット
- *   val : レジスタ値 
- */
-#define h8s_sci_wrb( base, offset, val ) h8s_wrb_reg( (base) + (offset), (val) )
-#define h8s_sci_reb( base, offset )	h8s_reb_reg( (base) + (offset) )
 
 /* 
  * TNUM_PORT : シリアルドライバ（serial.c）、つまり GDICレベルでサポートする
  * 　　　　　　シリアルポートの数 
  * TNUM_SIOP : PDICレベル（プロセッサ内蔵SIO）でサポートするシリアルI/Oポート
- *　　　　　　 の数（現在の実装では最大２）
+ *　　　　　　 の数（現在の実装では最大3）
  *  
  *　いずれもuser_config.hで定義する。
  */
@@ -164,10 +157,17 @@ const SIOPINIB siopinib_table[TNUM_SIOP] = {
 #if TNUM_SIOP >= 2
 	{ (UW)SCI1_BASE_ADDR,
 	  (UH)BAUD_RATE1,
-	  (UB)BRR1_RATE,		/* N 値 */
+	  (UB)BRR1_RATE,			/* N 値 */
 	  (UB)(SMR_INIT | (SCR1_CKS & (CKE1 | CKE0)))
 	}
 #endif /* TNUM_SIOP >= 2 */
+#if TNUM_SIOP >= 3
+	,{(UW)SCI2_BASE_ADDR,
+	  (UH)BAUD_RATE2,
+	  (UB)BRR2_RATE,			/* N 値 */
+	  (UB)(SMR_INIT | (SCR2_CKS & (CKE1 | CKE0)))
+	}
+#endif /* TNUM_SIOP >= 3 */
 };
 
 /*
@@ -188,18 +188,30 @@ SIOPCB	siopcb_table[TNUM_SIOP];
 #define get_siopcb(siopid)	(&(siopcb_table[INDEX_SIOP(siopid)]))
 
 /*
+ *  SCI用システムインタフェースレイヤ
+ *
+ *   base : ポートのベースアドレス
+ *   offset : レジスタオフセット
+ *   val : レジスタ値 
+ */
+#define h8s_sci_wrb( base, offset, val ) h8s_wrb_reg( (base) + (offset), (val) )
+#define h8s_sci_reb( base, offset )	h8s_reb_reg( (base) + (offset) )
+
+/*
  *  SCI用レジスタ操作関数
  */
 Inline void
-h8s_sci_or( const SIOPINIB *siopinib, UW reg, UB val )
+h8s_sci_or( const SIOPINIB *siopinib, INT offset, INT val )
 {
-	h8s_sci_wrb( siopinib->reg_base, reg, h8s_sci_reb( siopinib->reg_base, reg ) | val );
+	UB reg = h8s_sci_reb( siopinib->reg_base, offset );
+	h8s_sci_wrb( siopinib->reg_base, offset, reg | (UB)val );
 }
 
 Inline void
-h8s_sci_and( const SIOPINIB *siopinib, UW reg, UB val )
+h8s_sci_and( const SIOPINIB *siopinib, INT offset, INT val )
 {
-	h8s_sci_wrb( siopinib->reg_base, reg, h8s_sci_reb( siopinib->reg_base, reg ) & val );
+	UB reg = h8s_sci_reb( siopinib->reg_base, offset );
+	h8s_sci_wrb( siopinib->reg_base, offset, reg & (UB)val );
 }
 
 /*
@@ -208,10 +220,13 @@ h8s_sci_and( const SIOPINIB *siopinib, UW reg, UB val )
 Inline BOOL
 h8s_sci_getready(SIOPCB *siopcb)
 {
+	UB ssr;
+	
 	siopcb->getready = FALSE;
-	if( h8s_sci_reb( siopcb->siopinib->reg_base, (UW) SSR ) & RDRF )
+	ssr =  h8s_sci_reb( siopcb->siopinib->reg_base, SSR );
+	if( ssr & RDRF ) {
 		siopcb->getready = TRUE;
-
+	}
 	return( siopcb->getready );
 }
 
@@ -222,7 +237,7 @@ Inline BOOL
 h8s_sci_putready(SIOPCB *siopcb)
 {
 	siopcb->putready = FALSE;
-	if( h8s_sci_reb( siopcb->siopinib->reg_base, (UW) SSR ) & TDRE ) {
+	if( h8s_sci_reb( siopcb->siopinib->reg_base, SSR ) & TDRE ) {
 		siopcb->putready = TRUE;
 	}
 	return( siopcb->putready );
@@ -235,9 +250,9 @@ Inline char
 h8s_sci_getchar(SIOPCB *siopcb)
 {
 	/* RDRFクリア */
-	h8s_sci_and( siopcb->siopinib, (UW) SSR, (UB) ~RDRF );
+	h8s_sci_and( siopcb->siopinib, SSR, ~RDRF );
 
-	return( (char) h8s_sci_reb( siopcb->siopinib->reg_base, (UW) RDR ) );
+	return( (char) h8s_sci_reb( siopcb->siopinib->reg_base, RDR ) );
 }
 
 /*
@@ -246,10 +261,10 @@ h8s_sci_getchar(SIOPCB *siopcb)
 Inline void
 h8s_sci_putchar(SIOPCB *siopcb, char c)
 {
-	h8s_sci_wrb( siopcb->siopinib->reg_base, (UW) TDR, c );
+	h8s_sci_wrb( siopcb->siopinib->reg_base, TDR, c );
 
 	/* TDREクリア */
-	h8s_sci_and( siopcb->siopinib, (UW) SSR, (UB) ~TDRE );
+	h8s_sci_and( siopcb->siopinib, SSR, ~TDRE );
 }
 
 /*
@@ -281,29 +296,37 @@ h8s_sci_init_siopinib( const SIOPINIB  *siopinib )
 	 */
 
 	/* 送受信停止 */
-	h8s_sci_and( siopinib, (UW) SCR, (UB) ~( TE | RE ) );
+	h8s_sci_and( siopinib, SCR, ~( TE | RE ) );
 
 	/* ビット長など設定 */
-	h8s_sci_wrb( siopinib->reg_base, (UW) SMR, siopinib->smr_def );
+	h8s_sci_wrb( siopinib->reg_base, SMR, siopinib->smr_def );
 
 	/* ボーレート設定 */
-	h8s_sci_wrb( siopinib->reg_base, (UW) BRR, siopinib->boud_brr_def );
+	h8s_sci_wrb( siopinib->reg_base, BRR, siopinib->boud_brr_def );
 
 	/*
 	 *  割込み禁止とクロックソース選択
 	 *　　クロックソースは内部クロックを選択
 	 */
-	h8s_sci_and( siopinib, (UW) SCR, (UB) ~( TIE | RIE | MPIE | TEIE | CKE1 | CKE0 ) );
+	h8s_sci_and( siopinib, SCR, ~( TIE | RIE | MPIE | TEIE | CKE1 | CKE0 ) );
 
 	/* ボーレートの安定化(1bit分の待ち) */
 	sil_dly_nse_long( 1000000000ul / (siopinib->boud_rate) );
 
 	/* エラーフラグをクリア */
-	h8s_sci_and( siopinib, (UW) SSR, ~( ORER | FER | PER ) );
+	h8s_sci_and( siopinib, SSR, ~( ORER | FER | PER ) );	/* 修正 */
 
 	/* 送受信許可、受信割込み許可 */
-	h8s_sci_or( siopinib, (UW) SCR, ( RIE | TE | RE ) );
+	h8s_sci_or( siopinib, SCR, ( RIE | TE | RE ) );
 }
+
+
+/*
+ *  SCI0の設定に矛盾がないかチェック
+ */
+#if defined(OMIT_SCI0) && (POL_PORTID == 1)
+#error h8s_sci_putchar_pol serial port ID error.
+#endif
 
 /*
  *  カーネル起動時のバーナー出力用の初期化
@@ -311,13 +334,7 @@ h8s_sci_init_siopinib( const SIOPINIB  *siopinib )
 void
 h8s_sci_init(void)
 {
-#ifndef OMIT_SCI0
-	h8s_sci_init_siopinib( get_siopinib(1) );
-#endif /* OMIT_SCI0 */
-
-#if TNUM_SIOP >= 2
-	h8s_sci_init_siopinib( get_siopinib(2) );
-#endif /* TNUM_SIOP >= 2 */
+	h8s_sci_init_siopinib( get_siopinib(POL_PORTID) );
 }
 
 /*
@@ -335,7 +352,11 @@ h8s_sci_openflag(void)
 
 #if TNUM_SIOP >= 2
 	ret |= siopcb_table[1].openflag;
-#endif /* TNUM_SIOP < 2 */
+#endif /* TNUM_SIOP >= 2 */
+
+#if TNUM_SIOP >= 3
+	ret |= siopcb_table[2].openflag;
+#endif /* TNUM_SIOP >= 3 */
 
 	return(ret);
 }
@@ -368,9 +389,9 @@ void
 h8s_sci_cls_por(SIOPCB *siopcb)
 {
 	/* TEND が 1 になるまで待つ */
-	while ( !(h8s_sci_reb( siopcb->siopinib->reg_base, (UW) SSR ) & TEND ) );
+	while ( !(h8s_sci_reb( siopcb->siopinib->reg_base, SSR ) & TEND ) );
 
-	h8s_sci_and( siopcb->siopinib, (UW) SCR, ~( TE | RE ) );
+	h8s_sci_and( siopcb->siopinib, SCR, ~( TE | RE ) );	/* 修正 */
 	siopcb->openflag = FALSE;
 }
 
@@ -411,10 +432,10 @@ h8s_sci_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 {
 	switch (cbrtn) {
 	case SIO_ERDY_SND:
-		h8s_sci_or( siopcb->siopinib, (UW) SCR, TIE );
+		h8s_sci_or( siopcb->siopinib, SCR, TIE );
 		return;
 	case SIO_ERDY_RCV:
-		h8s_sci_or( siopcb->siopinib, (UW) SCR, RIE );
+		h8s_sci_or( siopcb->siopinib, SCR, RIE );
 		return;
 	}
 }
@@ -427,22 +448,22 @@ h8s_sci_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 {
 	switch( cbrtn ) {
 	case SIO_ERDY_SND:
-		h8s_sci_and( siopcb->siopinib, (UW) SCR, (UB) ~TIE );
+		h8s_sci_and( siopcb->siopinib, SCR, ~TIE );
 		return;
 	case SIO_ERDY_RCV:
-		h8s_sci_and( siopcb->siopinib, (UW) SCR, (UB) ~RIE );
+		h8s_sci_and( siopcb->siopinib, SCR, ~RIE );
 		return;
 	}
 }
 
-#ifndef OMIT_SCI0
 /*
- *  SIOの割込みサービスルーチン (SCI0専用)
+ *  SIOの割込みサービスルーチン
+ *　　全チャネル共通部分をインライン関数として定義しておく
  */
-void
-h8s_sci0_isr_in(void)
+Inline void
+h8s_scix_isr_in(ID portid)
 {
-	SIOPCB *siopcb = get_siopcb(1);
+	SIOPCB *siopcb = get_siopcb(portid);
 
 	/* 受信通知コールバックルーチンの呼び出し */
 	if( siopcb->openflag ) {
@@ -450,10 +471,10 @@ h8s_sci0_isr_in(void)
 	}
 }
 
-void
-h8s_sci0_isr_out(void)
+Inline void
+h8s_scix_isr_out(ID portid)
 {
-	SIOPCB *siopcb = get_siopcb(1);
+	SIOPCB *siopcb = get_siopcb(portid);
 
 	/* 送信可能コールバックルーチンの呼び出し */
 	if( siopcb->openflag ) {
@@ -462,20 +483,47 @@ h8s_sci0_isr_out(void)
 }
 
 /*
- *  SIOの受信エラー割込みサービスルーチン (SCI0専用)
+ *  SIOの受信エラー割込みサービスルーチン
+ *　　全チャネル共通部分をインライン関数として定義しておく
  *
  *  エラー処理は、下記エラーフラグのクリアのみ。
  *  ・オーバーランエラー、フレーミングエラー、パリティエラー
  */
-void
-h8s_sci0_isr_error(void)
+Inline void
+h8s_scix_isr_error(INT portid)
 {
-	SIOPCB *siopcb = get_siopcb(1);
+	SIOPCB *siopcb = get_siopcb(portid);
 
 	if( siopcb->openflag ) {
 		/*  エラーフラグクリア  */
-		h8s_sci_and( siopcb->siopinib, (UW) SSR, ~( RDRF | ORER | FER | PER ) );
+		h8s_sci_and( siopcb->siopinib, SSR, ~( RDRF | ORER | FER | PER ) );
 	}
+}
+
+
+#ifndef OMIT_SCI0
+/*
+ *  SIOの割込みサービスルーチン (SCI0専用)
+ */
+void
+h8s_sci0_isr_in(void)
+{
+	h8s_scix_isr_in(1);
+}
+
+void
+h8s_sci0_isr_out(void)
+{
+	h8s_scix_isr_out(1);
+}
+
+/*
+ *  SIOの受信エラー割込みサービスルーチン (SCI0専用)
+ */
+void
+h8s_sci0_isr_error(void)
+{
+	h8s_scix_isr_error(1);
 }
 
 #endif /*  OMIT_SCI0  */
@@ -487,65 +535,69 @@ h8s_sci0_isr_error(void)
 void
 h8s_sci1_isr_in(void)
 {
-	SIOPCB *siopcb = get_siopcb(2);
-
-	/* 受信通知コールバックルーチンの呼び出し */
-	if( siopcb->openflag ) {
-		h8s_sci_ierdy_rcv( siopcb->exinf );
-	}
+	h8s_scix_isr_in(2);
 }
 
 void
 h8s_sci1_isr_out(void)
 {
-	SIOPCB *siopcb = get_siopcb(2);
-
-	/* 送信可能コールバックルーチンの呼び出し */
-	if( siopcb->openflag ) {
-		h8s_sci_ierdy_snd( siopcb->exinf );
-	}
+	h8s_scix_isr_out(2);
 }
 
 /*
  *  SIOの受信エラー割込みサービスルーチン (SCI1専用)
- *
- *  エラー処理は、下記エラーフラグのクリアのみ。
- *  ・オーバーランエラー、フレーミングエラー、パリティエラー
  */
 void
 h8s_sci1_isr_error(void)
 {
-	SIOPCB *siopcb = get_siopcb(2);
-
-	if( siopcb->openflag ) {
-		/*  エラーフラグクリア  */
-		h8s_sci_and( siopcb->siopinib, (UW) SSR, ~( RDRF | ORER | FER | PER ) );
-	}
+	h8s_scix_isr_error(2);
 }
 #endif /* TNUM_SIOP >=2 */
 
-#if defined(OMIT_SCI0) && (LOGTASK_PORTID == 1)
-#error h8s_sci_putchar_pol serial port ID error.
-#endif
+#if TNUM_SIOP >=3
+/*
+ *  SIOの割込みサービスルーチン (SCI2専用)
+ */
+void
+h8s_sci2_isr_in(void)
+{
+	h8s_scix_isr_in(3);
+}
+
+void
+h8s_sci2_isr_out(void)
+{
+	h8s_scix_isr_out(3);
+}
+
+/*
+ *  SIOの受信エラー割込みサービスルーチン (SCI2専用)
+ */
+void
+h8s_sci2_isr_error(void)
+{
+	h8s_scix_isr_error(3);
+}
+#endif /* TNUM_SIOP >=3 */
 
 
 /*
- *  H8S 内蔵 SCI 用ポーリング出力 (LOGTASK_PORTID専用、sys_putcで利用)
+ *  H8S 内蔵 SCI 用ポーリング出力 (POL_PORTID専用、sys_putcで利用)
  */
 void
 h8s_sci_putchar_pol( char c )
 {
 
-	const SIOPINIB  *siopinib = get_siopinib( LOGTASK_PORTID );
+	const SIOPINIB  *siopinib = get_siopinib( POL_PORTID );
 
 	/* TDRE が 1 になるまで待つ */
-	while ( !(h8s_sci_reb( siopinib->reg_base, (UW) SSR ) & TDRE ) );
+	while ( !(h8s_sci_reb( siopinib->reg_base, SSR ) & TDRE ) );
 
-	h8s_sci_wrb( siopinib->reg_base, (UW) TDR, (UB) c );
+	h8s_sci_wrb( siopinib->reg_base, TDR, c );
 
 	/* TDREクリア */
-	h8s_sci_and( siopinib, (UW) SSR, (UB) ~TDRE );
+	h8s_sci_and( siopinib, SSR, ~TDRE );
 
 	/* TEND が 1 になるまで待つ */
-	while ( !(h8s_sci_reb( siopinib->reg_base, (UW) SSR ) & TEND ) );
+	while ( !(h8s_sci_reb( siopinib->reg_base, SSR ) & TEND ) );
 }

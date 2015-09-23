@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.3 2003/12/13 05:08:59 hiro Exp $
+ *  @(#) $Id: tool_config.h,v 1.4 2007/01/05 02:02:38 honda Exp $
  */
 
 /*
@@ -66,13 +66,17 @@
 Inline void
 call_atexit()
 {
-    /*
 	extern void	software_term_hook(void);
+	volatile FP	fp = software_term_hook;
 
-	if (software_term_hook != 0) {
-		software_term_hook();
+	/*
+	 *  software_term_hookへのポインタを，一旦volatile FP型のfpに
+	 *  代入してから使うのは，0との比較が最適化で削除されないよう
+	 *  にするためである．
+	 */
+	if (fp != 0) {
+		(*fp)();
 	}
-    */
 }
 
 #endif /* _MACRO_ONLY */

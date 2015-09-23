@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2003 by Naoki Saito
+ *  Copyright (C) 2003, 2007 by Naoki Saito
  *             Nagoya Municipal Industrial Research Institute, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: makeoffset.c,v 1.3 2005/11/24 12:41:23 honda Exp $
+ *  @(#) $Id: makeoffset.c,v 1.4 2007/03/23 07:08:04 honda Exp $
  */
 
 
@@ -80,26 +80,26 @@
 #include "jsp_kernel.h"
 #include "task.h"
 
+static const TCB	____BEGIN_OFF_TCB_texptn = {
+		{ NULL, NULL }, NULL, 0, 0,
+		FALSE, FALSE, FALSE,
+		1, NULL, { NULL, NULL }
+	};
 
-void makeoffset(void);
+static const TCB	____BEGIN_OFF_TCB_sp = {
+		{ NULL, NULL }, NULL, 0, 0,
+		FALSE, FALSE, FALSE,
+		0, NULL, { (void *)1, NULL }
+	};
 
-void
-makeoffset(void)
-{
-	asm("! BEGIN TCB_texptn\n");
-	(INT)(((TCB *)0)->texptn) |= 1;
-	asm("! END");
+static const TCB	____BEGIN_OFF_TCB_pc = {
+		{ NULL, NULL }, NULL, 0, 0,
+		FALSE, FALSE, FALSE,
+		0, NULL, { NULL, (FP)1 }
+	};
 
-	asm("! BEGIN TCB_sp\n");
-	(INT)(((TCB *)0)->tskctxb.sp) |= 1;
-	asm("! END");
-
-	asm("! BEGIN TCB_pc\n");
-	(((TCB *)0)->tskctxb.pc)();
-	asm("! END");
-
-	asm("! BEGIN TCB_enatex\n");
-	(INT)(((TCB *)0)->enatex) = 1;
-	asm("! END");
-}
-
+static const TCB	____BEGIN_BIT_TCB_enatex = {
+		{ NULL, NULL }, NULL, 0, 0,
+		FALSE, FALSE, TRUE,
+		0, NULL, { NULL, NULL }
+	};

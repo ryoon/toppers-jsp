@@ -5,7 +5,7 @@
 ;*
 ;*  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
 ;*                              Toyohashi Univ. of Technology, JAPAN
-;*  Copyright (C) 2003-2005 by Naoki Saito
+;*  Copyright (C) 2003-2007 by Naoki Saito
 ;*             Nagoya Municipal Industrial Research Institute, JAPAN
 ;*  Copyright (C) 2003-2004 by Ryosuke Takeuchi
 ;*              Platform Development Center RICOH COMPANY,LTD. JAPAN
@@ -37,7 +37,7 @@
 ;*  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 ;*  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 ;* 
-;*  @(#) $Id: cpu_support.a30,v 1.5 2005/11/24 12:41:23 honda Exp $
+;*  @(#) $Id: cpu_support.a30,v 1.7 2007/03/23 07:06:35 honda Exp $
 
 
 ;
@@ -187,8 +187,7 @@ ret_int:
 	mov.w	__kernel_schedtsk, r0		; schedtskと
 	cmp.w	a0, r0				; runtsk が同じなら
 	jeq	ret_int_r			; ret_int_r へ
-	tst.w	a0, a0				; runtsk = NULL なら
-	jz	dispatcher			; 保存せずdispatherへ
+		;;;; (runtsk == NULL) のチェックは必要ないため削除 (07/03/02)
 	stc	isp, TCB_sp[a0]			; タスクスタックを保存
 	mov.w	#(ret_int_r&0ffffh), TCB_pc[a0]	; 実行再開番地を保存
 	mov.w	#(ret_int_r>>16), TCB_pc+2[a0]

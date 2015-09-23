@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004-2006 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: banner.c,v 1.10 2004/01/05 04:07:07 hiro Exp $
+ *  @(#) $Id: banner.c,v 1.11 2006/02/12 05:29:56 hiro Exp $
  */
 
 /*
@@ -51,10 +53,12 @@
 #endif /* COPYRIGHT_SYS */
 
 static const char banner[] = "\n"
-"JSP Kernel Release %d.%d (patchlevel = %d) for " TARGET_NAME
+"TOPPERS/JSP Kernel Release %d.%d (patchlevel = %d) for " TARGET_NAME
 " (" __DATE__ ", " __TIME__ ")\n"
 "Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory\n"
 "                            Toyohashi Univ. of Technology, JAPAN\n"
+"Copyright (C) 2004-2006 by Embedded and Real-Time Systems Laboratory\n"
+"            Graduate School of Information Science, Nagoya Univ., JAPAN\n"
 COPYRIGHT_CPU COPYRIGHT_SYS;
 
 void

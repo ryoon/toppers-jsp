@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.2 2005/12/12 09:08:16 honda Exp $
+ *  @(#) $Id: sys_config.c,v 1.5 2007/05/21 01:28:28 honda Exp $
  */
 
 /*
@@ -47,6 +47,7 @@
 
 /*  シリアルポートの制御ブロック */
 SIOPCB siopcb_table[TNUM_PORT];
+unsigned int _serial_flag[TNUM_PORT] = { 0 };
 
 /*
  *  ターゲットシステム依存の初期化

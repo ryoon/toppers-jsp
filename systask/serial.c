@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2006 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serial.c,v 1.15 2004/09/04 16:43:09 honda Exp $
+ *  @(#) $Id: serial.c,v 1.16 2006/02/12 05:26:42 hiro Exp $
  */
 
 /*
@@ -303,7 +305,7 @@ serial_wri_dat(ID portid, char *buf, UINT len)
 	if (!buffer_full) {
 		_syscall(sig_sem(spcb->spinib->snd_semid));
 	}
-	return(len);
+	return((ER_UINT) len);
 }
 
 /*
@@ -376,7 +378,7 @@ serial_rea_dat(ID portid, char *buf, UINT len)
 	if (!buffer_empty) {
 		_syscall(sig_sem(spcb->spinib->rcv_semid));
 	}
-	return(len);
+	return((ER_UINT) len);
 }
 
 /*

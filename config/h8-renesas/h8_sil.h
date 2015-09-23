@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: h8_sil.h,v 1.6 2005/11/13 14:05:01 honda Exp $
+ *  @(#) $Id: h8_sil.h,v 1.7 2007/03/23 07:58:33 honda Exp $
  */
 
 /*
@@ -57,17 +57,7 @@
 #ifndef _MACRO_ONLY
 
 #include <sil.h>
-
-/*
- *  インライン関数のプロトタイプ宣言
- */
-Inline void h8_anb_reg(UB *mem, UB data);
-Inline void h8_orb_reg(UB *mem, UB data);
-Inline void h8_anh_reg(UH *mem, UH data);
-Inline void h8_orh_reg(UH *mem, UH data);
-Inline void h8_anw_reg(UW *mem, UW data);
-Inline void h8_orw_reg(UW *mem, UW data);
-Inline void define_int_plevel(const IRC *irc);
+#include <cpu_insn.h>	/*  bitset(), bitclr()  */
 
 /*
  *  8ビットレジスタのAND演算
@@ -173,18 +163,13 @@ define_int_plevel(const IRC *irc)
  *　　そのため、本実装では、メモリ上にテンポラリを用意して、DDRの
  *　　現在値を保持する方法を採っている。
  */
-extern UB sil_reb_ddr(UINT port) throw();
-extern void sil_wrb_ddr(UINT port, UB data) throw();
-extern void sil_anb_ddr(UINT port, UB data) throw();
-extern void sil_orb_ddr(UINT port, UB data) throw();
-
 /*
  *　DDRの番号定義
  *　
  *　　配列のインデックスに用いる。
  *　　ポート7は入力専用のため、省略している。
  */
-enum IO_PORT {
+typedef enum {
 	IO_PORT1,
 	IO_PORT2,
 	IO_PORT3,
@@ -195,7 +180,12 @@ enum IO_PORT {
 	IO_PORT9,
 	IO_PORTA,
 	IO_PORTB
-};
+} IO_PORT;
+
+extern UB sil_reb_ddr(IO_PORT port) throw();
+extern void sil_wrb_ddr(IO_PORT port, UB data) throw();
+extern void sil_anb_ddr(IO_PORT port, UB data) throw();
+extern void sil_orb_ddr(IO_PORT port, UB data) throw();
 
 #endif /* _MACRO_ONLY */
 #endif  /*  _SIL_H8_H_  */

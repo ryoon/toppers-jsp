@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sh3.h,v 1.7 2003/06/17 16:45:54 honda Exp $
+ *  @(#) $Id: sh3.h,v 1.8 2006/04/10 09:58:15 honda Exp $
  */
 
 /*
@@ -56,6 +56,33 @@
 #define EXPEVT	    0xFFFFFFD4		
 #define INTEVT	    0xFFFFFFD8		
 #define INTEVT2	    0xA4000000		
+
+/*
+ * INTEVT(2) の最大値
+ */ 
+#ifdef SH7709A
+
+#define MAX_INTIVT (0x980)
+
+#elif defined(SH7727)
+
+#define MAX_INTIVT (0xB80)
+
+#elif defined(SH7729R)
+
+#define MAX_INTIVT (0x980)
+
+#elif defined(SH7750)
+
+#define MAX_INTIVT (0x7E0)
+
+#else
+
+#define MAX_INTIVT (0xB80)
+
+#endif 
+
+
 
 /*
  *   バスステートコントローラ関連

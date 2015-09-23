@@ -7,7 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -96,6 +96,15 @@
 	#define BRR1_RATE	19
 #endif /* BAUD_RATE1 == 9600  */
 
+/*  SCI1  */
+#if BAUD_RATE2 == 9600		/* ビットレート： 9600[bps] */
+	#define BRR2_RATE	79
+#elif BAUD_RATE2 == 19200	/* ビットレート：19200[bps] */
+	#define BRR2_RATE	39
+#elif BAUD_RATE2 == 38400	/* ビットレート：38400[bps] */
+	#define BRR2_RATE	19
+#endif /* BAUD_RATE1 == 9600  */
+
 /*
  *  SCRレジスタのCKS0,CKS1ビット
  *　　ボーレート計算式のn=0に対応
@@ -103,6 +112,7 @@
  */
 #define SCR0_CKS		0	/*  SCI0  */
 #define SCR1_CKS		0	/*  SCI1  */
+#define SCR2_CKS		0	/*  SCI2  */
 
 #endif /* CPU_CLOCK != 24576 */
 

@@ -1,7 +1,7 @@
 /* This file is generated from cpu_rename.def by genrename. */
 
-#ifdef _CPU_RENAME_H_
-#undef _CPU_RENAME_H_
+#ifdef _CPU_UNRENAME_H_
+#undef _CPU_UNRENAME_H_
 
 /*
  * cpu_config.c
@@ -12,25 +12,30 @@
 #undef int_intmask
 #undef cpu_experr
 #undef cpu_putc
-/*
- * TIMER_IRC
- */
+#undef TIMER_ICU
 
 /*
  * cpu_support.src
  */
 #undef activate_r
 #undef no_reg_exception
-#undef current_ccr
-#undef set_ccr
-#undef disint
-#undef enaint
 
 /*
  * start.src
  */
 #undef start
 #undef start_1
+
+/*
+ * hw_serial.c
+ */
+#undef siopcb_table
+#undef SCI_cls_por
+#undef SCI_ierdy_rcv
+#undef SCI_ierdy_snd
+#undef SCI_in_handler
+#undef SCI_initialize
+#undef SCI_out_handler
 
 #ifdef LABEL_ASM
 
@@ -43,19 +48,13 @@
 #undef _int_intmask
 #undef _cpu_experr
 #undef _cpu_putc
-/*
- * TIMER_IRC
- */
+#undef _TIMER_ICU
 
 /*
  * cpu_support.src
  */
 #undef _activate_r
 #undef _no_reg_exception
-#undef _current_ccr
-#undef _set_ccr
-#undef _disint
-#undef _enaint
 
 /*
  * start.src
@@ -63,5 +62,16 @@
 #undef _start
 #undef _start_1
 
+/*
+ * hw_serial.c
+ */
+#undef _siopcb_table
+#undef _SCI_cls_por
+#undef _SCI_ierdy_rcv
+#undef _SCI_ierdy_snd
+#undef _SCI_in_handler
+#undef _SCI_initialize
+#undef _SCI_out_handler
+
 #endif /* LABEL_ASM */
-#endif /* _CPU_RENAME_H_ */
+#endif /* _CPU_UNRENAME_H_ */

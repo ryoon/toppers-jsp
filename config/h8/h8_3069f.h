@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -38,7 +38,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: h8_3069f.h,v 1.3 2005/11/07 01:49:53 honda Exp $
+ *  @(#) $Id: h8_3069f.h,v 1.4 2007/03/23 07:22:15 honda Exp $
  */
 
 #ifndef _H8_3069F_H_
@@ -51,6 +51,8 @@
 /* Interrupt numbers */
 
 #define IRQ_NMI			7		/* NMI */
+
+#define TRAP8			8
 
 #define IRQ_EXT0		12		/* IRQ0 */
 #define IRQ_EXT1		13		/* IRQ1 */

@@ -2,7 +2,7 @@
         ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
             （Xstormy16 ターゲット依存部）
 
-             （Release 1.4.2対応，最終更新: 14-Nov-2005）
+             （Release 1.4.3対応，最終更新: 06-Apr-2007）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
@@ -240,7 +240,7 @@ Step1 三洋マイコン 開発ツール(Xstormy16シリーズ)のインストール
 [入手元]
 http://www.semic.sanyo.co.jp/micon/jpn/index.html
 [インストール手順]
-(1) アーカイブを解凍し、setup.exeを実行
+(1) アーカイブを解凍し、インストーラを実行する。
 (2) インストーラからの問い合わせには、全てデフォルトでインストール
 (3) インストールされたIDEを起動
 (4) IDEのメニュー[ツール]->[DOSプロンプト]を起動
@@ -250,7 +250,7 @@ http://www.semic.sanyo.co.jp/micon/jpn/index.html
 Step2 TOPPERS/JSPの入手と準備
 [入手元]
 http://www.toppers.jp/
-ここより、TOPPERS/JSP Ver1.4のソースコード(SJIS版)をダウンロード。
+ここより、TOPPERS/JSP Ver1.4.3のソースコード(SJIS版)をダウンロード。
 [手順]
 (1) ソースアーカイブを任意のディレクトリ(ここではC:\jspとする)に解凍
 (2) Step1でインストールした、下記のディレクトリにあるcfg.exeとchk.exe

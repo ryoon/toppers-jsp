@@ -31,11 +31,11 @@ type kernel_cfg.c > debug_kernel_cfg.c
 type kernel_cfg.c > release_kernel_cfg.c
 del kernel_cfg.c
 
-perl ..\..\..\..\utils\h8\filter1.pl %1 > tmpfile2
-perl ..\..\..\..\utils\h8-renesas\filter2.pl tmpfile2 > tmp_script.pl
+perl ..\..\..\..\utils\h8\grep_def_inh.pl %1 > tmp_script.pl
 type ..\..\..\..\config\h8s-renesas\vector_header.src > vector.src
-perl ..\..\..\..\utils\h8s-renesas\genvector.pl -s 92 >> vector.src
-del tmpfile2 tmp_script.pl
+perl ..\..\..\..\utils\h8-renesas\genvector.pl -s 92 >> vector.src
+perl ..\..\..\..\utils\h8s-renesas\gen_intentry.pl >> vector.src
+del tmp_script.pl
 type vector.src > debug_vector.src
 type vector.src > release_vector.src
 del vector.src

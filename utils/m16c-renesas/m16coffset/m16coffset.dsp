@@ -1,24 +1,24 @@
 # Microsoft Developer Studio Project File - Name="m16coffset" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** •ÒW‚µ‚È‚¢‚Å‚­‚¾‚³‚¢ **
+# ** ÊÔ½¸¤·¤Ê¤¤¤Ç¤¯¤À¤µ¤¤ **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
 
 CFG=m16coffset - Win32 Debug
-!MESSAGE ‚±‚ê‚Í—LŒø‚ÈÒ²¸Ì§²Ù‚Å‚Í‚ ‚è‚Ü‚¹‚ñB ‚±‚ÌÌßÛ¼Þª¸Ä‚ðËÞÙÄÞ‚·‚é‚½‚ß‚É‚Í NMAKE ‚ðŽg—p‚µ‚Ä‚­‚¾‚³‚¢B
-!MESSAGE [Ò²¸Ì§²Ù‚Ì´¸½Îß°Ä] ºÏÝÄÞ‚ðŽg—p‚µ‚ÄŽÀs‚µ‚Ä‚­‚¾‚³‚¢
+!MESSAGE ¤³¤ì¤ÏÍ­¸ú¤ÊŽÒŽ²Ž¸ŽÌŽ§Ž²ŽÙ¤Ç¤Ï¤¢¤ê¤Þ¤»¤ó¡£ ¤³¤ÎŽÌŽßŽÛŽ¼ŽÞŽªŽ¸ŽÄ¤òŽËŽÞŽÙŽÄŽÞ¤¹¤ë¤¿¤á¤Ë¤Ï NMAKE ¤ò»ÈÍÑ¤·¤Æ¤¯¤À¤µ¤¤¡£
+!MESSAGE [ŽÒŽ²Ž¸ŽÌŽ§Ž²ŽÙ¤ÎŽ´Ž¸Ž½ŽÎŽßŽ°ŽÄ] ŽºŽÏŽÝŽÄŽÞ¤ò»ÈÍÑ¤·¤Æ¼Â¹Ô¤·¤Æ¤¯¤À¤µ¤¤
 !MESSAGE 
 !MESSAGE NMAKE /f "m16coffset.mak".
 !MESSAGE 
-!MESSAGE NMAKE ‚ÌŽÀsŽž‚É\¬‚ðŽw’è‚Å‚«‚Ü‚·
-!MESSAGE ºÏÝÄÞ ×²Ýã‚ÅÏ¸Û‚ÌÝ’è‚ð’è‹`‚µ‚Ü‚·B—á:
+!MESSAGE NMAKE ¤Î¼Â¹Ô»þ¤Ë¹½À®¤ò»ØÄê¤Ç¤­¤Þ¤¹
+!MESSAGE ŽºŽÏŽÝŽÄŽÞ Ž×Ž²ŽÝ¾å¤ÇŽÏŽ¸ŽÛ¤ÎÀßÄê¤òÄêµÁ¤·¤Þ¤¹¡£Îã:
 !MESSAGE 
 !MESSAGE NMAKE /f "m16coffset.mak" CFG="m16coffset - Win32 Debug"
 !MESSAGE 
-!MESSAGE ‘I‘ð‰Â”\‚ÈËÞÙÄÞ Ó°ÄÞ:
+!MESSAGE ÁªÂò²ÄÇ½¤ÊŽËŽÞŽÙŽÄŽÞ ŽÓŽ°ŽÄŽÞ:
 !MESSAGE 
-!MESSAGE "m16coffset - Win32 Release" ("Win32 (x86) Console Application" —p)
-!MESSAGE "m16coffset - Win32 Debug" ("Win32 (x86) Console Application" —p)
+!MESSAGE "m16coffset - Win32 Release" ("Win32 (x86) Console Application" ÍÑ)
+!MESSAGE "m16coffset - Win32 Debug" ("Win32 (x86) Console Application" ÍÑ)
 !MESSAGE 
 
 # Begin Project

@@ -2,7 +2,7 @@
         ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                     （m16c:TM開発環境）
 
-        （Release 1.4 対応，最終更新: 31-Jan-2004）
+        （Release 1.4 対応，最終更新: 15-May-2006）
 
 ------------------------------------------------------------------------
  TOPPERS/JSP Kernel
@@ -13,6 +13,8 @@
                              Toyohashi Univ. of Technology, JAPAN
  Copyright (C) 2003-2004 by Platform Development Center
                                          RIOCH COMPANY,LTD. JAPAN
+ Copyright (C) 2006 by Embedded and Real-Time Systems Laboratory
+               Graduate School of Information Science, Nagoya Univ., JAPAN
 
  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  によって公表されている GNU General Public License の Version 2 に記
@@ -42,9 +44,8 @@
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 ------------------------------------------------------------------------
 
-このドキュメントでは、ルネサステクノロジ社が開発したツールを使用して
-m16c-CPUを使用したOAKS16とOAKS16 MINIボード用にTOPPERS/JSPを必要なフ
-ァイルについて解説する．
+このドキュメントでは、M16C用のルネサステクノロジ社の開発ツールを使用し
+て，TOPPERS/JSPカーネルを構築するために必要なファイルについて解説する．
 
 1. ディレクトリの構成
 
@@ -53,6 +54,7 @@ jsp
   |     +---m16c-renesas
   |            +---oaks16
   |            +---oaks16_mini
+  |            +---m3029
   +--tools
   |     +-----M16C-RENESAS
   +--utils
@@ -61,66 +63,75 @@ jsp
 
 2.ディレクトリとファイルの説明
 
-ルネサステクノロジ社の開発ツールを用いてm16c用のTOPPERS/JSPを開発する為の
-ソースをconfig/m16c-renesasディレクトリに置く．
-構築に際して、割込みやエクセプションのベクトルを自動生成するツール(m16cvec.
-exe)と、TCBのオフセット値をアセンブラで書かれたソースに設定するツール(m16co
-ffset.exe)の構築環境と、makeを用いて開発を場合、ソースの依存関係を生成するP
-ERLスクリプトをtools/m16c-renesasデレクトリィに置く．
-統合開発環境TMを用いてTOPPERS/JSPを構築する環境をtools/M16C-RENESASデレクト
-リィに置く．
+M16C依存部のファイルは，config/m16c-renesasディレクトリに置く．構築に
+際して，割込みやエクセプションのベクトルを自動生成するツール(m16cvec. 
+exe)と，TCBのオフセット値をアセンブラで書かれたソースに設定するツール
+(m16co ffset.exe)の構築環境と，makeを用いた開発フローの場合に必要とな
+る，ソースの依存関係を生成するperlスクリプトをtools/m16c-renesasデレク
+トリィに置く．統合開発環境TMを用いてTOPPERS/JSPを構築するためのファイ
+ルをtools/M16C-RENESASデレクトリィに置く．
+
 
 2.1 config/m16c-renesas
 
-a. Makefile.config ---- makeコマンドを用いてm16c用TOPPERS/JSPを構築する場合
-                        makeファイル
-b. oaks16/Makefile.config ---- makeコマンドを用いてm16c-OAKS16用TOPPERS/JSP
-                        を構築する場合のmakeファイル
-c. oaks16_mini/Makefile.config ---- makeコマンドを用いてm16c-OAKS16 MINI用T
-                        OPPERS/JSPを構築する場合のmakeファイル
-d. その他 ---- m16c依存部のコード
+a. Makefile.config
+    makeコマンドを用いてm16c用TOPPERS/JSPを構築する場合のmakeファイル
+b. oaks16/Makefile.config 
+    makeコマンドを用いてm16c-OAKS16用TOPPERS/JSPを構築する場合のmakeファイル
+c. oaks16_mini/Makefile.config 
+    makeコマンドを用いてm16c-OAKS16 MINI用TOPPERS/JSPを構築する場合のmakeファイル
+d. その他 ---- M16C依存部のコード
+
 
 2.2 utils/m16c-renesas
 
-a. makedep.m16c ---- makeを用いて開発を場合、ソースの依存関係を生成するPERL
-                     スクリプト
-b. m16cutils.dsw ---- m16cvec.exeとm16coffset.exeコマンドVC++を用いて構築す
-                      るためのワークスペースファイル
-c. m16cutils.opt ---- VC++用のOPTファイル
+a. makedep.m16c
+    makeを用いて開発を場合、ソースの依存関係を生成するPERLスクリプト
+b. m16cutils.dsw 
+    m16cvec.exeとm16coffset.exeコマンドVC++を用いて構築するためのワークスペースファイル
+c. m16cutils.opt 
+    VC++用のOPTファイル
 d: m16cutils/m16coffset/m16coffset.dsp
-                 ---- m16coffset作成のプロジェクトファイル
+    m16coffset作成のプロジェクトファイル
 e: m16cutils/m16coffset/m16coffset.cpp
-                 ---- m16coffsetコマンドC++言語記述
+    m16coffsetコマンドC++言語記述
 f: m16cutils/m16coffset/StdAfx.h
-                 ---- 標準システムインクルードファイル
+    標準システムインクルードファイル
 g: m16cutils/m16coffset/StdAfx.cpp
-                 ---- 標準システムインクルードファイルを含むソースファイル
+    標準システムインクルードファイルを含むソースファイル
 h: m16cutils/m16coffset/m16cvec.dsp
-                 ---- m16cvec作成のプロジェクトファイル
+    m16cvec作成のプロジェクトファイル
 i: m16cutils/m16coffset/m16cvec.cpp
-                 ---- m16cvecコマンドC++言語記述
+    m16cvecコマンドC++言語記述
 j: m16cutils/m16coffset/StdAfx.h
-                 ---- 標準システムインクルードファイル
+    標準システムインクルードファイル
 k: m16cutils/m16coffset/StdAfx.cpp
-                 ---- 標準システムインクルードファイルを含むソースファイル
+    標準システムインクルードファイルを含むソースファイル
+
 
 2.3 utils/M16C-RENESAS
 
-a.Jsp14sample1.tmi,Jsp14sample.tmk ---- TMを用いてOAKS16用のTOPPERS/JSPを構
-                      築するためのプロジェクトファイル
-b.Jsp14sample1m.tmi,Jsp14samplem.tmk ---- TMを用いてOAKS16 MINI用のTOPPERS/
-                      JSPを構築するためのプロジェクトファイル
-c.Jsp14sample1.id ---- 生成したMOTファイルをOAKS16ボードのフラッシュROMの書
-                      き込む時に使用するIDファイル
-d.Jsp14sample1m.id ---- 生成したMOTファイルをOAKS16 MINIボードのフラッシュ
-                      ROMの書き込む時に使用するIDファイル
-e.sample1.cfg ---- OAKS16用のTOPPERS/JSPを構築するためのコンフィギュファイル
-f.sample1m.cfg ---- OAKS16 MINI用のTOPPERS/JSPを構築するためのコンフィギュ
-                      ファイル
+a.Jsp14sample1.tmi,Jsp14sample1.tmk 
+   TMを用いてOAKS16用のTOPPERS/JSPを構築するためのプロジェクトファイル
+b.Jsp14sample1m.tmi,Jsp14samplem1.tmk
+   TMを用いてOAKS16 MINI用のTOPPERS/JSPを構築するためのプロジェクトファイル
+c.Jsp14sample1_m3029.tmi,Jsp14samplem1_m3029.tmk 
+   TMを用いてM3029用のTOPPERS/JSPを構築するためのプロジェクトファイル
+d.Jsp14sample1.id 
+   生成したMOTファイルをOAKS16ボードのフラッシュROMの書き込む時に使用するIDファイル
+e.Jsp14sample1m.id 
+   生成したMOTファイルをOAKS16 MINIボードのフラッシュROMの書き込む時に使用するIDファイル
+f.Jsp14sample1_m3029.id 
+   生成したMOTファイルを M3029のフラッシュROMの書き込む時に使用するIDファイル
+g.sample1.cfg 
+   OAKS16, M3029用のTOPPERS/JSPを構築するためのコンフィギュファイル
+h.sample1m.cfg 
+   OAKS16 MINI用のTOPPERS/JSPを構築するためのコンフィギュファイル
+
 
 2.4  sample
 
-a.Makefile.m16c-oaks16 ---- makeコマンドを用いてOAKS16用のTOPPERS/JSPを構築
-                      するためのmakeファイル
+a.Makefile.m16c-oaks16 
+   makeコマンドを用いてOAKS16用のTOPPERS/JSPを構築するためのmakeファイル
 
 

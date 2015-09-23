@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.2 2004/09/09 07:19:00 honda Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.3 2007/01/15 06:05:22 honda Exp $
  */
 
 /*
@@ -49,6 +49,23 @@
 #define _CPU_DEFS_H_
 
 #define OMIT_SIL_ACCESS
+
+/*
+ *  エンディアンの反転
+ *  sil.hでも定義しているが，OMIT_SIL_ACCESSによりこのファイルで
+ *  アクセス関数を定義してるため，ここで定義する 
+ */
+#ifndef SIL_REV_ENDIAN_H
+#define	SIL_REV_ENDIAN_H(data) \
+	((VH)((((UH)(data) & 0xff) << 8) | (((UH)(data) >> 8) & 0xff)))
+#endif /* SIL_REV_ENDIAN_H */
+
+#ifndef SIL_REV_ENDIAN_W
+#define	SIL_REV_ENDIAN_W(data) \
+	((VW)((((UW)(data) & 0xff) << 24) | (((UW)(data) & 0xff00) << 8) \
+		| (((UW)(data)>> 8) & 0xff00) | (((UW)(data) >> 24) & 0xff)))
+#endif /* SIL_REV_ENDIAN_H */
+
 
 #ifndef NIOS2
 #define NIOS2   /* プロセッサ略称 */

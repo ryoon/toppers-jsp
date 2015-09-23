@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.4 2005/11/12 09:17:48 honda Exp $
+ *  @(#) $Id: sys_defs.h,v 1.7 2007/03/23 06:56:03 honda Exp $
  */
 
 
@@ -82,33 +82,43 @@
 
 #define USE_JTAG_UART
 
+
+/*
+ * ペリフェラルのベースアドレス
+ */
+#ifdef  STRATIX_II_2S180
+#define PERI_BASE 0x08000000u
+#else
+#define PERI_BASE 0x00800000u
+#endif  /* STRATIX_II_2S180 */
+
 /*
  *  TIMER のベースアドレス
  */
-#define TIM_BASE 0x02120800
+#define TIM_BASE (PERI_BASE + 0x00010800u)
 
 /*
  * カーネルで使用する UART のベースアドレス
  */
 #ifndef USE_JTAG_UART
-#define UART_BASE  0x02120840
+#define UART_BASE  (PERI_BASE + 0x00010840)
 #else
-#define UART_BASE  0x021208B0
+#define UART_BASE  (PERI_BASE + 0x00010820)
 #endif /* USE_JTAG_UART */
 
 
 /*
  *  TIM 割込みの割込み番号
  */
-#define TIM_INTLVL        0
+#define TIM_INTLVL        1
 
 /*
  * UART 割込みの割込み番号
  */
 #ifndef USE_JTAG_UART
-#define UART_INTLVL       4
+#define UART_INTLVL       3
 #else
-#define UART_INTLVL       1
+#define UART_INTLVL       2
 #endif /* USE_JTAG_UART */
 
 
@@ -130,5 +140,18 @@
 #define SIL_DLY_TIM1    420
 #define SIL_DLY_TIM2    90
 
+/*
+ * キャッシュの設定
+ */ 
+#define NIOS2_ICACHE_SIZE 4096
+#define NIOS2_DCACHE_SIZE 0
+#define NIOS2_ICACHE_LINE_SIZE 32
+#define NIOS2_DCACHE_LINE_SIZE 4
+
+/*
+ * ROM化の場合の，ROM(FLASH)とRAM
+ */ 
+#define ROM_BASE   0x00000000
+#define RAM_BASE   0x01000000
 
 #endif /* _SYS_DEFS_H_ */

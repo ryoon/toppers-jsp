@@ -33,11 +33,11 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_unrename.h,v 1.3 2005/07/06 03:10:28 honda Exp $
+ *  @(#) $Id: cpu_unrename.h,v 1.6 2007/05/30 03:56:47 honda Exp $
  */
 
-#ifdef _CPU_UNRENAME_H_
-#undef _CPU_UNRENAME_H_
+#ifdef _CPU_RENAME_H_
+#undef _CPU_RENAME_H_
 
 #ifndef OMIT_RENAME
 
@@ -131,4 +131,4 @@
 
 #endif /* LABEL_ASM */
 #endif /* OMIT_RENAME */
-#endif /* _CPU_UNRENAME_H_ */
+#endif /* _CPU_RENAME_H_ */

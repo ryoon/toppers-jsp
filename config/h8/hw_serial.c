@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2005 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.c,v 1.11 2005/11/07 01:49:53 honda Exp $
+ *  @(#) $Id: hw_serial.c,v 1.12 2007/03/23 07:22:15 honda Exp $
  */
 
 /*
@@ -61,51 +61,52 @@
 #define BAUD_TO_NSEC(b)       (UINT)(((1000000ul / (b)) + 1ul) * 1000ul)
 
 /*
- *  ボーレートをBRRの値にに変換するマクロ
+ *  ボーレートをBRRの値に変換するマクロ
  */
-#define H8BRR_RATE(b)	((b)>38400?((UB)(((CPU_CLOCK+(16*(b)))/(32*(b)))-1))\
+#define H8BRR_RATE(b)	(((b)>38400)?((UB)(((CPU_CLOCK+(16*(b)))/(32*(b)))-1))\
 			          :((UB)((CPU_CLOCK/(32*(b)))-1)))
 
 /*
  *  シリアルポートの初期化ブロック
  */
 
-const SIOPINIB siopinib_table[TNUM_PORT] = {
-
-#if TNUM_PORT == 1
+static const SIOPINIB siopinib_table[TNUM_PORT] = {
 	{
 		SYSTEM_SCI,
 		SYSTEM_BAUD_RATE,
-		SYSTEM_SCI_SMR,
                 {
                         (UB*)SYSTEM_SCI_IPR,
                         SYSTEM_SCI_IP_BIT,
                         SYSTEM_SCI_IPM
-                }
+                },
+		SYSTEM_SCI_SMR
 	}
 
-#elif TNUM_PORT == 2	/* of #if TNUM_PORT == 1 */
-	{
+#if TNUM_PORT >= 2
+	,{
 		USER_SCI,
 		USER_BAUD_RATE,
-		USER_SCI_SMR,
                 {
                         (UB*)USER_SCI_IPR,
                         USER_SCI_IP_BIT,
                         USER_SCI_IPM
-                }
+                },
+		USER_SCI_SMR
 	}
+#endif	/* of #if TNUM_PORT >= 2 */
+
+#if TNUM_PORT >= 3
 	,{
-		SYSTEM_SCI,
-		SYSTEM_BAUD_RATE,
-		SYSTEM_SCI_SMR,
+		USER2_SCI,
+		USER2_BAUD_RATE,
                 {
-                        (UB*)SYSTEM_SCI_IPR,
-                        SYSTEM_SCI_IP_BIT,
-                        SYSTEM_SCI_IPM
-                }
+                        (UB*)USER2_SCI_IPR,
+                        USER2_SCI_IP_BIT,
+                        USER2_SCI_IPM
+                },
+		USER2_SCI_SMR
 	}
-#endif	/* of #if TNUM_PORT == 1 */
+#endif	/* of #if TNUM_PORT >= 3 */
 
 };
 
@@ -361,6 +362,31 @@ sio_err2_handler (void)
 }
 
 #endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
-
 #endif	/* of #if TNUM_PORT >= 2 */
+
+#if TNUM_PORT >= 3
+
+void
+sio_in3_handler (void)
+{
+	SCI_in_handler(3);
+}
+
+void
+sio_out3_handler (void)
+{
+	SCI_out_handler(3);
+}
+
+#ifdef H8_CFG_SCI_ERR_HANDLER
+
+void
+sio_err3_handler (void)
+{
+	SCI_err_handler(3);
+}
+
+#endif	/* of #ifdef H8_CFG_SCI_ERR_HANDLER */
+
+#endif	/* of #if TNUM_PORT >= 3 */
 

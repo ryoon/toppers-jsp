@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_timer.h,v 1.3 2004/05/26 19:14:24 honda Exp $
+ *  @(#) $Id: hw_timer.h,v 1.4 2007/01/05 02:02:38 honda Exp $
  */
 
 /*
@@ -127,7 +127,7 @@ hw_timer_terminate()
     sil_wrw_mem((VP)TM1_CTRL,TCTRL_STOP);
     /* 割込み不許可*/
     sil_wrw_mem((VP)IRQ0_ENABLECLR,
-    sil_rew_mem((VP)IRQ0_ENABLECLR)&~IRQ_TM1);
+                sil_rew_mem((VP)IRQ0_ENABLECLR)&~IRQ_TM1);
 }
 
 /*

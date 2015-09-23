@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: sample1.h,v 1.5 2005/11/13 14:41:20 honda Exp $
+ *  @(#) $Id: sample1.h,v 1.10 2007/03/26 07:08:55 honda Exp $
  */
 
 /*
@@ -87,10 +87,13 @@
 #elif defined(H8)
 
 #undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
-
-							/* 文字入力するシリアルポートID */
-#ifndef __RENESAS_VERSION__
+							
+#ifdef __RENESAS_VERSION__		/* 文字入力するシリアルポートID */
+#define	TASK_PORTID	1
+#else /*  __RENESAS_VERSION__  */
+#ifdef __GNUC__
 #define	TASK_PORTID	2
+#endif /* __GNUC__ */
 #endif /*  __RENESAS_VERSION__  */
 
 #elif defined(H8S)

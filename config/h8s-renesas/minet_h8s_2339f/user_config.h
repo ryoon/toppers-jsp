@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: user_config.h,v 1.1 2005/12/12 09:00:13 honda Exp $
+ *  @(#) $Id: user_config.h,v 1.2 2007/03/23 07:59:26 honda Exp $
  */
 
 #ifndef _USER_CONFIG_H_
@@ -54,7 +54,7 @@
 #define SUPPORT_CHG_IPM
 
 /*
- *  vgxet_timをサポートするかどうかの定義
+ *  vxget_timをサポートするかどうかの定義
  */
 #define SUPPORT_VXGET_TIM
 
@@ -81,11 +81,11 @@
  * TNUM_PORT : シリアルドライバ（serial.c）、つまり GDICレベルでサポートする
  * 　　　　　　シリアルポートの数 
  * TNUM_SIOP : PDICレベル（プロセッサ内蔵SIO）でサポートするシリアルI/Oポート
- *　　　　　　 の数（現在の実装では最大２）
+ *　　　　　　 の数（現在の実装では最大3）
  */
 
-#define TNUM_PORT	2u
-#define	TNUM_SIOP	2u	/*  現在の実装では最大２  */
+#define TNUM_PORT	3u
+#define	TNUM_SIOP	3u	/*  現在の実装では最大3  */
 
 /*
  *  システムタスクに関する定義
@@ -93,15 +93,23 @@
 #define	LOGTASK_PORTID	2	/* システムログを出力するシリアルポート番号 */
 
 /*
+ *  低レベル出力（ポーリング出力）に用いるシリアルポート番号
+ */
+#define	POL_PORTID	3
+
+/*
  *  シリアルコントローラのボーレートの設定 [bps]
  */
 #define BAUD_RATE0	38400	/*  SCI0  */
 #define BAUD_RATE1	38400	/*  SCI1  */
+#define BAUD_RATE2	38400	/*  SCI2  */
 #if 0
 #define BAUD_RATE0	 9600
 #define BAUD_RATE1	 9600
+#define BAUD_RATE2	 9600
 #define BAUD_RATE0	19200
 #define BAUD_RATE1	19200
+#define BAUD_RATE2	19200
 #endif
 
 /*
@@ -121,6 +129,7 @@
  */
 #define SCI0_INT_LVL	3u		/* SCIチャネル0の割り込みレベル */
 #define SCI1_INT_LVL	3u		/* SCIチャネル1の割り込みレベル */
+#define SCI2_INT_LVL	3u		/* SCIチャネル2の割り込みレベル */
 #define TPU0_INT_LVL	5u		/* TPUチャネル0の割り込みレベル */
 
 #endif /* _USER_CONFIG_H_ */

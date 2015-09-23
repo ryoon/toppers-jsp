@@ -36,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_support.S,v 1.2 2004/09/17 13:45:55 honda Exp $
+ *  @(#) $Id: sys_support.S,v 1.3 2006/02/02 00:50:32 honda Exp $
  */
 
 #define _MACRO_ONLY
@@ -224,8 +224,8 @@ return_to_task_irq:
         and     r2, r2, #CPSR_FIQ_BIT
         and     r1, r1, #~CPSR_FIQ_BIT
         orr     r1, r1, r2                 
-        msr     spsr, r1           /* 割り込み許可   */
-        ldmfd   sp!,{r0-r3,ip,lr,pc}^ /*タスク復帰 + 割込み許可 */
+        msr     spsr, r1              /* 戻り先のcpsrをspsrに設定 */
+        ldmfd   sp!,{r0-r3,ip,lr,pc}^ /* タスクに復帰 ^付きなので、cpsr <- spsr */        
 
         /*
          *  未定義の割込みが入ったときに呼び出す

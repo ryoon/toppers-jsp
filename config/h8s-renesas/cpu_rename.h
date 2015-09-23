@@ -18,15 +18,28 @@
  */
 #define activate_r		_kernel_activate_r
 #define no_reg_exception	_kernel_no_reg_exception
-#define current_ccr		_kernel_current_ccr
-#define set_ccr			_kernel_set_ccr
-#define current_exr		_kernel_current_exr
-#define set_exr			_kernel_set_exr
 
 /*
  * start.src
  */
 #define start			_kernel_start
+
+/*
+ * h8s_sci.c
+ */
+#define h8s_sci_initialize	_kernel_h8s_sci_initialize
+#define h8s_sci_openflag	_kernel_h8s_sci_openflag
+#define h8s_sci_opn_por		_kernel_h8s_sci_opn_por
+#define h8s_sci_cls_por		_kernel_h8s_sci_cls_por
+#define h8s_sci_snd_chr		_kernel_h8s_sci_snd_chr
+#define h8s_sci_rcv_chr		_kernel_h8s_sci_rcv_chr
+#define h8s_sci_ena_cbr		_kernel_h8s_sci_ena_cbr
+#define h8s_sci_dis_cbr		_kernel_h8s_sci_dis_cbr
+#define h8s_sci_ierdy_snd	_kernel_h8s_sci_ierdy_snd
+#define h8s_sci_ierdy_rcv	_kernel_h8s_sci_ierdy_rcv
+#define h8s_sci_init		_kernel_h8s_sci_init
+#define h8s_sci_putchar_pol	_kernel_h8s_sci_putchar_pol
+
 
 #ifdef LABEL_ASM
 
@@ -45,15 +58,28 @@
  */
 #define _activate_r		__kernel_activate_r
 #define _no_reg_exception	__kernel_no_reg_exception
-#define _current_ccr		__kernel_current_ccr
-#define _set_ccr		__kernel_set_ccr
-#define _current_exr		__kernel_current_exr
-#define _set_exr		__kernel_set_exr
 
 /*
  * start.src
  */
 #define _start			__kernel_start
+
+/*
+ * h8s_sci.c
+ */
+#define _h8s_sci_initialize	__kernel_h8s_sci_initialize
+#define _h8s_sci_openflag	__kernel_h8s_sci_openflag
+#define _h8s_sci_opn_por	__kernel_h8s_sci_opn_por
+#define _h8s_sci_cls_por	__kernel_h8s_sci_cls_por
+#define _h8s_sci_snd_chr	__kernel_h8s_sci_snd_chr
+#define _h8s_sci_rcv_chr	__kernel_h8s_sci_rcv_chr
+#define _h8s_sci_ena_cbr	__kernel_h8s_sci_ena_cbr
+#define _h8s_sci_dis_cbr	__kernel_h8s_sci_dis_cbr
+#define _h8s_sci_ierdy_snd	__kernel_h8s_sci_ierdy_snd
+#define _h8s_sci_ierdy_rcv	__kernel_h8s_sci_ierdy_rcv
+#define _h8s_sci_init		__kernel_h8s_sci_init
+#define _h8s_sci_putchar_pol	__kernel_h8s_sci_putchar_pol
+
 
 #endif /* LABEL_ASM */
 #endif /* _CPU_RENAME_H_ */

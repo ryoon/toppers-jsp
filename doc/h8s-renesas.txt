@@ -1,7 +1,7 @@
                ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                   （H8Sターゲット依存部 (H8C(HEW)対応版)）
    
-               （Release 1.4.2対応，最終更新: 09-Dec-2005）
+               （Release 1.4.3対応，最終更新: 08-Mar-2007）
    
    ------------------------------------------------------------------------ 
     TOPPERS/JSP Kernel
@@ -11,7 +11,7 @@
    
     Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
                                 Toyohashi Univ. of Technology, JAPAN
-    Copyright (C) 2001-2005 by Industrial Technology Institute,
+    Copyright (C) 2001-2007 by Industrial Technology Institute,
                                 Miyagi Prefectural Government, JAPAN
     Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
                      Tomakomai National College of Technology, JAPAN
@@ -44,7 +44,7 @@
     含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
     接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
    
-    @(#) $Id: h8s-renesas.txt,v 1.1 2005/12/12 09:00:02 honda Exp $
+    @(#) $Id: h8s-renesas.txt,v 1.2 2007/03/23 07:27:55 honda Exp $
 
    ------------------------------------------------------------------------
 1.  H8Sターゲット依存部の概要
@@ -78,7 +78,7 @@
 
   H8S/2000シリーズにはSCI0〜SCI1（SCI2）の2本（3本）のシリアルポートが
 あり、user_config.hに定義しているTNUM_PORTにより何本使用するか指定でき
-る。現在の実装では2本まで使用できる。（下記の注意を参照） 
+る。現在の実装では3本まで使用できる。（下記の注意を参照） 
 JSP カーネルのログ出力用にはSCI1を使用している。 
 
 注意：
@@ -298,6 +298,7 @@ H8Sプロセッサ自体にCPU例外を扱う機能が備わっていないため、カーネルのH8S
 他機種との互換性のため、CPU例外ハンドラ番号のデータ型 (EXCNO) は 
 unsigned int型に定義されている。
 
+
 2. 4  スタートアップモジュール
 
   H8S依存のスタートアップモジュール (start.src) は次に示す初期化を実行し
@@ -414,8 +415,13 @@ MAX_IPMを7に設定した場合、最高７つの割込みがネストする。そのすべてが上
 
   H8S/2339Fには SCI0〜SCI2 の 3 本のシリアルポートがあり、
 user_config.h に定義している TNUM_PORT により何本使用するか指定できる。
-現在の実装では 2本まで使用できる。 JSP カーネルのログ出力用には SCI1
+現在の実装では 3本まで使用できる。 JSP カーネルのログ出力用には SCI1
 を使用している。
+シリアルのポート番号とデバイス番号の対応は以下の通りである。
+　・ポート1：SCI0
+　・ポート2：SCI1
+　・ポート3：SCI2
+
 
 注意：
 　MiNET-H8S/2339Fでは、SCI0がH-UDIデバッグポートと競合している、SCI0の
@@ -467,10 +473,10 @@ user_config.h に定義している TNUM_PORT により何本使用するか指定できる。
 環境を用いた。
 　本開発に用いたツールのバージョンを以下に示す。 
 
-   ・ルネサステクノロジ製コンパイラ、アセンブラ、最適化リンケージエディタ
+   ・コンパイラ、アセンブラ、最適化リンケージエディタ
    　　型番：R0C40008XSW06R
-   　　バージョン：V.6.1.0
-   ・統合開発環境 HEW4.00.03.001
+   　　バージョン：V.6.1.2
+   ・統合開発環境 HEW4.02.00.022
 
 また、他にも下記のツールが必要になる。
    ・Visual C++6.0またはVisual C++ .NET
@@ -478,7 +484,7 @@ user_config.h に定義している TNUM_PORT により何本使用するか指定できる。
 
    ・Windowsのコマンド・プロンプトで動作するPerl
    　　下記の4.3 (1)の作業で使用する。
-   　　Active Perl v5.8.6
+   　　Active Perl v5.8.8
        　配布元　http://www.ActiveState.com
 
 4. 2  コンフィギュレータのビルド
@@ -506,25 +512,34 @@ jsp/cfgディレクトリ以下のにあるコンフィギュレータをビルドする。
 
 このワークスペースには4つのプロジェクトが登録されている。
 　・offset：TCB構造体内のオフセットを求める。
+　　　　　　カーネルソースコードをAPI毎にコピーする。
 　・libkernel：カーネル・ライブラリのビルドを行う。
-　・configuration：カーネル・コンフィギュレーションを行う。
+　・configuration：カーネル・コンフィギュレーション、ベクタテーブルの
+　　　　　　　　　　自動生成を行う。
 　・sample：サンプル・アプリケーションのビルドを行う。
 
-プロジェクト間の依存関係も設定してあるので、sampleプロジェクトをアク
-ティブ・プロジェクトにして、ビルドを行うと、実行ファイルを生成する。
+プロジェクトの依存関係のため、以下の順番でビルドする。
+　１．libkernelプロジェクトをアクティブプロジェクトに設定する
+　２．libkernelプロジェクトをビルドする
+　３．sampleプロジェクトをアクティブプロジェクトに設定する
+　４．sampleプロジェクトをビルドする
+
+手順1と2は最初の1回のみでよく、アプリケーション部分のみソー
+スコードを変更した場合はリビルドする必要はない。
+configurationプロジェクトとoffsetプロジェクトは依存プロジェ
+クトとして自動的にビルドされる。
+
+sampleプロジェクトのビルドが成功すると、
+　・実行ファイル　sample1.abs
+　・Sレコードファイル　sample1.mot
+が生成されるよう設定してある。
 
 注意：
 　libkernelのビルドより先にoffsetプロジェクトをビルドする必要があるが、
 プロジェクト間の依存関係を設定してもsampleプロジェクトを起点とした場合
-は正しい順序で実行されないので、手動でoffsetプロジェクトを予めビルドし
-ておく。（コンパイルオプションを変更しない場合は、配布パッケージに含ま
-れるoffset.incをそのまま使用してもよい。）
+（依存関係がネストしている場合）は正しい順序で実行されないので、手動で
+libkernelプロジェクトを予めビルドしておく。
 
-
-デフォルトで
-　・実行ファイル　sample1.abs
-　・Sレコードファイル　sample1.mot
-が生成されるよう設定してある。
 
 (3) ターゲット・ボードのダウンロード
 
@@ -537,7 +552,6 @@ jsp/cfgディレクトリ以下のにあるコンフィギュレータをビルドする。
 
    (1)   config/h8s-renesas/
 
-            api.h　　　　　　APIガード通過用定義ファイル
             cpu_config.c     H8Sプロセッサ依存部のC関数
             cpu_config.h     H8Sプロセッサ依存部の構成定義
             cpu_config.inc　 上記のアセンブラ用定義
@@ -599,21 +613,27 @@ jsp/cfgディレクトリ以下のにあるコンフィギュレータをビルドする。
    　　　　ビルドに必要なユーティリティ群
 
           　h8/ 　　　　 gcc版と共通のスクリプト
-            　filter1.pl　　　 Perlスクリプト生成用フィルタ１
+            　grep_def_inh.pl　 Perlスクリプト生成用フィルタ
            
           　h8-renesas/　H8C依存のスクリプト（H8プロセッサと共通）
+            　copy_kernel_source.bat
+            　　　　　　　　　 カーネルのソースコードをAPI毎にコピー
+            　　　　　　　　　 するバッチファイル
+
             　genoffset　　　　TCB構造体内のオフセットを算出する
             　　　　　　　　　 perlスクリプト
 
-          　h8s-renesas/　H8C依存のスクリプト
             　genvector.pl　　 ベクタテーブル生成用スクリプト
-            　filter2.pl　　　 Perlスクリプト生成用フィルタ２
-            
+
+          　h8s-renesas/　H8C依存のスクリプト
+            　gen_intentry.pl　割込み入口処理生成用スクリプト
 
    (4)   tools/H8S-RENESAS/
            HEW4.0用のワークスペース・ディレクトリ
            　(株)ミスポ MiNET-H8S/2339F
 
+            readme.txt
+            　ビルド手順を示したreadmeファイル
             H8S-RENESAS.hws
             　ワークスペース・ファイル
             sample1.cfg
@@ -625,8 +645,13 @@ jsp/cfgディレクトリ以下のにあるコンフィギュレータをビルドする。
             　サンプル・アプリケーションのインクルード・ファイル
 
    (5)   tools/H8S-RENESAS/offset/
-   　　　　TCB構造体内のオフセットを求めるプロジェクト・ディレクトリ
+   　　　　以下の処理を行うプロジェクト・ディレクトリ
+   　　　　　・TCB構造体内のオフセット算出
+   　　　　　・カーネル・ソースコードをAPI毎にコピー
    　　　　
+           call_copy_kernel_source.bat
+           　　copy_kernel_source.batを呼び出すためのバッチファイル
+
            call_genoffset.bat
            　　genoffsetスクリプトを呼び出すためのバッチファイル
 
@@ -636,7 +661,12 @@ jsp/cfgディレクトリ以下のにあるコンフィギュレータをビルドする。
   　　　　 Release/   デバッグ用ビルドディレクトリ
    　　　　　　offset.inc　　TCB構造体内のオフセット定義ファイル
 
-   (6)   tools/H8S-RENESAS/configuration
+   (6)   tools/H8S-RENESAS/libkernel/
+   　　　　カーネル・ライブラリのビルドを行うプロジェクト・ディレクトリ
+
+   　　　　kernel_source/　　 中間ファイルを格納するディレクトリ
+
+   (7)   tools/H8S-RENESAS/configuration
    　　　　カーネル・コンフィギュレーションを行うプロジェクト
    　　　　ディレクトリ
    　　　　
@@ -652,9 +682,6 @@ jsp/cfgディレクトリ以下のにあるコンフィギュレータをビルドする。
    　　　　　　kernel_id.h　　　   ID自動割付けの定義ファイル
    　　　　　　relase_kernel_cfg.c コンフィギュレータの出力結果
    　　　　　　release_vector.src  自動生成された割込みベクタテーブル
-
-   (7)   tools/H8S-RENESAS/libkernel/
-   　　　　カーネル・ライブラリのビルドを行うプロジェクト・ディレクトリ
 
    (8)   tools/H8S-RENESAS/sample
    　　　　サンプル・アプリケーションのビルドを行うプロジェクト・ディレクトリ
@@ -685,7 +712,7 @@ chg_ipmをサポートするかどうかの定義
 設定ファイル：user_config.h、user_config.inc
 
 (2) SUPPORT_VXGET_TIM
-vgxet_timをサポートするかどうかの定義
+vxget_timをサポートするかどうかの定義
 この設定を変更した場合は、ファイル分割を再度行う必要がある。
 設定ファイル：user_config.h
 
@@ -705,29 +732,33 @@ vgxet_timをサポートするかどうかの定義
 ・シリアルポート関連の設定項目
 
 (1) TNUM_PORT、TNUM_SIOP
-サポートするシリアルデバイスの数（最大 2）
+サポートするシリアルデバイスの数（最大 3）
   TNUM_PORT : シリアルドライバ（serial.c）、つまり GDICレベルでサポート
   　　　　　　するシリアルポートの数 
   TNUM_SIOP : PDICレベル（プロセッサ内蔵SIO）でサポートするシリアルI/O
- 　　　　　　 ポートの数（現在の実装では最大２）
+ 　　　　　　 ポートの数（現在の実装では最大3）
 
 設定ファイル：user_config.h
 
 以下、ポート2の設定はTNUM_PORTを2に設定した場合のみ有効である。
-
-(2) BAUD_RATE0、BAUD_RATE1
-SCI0, SCI1のボーレート [bps]
+（同様にポート3の設定はTNUM_PORTを3に設定した場合のみ有効である。）
+(2) BAUD_RATE0、BAUD_RATE1、BAUD_RATE2
+SCI0, SCI1, SCI2のボーレート [bps]
 設定ファイル：user_config.h
 
-(3) SCI0_INT_LVL、SCI1_INT_LVL
-SCI0, SCI1の割込みプライオリティ・レベル
+(3) SCI0_INT_LVL、SCI1_INT_LVL、SCI2_INT_LVL
+SCI0, SCI1, SCI2の割込みプライオリティ・レベル
 設定ファイル：user_config.h
 
 (4) LOGTASK_PORTID
 システムログを出力するシリアルポート番号
 設定ファイル：user_config.h
 
-(5) OMIT_SCI0
+(5) POL_PORTID
+低レベル出力（ポーリング出力）に用いるシリアルポート番号
+設定ファイル：user_config.h
+
+(6) OMIT_SCI0
 このマクロが定義されるとシリアルドライバからSCI0が省略される。
 MiNET-H8S/2339F依存部ではデフォルトでこのマクロを定義している。
 設定ファイル：sys_tool_defs.h
@@ -1019,10 +1050,6 @@ _kernel_****_entryはグローバルに公開する必要がなくなったため、ローカ
 ・64ビット整数はサポートしない。
 　（処理系の制限事項）
 
-・サービスコール毎の分割コンパイルとライブラリリンクに対応していない。
-例えば、セマフォに関するサービスコールを１つでも使用すると、semaphore.o
-全体がリンクされる。
-
 ・相対時間について
 　RELTIM型が2バイトのため、（1msec単位で換算すると）相対時間が約65秒に
 制限される。RELTIM型を4バイトにしたい場合はjsp/include/itron.hにある
@@ -1030,6 +1057,15 @@ RELTIM型の定義を変更する。
 
 変更前：typedef	UINT RELTIM;            /* 相対時間 */
 変更後：typedef	UW RELTIM;              /* 相対時間 */
+
+・atexit の処理とデストラクタの実行
+　(tool_config.hのcall_atexit())
+　他機種ではカーネルライブラリのリビルドを行わなくても、
+software_term_hook()の定義があれば、自動的に呼び出されるようになってい
+るなっているが、h8s-renesasではsoftware_term_hook()に相当する関数名を
+マクロSOFTWARE_TERM_HOOKとして定義し、カーネルライブラリをリビルドする
+必要がある。
+　詳しくは「7.1 マクロ定義」の「(3) SOFTWARE_TERM_HOOK」を参照。
 
 
 9. 注意事項
@@ -1045,4 +1081,41 @@ int型が2バイトのため、システムログ機能(syslog, syslog_n)の%d, %u, %x,
 
 '05/12/09 サポート開始
 
+'05/12/28 Release1.4.2
+
+'07/03/xx  Release1.4.3
+　修正
+　・ベクタテーブル自動生成
+　　・perlスクリプトをgcc版と完全に共通化
+　　　　・0ベクタ問題に対応
+　　　　・ベクタサイズの引数チェックを追加
+　　・処理系毎の改行コードの違いに対応
+　　・DEF_INH文の途中で改行があるとパースに失敗する問題を修正
+　　・filter1.plとfilter2.plを１つにまとめ、grep_def_inh.plに改名
+　　　（gcc版とHEW版で個別にfilter2.plを用意する必要がなくなった）
+　　・移植性を考慮して、genvector.plの処理を２つに分割
+　　　　　・genvector.pl：ベクタテーブルの生成（H8版と共通化）
+　　　　　・gen_intentry.pl：割込みの入口処理（INTENTRY）の生成
+　　　 ・これに伴ない、grep_def_inh.plとのインターフェースを変更
+　・ビルド手順
+　　　・カーネル・ライブラリを関数単位にリンクできるようビルド手順を変更
+　　　　これにより、バッチファイルからコンパイラの呼び出しが不要になった。
+　　　・API毎のファイルコピー処理にバッチファイルを使用すると
+　　　　無用なメッセージが大量に表示されるため、perlで処理する
+　　　　よう変更
+　　　・Releaseビルドで最適化オプションが設定されていなかったミスを修正
+　　　　（HEWでプロジェクトの追加、削除を行うとビルドオプションが
+　　　　　ご破算になり、再設定し忘れていた。）
+　・特殊レジスタの操作を処理系純正のライブラリに変更
+　・シリアルドライバ
+　　　・SCI2をサポート（最大TNUM_PORT=3）
+　　　・POL_PORTIDを新設
+　・SILのメモリ空間アクセス関数を機種依存部で定義
+　　　コンパイラの警告を回避するため
+　・DDRレジスタ・アクセス・ルーチン
+　　　・I/Oポートの本数TNUM_IO_PORTの定義場所をh8s23xxf.hに移動
+　　　・TNUM_IO_PORTの値を修正
+　・サンプルプログラム
+　　　・'Z'コマンド
+　　　　　直接kernel_exit()を呼んで、プログラム終了
 

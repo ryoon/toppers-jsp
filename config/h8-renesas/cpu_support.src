@@ -5,7 +5,7 @@
 ;
 ;  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
 ;                              Toyohashi Univ. of Technology, JAPAN
-;  Copyright (C) 2001-2004 by Industrial Technology Institute,
+;  Copyright (C) 2001-2007 by Industrial Technology Institute,
 ;                              Miyagi Prefectural Government, JAPAN
 ;  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
 ;                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
 ;  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 ;  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 ;
-;  @(#) $Id: cpu_support.src,v 1.7 2005/12/07 01:44:56 honda Exp $
+;  @(#) $Id: cpu_support.src,v 1.8 2007/03/23 07:58:33 honda Exp $
 ;
 
 ;       プロセッサ依存モジュール アセンブリ言語部（H8用）
@@ -453,58 +453,6 @@ _no_reg_exception:
                                 ;    SPは+28で、発生時点の値
         jsr     @_cpu_experr    ;  cpu_experr()の呼び出し
 
-;
-;  特殊レジスタの操作関数
-;
-
-;
-;  コンデションコードレジスタ（CCR）の現在値の読出し
-;
-        .GLOBAL _current_ccr
-_current_ccr:
-       stc.b    ccr, r0l
-       rts
-
-;
-;  コンディションコードレジスタ（CCR）の現在値の変更
-;
-        .GLOBAL _set_ccr
-_set_ccr:
-       ldc.b    r0l, ccr
-       rts
-
-;
-;  NMIを除くすべての割込みを禁止
-;
-        .GLOBAL _disint
-_disint:
-       DISINT
-       rts
-
-;
-;  すべての割込みを許可
-;
-        .GLOBAL _enaint
-_enaint:
-       ENAINT
-       rts
-
-
-;
-;  ビットをクリア
-;
-        .GLOBAL _bitclr
-_bitclr:
-        bclr    r1l, @er0
-        rts
-
-;
-;  ビットをセット
-;
-        .GLOBAL _bitset
-_bitset:
-        bset    r1l, @er0
-        rts
 
         .END
 

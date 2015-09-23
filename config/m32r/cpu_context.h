@@ -5,6 +5,9 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2006 by Monami Software Limited Partnership, JAPAN	
+ *  Copyright (C) 2007 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,13 +36,13 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_context.h,v 1.3 2003/06/30 17:22:47 takayuki Exp $
+ *  @(#) $Id: cpu_context.h,v 1.6 2007/05/30 03:56:47 honda Exp $
  */
 
 /*
  *	タスクコンテキスト操作ルーチン
  *
- *  このファイルを cpu_config.h と分離しているのは，このファイルは TCB
+ *  このファイルを cpu_config.h と分離しているのは，このファイルは TCB 
  *  が定義された後に読む必要があるのに対して，cpu_config.h には TCB を
  *  定義する前に読む必要がある定義を含んでいるためである．
  */
@@ -70,7 +73,6 @@ extern void	_kernel_activate_r(void);
 Inline void
 activate_context(TCB *tcb)
 {
-	tcb->tskctxb.psw = DEFAULT_PSW;
 	tcb->tskctxb.pc  = _kernel_activate_r;
 	tcb->tskctxb.sp  = (unsigned long)((char *)tcb->tinib->stk + tcb->tinib->stksz);
 }

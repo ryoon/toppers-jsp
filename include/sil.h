@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005,2006 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sil.h,v 1.8 2005/11/12 15:01:15 hiro Exp $
+ *  @(#) $Id: sil.h,v 1.9 2006/02/12 05:27:25 hiro Exp $
  */
 
 /*
@@ -135,7 +135,10 @@ extern void	sil_dly_nse(UINT dlytim) throw();
 Inline VB
 sil_reb_mem(VP mem)
 {
-	return(*((volatile VB *) mem));
+	VB	data;
+
+	data = *((volatile VB *) mem);
+	return(data);
 }
 
 Inline void
@@ -154,7 +157,10 @@ sil_wrb_mem(VP mem, VB data)
 Inline VH
 sil_reh_mem(VP mem)
 {
-	return(*((volatile VH *) mem));
+	VH	data;
+
+	data = *((volatile VH *) mem);
+	return(data);
 }
 
 Inline void
@@ -225,7 +231,10 @@ sil_wrh_bem(VP mem, VH data)
 Inline VW
 sil_rew_mem(VP mem)
 {
-	return(*((volatile VW *) mem));
+	VW	data;
+
+	data = *((volatile VW *) mem);
+	return(data);
 }
 
 Inline void

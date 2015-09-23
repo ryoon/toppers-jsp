@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2004-2005 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2004-2006 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.22 2005/11/12 15:01:44 hiro Exp $
+ *  @(#) $Id: sample1.c,v 1.23 2007/03/27 08:55:29 hiro Exp $
  */
 
 /* 
@@ -316,7 +316,7 @@ void main_task(VP_INT exinf)
 		case 'A':
 			syslog(LOG_INFO, "#can_act(%d)", tskno);
 			syscall(ercd = can_act(tskid));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "can_act(%d) returns %d",
 						tskno, ercd);
 			}
@@ -340,7 +340,7 @@ void main_task(VP_INT exinf)
 		case 'G':
 			syslog(LOG_INFO, "#get_pri(%d, &tskpri)", tskno);
 			syscall(ercd = get_pri(tskid, &tskpri));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "priority of task %d is %d",
 						tskno, tskpri);
 			}
@@ -352,7 +352,7 @@ void main_task(VP_INT exinf)
 		case 'W':
 			syslog(LOG_INFO, "#can_wup(%d)", tskno);
 			syscall(ercd = can_wup(tskid));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "can_wup(%d) returns %d",
 						tskno, ercd);
 			}

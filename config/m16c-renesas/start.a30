@@ -37,7 +37,7 @@
 ;*  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
 ;*  かなる損害に関しても，その責任を負わない．
 ;* 
-;*  @(#) $Id: start.a30,v 1.3 2005/11/24 12:41:23 honda Exp $
+;*  @(#) $Id: start.a30,v 1.5 2006/08/03 04:15:57 honda Exp $
 
 PRCR  .EQU		000AH			; プロテクトレジスタ
 PRC0  .BTEQU	0,PRCR			; システムクロックレジスタビット
@@ -48,12 +48,21 @@ PM1   .EQU		0005H			; プロセッサモードレジスタ１
 ;
 CM0   .EQU		0006H			; クロックモードレジスタ０
 CM1   .EQU		0007H			; クロックモードレジスタ１
-C_CM0 .EQU		00001000B		; CM0(Xcin-HIGH)
+C_CM0 .EQU		00001000B		; CM0(Xcin-HIGH) 
 C_CM1 .EQU		00100000B		; CM1(Xin-HIGH)
+
+.IF   M3029
+CM2   .EQU		000CH			; クロックモードレジスタ２
+C_CM2 .EQU		00000000B		; CM2
+.ENDIF
 
 ;/*	定数定義（初期化）*/
 ;
-VECTOR_ADR 	.EQU	0FFE00h					; ベクタアドレス
+.IF   M3029
+VECTOR_ADR 	.EQU	0FA000h		; ベクタアドレス
+.ELSE
+VECTOR_ADR 	.EQU	0FFE00h		; ベクタアドレス
+.ENDIF
 
 	.include	m16cvec.inc
 
@@ -82,12 +91,16 @@ _hardware_start:
 	bclr		PRC1			; プロセッサモードレジスタ書き込みディゼーブル
 ; ----- set System clock -----
 	bset		PRC0			; クロックコントロールレジスタ書き込みイネーブル
-	mov.b		#C_CM0,CM0		; 発信
+.IF   M3029
+	mov.b		#C_CM2,CM2		; システムクロックをメインクロックに
+.ENDIF
+	mov.b		#C_CM0,CM0		; メインクロック発信
 	mov.b		#C_CM1,CM1		; 分周なし
 	bclr		PRC0			; レジスタ書き込みディゼーブル
 ;
-	ldc			#0000h,FLG		; bank#0,割り込み禁止,ISP
+	ldc			#0000h,FLG		; bank#0,割り込み許可,ISP
 	ldintb		#VECTOR_ADR		; ベクタテーブルの設定
+
 ;------ DATA領域の初期化 ------
 	mov.w		#(topof bss_NE),R3
 	mov.w		#(topof data_NE),A1

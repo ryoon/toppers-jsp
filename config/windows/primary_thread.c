@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: primary_thread.c,v 1.9 2003/12/15 07:19:22 takayuki Exp $
+ *  @(#) $Id: primary_thread.c,v 1.10 2007/04/19 07:44:46 honda Exp $
  */
 
 #include <vwindows.h>
@@ -192,7 +192,7 @@ static void task_dispatcher(int is_taskschedule_required)
 		/* タスク切替 */
 
         //ディスパッチする必要がある
-    if(is_taskschedule_required != 0 && runtsk != schedtsk)
+    if(is_taskschedule_required != 0 && enadsp && runtsk != schedtsk)
         runtsk = schedtsk;
 
         //切換先タスクが存在するなら、そのタスクを起動する

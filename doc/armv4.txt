@@ -2,14 +2,14 @@
             ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                 （ARMv4 ターゲット依存部）
 
-          （Release 1.4.2対応，最終更新: 11-Jul-2005）
+          （Release 1.4.3対応，最終更新: 10-May-2007）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000-2007 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -39,7 +39,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: armv4.txt,v 1.10 2005/07/11 02:50:33 honda Exp $
+ @(#) $Id: armv4.txt,v 1.11 2007/05/11 06:07:54 honda Exp $
 ------------------------------------------------------------------------
 
 
@@ -52,7 +52,8 @@ ARMV4 プロセッサのターゲットシステムとしては，ARMv4アーキテクチャのCPU
 コアを搭載した以下のボードをサポートしている．なお，Thumb命令はサポー
 トしていない．
 
-  ・ARM製の Integrator/CM922T-ETM(ARM9TDMI) + Integrator/AP
+  ・ARM製の Integrator/CM922T-ETM(ARM922T) + Integrator/AP
+  ・YDK製の AZ9360MB(ARM926EJ-S)
 
 開発環境には，GCC などの GNU開発環境を用い，オブジェクトファイルフォー
 マットは ELF を標準とする．

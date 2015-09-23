@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2006 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cyclic.c,v 1.10 2003/06/04 01:46:16 hiro Exp $
+ *  @(#) $Id: cyclic.c,v 1.11 2006/02/12 05:29:32 hiro Exp $
  */
 
 /*
@@ -90,7 +92,8 @@ cyclic_initialize()
 		cyccb->cycinib = &(cycinib_table[i]);
 		if ((cyccb->cycinib->cycatr & TA_STA) != 0) {
 			cyccb->cycsta = TRUE;
-			tmevtb_enqueue_cyc(cyccb, cyccb->cycinib->cycphs);
+			tmevtb_enqueue_cyc(cyccb,
+					(EVTTIM)(cyccb->cycinib->cycphs));
 		}
 		else {
 			cyccb->cycsta = FALSE;
@@ -202,7 +205,7 @@ call_cychdr(CYCCB *cyccb)
 	 */
 	i_unlock_cpu();
 	LOG_CYC_ENTER(cyccb);
-	((CYCHDR)(*cyccb->cycinib->cychdr))(cyccb->cycinib->exinf);
+	(*((CYCHDR)(cyccb->cycinib->cychdr)))(cyccb->cycinib->exinf);
 	LOG_CYC_LEAVE(cyccb);
 	i_lock_cpu();
 }

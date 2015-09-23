@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_serial.h,v 1.2 2005/12/12 09:08:16 honda Exp $
+ *  @(#) $Id: hw_serial.h,v 1.5 2007/05/21 01:28:28 honda Exp $
  */
 
 /*
@@ -102,10 +102,6 @@ extern SIOPCB siopcb_table[TNUM_PORT];
 #define SRIC(x)  (SRIC0 + ((x) * 8))
 #define STIC(x)  (STIC0 + ((x) * 8))
 
-#define FLG_RECEIVED 1
-
-static unsigned int _serial_flag[TNUM_PORT] = { 0 };
-
 /*
  *  シリアルI/Oの割込みハンドラのベクタ番号
  */
@@ -117,6 +113,11 @@ static unsigned int _serial_flag[TNUM_PORT] = { 0 };
  */
 
 #define NUM_PORT	1	/* サポートするシリアルポートの数 */
+
+#define FLG_RECEIVED 1
+#define FLG_TXRBUSY  2
+
+extern unsigned int _serial_flag[TNUM_PORT];
 
 /*
  *  シリアルI/Oポートの初期化
@@ -184,7 +185,7 @@ hw_port_getready(int port_id)
 Inline BOOL
 hw_port_putready(int port_id)
 {
-	return (sil_reb_mem((VP)ASIF(port_id)) & 0x2) != 0 ? FALSE : TRUE;
+	return (sil_reb_mem((VP)ASIF(port_id)) & FLG_TXRBUSY) != 0 ? FALSE : TRUE;
 }
 
 /*
@@ -193,7 +194,7 @@ hw_port_putready(int port_id)
 Inline unsigned char
 hw_port_getchar(int port_id)
 {
-	_serial_flag[port_id] &= FLG_RECEIVED;
+	_serial_flag[port_id] &= ~FLG_RECEIVED;
 	sil_wrb_mem((VP)SRIC(port_id), sil_reb_mem((VP)SRIC(port_id)) & 0x7f);
 	return sil_reb_mem((VP)RXB(port_id));
 }
@@ -205,6 +206,7 @@ Inline void
 hw_port_putchar(int port_id, unsigned char c)
 {
 	sil_wrb_mem((VP)TXB(port_id), c);
+	_serial_flag[port_id] |= FLG_TXRBUSY;
 }
 
 /*
@@ -243,6 +245,7 @@ hw_port_handler_in(int port_id)
 Inline void
 hw_port_handler_out(int port_id)
 {
+	_serial_flag[port_id] &= ~FLG_TXRBUSY;
 	sio_ierdy_snd(siopcb_table[port_id].exinf);
 }
 

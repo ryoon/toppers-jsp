@@ -36,7 +36,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_timer.h,v 1.3 2005/11/24 12:41:23 honda Exp $
+ *  @(#) $Id: hw_timer.h,v 1.5 2007/01/05 02:33:59 honda Exp $
  */
 
 /*
@@ -107,7 +107,7 @@ hw_timer_initialize(void)
 	 */
 	sil_wrh_mem((VP)TADR_SFR_TA0, TIMER_CLOCK-1);/* タイマ値の初期化				*/
 												/* 割り込みレベルの設定				*/
-	sil_wrb_mem((VP)(TADR_SFR_INT_BASE+TADR_SFR_TA0IC_OFFSET), INT_LEVEL_TIMER);
+	set_ic_ilvl((VP)(TADR_SFR_INT_BASE+TADR_SFR_TA0IC_OFFSET), INT_LEVEL_TIMER);
 												/* カウント開始						*/
 	sil_wrb_mem((VP)TADR_SFR_TABSR, TBIT_TABSR_TA0S);
 }

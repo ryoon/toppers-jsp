@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2005 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.h,v 1.16 2005/11/07 01:49:53 honda Exp $
+ *  @(#) $Id: hw_serial.h,v 1.17 2007/03/23 07:22:15 honda Exp $
  */
 
 #ifndef _HW_SERIAL_H_
@@ -63,9 +63,9 @@
 
 typedef struct sio_port_initialization_block {
 	UW	base;		/* SCI のベースアドレス	*/
-	UW	baudrate;	/* ボーレイト		*/	
+	UW	baudrate;	/* ボーレート		*/	
+	IRC	irc;		/* 割込みレベル設定情報 */
 	UB	smr_init;	/* SMR の設定値		*/
-        IRC     irc;            /* 割込みレベル設定情報 */
 } SIOPINIB;
 
 /*
@@ -139,7 +139,7 @@ SCI_putchar(SIOPCB *p, UB c)
  */
 
 Inline void
-SCI_wait_putchar (int base, int c)
+SCI_wait_putchar (int base, char c)
 {
 	UW addr = base + H8SSR;
 

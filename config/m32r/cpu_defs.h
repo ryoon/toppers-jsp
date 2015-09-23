@@ -5,6 +5,9 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2006 by Monami Software Limited Partnership, JAPAN	
+ *  Copyright (C) 2007 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -23,8 +26,7 @@
  *      と．
  *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
  *        作権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
- *        報告すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
  *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.5 2003/12/24 07:35:03 takayuki Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.8 2007/05/30 03:56:47 honda Exp $
  */
 
 /*
@@ -45,11 +47,8 @@
 
 #define M32R
 
-	/* 特に何も無いときにPSWの値 */
-#define DEFAULT_PSW	0x0007c0c0	//ユーザスタック + 割込み許可 + 割込みマスク7
-
-	/* 例外要因番号 */
-#define NUM_EXCEPTION 20
+/* 例外要因番号 */
+#define NUM_EXCEPTION	20
 
 #define EXC_RESET	0
 #define EXC_SBI		1
@@ -72,7 +71,7 @@
 #define EXC_TRAP14	18
 #define EXC_TRAP15	19
 
-	/* 割込み要因番号 */
+/* 割込み要因番号 */
 #define INT_INT0	1
 #define INT_INT1	2
 #define INT_INT2	3
@@ -104,6 +103,12 @@
 typedef unsigned int   INHNO;		/* 割込みハンドラ番号  */
 typedef unsigned char  IPR;			/* 割込み優先度        */
 typedef unsigned int   EXCNO;		/* CPU例外ハンドラ番号 */
+
+/* カーネル起動時のメッセージ */
+#define COPYRIGHT_CPU \
+"Copyright (C) 2006 by Monami Software Limited Partnership, JAPAN\n" \
+"Copyright (C) 2007 by Embedded and Real-Time Systems Laboratory\n" \
+"            Graduate School of Information Science, Nagoya Univ., JAPAN\n"
 
 #endif /* _MACRO_ONLY */
 #endif /* _CPU_DEFS_H_ */

@@ -1,7 +1,7 @@
                ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                             （H8 ターゲット依存部）
    
-               （Release 1.4.2対応，最終更新: 17-Nov-2005）
+               （Release 1.4.3対応，最終更新: 08-Mar-2007）
    
    ------------------------------------------------------------------- 
     TOPPERS/JSP Kernel
@@ -11,7 +11,7 @@
    
     Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
                                 Toyohashi Univ. of Technology, JAPAN
-    Copyright (C) 2001-2005 by Industrial Technology Institute,
+    Copyright (C) 2001-2007 by Industrial Technology Institute,
                                 Miyagi Prefectural Government, JAPAN
     Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
                      Tomakomai National College of Technology, JAPAN
@@ -46,24 +46,31 @@
     含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
     接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
    
-    @(#) $Id: h8.txt,v 1.20 2005/11/24 12:03:40 honda Exp $
+    @(#) $Id: h8.txt,v 1.21 2007/03/23 07:19:27 honda Exp $
 
    ---------------------------------------------------------------------
 
 1.  H8 ターゲット依存部の概要
 
-・Release1.4.1までのバージョンをお使いの方へ
-　Release1.4.2から割込みの扱いが大幅に変更されているため、旧バージョン
-をご使用の方は「2. 2. 2  割込みハンドラの登録」を参照されたい。
+注意点：Release1.4.1までのバージョンをお使いの方へ
+　・処理系について
+　　　秋月電子通商製ボード付属のGNU開発環境はバージョンが古いため、
+　　　サポートしていない。（「4. 1  開発環境の構築」を参照）
+　・割込みの扱いについて
+　　　Release1.4.2から割込みの扱いが大幅に変更されているため、旧バー
+　　　ジョンをご使用の方は「2. 2. 2  割込みハンドラの登録」を参照され
+　　　たい。
 
 1. 1  ターゲットシステムと開発環境
 
-  H8 プロセッサのターゲットシステムは、H8/3048F、H8/3052F、 H8/3069F 
-を搭載した以下のボードである。
+  H8 プロセッサのターゲットシステムは、H8/3052F、 H8/3069Fを搭載した
+以下のボードである。
 
-   ・(株) 秋月電子通商製の AKI-H8/3048F
    ・(株) 秋月電子通商製の AKI-H8/3052F (AKI-H8-USB ボートに装着)
    ・(株) 秋月電子通商製の AKI-H8/3069F
+
+以下のボードは参考実装であり、動作確認は行っていない。
+   ・(株) 秋月電子通商製の AKI-H8/3048F
    ・(有) 品川通信計装サービス製の NKEV-010H8(H8/3069F使用)
 
 なお、何もしないタスク 1 個の最小構成でも、H8/3069F以外では必要なRAM容
@@ -114,7 +121,7 @@ Makefile.config のDBGENV の定義による。
   H8/3048F と H8/3052F には SCI0 と SCI1 の 2 本、H8/3069F には SCI0 
 から SCI2 の 3 本のシリアルポートがあり、sys_config.h に定義している 
 TNUM_PORT により何本使用するか指定できる。
-現在の実装では 2 本まで使用できる。 JSP カーネルのログ出力用には SCI1
+現在の実装では 3本まで使用できる。 JSP カーネルのログ出力用には SCI1
 を使用している。 シリアルポートの設定を以下に示す。 
 
    ・ボーレイト：38400[bps]
@@ -122,6 +129,15 @@ TNUM_PORT により何本使用するか指定できる。
    ・ストップビット：1 ビット
    ・パリティなし
    ・フロー制御：Xon/Xoff
+
+1. 4. 1  ポート番号の割り当てについて
+
+ポートID番号（マクロ名）　　デバイス番号　　　　用途
+　１（SYSTEM_PORTID）　　　　　　SCI1　　　　システムログ出力用
+　２（USER_PORTID）　　　　　　　SCI0　　　　ユーザーアプリケーション
+　３（USER2_PORTID）　　　　　　 SCI2　　　　ユーザーアプリケーション
+
+　ポートIDのカスタマイズについては、「カスタマイズ方法」の節を参照
 
 2.  H8 プロセッサ依存部の機能
 
@@ -885,8 +901,7 @@ CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
            H8依存部ビルド用スクリプト
 
             cat.pl　　　　　 UNIXのcatコマンド相当
-            filter1.pl　　　 Perlスクリプト生成用フィルタ１
-            filter2.pl　　　 Perlスクリプト生成用フィルタ２
+            grep_def_inh.pl　Perlスクリプト生成用フィルタ
             genvector.pl　　 ベクタテーブル生成用スクリプト
 
    (7)   ビルド・ディレクトリ
@@ -918,6 +933,85 @@ CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
     　　・モニタによりアクセスできる状態にある外部RAM
 
 　　設定ファイル：sys_config.h
+
+6.1.1 シリアルドライバのカスタマイズ方法
+
+　基本的にjsp/config/h8/akih8_3069f/sys_config.hにあるマクロ定義を修正
+することで、カスタマイズすることができる。以下に各マクロの意味を示す。
+　
+　・ポート数
+　　　jsp/config/h8/akih8_3069f/sys_config.h 145行目
+　　　マクロTNUM_PORTでポート数を定義する。
+　　　現在の実装では最大３まで使用できる。
+
+　・システムログを出力するシリアルポート番号
+　　　jsp/config/h8/akih8_3069f/sys_config.h 149行目
+　　　マクロLOGTASK_PORTIDでポート数を定義する。
+
+各チャネル毎にjsp/config/h8/akih8_3069f/sys_config.hで定義しているマク
+ロの意味について、以下に述べる。???の部分にはポートの識別子である
+SYSTEM、USER、USER2のいずれかが入る。
+
+　・???_SCI
+　　　シリアルデバイスの制御レジスタ群の先頭アドレス
+
+　・???_SCI_IPR
+　　　割込み制御で用いるIPRAまたはIPRBレジスタのアドレス
+
+　・???_SCI_IP_BIT
+　　　上記IPRレジスタ中でシリアルデバイスが該当するビット
+
+　・???_SCI_SMR
+　　　SMRレジスタの初期値
+　　　デフォルトで以下の設定を行っている。
+　　　	・送受信フォーマット：調歩同期式
+	・キャラクタレングス：8ビット
+	・パリティなし
+	・ストップビットレングス：1
+	・クロックセレクト（分周比）:1
+
+　・???_BAUD_RATE
+　　　ボーレート[bps]
+
+　・???_PORTID
+　　　ポートIDをマクロSYSTEM_PORTID、USER_PORTID、USER2_PORTIDで定義
+　　　する。ポートIDとデバイス番号(sci0〜2)の対応関係を変更する場合、
+　　　このマクロを変更するだけでなく、
+　　　　jsp/config/h8/hw_serial.c
+　　　で定義されているシリアルポート初期化ブロックsiopinib_table[]
+　　　内の初期化データの順番も入れ替える。
+
+　・???_SCI_IPM
+　　　割込みプライオリティレベル（送受信兼用）
+　　　IPM_LEVEL0またはIPM_LEVEL1を設定する。
+
+　・INHNO_SERIAL_IN、INHNO_SERIAL2_IN、INHNO_SERIAL3_IN
+　　　各ポートIDのシリアル受信割込みのベクタ番号
+
+　・INHNO_SERIAL_OUT、INHNO_SERIAL2_OUT、INHNO_SERIAL3_OUT
+　　　各ポートIDのシリアル送信割込みのベクタ番号
+
+　・INHNO_SERIAL_ERR、INHNO_SERIAL2_ERR、INHNO_SERIAL3_ERR
+　　　各ポートIDのシリアルエラー割込みのベクタ番号
+
+　・sio_in_handler_intmask、sio_in2_handler_intmask、
+　　sio_in3_handler_intmask
+　　　各ポートIDのシリアル受信割込みハンドラ実行中に、
+　　　割込みマスクとして設定する値
+　　　IPM_LEVEL1またはIPM_LEVEL2を設定する。
+
+　・sio_out_handler_intmask、sio_out2_handler_intmask、
+　　sio_out3_handler_intmask
+　　　各ポートIDのシリアル送信割込みハンドラ実行中に、
+　　　割込みマスクとして設定する値
+　　　IPM_LEVEL1またはIPM_LEVEL2を設定する。
+
+　・sio_err_handler_intmask、sio_err2_handler_intmask、
+　　sio_err3_handler_intmask
+　　　各ポートIDのシリアルエラー割込みハンドラ実行中に、
+　　　割込みマスクとして設定する値
+　　　IPM_LEVEL1またはIPM_LEVEL2を設定する。
+
 
 6.2 アプリケーション向けに提供される機能
 
@@ -965,7 +1059,7 @@ portで指定されるポート番号のDDRレジスタの値を読み出す。
 　　void sil_wrb_ddr(UINT port, UB data);
 
 【パラメータ】
-	UINT port　　　 ポート番号
+	UINT port　　　ポート番号
 	UB data　　　　書き込む値
 
 【リターンパラメータ】
@@ -984,7 +1078,7 @@ portで指定されるポート番号のDDRレジスタに値dataを書き込む。
 　　void sil_anb_ddr(UINT port, UB data);
 
 【パラメータ】
-	UINT port　　　 ポート番号
+	UINT port　　　ポート番号
 	UB data　　　　AND演算を行う値
 
 【リターンパラメータ】
@@ -1005,7 +1099,7 @@ portで指定されるポート番号のDDRレジスタに対して、値dataとのAND演算を
 
 【パラメータ】
 	UINT port　　　ポート番号
-	UB data　　　　AND演算を行う値
+	UB data　　　　OR演算を行う値
 
 【リターンパラメータ】
 	なし
@@ -1069,9 +1163,14 @@ DDRレジスタのアドレスを以下のマクロ名で定義する。
 
 8. 制限事項
 
-・Makefile
+・ベクタテーブル
 　　make realcleanを実行しても、vector.Sが消去されない。
 　　（Makefileを機種依存にしないための制限事項とする。）
+　　ただし、make dependおよびmakeコマンドでベクタテーブルvector.Sを
+　　強制的に上書きしている。上書きしたくない場合は
+　　jsp/config/h8/Makefile.config 85行目の
+　　　.PHONY: vector.S
+　　をコメントアウトすると、上書きされなくなる。
 
 ・実行すべきタスクがないときの割込み待ちについて
 　　sleepしている間にバス権要求が競合しないようにバス権の外部への解放
@@ -1132,16 +1231,25 @@ DDRレジスタのアドレスを以下のマクロ名で定義する。
 
 9. 1. 2  ターゲットへのダウンロードと実行
            
-           ディレクトリ $(CPU)/$(SYS) にある
+         ディレクトリ $(CPU)/$(SYS) にある
 
             MakefileのDBGENV := REDBOOT
 
          を有効にして make する。
-           以下は、 天野氏提供による設定方法である。
 
-         RedBoot対応　
-         http://sourceforge.jp/projects/ecos-h8/
+         RedBoot
+           http://sourceforge.jp/projects/ecos-h8/
          リリース版を"h8write -3069 -f20 redboot.mot" で焼く。
+         
+         実行方法は
+         　(1) Redbootをローダとして利用する方法
+         　(2) GDBと接続する方法
+         がある。
+
+
+       　(1) Redbootをローダとして利用する方法
+
+           以下は、 天野氏提供による設定方法である。
 
          下記ツールをダウンロードしてインストール(Winユーザー)
          TFTPサーバーforWin32
@@ -1181,6 +1289,127 @@ DDRレジスタのアドレスを以下のマクロ名で定義する。
          sendln go
          ; OK, boot complete.
 
+
+      　(2) GDBと接続する方法
+      　
+      　ここではEthernet経由でGDBを接続する方法を述べる。
+      　
+      　ホストマシンとターゲットボードをシリアルケーブルとEthernetケーブル
+      　で接続する。
+      　（Ethernetケーブル：直結する場合はクロスケーブルを用いる。）
+
+      　ターミナルソフト（シリアル）を起動し、ターゲットの電源を入れる。
+      　しばらく待つと以下のように出力される。
+      　
+      　... waiting for BOOTP information
+      　Ethernet eth0: MAC address xx:xx:xx:xx:xx:xx
+      　Can't get BOOTP info for device!
+      　
+      　RedBoot(tm) bootstrap and debug environment [ROM]
+      　Non-certified release, version UNKNOWN - built 21:28:57, Apr 11 2004
+      　
+      　Platform: Akizuki H8/3068 Network micom (H8/300H)
+      　Copyright (C) 2000, 2001, 2002, Red Hat, Inc.
+      　
+      　RAM: 0x00400000-0x005f4000, [0x00400000-0x005e1000] available
+      　FLASH: 0x00000000 - 0x00080000, 8 blocks of 0x00010000 bytes each.
+      　RedBoot> 
+      　
+      　"RedBoot>"のプロンプトで入力待ちになったら、
+      　　　ip_address -l xxx.xxx.xxx.xxx
+      　と入力し、IPアドレスを設定する。
+      　（xxx.xxx.xxx.xxxの具体的な値は環境に合わせる。）
+      　以下のような応答があれば、成功である。
+
+      　IP: xxx.xxx.xxx.xxx/255.255.255.0, Gateway: 0.0.0.0
+      　Default server: 0.0.0.0
+      　RedBoot>
+      　
+      　（ターミナルソフトではなく、シェルの）コマンドプロンプトにて、
+      　gdbを起動する。
+      　
+      　h8300-hms-gdb jsp　（Cygwinの場合はjsp.exe）
+      　
+      　gdbのプロンプトにて以下のコマンドを実行する。
+      　target remote xxx.xxx.xxx.xxx:9000
+　      　　xxx.xxx.xxx.xxxは上記で設定したIPアドレス
+  　    　　9000はポート番号
+      　load
+      　b xxxx_xxxx
+      　c
+      　
+      　gdbのコマンドについてはgdbのマニュアルを参照
+
+
+9. 1. 3  移植のための参考情報
+
+　デバッガとカーネルが資源の競合を起こさないよう、特に割込みまわりの資
+源には配慮する必要がある。Redboot対応にあたり、以下のデータ構造や関数
+を新設している。他のボードやデバッガ用に移植する際にはこれらを修正する
+必要がある。
+
+(1) マクロ H8IPRA_INI,H8IPRB_INI
+　IPRA、IPRBレジスタの初期値
+　定義を省略した場合はデフォルト値0が使用される。
+　cpu_config.cのcpu_initialize関数にて、すべての割込みプライオリティを
+レベル０にする処理を行っている。デバッガが割込みを使用する場合は、この
+マクロで初期値を定義し、該当する割込みチャネルの割込みプライオリティが
+勝手にレベル０にクリアされないようにする。
+　定義場所：sys_config.h
+
+(2) マクロ VECTOR_TABLE_ADDR
+　Redbootが管理する擬似ベクタテーブルの先頭アドレス
+　定義場所：sys_config.h
+
+(3) データ型 TMP_VECTOR
+　cpu_config.cのvector_table_copy関数にて、カーネルが持つベクタテーブ
+ルをRedbootが管理するコピーしている。この際、上書きしてはまずい個所を
+退避／復元する必要がある。この退避先のデータ構造をTMP_VECTOR型として定
+義する。
+　定義場所：sys_config.h
+
+(4) 関数 load_vector  割込みベクタの退避
+
+【C言語API】
+　　void load_vector(TMP_VECTOR *p);
+
+【パラメータ】
+　　TMP_VECTOR *p　退避先の先頭アドレス
+
+【リターンパラメータ】
+　　なし
+
+【エラーコード】
+　　なし
+
+【機能】
+　　pで指定されるメモリ領域にRedbootが管理するベクタテーブルの一部を
+　　退避する。
+
+【定義場所】
+　　sys_config.c
+
+(5) 関数 save_vector  割込みベクタの復元
+
+【C言語API】
+　　void save_vector(TMP_VECTOR *p);
+
+【パラメータ】
+　　TMP_VECTOR *p　コピー元の先頭アドレス
+
+【リターンパラメータ】
+　　なし
+
+【エラーコード】
+　　なし
+
+【機能】
+　　pで指定されるメモリ領域にあるデータをRedbootが管理するベクタ
+　　テーブルの一部として復元する。
+
+【定義場所】
+　　sys_config.c
+
 9. 2  gccの呼び出し規約について
 
 　下記の参考資料によると、スクラッチレジスタはer0〜er3であると読めるが、
@@ -1191,15 +1420,29 @@ DDRレジスタのアドレスを以下のマクロ名で定義する。
 　　http://gcc.gnu.org/projects/h8300-abi.html
 
 
-9. 3  NKEV-010H8 での GDB STUB を使った実行
+9. 3  シリアル3ch化に伴なう修正内容について
+　jsp/config/h8/hw_serial.cで定義されているシリアルポート初期化ブロッ
+クsiopinib_table[]のサイズを2から3に拡張し、それに伴い、
+　　・jsp/config/h8/hw_serial.cfg
+　　　　割込みハンドラの登録
+　　・jsp/config/h8/akih8_3069f/sys_config.h
+　　　　必要なマクロ定義
+をそれぞれを追加している。
+　また、修正以前はTNUM_PORTマクロの値により、システムログ出力に使用す
+るポート番号が変化するようになっていたが、今回の修正後は、TNUM_PORTマ
+クロの値に依らずシステムログ出力のポート番号が固定されるよう仕様変更し
+た。
 
-9. 3. 1  NKEV-010H8 対応STUB
+
+9. 4  NKEV-010H8 での GDB STUB を使った実行
+
+9. 4. 1  NKEV-010H8 対応STUB
 
 NKEV-010H8 対応 GDB STUB は製品添付の CD-ROM に納められて配布される。
 この GDB STUB は SCI1 を使用する為、syslog出力等はSCI0に行うように
 ターゲット依存部で定義される。
 
-9. 3. 2  NKEV-010H8をターゲットとしてGDBによるリモートデバッグ
+9. 4. 2  NKEV-010H8をターゲットとしてGDBによるリモートデバッグ
 
   1. config/h8/nkev-010h8/Makefile.config で DBGENV := を全て
      コメントアウトする。
@@ -1231,109 +1474,37 @@ NKEV-010H8 対応 GDB STUB は製品添付の CD-ROM に納められて配布される。
   gdbの操作についてはGNUプロジェクトにマニュアルがあるので、そちらを
   参照の事。
 
-9. 3. 3  既知の問題点
+9. 4. 3  既知の問題点
 
   TNUM_PORT = 2 とすると、stub と USER PORTがバッティングして動作しない。
 
 
 変更履歴
-'05/11/22 
-　変更
-　　・NKEV-010H8システム依存部
-　　　　GDB stub対応の個所を一部修正
-　　・AKI-H8/3052F, AKI-H8/3069Fシステム依存部
-　　　　・デフォルトのシリアルch数を1に変更
-　　　　　　コネクタを増設しないと使用できないため
-　　　　・それに伴ない、サンプルプログラムのTASK_PORTIDの定義を
-　　　　　sys_defs.hに移動
-　　・CPU依存部のMakefile.config
-　　　　vector.Sの生成規則にファイルの依存関係を追加
-　　・genvector.pl
-　　　　-sオプション（ベクタテーブルサイズ）を指定しないときに
-　　　　エラーメッセージを表示するよう修正
 
-'05/11/17 
-　変更
-　　・マニュアル修正
-　　　　・開発環境のバージョンを変更
+'01/11/15 Release1.2
+　H8サポート開始
+　　ターゲット：AKI-H8/3048F
 
-'05/11/15 
-　変更
-　　・NKEV-010H8システム依存部
-　　　　・ディレクトリ名を変更
-　　　　　　　nkev_010h8_mon　→　nkev_010h8
-　　　　・GDB stubをサポート
+'02/04/15 Release1.3
+　ターゲットの変更
+　　AKI-H8/3067Fのサポートを追加
 
-'05/11/14 
+'03/12/28 Release1.4
+　ターゲットシステムの変更
+　　・AKI-H8/3052Fのサポートを追加
+　　・AKI-H8/3068Fのサポートを追加
+　　・AKI-H8/3069Fのサポートを追加
+
+'05/12/28 Release1.4.2
+　ターゲットシステムの変更
+　　・NKEV-010H8のサポートを追加
+　　・AKI-H8/3068Fのサポートを中止
+　　・AKI-H8/3069Fのサポートを中止
+
 　新規
-　　・NKEV-010H8をサポート
-　変更
-　　・マニュアル修正
-　　　　・シリアルポートのフロー制御の設定を追記
-　　　
-'05/11/04 
-　変更
-　　・jsp/utils/h8/genvector.pl
-　　　　・vector.Sに書き出すコメント（ベクタ番号）の体裁を修正
-　　　　・割込み番号が16進表記の場合の動作確認（修正なし）
-　　・jsp/utils/h8/filter2.pl
-　　　　・割込み番号にuやulが付いていても、誤動作しないよう修正
-　　・マニュアル修正
-　　　　・スクリプトgenvector.plの仕様を記述
-　　　　・make realclean実行時の制限事項を記述
-
-'05/10/31 
-　変更
-　　・jsp/sample/Makefile.h8を削除
-　　　　vector.Sの生成規則をjsp/config/h8/Makefile.configに移動
-　　・vectorのリネームをsys_rename.defからcpu_rename.defに移動
-　　・cpu_config.c:vector_table_copy()で用いるベクタテーブルサイズを
-　　　定数で持たずにコンパイラオプションで与えるよう変更
-
-'05/10/26 
-　新規
-　　・DEF_INH()の引数から割込みベクタテーブルを自動生成するようにした。
-　　　これにより、ユーザーが手作業で編集する必要がなくなった。
-
-　変更
-　　・h8_3048f.h、h8_3052f.h、h8_3069f.hをボード間で共有できるよう
-　　　$(CPU)ディレクトリに移動
-
-'05/10/25 
-　変更
-　　・関数宣言で、引数のないものは明示的にvoidを記述した。
-　　・実行環境の定義
-　　　　簡易モニタ使用時のDBGENVの値をTNCT_MONITORに変更
-　　　　TNCT:Tomakomai National College of Technology
-　　・AKI-H8/3069F
-　　　　・sil_dly_nse()で用いる定数SIL_DLY_TIM1、SIL_DLY_TIM2を修正
-　　　　・HEAP_TOPマクロの定義を削除
-
-'05/09/02
-　変更
-　　・AKI-H8/3048F,AKI-H8/3052F
-　　　　スタートアップルーチンでのDDRレジスタの設定ミスを修正
-
-'05/08/23 
-　変更
-　　・sil_reb_ddr(), sil_wrb_ddr()
-　　　　assert文の引数チェックの範囲ミスを修正
-
-'05/08/12 
-　変更
-　　・割込みの出入口でer4も退避／復元するように変更
-
-'05/08/05 
-　新規
-　　・AKI-H8/3069Fのリリースモードで内蔵RAMだけで動作するモードを追加
-　　　　・Makefile.configにDBGENV := INMEM_ONLYを新設
-　　　　・リンクスクリプトrelease_inmem.ldを追加
-　変更
-　　・サポートボードの見直し
-　　　　AKI-H8/3067FとAKI-H8/3068Fのサポートを中止
-
-'05/07/28 
-　新規
+　　・ベクタテーブルの自動生成
+　　　　DEF_INH()の引数から割込みベクタテーブルを自動生成するようにし
+　　　　た。これにより、ユーザーが手作業で編集する必要がなくなった。
 　　・割込み優先度のサポート
 　　　　・レベル０とレベル１の割込みをサポート
 　　　　・割込みハンドラの登録方法を変更
@@ -1344,39 +1515,25 @@ NKEV-010H8 対応 GDB STUB は製品添付の CD-ROM に納められて配布される。
 　　　　　廃止
 　　　　・iscpulockedフラグを新設
 　　・IPMの参照と変更機能をサポート　
-
-　修正
-　　・intnestをUW型からUB型に変更
-　　・gccの呼び出し規約に合わせて、レジスタの退避と復元を必要最小限に
-　　　した
-　　・タイマハンドラ、シリアルハンドラの整理
-　　　　・BITSET,BITCLRマクロをインライン・アセンブラ関数に変更
-　　・割込みコントローラの初期化
-　　	・_hardware_init_hookの処理内容を一部、cpu_initialize()に移動
-　　・シンボル・リネーム対象の見直し
-　　・Makefile.configにデバッグオプション-gを追加
-　　・アセンブラルーチン
-　　　　条件分岐命令前の不要なor命令を削除
-
-
-'05/07/20 Release1.4.2β
-　新規
 　　・I/OポートのDDRアクセスルーチンを追加
-　
+　　・AKI-H8/3069Fのリリースモードで内蔵RAMだけで動作するモードを追加
+　　　　・Makefile.configにDBGENV := INMEM_ONLYを新設
+　　　　・リンクスクリプトrelease_inmem.ldを追加
+
 　修正
-　　・ROM化用にMakefile.configの変数DBGENVの値ROMを追加
+　　・実行環境の定義
+　　　　Makefile.config内の変数DBGENVの定義の見直し
+　　　　　DBGENV := ROM　ROM化の場合（新規）
+　　　　　DBGENV := TNCT_MONITOR　簡易モニタ使用時（変更）
+　　　　　　　TNCT:Tomakomai National College of Technology
 　　・微小時間待ち関数sil_dly_nse( )を実装
 　　・_int64_の定義を厳密化
 　　　　これに伴い、SYSUTIM型の定義を変更
 　　・シリアルドライバのSCI_getchar()で読み出した1バイトデータが符号
-　　　拡張されてしまう問題を解消
-　　・vxget_tim()のプロトタイプ宣言にthrow()を追加
-　　・トレースログの設定を一部追加
-　　　　#define	LOG_VSNS_INI_ENTER()
-　　　　#define	LOG_VSNS_INI_LEAVE(state)
-　　・tool_config.hからNEWLIBマクロの定義を削除
-　　・cpu_context.hからACTIVATED_STACK_SIZEマクロの定義を削除
-　　・シンボルcpu_experrのリネーム漏れを修正
+　　　拡張されてしまう問題を修正
+　　・処理系
+　　　　秋月電子通商製ボード付属のGNU開発環境はバージョンが古いため、
+　　　　サポートしていない。（「4. 1  開発環境の構築」を参照）
 　　・cpu_experr( )でレジスタの内容をダンプする際、pcとccrを分離して
 　　　いなかった不具合を修正
 　　・TINET関連のファイルを分離
@@ -1390,9 +1547,69 @@ NKEV-010H8 対応 GDB STUB は製品添付の CD-ROM に納められて配布される。
 　　　・debug_redboot.ldをパッケージに含めた
 　　　・スタックポインタの初期値を修正
 　　　・割込みベクタテーブルへの登録処理を修正
+　　・タイマハンドラ、シリアルハンドラの整理
+　　　　・BITSET,BITCLRマクロをインライン・アセンブラ関数に変更
+　　・割込みコントローラの初期化
+　　	・_hardware_init_hookの処理内容を一部、cpu_initialize()に移動
+　　・アセンブラルーチン
+　　　・条件分岐命令前の不要なor命令を削除
+　　　・gccの呼び出し規約に合わせて、レジスタの退避と復元を必要最小限
+　　　　にした。
+　　　　（gcc 3.x対策のため、割込みの出入口でer4も退避／復元している。）
+　　・h8_3048f.h、h8_3052f.h、h8_3069f.hをボード間で共有できるよう
+　　　$(CPU)ディレクトリに移動
+　　・AKI-H8/3052F, AKI-H8/3069Fシステム依存部
+　　　　・デフォルトのシリアルch数を1に変更
+　　　　　　コネクタを増設しないと使用できないため
+　　　　・それに伴ない、サンプルプログラムのTASK_PORTIDの定義を
+　　　　　sys_defs.hに移動
+　　・Makefile.configにデバッグオプション-gを追加
+　　・関数宣言で、引数のないものは明示的にvoidを記述した。
+　　・vxget_tim()のプロトタイプ宣言にthrow()を追加
+　　・intnestをUW型からUB型に変更
+　　・トレースログの設定を一部追加
+　　　　#define	LOG_VSNS_INI_ENTER()
+　　　　#define	LOG_VSNS_INI_LEAVE(state)
+　　・tool_config.hからNEWLIBマクロの定義を削除
+　　・cpu_context.hからACTIVATED_STACK_SIZEマクロの定義を削除
+　　・シンボル・リネーム対象の見直し
+　　    ・シンボルcpu_experrのリネーム漏れを修正
+　　・AKI-H8/3069F
+　　　　・HEAP_TOPマクロの定義を削除
 　　・マニュアル
 　　　・ボード付属のCD-ROMのgccはサポート外であることを明記
 　　　・Redboot対応が参考実装であることを明記し、付録に移動
 　　　・割込み発生時のスタック消費量を訂正
 　　　・割込みハンドラの登録方法を明記
+　　　・シリアルポートのフロー制御の設定を追記
+　　　・開発環境のバージョンを変更
 
+'07/03/xx  Release1.4.3
+　ターゲットシステムの変更
+　　・NKEV-010H8のサポートを中止
+　　・AKI-H8/3048Fのサポートを中止
+
+　修正
+　・シリアルドライバを3ch化
+　　　AKI-H8/3069Fのみ対応
+　・ベクタテーブル自動生成
+　　・make dependおよびmakeコマンドでベクタテーブルvector.Sを強制的に
+　　　上書きするよう仕様変更
+　　・処理系毎の改行コードの違いに対応
+　　・DEF_INH文の途中で改行があるとパースに失敗する問題を修正
+　　・割込み番号のマクロが未定義の場合、0番と解釈して、リセットベクタを
+　　　上書きしてしまう不具合を修正
+　　・割込み番号にuが付いている場合に正しく処理できない問題を修正
+　　・filter1.plとfilter2.plを１つにまとめ、grep_def_inh.plに改名
+　　　（gcc版とHEW版で個別にfilter2.plを用意する必要がなくなった）
+　・割り込みレベルの設定
+　　　・h8_sil.hのdefine_int_plevel()
+　　　　　cpu_insh.hをインクルードしないで、bitset(),bitclr()を呼び
+　　　　　出していた不具合を修正
+　・software_term_hookの呼び出し
+　　　・tool_config.hのcall_atexit()
+　　　　　software_term_hookへのポインタと0との比較が、コンパイラの
+　　　　　最適化によって削除されてしまわないよう、volatile修飾子を追加
+　・Redboot対応
+　　　・Redbootが使用する割込みベクタを上書きしてしまう問題を修正
+　　　・マニュアルh8.txtの9.1節を追記

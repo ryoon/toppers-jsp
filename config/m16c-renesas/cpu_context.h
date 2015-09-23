@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2003-2004 by Naoki Saito
+ *  Copyright (C) 2003-2004, 2007 by Naoki Saito
  *             Nagoya Municipal Industrial Research Institute, JAPAN
  *  Copyright (C) 2003-2004 by Ryosuke Takeuchi
  *              Platform Development Center RICOH COMPANY,LTD. JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_context.h,v 1.3 2005/11/24 12:41:23 honda Exp $
+ *  @(#) $Id: cpu_context.h,v 1.4 2007/03/23 07:08:04 honda Exp $
  */
 
 
@@ -82,9 +82,12 @@ activate_context(TCB *tcb)
 	VW  return_point = (VW)ext_tsk;
 
 	sp = (VW *)(((VB *) tcb->tinib->stk) + tcb->tinib->stksz);
+
 	*--sp = (VW)(tcb->tinib->exinf);
-	*--((VB*)sp) = (VB)(return_point >> 16);
-	*--((VH*)sp) = (VH)return_point;
+	sp = (VW *)((VB*)sp - 1);
+	*(VB*)sp = (VB)(return_point >> 16);
+	sp = (VW *)((VH*)sp - 1);
+	*(VH*)sp = (VH)return_point;
 	*--sp = (VW)(tcb->tinib->task);
 
 	tcb->tskctxb.pc = activate_r;	/*  cpu_support.a30  */

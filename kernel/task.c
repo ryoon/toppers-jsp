@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005,2006 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task.c,v 1.11 2005/11/12 14:55:55 hiro Exp $
+ *  @(#) $Id: task.c,v 1.12 2006/02/12 05:29:32 hiro Exp $
  */
 
 /*
@@ -139,9 +139,9 @@ task_initialize()
 Inline UINT
 bitmap_search(UINT bitmap)
 {
-	static const char search_table[] = { 0, 1, 0, 2, 0, 1, 0,
-					3, 0, 1, 0, 2, 0, 1, 0 };
-	INT	n = 0;
+	static const unsigned char search_table[] = { 0, 1, 0, 2, 0, 1, 0,
+						3, 0, 1, 0, 2, 0, 1, 0 };
+	UINT	n = 0;
 
 	assert((bitmap & 0xffff) != 0);
 	if ((bitmap & 0x00ff) == 0) {
@@ -376,7 +376,7 @@ call_texrtn()
 		runtsk->texptn = 0;
 		t_unlock_cpu();
 		LOG_TEX_ENTER(texptn);
-		((TEXRTN)(*runtsk->tinib->texrtn))(texptn,
+		(*((TEXRTN)(runtsk->tinib->texrtn)))(texptn,
 						runtsk->tinib->exinf);
 		LOG_TEX_LEAVE(texptn);
 		if (!t_sense_lock()) {

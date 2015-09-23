@@ -1,7 +1,7 @@
             ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                          （M16C ターゲット依存部）
 
-            （Release 1.4対応，最終更新: 18-Jan-2004）
+            （Release 1.4対応，最終更新: 19-Feb-2007）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
@@ -11,7 +11,7 @@
 
  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
- Copyright (C) 2003-2004 by Naoki Saito
+ Copyright (C) 2003-2004,2007 by Naoki Saito
             Nagoya Municipal Industrial Research Institute, JAPAN
  Copyright (C) 2003-2004 by Platform Development Center
                                          RIOCH COMPANY,LTD. JAPAN
@@ -43,7 +43,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: m16c.txt,v 1.5 2005/11/12 14:25:09 honda Exp $
+ @(#) $Id: m16c.txt,v 1.8 2007/03/23 07:08:47 honda Exp $
 ------------------------------------------------------------------------
 
 1.  M16C ターゲット依存部の概要
@@ -65,7 +65,7 @@ CD-ROM中のルネサステクノロジ社製の開発環境をそのまま使用して開発を行う
 もうひとつの開発環境はDOS窓からmakeコマンドを用いて開発を行う環境であ
 る．この環境の対応はOAKS16ボードのみであり，開発環境としてルネサステク
 ノロジ社の正式の開発環境とperlの実行環境が必要となる．
-開発の詳細に関しては，tools/M16C-RENESASデレクトリィ中のREADME.txtを参
+開発の詳細に関しては，tools/M16C-RENESASディレクトリ中のREADME.txtを参
 照のこと．
 
 1.3  サポートする機能の概要
@@ -145,7 +145,9 @@ DEF_EXC で指定する割込みハンドラ番号（excno）は，M16Cでの例外ベクタ
 
   m16c依存のスタートアップモジュール (start.a30) は次に示す初期化を実行
 した後，カーネル (kernel_start) を起動する．ただし， kernel_start から
-戻ってくることは想定していない．
+戻ってくることは想定していない．電源投入直後に起動されるスタートアップ
+モジュールの開始番地は m16cvec.inc のベクタ定義より _hardware_start と
+されているが、配置されるアドレス値についてはリンク時に決定される。
 
 (1) スタックポインタの設定
 
@@ -251,13 +253,13 @@ OAKS16，OAKS16-MINIではUART0とUART1の２つのシリアルポートがボード上に実
      対象：OAKS16ボード，OAKS16-MINIボード
      方式：ルネサステクノロジ社の統合開発環境TMを用いて構築
            カーネル部をライブラリィ化せず構築する
-     その他：コンパイラNC30WA Version5.00 または 4.00
+     その他：コンパイラNC30WA Version5.42 または 4.00 Entry版
 
 (2)  DOS窓からmakeコマンドを用いて開発を行う環境
      対象：OAKS16ボード
      方式：DOS窓からmakeを使って構築
            カーネル部ライブラリィ化して構築する
-     その他：コンパイラNC30WA Version5.00 (正規版)
+     その他：コンパイラNC30WA Version5.42
              GNU make (version 3.77 で動作確認済)
              Perl (動作確認は Active Perl v5.6.1で行った)
 
@@ -368,13 +370,14 @@ Flow controlはOAKS16 MINIではnone，OAKS16ではnoneでもXob/Xoffのどちらかに
 
 GNU make を用いてm16c用のTOPPERS/JSPを構築する方法を示す．この方法で対
 応しているボードは OAKS16である．コンパイラはNC30WAの製品版を前提とし
-ている．OAKS16付属のNC30WA(評価版)に対応させるにはライブラリアン
-lb30.exeを使用しないように Makefile (実際のファイル名はsampleディレク
-トリのMakefile.m16c-oaks16です)を書き換える必要がある．構築方法は以下
-の通り．構築にあたっては，コンフィギュレータ cfg.exe が cfg ディレクト
-リに，4.2.1で示したツール，m16coffset.exe および m16cvec.exe が 
-utils/m16c-renesas ディレクトリに，それぞれ存在していることが前提とな
-る．また，NC30WAはあらかじめインストールしておくこと．
+ている(ルネサステクノロジのウェブサイトから無償評価版を入手可能)．
+OAKS16付属のNC30WA(評価版)に対応させるにはライブラリアンlb30.exeを使用
+しないように Makefile (実際のファイル名はsampleディレクトリの
+Makefile.m16c-oaks16です)を書き換える必要がある．構築方法は以下の通り．
+構築にあたっては，コンフィギュレータ cfg.exe が cfg ディレクトリに，
+4.2.1で示したツール，m16coffset.exe および m16cvec.exe が 
+utils/m16c-renesas ディレクトリに，それぞれ存在していることが前提となる．
+また，NC30WAはあらかじめインストールしておくことが必要である．
 
 4.3.1 開発ツールの入手
 

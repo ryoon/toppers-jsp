@@ -5,7 +5,7 @@
 ;
 ;  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
 ;                              Toyohashi Univ. of Technology, JAPAN
-;  Copyright (C) 2001-2004 by Industrial Technology Institute,
+;  Copyright (C) 2001-2007 by Industrial Technology Institute,
 ;                              Miyagi Prefectural Government, JAPAN
 ;  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
 ;                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
 ;  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 ;  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 ;
-;  @(#) $Id: util.inc,v 1.1 2005/12/12 09:00:13 honda Exp $
+;  @(#) $Id: util.inc,v 1.2 2007/03/23 07:59:26 honda Exp $
 ;
 
  .AIFDEF _UTIL_INC_

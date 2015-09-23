@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.h,v 1.6 2005/11/13 14:05:01 honda Exp $
+ *  @(#) $Id: hw_serial.h,v 1.7 2007/03/23 07:58:33 honda Exp $
  */
 
 #ifndef _HW_SERIAL_H_
@@ -64,8 +64,8 @@
 typedef struct sio_port_initialization_block {
         UB      *base;          /* SCI のベースアドレス */
         UW      baudrate;       /* ボーレイト           */
-        UB      smr_init;       /* SMR の設定値         */
         IRC     irc;            /* 割込みレベル設定情報 */
+        UB      smr_init;       /* SMR の設定値         */
 } SIOPINIB;
 
 /*
@@ -84,8 +84,6 @@ extern SIOPCB siopcb_table[TNUM_PORT];
  *  SIO ID から管理ブロックへの変換
  */
 #define INDEX_SIO(sioid)        ((UINT)(sioid) - 1u)
-
-Inline SIOPCB *get_siopcb(ID sioid);
 
 Inline SIOPCB*
 get_siopcb(ID sioid)
@@ -117,20 +115,6 @@ extern void     SCI_ierdy_rcv(VP_INT exinf);    /* シリアル I/O からの受信通知コ
 /*
  *  SCI レベルの関数
  */
-
-/*
- *  インライン関数のプロトタイプ宣言
- */
-Inline SIOPCB *SCI_opn_por(ID sioid);
-Inline void SCI_putchar(const SIOPCB *p, UB c);
-Inline void SCI_putchar_pol(UB c);
-Inline INT SCI_getchar(const SIOPCB *p);
-Inline BOOL SCI_putready(const SIOPCB *pcb);
-Inline BOOL SCI_getready(const SIOPCB *pcb);
-Inline void SCI_enable_send(const SIOPCB *p);
-Inline void SCI_disable_send(const SIOPCB *p);
-Inline void SCI_enable_recv(const SIOPCB *p);
-Inline void SCI_disable_recv(const SIOPCB *p);
 
 /*
  *  SCI のオープン
@@ -277,11 +261,6 @@ extern void     sio_dis_cbr(SIOPCB *pcb, UINT cbrtn);
 /*
  *  関数シミュレーションマクロ
  */
-
-                        /* SCI からの文字受信                           */
-#define sio_snd_chr(p,c)        SCI_snd_chr(p,c)
-                        /* SCI からの文字受信                           */
-#define sio_rcv_chr(p)          SCI_rcv_chr(p)
                         /* シリアル I/O からの送信可能コールバック      */
 #define sio_ierdy_snd(e)        SCI_ierdy_snd(e)
                         /* シリアル I/O からの受信通知コールバック      */
@@ -307,14 +286,6 @@ extern void sio_err2_handler (void);
 #endif  /* of #ifdef H8_CFG_SCI_ERR_HANDLER */
 
 #endif  /* of #if TNUM_PORT >= 2u */
-
-/*
- *  インライン関数のプロトタイプ宣言
- */
-Inline SIOPCB *sio_opn_por(ID sioid, VP_INT exinf);
-Inline void sio_cls_por(SIOPCB *pcb);
-Inline BOOL sio_snd_chr(const SIOPCB *pcb, INT chr);
-Inline INT sio_rcv_chr(const SIOPCB *pcb);
 
 /*
  *  sio_opn_por -- ポートのオープン
@@ -343,7 +314,7 @@ sio_cls_por(SIOPCB *pcb)
  *  sio_snd_chr -- 文字送信
  */
 Inline BOOL
-sio_snd_chr(const SIOPCB *pcb, INT chr)
+sio_snd_chr(const SIOPCB *pcb, char chr)
 {
         BOOL ret = FALSE;
         if (SCI_putready(pcb) == TRUE) {

@@ -34,7 +34,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serial_mini.c,v 1.3 2005/11/24 12:41:23 honda Exp $
+ *  @(#) $Id: serial_mini.c,v 1.4 2007/01/05 02:33:59 honda Exp $
  */
 
 /*
@@ -91,8 +91,7 @@ SFR_uart_initialize(ID portid)
 				/* 転送速度レジスタの初期化 */
 	sil_wrb_mem((VP)(q->base+TADR_SFR_UBRG_OFFSET), BRG1_DEF);
 				/* 割込みレベルの設定 */
-	sil_wrb_mem((VP)(ip + ((INT)portid-1)*2), RB_LEVEL);
-
+	set_ic_ilvl((VP)(ip + ((INT)portid-1)*2), RB_LEVEL);
 	sil_wrb_mem((VP)(q->base+TADR_SFR_UC1_OFFSET), C1R_DEF);
 	sil_reb_mem((VP)(q->base+TADR_SFR_URB_OFFSET));		/* ダミーデータ受信 */
 	sil_reb_mem((VP)(q->base+TADR_SFR_URB_OFFSET));		/* ダミーデータ受信 */
@@ -167,7 +166,7 @@ serial_cls_por(ID portid)
 		ercd = E_OBJ;
 	}
 	else {
-		sil_wrb_mem((VP)(ip + ((INT)portid-1)*2), 0);
+		set_ic_ilvl((VP)(ip + ((INT)portid-1)*2), 0);
 		sil_wrb_mem((VP)(q->base+TADR_SFR_UC1_OFFSET), C1S_DEF);
 		q->openflag = FALSE;
 		ercd = E_OK;

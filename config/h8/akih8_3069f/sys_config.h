@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2005 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -38,7 +38,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h,v 1.15 2005/11/24 12:03:40 honda Exp $
+ *  @(#) $Id: sys_config.h,v 1.16 2007/03/23 07:22:15 honda Exp $
  */
 
 /*
@@ -139,12 +139,11 @@ sys_putc(char c)
 
 /*
  *  サポートするシリアルディバイスの数は最大 3。
- *  ただし、現在は1まで定義している。
  *  
  *  サンプルプログラムを動かす場合は
  *  sys_defs.hにあるTASK_PORTIDの定義にも注意
  */
-#define TNUM_PORT	1
+#define TNUM_PORT	2
 
 #define	CONSOLE_PORTID		SYSTEM_PORTID	/* コンソールに用いるシリアルポート番号     */
 #define	LOGTASK_PORTID		SYSTEM_PORTID	/* システムログを出力するシリアルポート番号 */
@@ -175,17 +174,13 @@ sys_putc(char c)
 
 #define SYSTEM_BAUD_RATE	38400			/* bps	*/
 
-#if TNUM_PORT == 1
-
 #define	SYSTEM_PORTID		1
 
 #define INHNO_SERIAL_IN		IRQ_RXI1
 #define INHNO_SERIAL_OUT	IRQ_TXI1
 #define INHNO_SERIAL_ERR	IRQ_ERI1
 
-
-
-#elif TNUM_PORT == 2	/* of #if TNUM_PORT == 1 */
+#if TNUM_PORT >= 2
 
 #define USER_SCI		H8SCI0
 
@@ -202,28 +197,48 @@ sys_putc(char c)
 
 #define USER_BAUD_RATE		38400			/* bps	*/
 
-#define	USER_PORTID		1
-#define	SYSTEM_PORTID		2
+#define	USER_PORTID		2
 
-#define INHNO_SERIAL_IN		IRQ_RXI0
-#define INHNO_SERIAL_OUT	IRQ_TXI0
-#define INHNO_SERIAL_ERR	IRQ_ERI0
+#define INHNO_SERIAL2_IN		IRQ_RXI0
+#define INHNO_SERIAL2_OUT	IRQ_TXI0
+#define INHNO_SERIAL2_ERR	IRQ_ERI0
 
-#define INHNO_SERIAL2_IN	IRQ_RXI1
-#define INHNO_SERIAL2_OUT	IRQ_TXI1
-#define INHNO_SERIAL2_ERR	IRQ_ERI1
+#endif	/* of #if TNUM_PORT >= 2 */
 
-#else	/* of #if TNUM_PORT == 1 */
 
-#error TNUM_PORT <= 2
+#if TNUM_PORT >= 3
 
-#endif	/* of #if TNUM_PORT == 1 */
+#define USER2_SCI		H8SCI2
+
+#define USER2_SCI_IPR		H8IPRB
+#define USER2_SCI_IP_BIT		H8IPR_SCI2_BIT
+
+#define USER2_SCI_SMR		0
+			/* 送受信フォーマット			*/
+	     		/* 調歩同期式				*/
+	     		/* キャラクタレングス：8ビット		*/
+	     		/* パリティなし				*/
+	     		/* ストップビットレングス：1		*/
+	     		/* クロックセレクト（分周比）:1		*/
+
+#define USER2_BAUD_RATE		38400			/* bps	*/
+
+#define	USER2_PORTID		3
+
+#define INHNO_SERIAL3_IN		IRQ_RXI2
+#define INHNO_SERIAL3_OUT	IRQ_TXI2
+#define INHNO_SERIAL3_ERR	IRQ_ERI2
+
+#endif	/* of #if TNUM_PORT >= 3 */
+
+
 
 /*  プライオリティレベル設定用のデータ  */
 
 /*  割込み要求のレベル設定  */
 #define SYSTEM_SCI_IPM			IPM_LEVEL0
 #define USER_SCI_IPM			IPM_LEVEL0
+#define USER2_SCI_IPM			IPM_LEVEL0
 
 /*  
  * 割込みハンドラ実行中の割込みマスクの値
@@ -231,9 +246,8 @@ sys_putc(char c)
  * 　　自分と同じレベルの割込み要求をブロックするため、
  * 　　上記の割込み要求レベルより１つ高いレベルに設定する。
  */
-#if TNUM_PORT == 1	/*  ポート１：システム・ポート  */
 
-/*  システム・ポート  */
+/*  ポート1：システム・ポート  */
 #if SYSTEM_SCI_IPM == IPM_LEVEL0
 #define sio_in_handler_intmask		IPM_LEVEL1
 #elif SYSTEM_SCI_IPM == IPM_LEVEL1
@@ -241,29 +255,31 @@ sys_putc(char c)
 #endif 	/* SYSTEM_SCI_IPM == IPM_LEVEL0 */
 
 
-#elif TNUM_PORT == 2	/* of #if TNUM_PORT == 1 */
-			/*  ポート１：ユーザー・ポート  */
-			/*  ポート２：システム・ポート  */
-/*  ユーザー・ポート  */
+/*  ポート2：ユーザー・ポート  */
+#if TNUM_PORT >= 2
 #if USER_SCI_IPM == IPM_LEVEL0
-#define sio_in_handler_intmask		IPM_LEVEL1
-#elif USER_SCI_IPM == IPM_LEVEL1
-#define sio_in_handler_intmask		IPM_LEVEL2
-#endif 	/* USER_SCI_IPM == IPM_LEVEL0 */
-
-/*  システム・ポート  */
-#if SYSTEM_SCI_IPM == IPM_LEVEL0
 #define sio_in2_handler_intmask		IPM_LEVEL1
-#elif SYSTEM_SCI_IPM == IPM_LEVEL1
+#elif USER_SCI_IPM == IPM_LEVEL1
 #define sio_in2_handler_intmask		IPM_LEVEL2
-#endif 	/* SYSTEM_SCI_IPM == IPM_LEVEL0 */
+#endif 	/* USER_SCI_IPM == IPM_LEVEL0 */
+#endif	/* of #if TNUM_PORT >= 2 */
 
-#endif	/* of #if TNUM_PORT == 1 */
+/*  ポート3：ユーザー・ポート2  */
+#if TNUM_PORT >= 3
+#if USER2_SCI_IPM == IPM_LEVEL0
+#define sio_in3_handler_intmask		IPM_LEVEL1
+#elif USER2_SCI_IPM == IPM_LEVEL1
+#define sio_in3_handler_intmask		IPM_LEVEL2
+#endif 	/* USER2_SCI_IPM == IPM_LEVEL0 */
+#endif	/* of #if TNUM_PORT >= 3 */
+
 
 #define sio_out_handler_intmask		sio_in_handler_intmask
 #define sio_err_handler_intmask		sio_in_handler_intmask
 #define sio_out2_handler_intmask	sio_in2_handler_intmask
 #define sio_err2_handler_intmask	sio_in2_handler_intmask
+#define sio_out3_handler_intmask	sio_in3_handler_intmask
+#define sio_err3_handler_intmask	sio_in3_handler_intmask
 
 
 /*
@@ -396,5 +412,37 @@ sys_putc(char c)
 #define	H8PBDDR0        H8PBDDR_UCAS			/*  ポートB  */
 
 #endif 	/*  of #ifdef INMEM_ONLY  */
+
+
+#ifdef REDBOOT
+/*
+ *  割込みプライオリティの初期値の定義
+ *　　Redbootの場合、IRQ5を使用する。
+ */
+#define H8IPRA_INI	H8IPR_IRQ5_BIT
+
+/*
+ *  Redbootが使用する割込みベクタの退避と復元
+ */
+
+/* ベクタテーブルの内、trapa命令用に確保しているチャネル数 */
+#define TRAP_VECTOR_SIZE	4
+
+#ifndef _MACRO_ONLY
+/*  退避スペースのデータ型定義  */
+typedef struct {
+	UW trap_vector[TRAP_VECTOR_SIZE];
+	UW irq5;
+} TMP_VECTOR;
+
+/*  割込みベクタの退避  */
+extern void load_vector(TMP_VECTOR *p);
+/*  割込みベクタの復元  */
+extern void save_vector(TMP_VECTOR *p);
+
+#endif	/*  _MACRO_ONLY  */
+
+#endif	/* of #ifdef REDBOOT */
+
 
 #endif /* _SYS_CONFIG_H_ */

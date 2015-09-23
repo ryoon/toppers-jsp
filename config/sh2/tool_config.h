@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.5 2005/07/06 00:45:07 honda Exp $
+ *  @(#) $Id: tool_config.h,v 1.6 2007/01/05 02:02:38 honda Exp $
  */
 
 /*
@@ -78,13 +78,15 @@ Inline void
 call_atexit()
 {
 	extern void	software_term_hook(void);
+	volatile FP	fp = software_term_hook;
 
-	/*  
-	 *　software_term_hook()の有無はライブラリで決まる。
-	 *　カーネル自体はこの記述でどちらの場合にも対応している。
+	/*
+	 *  software_term_hookへのポインタを，一旦volatile FP型のfpに
+	 *  代入してから使うのは，0との比較が最適化で削除されないよう
+	 *  にするためである．
 	 */
-	if (software_term_hook != 0) {
-		software_term_hook();
+	if (fp != 0) {
+		(*fp)();
 	}
 }
 

@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2006 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.7 2005/11/12 14:59:02 hiro Exp $
+ *  @(#) $Id: tool_config.h,v 1.8 2006/05/30 08:24:15 hiro Exp $
  */
 
 /*
@@ -67,9 +69,15 @@ Inline void
 call_atexit()
 {
 	extern void	software_term_hook(void);
+	volatile FP	fp = software_term_hook;
 
-	if (software_term_hook != 0) {
-		software_term_hook();
+	/*
+	 *  software_term_hookへのポインタを，一旦volatile FP型のfpに
+	 *  代入してから使うのは，0との比較が最適化で削除されないよう
+	 *  にするためである．
+	 */
+	if (fp != 0) {
+		(*fp)();
 	}
 }
 

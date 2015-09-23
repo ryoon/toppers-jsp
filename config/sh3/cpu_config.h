@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.25 2005/12/26 07:06:24 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.26 2006/04/10 09:58:15 honda Exp $
  */
 
 
@@ -269,8 +269,8 @@ typedef struct exc_vector_entry {
  *  オフセットにこれら疑似テーブルよりハンドラの実行番地及び
  *  割り込みマスクの値を取得する
  */
-extern FP	int_table[0x50];
-extern VW   int_plevel_table[0x50];
+extern FP	int_table[];
+extern VW   int_plevel_table[];
 
 
 /*

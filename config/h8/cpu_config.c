@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2005 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -38,7 +38,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.17 2005/11/15 10:50:59 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.18 2007/03/23 07:22:15 honda Exp $
  */
 
 #include "jsp_kernel.h"
@@ -97,23 +97,34 @@ const IRC TIMER_IRC = {(UB*)SYSTEM_TIMER_IPR,
 extern void	vector(void);
 
 static void
-vector_table_copy(void)
+copy_vector_table(void)
 {
 	UW n;
 	UW *dst = (UW *)VECTOR_TABLE_ADDR;	/* ベクタテーブルコピー先 */
 	UW *src = (UW *)vector;			/* ベクタテーブルコピー元 */
+	TMP_VECTOR tmp_vector;
 
+	load_vector(&tmp_vector);
 	for (n = 0; n < VECTOR_SIZE; n++) {
 		*dst = JMP_OPECODE | (*src);	/* jmp命令の付加 */
 		++dst;
 		++src;
 	}
+	save_vector(&tmp_vector);
 }
 #endif	/* of #ifdef REDBOOT */
 
 /*
  *  プロセッサ依存の初期化
  */
+
+#ifndef H8IPRA_INI
+#define H8IPRA_INI	0
+#endif  /*  H8IPRA_INI  */
+
+#ifndef H8IPRB_INI
+#define H8IPRB_INI	0
+#endif  /*  H8IPRB_INI  */
 
 void
 cpu_initialize(void)
@@ -124,14 +135,21 @@ cpu_initialize(void)
 	 */
 	bitclr((UB*)H8SYSCR, H8SYSCR_UE_BIT);
 	
-	/* すべての割込みプライオリティをレベル０にする。*/
-	sil_wrb_mem((VP)H8IPRA, 0x0);
-	sil_wrb_mem((VP)H8IPRB, 0x0);
+	/* 
+	 *　すべての割込みプライオリティをレベル０にする
+	 *
+	 *　　・モニタやスタブが割込みを使用する場合
+	 *　　　　H8IPRA_INIとH8IPRB_INIを定義して、設定内容を保持する。
+	 *　　　　IERレジスタはカーネル側で変更していないので、そのままで
+	 *　　　　よい。
+	 */
+	sil_wrb_mem((VP)H8IPRA, H8IPRA_INI);
+	sil_wrb_mem((VP)H8IPRB, H8IPRB_INI);
 	
 	SCI_initialize(SYSTEM_PORTID);
 
 #ifdef REDBOOT
-	vector_table_copy();
+	copy_vector_table();
 #endif	/* of #ifdef REDBOOT */
 }
 
@@ -227,7 +245,7 @@ get_ipm(IPM *p_ipm)
 /*
  * 割込み発生直前のスタックポインタまでのオフセット
  */
-#define OFFSET_SP	32
+#define OFFSET_SP	32u
 
 void cpu_experr(EXCSTACK *sp)
 {
@@ -235,8 +253,8 @@ void cpu_experr(EXCSTACK *sp)
     
     sp2 = (UW)sp + OFFSET_SP;
     tmp = sp->pc;
-    ccr = (tmp >> 24U) & 0xff;	/*  上位1バイト  */
-    pc = tmp & 0x00ffffffU;	/*  下位3バイト  */
+    ccr = (tmp >> 24u) & 0xffu;	/*  上位1バイト  */
+    pc = tmp & 0x00ffffffu;	/*  下位3バイト  */
     
     syslog(LOG_EMERG, "Unexpected interrupt.");
     syslog(LOG_EMERG, "PC  = 0x%08x SP  = 0x%08x CCR  = 0x%02x",
@@ -272,16 +290,22 @@ cpu_putc(char c)
  *       PROVIDE(_memcpy = _local_memcpy);
  *
  *    を追加した。
+ *
+ *    eepmov.w命令を使う方が効率的だが、データ転送中は（長い時間）
+ *    割込み禁止になってしまうので、使用していない。
  */
 
 void *
-local_memcpy (void *out, const void *in, unsigned int n)
+local_memcpy (void *out, const void *in, size_t n)
 {
     char *o = out;
     const char *i = in;
 
-    while (n -- > 0) {
-        *o ++ = *i ++;
+    while (n > 0) {
+        *o = *i;
+        ++o;
+        ++i;
+        --n;
     }
     return out;
 }

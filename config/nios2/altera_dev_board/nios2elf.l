@@ -218,7 +218,7 @@ SECTIONS
 
     .ext_ram :
     {
-        PROVIDE (_alt_partition_ext_ram_start = ABSOLUTE(.));
+        PROVIDE (_alt_partition_ext_ram_start = ABSOLUTE(.));        
         *(.ext_ram)
         . = ALIGN(32 / 8);
         PROVIDE (_alt_partition_ext_ram_end = ABSOLUTE(.));

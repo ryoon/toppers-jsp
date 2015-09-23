@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.23 2004/06/27 13:15:48 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.24 2006/04/10 09:58:15 honda Exp $
  */
 
 /*
@@ -61,8 +61,8 @@ UW	int_intmask;
 /*
  * 割り込みハンドラ/優先度の疑似テーブル
  */
-FP  int_table[0x50];
-VW  int_plevel_table[0x50];
+FP  int_table[(MAX_INTIVT>>5) + 1];
+VW  int_plevel_table[(MAX_INTIVT>>5) + 1];
 
 
 /*
@@ -93,7 +93,7 @@ cpu_initialize()
      * ディフォルトのint_plevel_table[]の割込み優先度はMAX_IPM - 1
      * とする．
      */
-    for(i = 0; i < 0x50; i++){
+    for(i = 0; i < ((MAX_INTIVT>>5) + 1); i++){
         int_table[i] = no_reg_interrupt;
         int_plevel_table[i] = 0x40000000 | (MAX_IPM - 1) << 4;
     }

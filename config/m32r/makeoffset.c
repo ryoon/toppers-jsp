@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2007 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,13 +35,14 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: makeoffset.c,v 1.6 2004/09/06 16:00:28 hiro Exp $
+ *  @(#) $Id: makeoffset.c,v 1.9 2007/05/30 03:56:47 honda Exp $
  */
 
 #include "jsp_kernel.h"
 #include "task.h"
 
-#define	offset_of(structure, field) \
+#undef offsetof
+#define	offsetof(structure, field) \
 			((INT) &(((structure *) 0)->field))
 
 #define OFFSET_DEF(TYPE, FIELD)						\
@@ -62,5 +63,14 @@ makeoffset()
 	OFFSET_DEF(TINIB, exinf);
 	OFFSET_DEF2(TCB, tskctxb.sp, sp);
 	OFFSET_DEF2(TCB, tskctxb.pc, pc);
-	OFFSET_DEF2(TCB, tskctxb.psw, psw);
 }
+
+UW	BIT_REF_4 = 0x12345678;
+UH	BIT_REF_2 = 0x1234;
+UB	BIT_REF_1 = 0x12;
+
+TCB	BIT_BB_TCB_enatex = {
+		{ NULL, NULL }, NULL, 0, 0,
+		FALSE, FALSE, TRUE,
+		0, NULL, { NULL, NULL }
+	};

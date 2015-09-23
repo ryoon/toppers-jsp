@@ -7,7 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -55,12 +55,6 @@
  */
 #include <cpu_rename.h>
 
-/*
- *  未完成
- *  　サービスコール毎の分割コンパイルを省略するための暫定処置
- *　　将来的には個別にライブラリ・リンクできるようにする。
- */
-#include <api.h>
 
 /*
  *  プロセッサ関連の定義

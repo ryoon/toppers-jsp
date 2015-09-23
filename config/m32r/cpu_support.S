@@ -5,6 +5,9 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2006 by Monami Software Limited Partnership, JAPAN	
+ *  Copyright (C) 2007 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.9 2003/12/15 05:50:05 takayuki Exp $
+ *  @(#) $Id: cpu_support.S,v 1.12 2007/05/30 03:56:47 honda Exp $
  */
 
 /*
@@ -49,47 +52,72 @@
 
 #include "offset.h"
 
+#define _trap_handler_0 _kernel__trap_handler_0
+#define _trap_handler_1 _kernel__trap_handler_1
+#define _trap_handler_2 _kernel__trap_handler_2
+#define _trap_handler_3 _kernel__trap_handler_3
+#define _trap_handler_4 _kernel__trap_handler_4
+#define _trap_handler_5 _kernel__trap_handler_5
+#define _trap_handler_6 _kernel__trap_handler_6
+#define _trap_handler_7 _kernel__trap_handler_7
+#define _trap_handler_8 _kernel__trap_handler_8
+#define _trap_handler_9 _kernel__trap_handler_9
+#define _trap_handler_10 _kernel__trap_handler_10
+#define _trap_handler_11 _kernel__trap_handler_11
+#define _trap_handler_12 _kernel__trap_handler_12
+#define _trap_handler_13 _kernel__trap_handler_13
+#define _trap_handler_14 _kernel__trap_handler_14
+#define _trap_handler_15 _kernel__trap_handler_15
 
-/**************************************************************************/
-
-/***************************/
-/* EITベクタエントリの定義 */
-/***************************/
-
-/* .vectorセクションはROM空間の先頭に配置される */
-
+	.extern	_kernel_runtsk
+	.extern	_kernel_schedtsk
+	.extern	_kernel_reqflg
+	.extern _kernel_enaflg
+	.extern	InterruptHandlerEntry
+	.extern	ExceptionHandlerEntry
+	.extern	ext_tsk
+		
+/*
+ *  EITベクタエントリの定義
+ */
 	.section ".vector","ax"
-	.extern   _start
+	.global	  reset
+	.extern   start
 
 	.balign 0x10
-Label _reset				//リセット例外
-	bra		_start
+reset:
+	bra		start
 
 	.balign 0x10
-Label vector_entry_SBI
-	stmdb	"r0,r1,r2,r14"
-	ldi		r1, #(EXC_SBI*4-4)
-	bra		_exception_handler
+vector_entry_SBI:
+    /* 
+	 *  システムブレーク割込み
+	 */
+	bra 	vector_entry_SBI
 
 	.balign 0x10
-Label vector_entry_RIE
-	stmdb	"r0,r1,r2,r14"
+vector_entry_RIE:
+    /* 
+	 *  予約命令例外（Reserved Instruction Exception）
+	 */
+	stmdb	"r0,r1"
 	ldi		r1, #(EXC_RIE*4-4)
 	bra		_exception_handler
 
 	.balign 0x10
-Label vector_entry_AE
-	stmdb	"r0,r1,r2,r14"
+vector_entry_AE:
+    /* 
+	 *  アドレス例外（Address Exception）
+	 */
+	stmdb	"r0,r1"
 	ldi		r1, #(EXC_AE*4-4)
 	bra		_exception_handler
 
-/*
- * トラップベクタエントリ
- *   要因番号を取りたいので、一旦リンクレジスタを退避してサブルーチンコール
- */
-
 	.balign 0x10
-Label vector_entry_trap
+vector_entry_trap:
+    /*
+	 *  トラップベクタエントリ
+	 */
 	bra		_trap_handler_0
 	bra		_trap_handler_1
 	bra		_trap_handler_2
@@ -107,477 +135,409 @@ Label vector_entry_trap
 	bra		_trap_handler_14
 	bra		_trap_handler_15
 
-
-/**************************************************************************
-Q: なぜ一度割込みスタックに積んだ情報をタスクスタックに積みなおすのか
-A: 最悪割込みターンアラウンド時間を低く抑えるため
-
-現在のM32R依存部の割込み出入り口処理の最悪ケース(クリティカルパス)は、タ
-スクコンテキストで割込みがかかり、かつハンドラ内でより上位の優先度を持つ
-タスクが起動された場合である。この場合、現在実行しているタスクの全コンテ
-キスト内容が退避され、新しいタスクのコンテキスト内容を復帰する。このとき、
-カーネル動作の一貫性を保障するために、システムスタックは割り込みがかかる
-前の状態まで戻さなければならない。ここで、コンテキストの内容をシステムス
-タックに積んでいた場合、最悪ケースの際には半数近いレジスタの積み直し(シ
-ステムスタックからタスクスタックへの積み直し)が発生し、RAMアクセスの速度
-に比例したオーバヘッドが生ずる。本OSはリアルタイムOSであるため、平均性能
-の向上よりも、最悪実行時間の短縮に主眼を置き、このような実装手法を選択し
-た。
-
-[追記 20020810] なんか内蔵RAMからSDRAMのDMA転送が速いらしいので、これで
-最悪ケースに対処するのも手かなと思う。
-
-
-***************************************************************************/
-
 /*
- * 割込みベクタエントリ と 割込みハンドラ起動/復帰処理部
+ *  割込みベクタエントリと割込みハンドラ起動／復帰処理部
+ *
+ *  割込み発生時のハードウエアの動作
+ *
+ *  pswレジスタ中のsm，ie，pm，cビットをbsm，bie，bpm，bcビットに退避
+ *  する．bpcには割込み発生時のpc値が入る．
+ *
+ *	bsm <- sm
+ *  bie <- ie
+ *  bpm <- pm
+ *  bc <- c
+ *  bpc <- 割込み発生時のpc値
+ *
+ *	pswレジスタ中のsm，ie，pm，cビットを以下のように更新する．
+ *
+ *	sm <- 0
+ *  ie <- 0
+ *  pm <- 0
+ *  c <- 0
+ *
+ *　レジスタの積み方
+ *  r0-r1（作業領域）
+ *  r0-r7，r14，acc(hi/lo)，bpc，psw，ICUISTS，psw（割込みハンドラ呼出前）
+ *  
+ *  二つ目のpsw以外は，割込み発生時のコンテキストに対応したスタックに
+ *  退避する．2つ目のpswは，割込みハンドラの実行直後に復帰するために，
+ *  必ず割込みスタックに退避する．遅延ディスパッチする場合には，上記の
+ *  レジスタ以外にも，r8-r13を退避してディスパッチャを呼び出す．
  */
-
-/*
- * レジスタの積み方
- *   R0,R1,R14,ICUISTS,R2-R7,ACC(HI/LO),BPC,[ICUIMASK|PSW],R8-R13
- */
-
 	.balign 0x10
-	.extern InterruptHandlerEntry
-	.extern _unhandled_interrupt_handler
-Label interrupt_handler
+interrupt_handler:
 
-		/* 作業領域の作成 */
+	/* 
+	 *  作業用レジスタの退避 
+	 *
+	 *  最初に作業用レジスタをスタックに退避する．割込み発生直後は，必
+	 *  ず割込みスタックになるので，ここで退避する作業用レジスタは割込
+	 *  みスタックに積まれる．
+	 */
 	stmdb	"r0,r1"
 
-		/* タスクコンテキストからの割込みかな？ */
+	/* 
+	 *  割込み発生時のコンテキスト判定
+	 *
+	 *  pswのbsmビットから割込み発生時に使用していたスタック情報を取得
+	 *  する．bsmが0の場合は，割込みスタックを使用していたことになるの
+	 *  で，割込みコンテキストで割込みが発生したと判断する．bsmが1の場
+	 *  合は，ユーザスタックを使用していたことになるので，タスクコンテ
+	 *  キストで割込みが発生したと判断する．後者の場合は，作業領域（r0
+	 *  とr1）の積み直しは必要ない．
+	 */
 	mvfc	r0, psw
 	and3	r1, r0, 0x8000
 	beqz	r1, L1
 
-		/* タスクからならタスクスタックへ切替 & R1に割込みスタック位置をコピー */
-	or3		r0, r0, 0x80
-	mv		r1, r15
-	mvtc	r0, psw
+	/* 
+	 *  退避レジスタのユーザスタックへの積み直し  
+	 *
+	 *  タスクコンテキストで割込みが発生した場合は，割込みスタックに退
+	 *  避した作業用レジスタr0とr1をユーザスタックに積み直す必要がある．
+	 */
 
-		/* 割込みスタックに退避したものをタスクスタックにコピー */
-	ld		r0, @(4,r1)
-	st		r0, @-r15
-	ld		r0, @r1
-	st		r0, @-r15
-	addi	r1, 8
-	mvtc	r1, spi
+	or3		r0, r0, 0x80		
+	mvtc	r0, psw				/* ユーザスタックに切替（sp = spu） */
+
+	mvfc	r1, spi
+	ld		r0, @(4, r1)		/* 退避したr0を割込みスタックから取り出す */
+	st		r0, @-sp			/* r0をユーザスタックに積む */
+	ld		r0, @r1				/* 退避したr1を割込みスタックから取り出す */
+	st		r0, @-sp			/* r1をユーザスタックに積む */
+	addi	r1, 8				/* 割込みスタックを作業スタック退避前に戻す */
+	mvtc	r1, spi				/* 割込みスタック位置をspiに保存 */
 	mvfc	r0, psw
 
 L1:
-	stmdb	"r14"
+	/* 
+	 *  コンテキストの退避
+	 * 
+	 *  r2-r7, r14, acch, accl, bpc, psw, 割込みマスク（ICUISTS）,psw
+	 *  の順にスタックに退避する．ここでは，必ずpswがr0に保存されてい
+	 *  る．
+	 */
+	stmdb	"r2,r3,r4,r5,r6,r7,r14"
+	mvfachi	r1
+	st		r1, @-sp			/* acchを退避 */
+	mvfaclo	r1
+	st		r1, @-sp			/* acclを退避 */
+	mvfc	r1, bpc
+	st		r1, @-sp			/* bpcを退避 */
+	st 		r0, @-sp			/* pswを退避 */
 
-	ldidx	r14
-
-		/* 割込み要因番号の取出し */
 	ld24	r1, ICUISTS
-	ld		r0, @r1
-	st		r0, @-r15
+	ld		r0, @r1				/* 割込みマスク読み込み（割込み要求はクリアされる）*/
+	st		r0, @-sp			/* 割込みマスクを退避 */
 
-		/* ハンドラ起動番地取出し */
-	lds		r1, r14, InterruptHandlerEntry
-	srli	r0, 20
-	add		r1, r0
-	addi	r1, -4
-	ld		r1, @r1
-	srli	r0, 2
-
-		/* ハンドラの登録確認 */
-	bnez	r1, L2
-
-		/* ハンドラ未登録の割込み */
-	lds		r1, r14, _unhandled_interrupt_handler
-	beqz	r1, exit_interrupt_handler
+	lea		r1, InterruptHandlerEntry /* 割込みハンドラテーブルの先頭アドレスを取り出す */
+	srli	r0, 22				/* 割込み要因番号を取得 */
+	addi	r0, -1				/* 割込みハンドラテーブルのインデックスを計算 */
+	slli	r0, 2				/* 割込みハンドラテーブルのオフセットを計算 */
+	add		r1, r0				/* 割込みハンドラテーブル中の割込みハンドラのアドレス計算 */
+	ld		r1, @r1				/* 割込みハンドラの起動番地を取り出す */
 
 L2:
-		/* スクラッチ+BPCを退避してハンドラ起動 */
-	stmdb	"r2,r3,r4,r5,r6,r7"
-	mvfachi	r2
-	st		r2, @-r15
-	mvfaclo	r2
-	st		r2, @-r15
-	mvfc	r2, bpc
-	st		r2, @-r15
-
-		/* 割込みスタックモード, 割込み許可, PSW保存 */
-	mvfc	r2, psw
-	or3		r3, r2, 0x40
-	and3	r3, r3, 0xff7f
-	mvtc	r3, psw
-	st		r2, @-r15
-
-		/* ハンドラ起動 */
-	lds		r14, r14, interrupt_handler_r
-	jmp		r1
-
-
 	/*
-	 * 割込みハンドラ 復帰ポイント
+	 *  割込みハンドラの呼出し
+	 *
+	 *  pswを退避し，割込みスタック, 割込み許可にして割込みハンドラを
+	 *  呼び出す．割込みハンドラからの戻り番地をeit_handler_rとする．
+	 *  ここで，再度pswを退避するのは，eit_handler_rの最初で，使用する
+	 *  スタックを戻す必要があるためで，必ず割込みスタックに退避してお
+	 *  く．
 	 */
+	mvfc	r2, psw						
+	and3	r3, r2, 0xff7f				
+	mvtc	r3, psw						/* 割込みスタック */
+	st		r2, @-sp					/* pswを割込みスタックに退避 */
+	lea		r14, eit_handler_r 			/* 戻り番地を設定 */
+	or3		r3, r3, 0x40				
+	mvtc	r3, psw						/* 割込み許可 */
+	jmp		r1							/* ハンドラ起動 */
+
 	.text
 	.align 4
-interrupt_handler_r:
+eit_handler_r:
+	/*
+	 *  EITハンドラからの復帰処理
+	 *
+	 *  EITハンドラの実行が終了すると呼び出される．割込み発生時のコン
+	 *  テキスト，割込み要求の有無，ディスパッチ許可／禁止状態から，適
+	 *  切な復帰処理を行なう．
+	 */
+	ld		r0, @sp+
+	mvtc	r0, psw			/* 割込みスタックからpswを復帰（EIT発生時
+							   のコンテキストに戻る．割込みは禁止状態）
+							    */
 
-		/* 割込み禁止, スタックモード復帰 */
-	ld		r0, @r15+
-	mvtc	r0, psw
+	ld24 	r1, ICUIMASK
+	ld 		r2, @sp+
+	st 		r2, @r1			/* 割込みマスクの復帰 */
 
-		/* 戻り先のチェック (BSMがユーザスタック -> タスクへ)*/
 	and3	r0, r0, 0x8000
-	beqz	r0, recover_int
+	beqz	r0, recover_int	/* EIT発生時のコンテキストが割込みコンテキ
+							   ストであれば，多重割込みであると判断し，
+							   即座に共通復帰処理へ */
 
-		/* タスクコンテキストからの割込み - 復帰ルーチン */
-
-	ldidx	r14
-
-		/* reqflgのチェック */
-	lds		r0, r14, _kernel_reqflg
+	/* 
+	 *  タスクコンテキストへの復帰ルーチン
+	 *
+	 *  ディスパッチ／タスク例外起動要求がない場合は，即座に共通復帰ルー
+	 *  チンに飛ぶ．遅延ディスパッチ処理を行なう．ディスパッチ要求がな
+	 *  ければ共通の復帰処理（recover_int）を行なう．
+	 */
+	lea		r0, _kernel_reqflg
 	ld		r1, @r0
-	beqz	r1, recover_task			/* ハンドラ内でのディスパッチ発生無し */
+	beqz	r1, recover_int		/* 共通復帰ルーチンへ */
 
-		/* reqflg = 0 */
+	/* 
+	 *  ディスパッチ／タスク例外起動要求がある場合の処理
+	 *
+	 *  まず，ディスパッチ要求フラグ（reqflg）をクリアする．そして，ディ
+	 *  スパッチ許可フラグ（enadsp）がFALSEの場合と，runtskとschedtsk 
+	 *  が同じ場合には，ディスパッチせずに，タスク例外起動処理ルーチン
+	 *  へ飛ぶ．ディスパッチが許可されており，runtskとschedtskが異なる
+	 *  場合には，遅延ディスパッチ処理を行う．
+	 */
 	ldi		r1, #0
-	st		r1, @r0
+	st		r1, @r0				/* reqflgをクリア */
 
-		/* タスクディスパッチの発生 */
+	lea 	r0,  _kernel_enadsp
+	ld 		r0, @r0
+	beqz 	r0, recover_task 	/* enaflgのチェック */
+
+	lea		r0, _kernel_runtsk
+	lea		r1, _kernel_schedtsk
+	ld		r0, @r0	
+    ld		r1, @r1
+    beq		r0, r1, recover_task	/* runtskとschedtskが同じ場合はタ
+								       スク例外起動処理へ */
+
+	/*
+	 *  例外／割込み出口での遅延ディスパッチ処理
+	 *
+	 *  退避していない残りのレジスタを退避し，実行状態タスクのpcとspを
+	 *  退避してからディスパッチャを呼び出す．
+	 */
 	stmdb	"r8,r9,r10,r11,r12,r13"
 
-	lds		r0, r14, _kernel_runtsk
+	lea		r0, _kernel_runtsk
 	ld		r0, @r0
 
-	lds		r1, r14, recover_task_r
+	lea		r1, recover_task_r
 	st		r1, @(TCB_pc, r0)
-	ld24	r1, ICUIMASK
-	ld		r2, @r1
-	mvfc	r1, psw
-	or		r1, r2
-	st		r1, @(TCB_psw, r0)
-	st		r15, @(TCB_sp, r0)
+	st		sp, @(TCB_sp, r0)
 	bra		_kernel_exit_and_dispatch
 
+	.align 4
 recover_task_r:
 	ldmia	"r13,r12,r11,r10,r9,r8"
 
-		/* タスク例外起動 */
 recover_task:
+	/* 
+	 *  タスク例外起動処理
+	 *
+	 *  ここで，enatexがTRUEで，texptnが0でなければ，タスク例外処理ルー
+	 *  チンを呼び出す．calltexの処理内容（runtsk->enatexがTRUEで，
+	 *  runtsk->texptnが0でない場合に，call_texrtnを呼ぶ）をここにイン
+	 *  ライン展開した方が効率が良いが，実装の簡易化のためにcalltex を
+	 *  呼び出す．
+	 */
 	bl		_kernel_calltex
 
-		/* 共通復帰処理 */
 recover_int:
-	ld		r0, @r15+
-	mvtc	r0, bpc
-	ld		r0, @r15+
-	mvtaclo	r0
-	ld		r0, @r15+
-	mvtachi	r0
-	ldmia	"r7,r6,r5,r4,r3,r2"
-
-exit_interrupt_handler:
-		/* 割込みマスク復帰 */
-	ld		r0, @r15+
-	srli	r0, 16
-	ld24	r1, ICUIMASK+1
-	stb		r0, @r1
-
-	ldmia	"r14,r1,r0"
-	rte
-
-/**************************************************************************/
+	/* 
+	 *  EIT共通復帰処理（低優先度割込みへの復帰含む）
+	 *
+	 *  退避した順番（r2-r7, r14, acch, accl, bpc, psw）の逆順でスタッ
+	 *  クから取り出して復帰する．また，作業用レジスタ（r0，r1）も復帰
+	 *  する．
+	 */
+	ld 		r0, @sp+
+	mvtc 	r0, psw						/* pswを復帰 */
+	ld		r0, @sp+			
+	mvtc	r0, bpc						/* bpcを復帰 */
+	ld		r0, @sp+	
+	mvtaclo	r0							/* acclを復帰 */
+	ld		r0, @sp+
+	mvtachi	r0							/* acchlを復帰 */
+	ldmia	"r14,r7,r6,r5,r4,r3,r2"		/* その他のレジスタを復帰 */
+	ldmia	"r1,r0"						/* 作業用レジスタの復帰 */
+	rte									/* 割込み処理から復帰 */
 
 	.section ".vector","ax"
-
-/*
- * トラップのエントリ部 : トラップ番号の格納
- */
+	/*
+	 *  トラップのエントリ部 : トラップ番号の格納
+	 */
 	.irp num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 		.align	4
+
 	_kernel__trap_handler_\num:
-		stmdb	"r0,r1,r2,r14"
-		ldi		r1, #((\num + EXC_TRAP00 -1) * 4)
+		stmdb	"r0,r1"
+		ldi		r1, #((\num + EXC_TRAP00 - 1) * 4)
 		bra		_exception_handler
 	.endr
-
+		
 /*
- * 例外/トラップハンドラ
+ *  例外／トラップハンドラ入口処理
+ *
+ *  例外が発生した場合には，スクラッチレジスタを退避して例外要因（r1に
+ *  入っている）に対応する例外ハンドラを呼び出す．例外ハンドラからの復
+ *  帰処理は，割込みハンドラからの復帰処理と共通（eit_handler_r）である．
+ *
+ *  例外発生時のハードウエアの動作
+ *
+ *  pswレジスタ中のsm，ie，pm，cビットをbsm，bie，bpm，bcビットに退避
+ *  する．bpcには例外を起こした命令のpc値が入る．
+ *
+ *	bsm <- sm
+ *  bie <- ie
+ *  bpm <- pm
+ *  bc <- c
+ *  bpc <- 例外を起こした命令のアドレス
+ *
+ *	pswレジスタ中のsm，ie，pm，cビットを以下のように更新する．
+ *
+ *	sm <- 不変
+ *  ie <- 0
+ *  pm <- 0
+ *  c <- 0
+ *
+ *  レジスタの積み方
+ *
+ *  r0-r1（作業領域，ベクタの最初で退避）
+ *  r2-r7，r14，acc(hi/lo)，bpc，psw，ICUIMASK（例外ハンドラ呼出前）
+ *
+ *  ここで，ICUISTSではなくICUIMASKを退避するのは，例外処理中に外部割
+ *  込みが発生した場合に，ICUISTSの読込みにより割込み要因がクリアされ
+ *  てしまうのを防ぐためである．
  */
-
-/*
- * レジスタの積み方
- *   R0-R7,R14,ACC(HI/LO),BPC,[ICUIMASK|PSW],R8-R13
- */
-
-	.extern ExceptionHandlerEntry
 _exception_handler:
 
-	ldidx	r14
+	stmdb 	"r2,r3,r4,r5,r6,r7,r14"
+	mvfachi r0
+	st 		r0, @-sp
+	mvfaclo r0
+	st 		r0, @-sp
+	mvfc 	r0, bpc
+	st 		r0, @-sp
+	mvfc 	r2, psw
+	st 		r2, @-sp
+	ld24 	r0, ICUIMASK
+	ld 		r0, @r0
+	st 		r0, @-sp
 
-		/* ハンドラ読み出し */
-	lds		r0, r14, ExceptionHandlerEntry
+	lea		r0, ExceptionHandlerEntry
 	add		r0, r1
-	ld		r0, @r0
-	bnez	r0, L3
+	ld		r1, @r0				/* 例外ハンドラのアドレスを取得 */
 
-		/* ハンドラ未登録の割込み */
-	lds		r1, r14, _unhandled_interrupt_handler
-	beqz	r1, exit_exception_handler		//ハンドラ未登録なら即終了
-
-		/* ハンドラ起動 & スタック切替 */
-L3:	stmdb	"r3,r4,r5,r6,r7"
-	mvfachi	r1
-	st		r1, @-r15
-	mvfaclo	r1
-	st		r1, @-r15
-	mvfc	r1, bpc
-	st		r1, @-r15
-	mvfc	r2, psw
-	and3	r2, r2, 0xff7f
-	mvtc	r2, psw
-	lds		r14, r14, exception_handler_r
-	jmp		r0
-
-	.text
-	.align 4
-exception_handler_r:
-
-	ldidx	r14
-
-		/* 戻り先はどこ？ (BSM=1->タスク)*/
-	mvfc	r0, psw
-	and3	r1, r0, 0x8000
-	beqz	r1, L5
-
-		/* タスクスタックへ切り替える */
-	or3		r1, r0, 0x80
-	mvtc	r1, psw
-
-		/* CPU例外中にディスパッチがあるか? */
-	lds		r0, r14, _kernel_reqflg
-	ld		r1, @r0
-	beqz	r1, L4
-
-		/* ディスパッチの発生 */
-	stmdb	"r8,r9,r10,r11,r12,r13"
-	ld24	r0, ICUIMASK
-	ld		r0, @r0
-	mvfc	r1, psw
-	srli	r1, 8			//IE,SM,C <= BIE,BSM,BC
-	or		r0, r1
-	lds		r2, r14, _kernel_runtsk
-	ld		r2, @r2
-	st		r0, @(TCB_psw, r2)
-	lds		r3, r14, recover_exception_exc_task_r
-	st		r0, @(TCB_pc, r2)
-	st		r15, @(TCB_sp, r2)
-
-		/* ディスパッチルーチンへ飛ばす */
-	lds		r0, r14, _kernel_exit_and_dispatch
-	mvtc	r0, bpc
-	xor		r0, r0
-	mvtc	r0, psw
-	rte
-
-	.align 4
-recover_exception_exc_task_r:
-	ldmia	"r13,r12,r11,r10,r9,r8"
-
-		/* タスク例外の起動 */
-L4:	bl		_kernel_calltex
-
-		/* スクラッチ復帰 */
-L5:	ld		r0, @r15+
-	mvtc	r0, bpc
-	ld		r0, @r15+
-	mvtachi	r0
-	ld		r0, @r15+
-	mvtaclo	r0
-	ldmia	"r7,r6,r5,r4,r3"
-
-exit_exception_handler:
-	ldmia	"r14,r2,r1,r0"
-	rte
-
-
-
-/**************************************************************************/
-
-/*
- *  タスクディスパッチャ
- *		extern void dispatch(void);
- *		extern void exit_and_dispatch(void);
- */
-
+	mv 		r0, sp				/* スタックの位置を例外ハンドラの引数
+								   に設定 */
+	and3 	r3, r2, 0x7f00
+	srli 	r3, 8
+	mvtc 	r3, psw 			/* 割込みスタック，割込み許可状態に */
+	st 		r2, @-sp			/* 例外発生直後のpswを割込みスタックに退避 */
+	lea 	r14, eit_handler_r 
+	jmp 	r1
+				
 Function _kernel_dispatch
-		/*
-		 * レジスタ退避
-		 */
+	/*
+	 *  タスク切替えのための退避処理
+	 *
+	 *  このルーチンは，タスクコンテキスト，CPUロック状態，ディスパッ
+	 *  チ許可状態で呼び出される．呼出元では保存されないレジスタをスタッ
+	 *  クに退避し，pcとspはTCBに退避する．pcはディスパッチャ出口処理
+	 *  （dispatch_r）に設定する．
+	 */
 	stmdb	"r8,r9,r10,r11,r12,r13,r14"
 
-	ldidx	r14
-
-		/*
-		 * TCBにスタックと再起動番地を保存
-		 */
-	lds		r0, r14, _kernel_runtsk
-	lds		r1, r14, dispatch_r
+	lea 	r0, _kernel_runtsk
+	lea		r1, dispatch_r
 	ld		r0, @r0
-	st		r1, @(TCB_pc, r0)	// runtsk->tskctxb->pc = dispatch_r;
-	st		r15,@(TCB_sp, r0)	// runtsk->tskctxb->sp = r15;
+	st		r1, @(TCB_pc, r0)		/* 復帰する時はdispatch_rに帰ってくる */
+	st		sp, @(TCB_sp, r0)		/* スタックポインタを退避 */
 
-		/*
-		 * PSW[12:15]に割込みマスクビットを突っ込んでTCBに保存
-		 */
-	ld24	r2, ICUIMASK
-	mvfc	r1, psw
-	ld		r3, @r2
-	or		r1, r3
-	st		r1, @(TCB_psw, r0)	//runtsk->tskctxb->psw = PSW|*(ICUIMASK);
-
+Function _kernel_exit_and_dispatch
 	/*
- 	 * 注意 : この場所は.alignを使わずに32ビット境界であることを
-	 *        保障すること。そうでないとexit_and_dispatchへの分岐
-	 *        で直前の16ビット命令が実行されてしまう。
-	 */
-
-Label _kernel_exit_and_dispatch
-
-	ldidx	r14
-
-		/* スタックモード切替 */
+	 *  タスク切替えの前処理
+	 *
+	 *  schedtskが空でないかをチェックする．schedtskが空でない場合は，
+	 *  タスク切替え処理に移る．空の場合は，割込みを許可してループする
+	 *  処理に移る．
+	 */	
 	xor		r0, r0
-	mvtc	r0, psw
-
-		/* runtsk = NULL */
-	lds		r1, r14, _kernel_runtsk
-	ldi		r0, #0
-	st		r0, @r1
+	mvtc	r0, psw						/* 割込み禁止，割込みスタック */
 	
-
-		/* 次に起動すべきタスクを探す */
-	lds		r1, r14, _kernel_schedtsk
+	lea		r1,  _kernel_schedtsk
 L6:	ld		r0, @r1
-	bnez	r0, L7
+	bnez	r0, L7						/* schedtskの有無をチェック */
 
-		/* 起動すべきタスクがないので、割込み許可して待機 */
-	ld24	r2, (ICUIMASK+1)
-	ldi		r3, #7
-	stb		r3, @r2		//IMASK = 全許可
-	ldi		r0, 0x40
-	mvtc	r0, psw		//ei
-
-/*
-	ldi		r0, #1
-	ld24	r2, CLKMOD+3
-	stb		r0, @r2
-	ldb		r0, @r2
-	.rept	8
-		nop
-	.endr
-*/
-
-	xor		r0, r0
-	mvtc	r0, psw		//di
-	bra		L6
-
-L7:	/* R0 = schedtsk, R1 = &schedtsk */
-
-		/* runtsk = schedtsk; */
-	lds		r2, r14, _kernel_runtsk
-	st		r0, @r2
-
-		/* PSWと割込みマスクを復帰 (スタックモードも切替) */
-	ld		r1, @(TCB_psw, r0)
-	and3	r2, r1, 0xffff
-	mvtc	r2, psw
-	srli	r1, 16
-	ld24	r2, ICUIMASK+1
-	stb		r1, @r2
-
-		/* スタックポインタとプログラムカウンタを復帰 */
-	ld		r15, @(TCB_sp, r0)
-	ld		 r0, @(TCB_pc, r0)
-	jmp		 r0
-
-
-	/*
- 	 * 注意 : この場所は.alignを使わずに32ビット境界であることを
-	 *        保障すること。
+	/* 
+	 *  起動すべきタスクがない場合の処理
+	 *
+	 *  起動すべきタスクがない場合は，割込みを許可してループする．ルー
+	 *  プの途中で割込みを許可し，実行可能タスクを待つ．
 	 */
+	ldi		r0, 0x40
+	mvtc	r0, psw						/* 割込み許可 */
+	xor		r0, r0
+	mvtc	r0, psw						/* 割込み禁止 */
 
-	/* ディスパッチ復帰部 */
-dispatch_r:
-		/* タスク例外の呼出 */
-	bl	_kernel_calltex
+	lea 	r0, _kernel_reqflg
+	xor 	r2, r2
+	st 		r2, @r0 					/* reqflg = 0 */
+	bl 		L6
 
-	ldmia	"r14,r13,r12,r11,r10,r9,r8"
+L7:
+    /* 
+	 *  タスク切替え処理
+	 *
+	 *  実行中タスク（runtsk）に最高優先順位タスク（schedtsk）を設定し，
+	 *  スタックをユーザスタックに切替える．runtskのTCBのspとpcを復帰
+	 *  する．ここでは，r0 = schedtskである．
+	 */
+	lea		r2, _kernel_runtsk
+	st		r0, @r2 					/* runtsk = schedtsk */
 
+	ldi 	r1, 0x80
+	mvtc 	r1, psw 					/* ユーザスタック，割込み禁止 */
+
+	ld		sp, @(TCB_sp, r0)			/* スタックポインタを復帰 */
+	ld		r0, @(TCB_pc, r0)			/* プログラムカウンタを復帰 */
+	jmp		r0
+
+	.align 4
+Label dispatch_r
+	/* 
+	 *  ディスパッチャの出口処理
+	 * 
+	 *  dispatchで退避したレジスタを復帰し，タスク例外処理ルーチンを呼
+	 *  び出す．
+	 */
+	bl 		_kernel_calltex 
+    ldmia 	"r14,r13,r12,r11,r10,r9,r8" 
 	rts
 
-/**************************************************************************/
-
-	/*
-	 * タスクの起動開始(タスクスタートアップルーチン)
-	 *		extern void activate_r(void);
-	 */
-
-	.extern _kernel_runtsk
-	.extern ext_tsk
 Function _kernel_activate_r
-
-	ldidx	r14
-
-		/* タスク起動準備 */
-	lds		r2, r14, _kernel_runtsk
+	/*
+	 *  タスクの起動ルーチン
+	 *
+	 *  runtskのタスク初期化ブロックからタスク関数と拡張情報を取り出し
+	 *  て，拡張情報を引数レジスタ（r0）に設定する．ext_tskを呼び出さ
+	 *  ずにタスクが終了する場合があるため，タスク関数の戻り番地を
+	 *  ext_tskに設定する．起動準備が全て完了してから，割込みを許可し
+	 *  てタスク関数に飛ぶ．
+	 */
+	lea		r2, _kernel_runtsk
 	ld		r2, @r2
-	ld		r2, @(TCB_tinib, r2)	// r2 = runtsk->tinib
+	ld		r2, @(TCB_tinib, r2)		/* r2 = runtsk->tinib */
 	ld		r0, @(TINIB_exinf, r2)
 	ld		r1, @(TINIB_task,  r2)
 
-		/* タスクから戻ろうとしたらext_tskへ */
-	lds		r14, r14, ext_tsk
+	lea		r14, ext_tsk				/* タスクの戻り番地をext_tskに */
 
-	jmp		r1
-
-/**************************************************************************/
-
-	/*
-	 * 各種 雑多なモジュール
-	 *		extern ER get_ipm(IPM * ipm);
-	 *		extern ER chg_ipm(IPM   ipm);
-	 */
-
-Function get_ipm
-	ld24	r1, ICUIMASK+1
-	ldub	r2, @r1
-	st		r2, @r0
-	xor		r0, r0
-	rts
-
-Function chg_ipm
-	ld24	r1, ICUIMASK+1
-	and3	r0, r0, 0xf
-	st		r0, @r1
-	xor		r0, r0
-	rts
-
-
- /*
-  * 32ビットシンボル値参照用テーブル
-  */
-
-begin_table
-	entry	InterruptHandlerEntry
-	entry	_unhandled_interrupt_handler
-	entry	interrupt_handler_r
-	entry	_kernel_reqflg
-	entry	_kernel_runtsk
-	entry	_kernel_schedtsk
-	entry	recover_task_r
-	entry	ExceptionHandlerEntry
-	entry	exception_handler_r
-	entry	recover_exception_exc_task_r
-	entry	_kernel_exit_and_dispatch
-	entry	dispatch_r
-	entry	ext_tsk
-end_table
+	ldi 	r2, 0xc0
+	mvtc 	r2, psw						/* ユーザスタック，割込み許可 */
+	jmp		r1							/* タスク関数へ */

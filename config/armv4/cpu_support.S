@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.24 2005/07/06 02:10:40 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.27 2007/01/05 01:02:31 honda Exp $
  */
 
 /*
@@ -78,7 +78,7 @@ dispatch_r:
          * dispatch_r は dispatcher_1 から呼び出されるため，
          * tcbのアドレスはr1に入っている
          */
-        ldr   r0,[r1,#TCB_enatex]
+        ldrb  r0,[r1,#TCB_enatex]
         tst   r0,#TCB_enatex_mask
         beq   dispatch_r_1          /* enatex が FALSE ならリターン */
         ldr   r0,[r1,#TCB_texptn]   /* texptnをロード               */
@@ -188,7 +188,7 @@ ret_int_1:
          * tcbのアドレスはr1に入っている
          * ret_int_1 は ret_exe から呼び出される
          */
-        ldr   r0, [r1,#TCB_enatex]
+        ldrb  r0, [r1,#TCB_enatex]
         tst   r0, #TCB_enatex_mask
         beq   ret_int_2              /* enatex が FALSE ならリターン */
         ldr   r0, [r1,#TCB_texptn]   /* texptnをロード               */
@@ -199,9 +199,9 @@ ret_int_2:
         mrs   r2, cpsr        /* FIQを継承            */
         and   r2, r2, #CPSR_FIQ_BIT
         and   r0, r0, #~CPSR_FIQ_BIT
-        orr   r0, r0, r2                    
-        msr   cpsr, r0      
-        ldmfd sp!, {r0 - r3,ip,lr,pc} /* タスクへ戻る */
+        orr   r0, r0, r2              
+        msr     spsr, r0              /* 戻り先のcpsrをspsrに設定 */
+        ldmfd   sp!,{r0-r3,ip,lr,pc}^ /* タスクに復帰 ^付きなので、cpsr <- spsr */
         
         /*
          *  微少時間待ち

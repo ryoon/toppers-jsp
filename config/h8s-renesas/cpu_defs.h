@@ -7,7 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -54,7 +54,7 @@
 
 /* カーネル起動時のメッセージ */
 #define COPYRIGHT_CPU \
-"Copyright (C) 2001-2005 by Industrial Technology Institute,\n" \
+"Copyright (C) 2001-2007 by Industrial Technology Institute,\n" \
 "                            Miyagi Prefectural Government, JAPAN\n" \
 "Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering,\n" \
 "                 Tomakomai National College of Technology, JAPAN\n"
@@ -90,16 +90,15 @@ extern ER	ena_int(INTNO intno) throw();
 
 
 /*
+ *　システムインタフェースレイヤ
+ */
+
+/*
  *  割込みロック状態の制御
  */
 #define	SIL_PRE_LOC	IPM _intmask_ = current_intmask()
 #define	SIL_LOC_INT()	_disint_()
 #define	SIL_UNL_INT()	set_intmask(_intmask_)
-
-/*
- *  プロセッサのエンディアン
- */
-#define	SIL_ENDIAN	SIL_ENDIAN_BIG		/* ビッグエンディアン */
 
 /*
  * 微少時間待ち
@@ -111,6 +110,111 @@ extern ER	ena_int(INTNO intno) throw();
  * 　　　sil_dly_nse()のプロトタイプ宣言はjsp/include/sil.hにある。
  */
 extern void sil_dly_nse_long(UW dlytim) throw();
+
+/*
+ *  プロセッサのエンディアン
+ */
+#define	SIL_ENDIAN	SIL_ENDIAN_BIG		/* ビッグエンディアン */
+
+
+/*
+ *  エンディアンの反転
+ */
+#define	SIL_REV_ENDIAN_H(data) \
+	((VH)((((UH)(data) & 0xff) << 8) | (((UH)(data) >> 8) & 0xff)))
+
+#define	SIL_REV_ENDIAN_W(data) \
+	((VW)((((UW)(data) & 0xff) << 24) | (((UW)(data) & 0xff00) << 8) \
+		| (((UW)(data)>> 8) & 0xff00) | (((UW)(data) >> 24) & 0xff)))
+
+/*
+ *  メモリ空間アクセス関数
+ *  
+ *  コンパイラの警告を回避するため、機種依存部でアクセス関数を用意する。
+ *  処理内容はjsp/include/sil.hとまったく同じ。
+ *  定義する順番の都合上、上記の「エンディアンの反転」もダブって定義している。
+ */
+#define OMIT_SIL_ACCESS
+
+/*
+ *  8ビット単位の読出し／書込み
+ */
+Inline VB
+sil_reb_mem(VP mem)
+{
+	VB data = *((volatile VB *) mem);
+	return(data);
+}
+
+Inline void
+sil_wrb_mem(VP mem, VB data)
+{
+	*((volatile VB *) mem) = data;
+}
+
+/*
+ *  16ビット単位の読出し／書込み
+ */
+Inline VH
+sil_reh_mem(VP mem)
+{
+	VH data = *((volatile VH *) mem);
+	return(data);
+}
+
+Inline void
+sil_wrh_mem(VP mem, VH data)
+{
+	*((volatile VH *) mem) = data;
+}
+
+#define	sil_reh_bem(mem)	sil_reh_mem(mem)
+#define	sil_wrh_bem(mem, data)	sil_wrh_mem(mem, data)
+
+Inline VH
+sil_reh_lem(VP mem)
+{
+	VH data = *((volatile VH *) mem);
+	return(SIL_REV_ENDIAN_H(data));
+}
+
+Inline void
+sil_wrh_lem(VP mem, VH data)
+{
+	*((volatile VH *) mem) = SIL_REV_ENDIAN_H(data);
+}
+
+/*
+ *  32ビット単位の読出し／書込み
+ */
+Inline VW
+sil_rew_mem(VP mem)
+{
+	VW data = *((volatile VW *) mem);
+	return(data);
+}
+
+Inline void
+sil_wrw_mem(VP mem, VW data)
+{
+	*((volatile VW *) mem) = data;
+}
+
+#define	sil_rew_bem(mem)	sil_rew_mem(mem)
+#define	sil_wrw_bem(mem, data)	sil_wrw_mem(mem, data)
+
+Inline VW
+sil_rew_lem(VP mem)
+{
+	VW data= *((volatile VW *) mem);
+	return(SIL_REV_ENDIAN_W(data));
+}
+
+Inline void
+sil_wrw_lem(VP mem, VW data)
+{
+	*((volatile VW *) mem) = SIL_REV_ENDIAN_W(data);
+}
 
 /*
  *　I/Oポートのデータ・ディレクション・レジスタDDRへのアクセス

@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_insn.h,v 1.6 2005/11/13 14:05:01 honda Exp $
+ *  @(#) $Id: cpu_insn.h,v 1.7 2007/03/23 07:58:33 honda Exp $
  */
 
 #ifndef _CPU_INSN_H_
@@ -45,37 +45,52 @@
 
 /*
  *      プロセッサの特殊命令の関数定義（H8用）
- *　　　　　H8ではアセンブラで実装している。
  */
+
+#include <machine.h>	/*  処理系の組み込み関数  */
 
 /*
  *  コンデションコードレジスタ（CCR）の現在値の読出し
+ *　　UB current_ccr(void);
+ *　　　→　unsigned char get_ccr(void);
  */
-extern UB current_ccr(void);
+#define current_ccr	get_ccr
 
 /*
  *  コンデションコードレジスタ（CCR）の現在値の変更
+ *　　組み込み関数のset_ccr()をそのまま使う。
+ *　　void set_ccr(unsigned char ccr);
  */
-extern void set_ccr(UB ccr);
 
 /*
  *  NMIを除くすべての割込みを禁止
  */
-extern void disint(void);
+#define disint()	or_ccr(CCR_DISINT_ALL)
 
 /*
  *  すべての割込みを許可
  */
-extern void enaint(void);
+#define enaint()	and_ccr(CCR_ENAINT_ALL)
 
 /*
- * ビットをクリア
+ * ビットセットとビットクリア
  */
-extern void bitclr (UB* addr, UB bit);
+
+/*
+ * ビットパターンとマスクパターン
+ */
+#define H8BIT2PATTERN(bit)	(0x1u << (UINT)(bit))
+#define H8BIT2MASK(bit)		((~H8BIT2PATTERN(bit)) & 0xffu)
 
 /*
  * ビットをセット
  */
-extern void bitset (UB* addr, UB bit);
+#define bitset(p, bit)	((*(volatile UB *)(p)) |= (UB)H8BIT2PATTERN(bit))
+
+/*
+ * ビットをクリア
+ */
+#define bitclr(p, bit)	((*(volatile UB *)(p)) &= (UB)H8BIT2MASK(bit))
+
 
 #endif /* _CPU_INSN_H_ */

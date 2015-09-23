@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_config.h,v 1.7 2005/12/07 01:44:56 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.8 2007/03/23 07:58:33 honda Exp $
  */
 
 /*
@@ -89,43 +89,6 @@ typedef struct task_context_block {
         FP      pc;             /* プログラムカウンタ */
 } CTXB;
 
-
-/*
- *  インライン関数のプロトタイプ宣言
- *  　インライン関数もプロトタイプ宣言がないと警告が出るため
- *  　ここでまとめて宣言している。
- */
-Inline UB current_intmask(void);
-Inline void set_intmask(UB intmask);
-Inline BOOL sense_context(void);
-
-Inline void t_lock_cpu(void);
-Inline void t_unlock_cpu(void);
-Inline void i_lock_cpu(void);
-Inline void i_unlock_cpu(void);
-
-Inline void define_inh(INHNO inhno, FP inthdr);
-Inline void define_exc(EXCNO excno, FP exchdr);
-
-Inline BOOL exc_sense_context(VP p_excinf);
-Inline BOOL exc_sense_lock(VP p_excinf);
-
-Inline void tmevtb_delete_top(void);    /*  time_event.c  */
-
-Inline VB sil_reb_mem(VP mem);          /*  sil.h  */
-Inline void sil_wrb_mem(VP mem, VB data);
-
-Inline VH sil_reh_mem(VP mem);
-Inline void sil_wrh_mem(VP mem, VH data);
-Inline VH sil_reh_lem(VP mem);
-Inline void sil_wrh_lem(VP mem, VH data);
-
-Inline VW sil_rew_mem(VP mem);
-Inline void sil_wrw_mem(VP mem, VW data);
-Inline VW sil_rew_lem(VP mem);
-Inline void sil_wrw_lem(VP mem, VW data);
-
-
 /*
  *  割込みマスク操作ライブラリ
  */
@@ -136,7 +99,10 @@ Inline void sil_wrw_lem(VP mem, VW data);
 Inline UB
 current_intmask(void)
 {
-        return(current_ccr() & CCR_DISINT_ALL);
+        UB ccr = current_ccr();
+        
+        ccr &= (UB)CCR_DISINT_ALL;
+        return(ccr);
 }
 
 /*
@@ -147,7 +113,14 @@ set_intmask(UB intmask)
 {
         UB ccr = current_ccr();
         
-        /* コンパイラの警告を抑制するため、キャストしている。 */
+        /*
+         *　and_ccr(),or_ccr()を用いずにローカル変数ccrに一度、代入
+         *　する理由
+         *
+         *　・unloc_cou()から呼ばれるので、intmaskの値が反映されるまで
+         *　　割込み許可になってはいけない。
+         *  ・コンパイラの警告を抑制するため、キャストしている。 
+         */
         ccr = (UB)((ccr & CCR_ENAINT_ALL) | intmask);
         set_ccr(ccr);
 }

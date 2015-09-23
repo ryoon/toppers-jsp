@@ -7,7 +7,7 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -202,7 +202,10 @@
 #define IRQ_RXI1	85		/* SCIチャネル1 */
 #define IRQ_TXI1	86		/* SCIチャネル1 */
 #define IRQ_TEI1	87		/* SCIチャネル1 */
-/* 88, 89, 90, 91 番は、リザーブ */
+#define IRQ_ERI2	88		/* SCIチャネル2 */
+#define IRQ_RXI2	89		/* SCIチャネル2 */
+#define IRQ_TXI2	90		/* SCIチャネル2 */
+#define IRQ_TEI2	91		/* SCIチャネル2 */
 
 /*
  *  バスコントローラ
@@ -265,6 +268,8 @@
 /*
  *  I/O ポート
  */
+
+#define TNUM_IO_PORT	15	/*  I/Oポートの本数  */
 
 /* 各ポートレジスタのアドレス */
 

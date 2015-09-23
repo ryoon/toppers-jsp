@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: sample1.h,v 1.33 2005/11/24 11:56:36 honda Exp $
+ *  @(#) $Id: sample1.h,v 1.36 2007/05/08 07:43:52 honda Exp $
  */
 
 /*
@@ -138,6 +138,13 @@
 #define STACK_SIZE  384     /* タスクのスタックサイズ */
 #define TASK_PORTID 2       /* 文字入力するシリアルポートID */
 
+#elif defined(M16C) && defined(M3029) 
+
+#define CPUEXC1     32      /* CPU例外ハンドラ番号 */
+#define RAISE_CPU_EXCEPTION asm("   int #32") /* ソフトウェア割込み発生 */
+#define STACK_SIZE  512     /* タスクのスタックサイズ */
+#define TASK_PORTID 1       /* 文字入力するシリアルポートID */
+
 #elif defined(LINUX)
 
 #undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
@@ -155,6 +162,19 @@
 #define RAISE_CPU_EXCEPTION asm(" int #32") /* ソフトウェア割込み発生 */
 #define STACK_SIZE 512 /* タスクのスタックサイズ */
 #define TASK_PORTID 1 /* 文字入力するシリアルポートID */ 
+
+#elif defined(M32R)
+
+#define CPUEXC1 EXC_TRAP00
+#define RAISE_CPU_EXCEPTION Asm("trap 0")
+
+#elif defined(TLCS_900) && defined(ZUP_F16_EX)
+
+#define CPUEXC1     3      /* CPU例外ハンドラ番号 */
+#define RAISE_CPU_EXCEPTION Asm("   swi 2") /* ソフトウェア割込み発生 */
+#define STACK_SIZE  512     /* タスクのスタックサイズ */
+#define TASK_PORTID 1       /* 文字入力するシリアルポートID */
+#define OMIT_VGET_TIM
 
 #endif
 

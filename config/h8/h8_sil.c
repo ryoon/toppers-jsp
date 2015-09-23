@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2005 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: h8_sil.c,v 1.6 2005/11/07 01:49:53 honda Exp $
+ *  @(#) $Id: h8_sil.c,v 1.7 2007/03/23 07:22:15 honda Exp $
  */
 
 /*
@@ -58,16 +58,16 @@
 
 /*  メモリ上のテンポラリ領域  */
 static UB ddr_tmp[] = {
-        /* 1         2         3         4         5      */
-        H8P1DDR0, H8P2DDR0, H8P3DDR0, H8P4DDR0, H8P5DDR0, 
-        /* 6         8         9         A         B      */
-        H8P6DDR0, H8P8DDR0, H8P9DDR0, H8PADDR0, H8PBDDR0
+	/* 1         2         3         4         5      */
+	H8P1DDR0, H8P2DDR0, H8P3DDR0, H8P4DDR0, H8P5DDR0, 
+	/* 6         8         9         A         B      */
+	H8P6DDR0, H8P8DDR0, H8P9DDR0, H8PADDR0, H8PBDDR0
 };
 
 /*  各ポートのアドレス  */
 static const VP ddr_adr[] = {
-        (VP)H8P1DDR, (VP)H8P2DDR, (VP)H8P3DDR, (VP)H8P4DDR, (VP)H8P5DDR, 
-        (VP)H8P6DDR, (VP)H8P8DDR, (VP)H8P9DDR, (VP)H8PADDR, (VP)H8PBDDR
+	(VP)H8P1DDR, (VP)H8P2DDR, (VP)H8P3DDR, (VP)H8P4DDR, (VP)H8P5DDR, 
+	(VP)H8P6DDR, (VP)H8P8DDR, (VP)H8P9DDR, (VP)H8PADDR, (VP)H8PBDDR
 };
 
 
@@ -93,7 +93,7 @@ void sil_dly_nse(UINT dlytim) {
 UB sil_reb_ddr(UINT port)
 {
 	assert((IO_PORT1 <= port) && (port <= IO_PORTB));
-        return ddr_tmp[port];
+	return ddr_tmp[port];
 }
 
 /*
@@ -102,8 +102,8 @@ UB sil_reb_ddr(UINT port)
 void sil_wrb_ddr(UINT port, UB data)
 {
 	assert((IO_PORT1 <= port) && (port <= IO_PORTB));
-        ddr_tmp[port] = data;
-        sil_wrb_mem(ddr_adr[port], (VB)data);
+	ddr_tmp[port] = data;
+	sil_wrb_mem(ddr_adr[port], (VB)data);
 }
 
 /*
@@ -111,10 +111,10 @@ void sil_wrb_ddr(UINT port, UB data)
  */
 void sil_anb_ddr(UINT port, UB data)
 {
-        UB ddr = sil_reb_ddr(port);
-        
-        ddr &= data;
-        sil_wrb_ddr(port, ddr);
+	UB ddr = sil_reb_ddr(port);
+	
+	ddr &= data;
+	sil_wrb_ddr(port, ddr);
 }
 
 /*
@@ -122,9 +122,9 @@ void sil_anb_ddr(UINT port, UB data)
  */
 void sil_orb_ddr(UINT port, UB data)
 {
-        UB ddr = sil_reb_ddr(port);
+	UB ddr = sil_reb_ddr(port);
 
-        ddr |= data;
-        sil_wrb_ddr(port, ddr);
+	ddr |= data;
+	sil_wrb_ddr(port, ddr);
 }
 

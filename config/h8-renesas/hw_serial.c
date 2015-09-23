@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.c,v 1.6 2005/11/13 14:05:01 honda Exp $
+ *  @(#) $Id: hw_serial.c,v 1.7 2007/03/23 07:58:33 honda Exp $
  */
 
 /*
@@ -56,28 +56,28 @@
 /*
  *  シリアルポートの初期化ブロック
  */
-const SIOPINIB siopinib_table[TNUM_PORT] = {
+static const SIOPINIB siopinib_table[TNUM_PORT] = {
         {
                 (UB*)SCI_PORT1_BASE,
                 SCI_PORT1_BAUD_RATE,
-                SCI_PORT1_SMR,
                 {
                         (UB*)SCI_PORT1_IPR,
                         SCI_PORT1_IPR_BIT,
                         SCI_PORT1_IPM
-                }
+                },
+                SCI_PORT1_SMR
         }
 
 #if TNUM_PORT == 2u
         ,{
                 (UB*)SCI_PORT2_BASE,
                 SCI_PORT2_BAUD_RATE,
-                SCI_PORT2_SMR,
                 {
                         (UB*)SCI_PORT2_IPR,
                         SCI_PORT2_IPR_BIT,
                         SCI_PORT2_IPM
-                }
+                },
+                SCI_PORT2_SMR
         }
 #endif  /* of #if TNUM_PORT == 2u */
 
@@ -92,8 +92,6 @@ SIOPCB siopcb_table[TNUM_PORT];
 /*
  *  SIO ID から管理ブロックへの変換
  */
-Inline SIOPINIB *get_siopinib(ID sioid);
-
 Inline SIOPINIB*
 get_siopinib(ID sioid)
 {
@@ -108,8 +106,6 @@ get_siopinib(ID sioid)
  *  ボーレートからBRRレジスタの設定値への変換
  *  　演算の途中でオーバーフローしないようUW型を用いている
  */
-Inline UB baud_to_brr(UW baud);
-
 Inline UB 
 baud_to_brr(UW baud)
 {
@@ -193,7 +189,7 @@ SCI_cls_por (UB *base)
                                         /* 送受信停止           */
         h8_anb_reg(base + H8SCR,
                     (UB)(~(H8SCR_TIE | H8SCR_RIE | H8SCR_TE | H8SCR_RE)));
-        }
+}
 
 /*
  *  SCI_in_handler -- SCI 入力割込みハンドラ

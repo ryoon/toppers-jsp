@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  *
- *  Copyright (C) 2001-2005 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation
@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: h8_sil.h,v 1.6 2005/11/07 01:49:53 honda Exp $
+ *  @(#) $Id: h8_sil.h,v 1.7 2007/03/23 07:22:15 honda Exp $
  */
 
 /*
@@ -55,6 +55,7 @@
 #ifndef _MACRO_ONLY
 
 #include <sil.h>
+#include <cpu_insn.h>	/*  bitset(), bitclr()  */
 
 /*
  *  8ビットレジスタのAND演算

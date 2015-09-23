@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2005 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2005,2006 by Embedded and Real-Time Systems Laboratory
  *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task.h,v 1.10 2005/11/15 06:42:04 hiro Exp $
+ *  @(#) $Id: task.h,v 1.12 2007/03/26 06:14:05 honda Exp $
  */
 
 /*
@@ -175,7 +175,7 @@ typedef struct task_initialization_block {
  *  タスク管理ブロック（TCB）
  *
  *  JSPでは，タスクの起動要求キューイング数の最大値（TMAX_ACTCNT）と起
- *  動要求キューイング数の最大値（TMAX_WUPCNT）は 1 に固定されているた
+ *  床要求キューイング数の最大値（TMAX_WUPCNT）は 1 に固定されているた
  *  め，キューイングされているかどうかの真偽値で表現することができる．
  *  また，強制待ち要求ネスト数の最大値（TMAX_SUSCNT）が 1 に固定されて
  *  いるので，強制待ち要求ネスト数（suscnt）は必要ない．
@@ -184,8 +184,9 @@ typedef struct task_control_block {
 	QUEUE	task_queue;	/* タスクキュー */
 	const TINIB *tinib;	/* タスク初期化ブロックへのポインタ */
 
-	UINT	tstat : TBIT_TCB_TSTAT;		/* タスク状態（内部表現）*/
-	UINT	priority : TBIT_TCB_PRIORITY;	/* 現在の優先度（内部表現）*/
+	unsigned int	tstat : TBIT_TCB_TSTAT;	/* タスク状態（内部表現）*/
+	unsigned int	priority : TBIT_TCB_PRIORITY;
+						/* 現在の優先度（内部表現）*/
 	unsigned int	actcnt : 1;		/* 起動要求キューイング */
 	unsigned int	wupcnt : 1;		/* 起床要求キューイング */
 	unsigned int	enatex : 1;		/* タスク例外処理許可状態 */

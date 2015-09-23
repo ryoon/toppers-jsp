@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.5 2005/07/27 11:18:14 honda Exp $
+ *  @(#) $Id: tool_config.h,v 1.9 2007/05/30 03:56:47 honda Exp $
  */
 
 /*
@@ -44,19 +44,12 @@
 #define _TOOL_CONFIG_H_
 
 /*
- *  ラベルの別名を定義するためのマクロ
- */
-#define	_LABEL_ALIAS(new_label, defined_label) \
-	asm(".globl " #new_label "\n" #new_label " = " #defined_label);
-#define LABEL_ALIAS(x, y) _LABEL_ALIAS(x, y)
-
-/*
- *  開発環境依存の初期化は使用しない
+ *  開発環境依存の初期化処理
  */
 #define tool_initialize()
 
 /*
- *  atexit の処理とデストラクタの実行
+ *  atexitの処理とデストラクタの実行
  */
 #ifndef _MACRO_ONLY
 
@@ -235,8 +228,6 @@ call_atexit()
 #define	LOG_SNS_DSP_LEAVE(state)
 #define	LOG_SNS_DPN_ENTER()
 #define	LOG_SNS_DPN_LEAVE(state)
-#define	LOG_VSNS_INI_ENTER()
-#define	LOG_VSNS_INI_LEAVE(state)
 #define	LOG_VXSNS_CTX_ENTER(p_excinf)
 #define	LOG_VXSNS_CTX_LEAVE(state)
 #define	LOG_VXSNS_LOC_ENTER(p_excinf)

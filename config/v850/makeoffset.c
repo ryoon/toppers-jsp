@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: makeoffset.c,v 1.6 2005/12/12 09:08:16 honda Exp $
+ *  @(#) $Id: makeoffset.c,v 1.8 2007/01/05 02:10:17 honda Exp $
  */
 
 #include "jsp_kernel.h"
@@ -61,6 +61,7 @@ makeoffset(void)
 	OFFSET_DEF(TCB, tinib);
 	OFFSET_DEF(TINIB, task);
 	OFFSET_DEF(TINIB, exinf);
+	OFFSET_DEF (TCB, texptn);
 	OFFSET_DEF2(TCB, tskctxb.sp, sp);
 	OFFSET_DEF2(TCB, tskctxb.psw, psw);
 	OFFSET_DEF2(TCB, tskctxb.pc, pc);

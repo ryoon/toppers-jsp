@@ -33,76 +33,21 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: m32rasm.inc,v 1.6 2003/12/24 07:35:03 takayuki Exp $
+ *  @(#) $Id: m32rasm.inc,v 1.10 2007/05/30 03:56:47 honda Exp $
  */
 
 #ifndef __M32RASM_INC
 #define __M32RASM_INC
 
 /*
- * 32ビット即値ロード (即値 & シンボル)
+ *  M32R用アセンブラマクロライブラリ
  */
+
+/* 32ビット即値ロード (即値 & シンボル) */
 
 	.macro	lea reg, value
-		seth	\reg, #shigh(\value)
+		seth	\reg, #high(\value)
 		or3		\reg, \reg, #low(\value)
-	.endm
-
-/*
- * テーブル引き 32ビット ロード - マクロ群
- *    1ルーチンで3つ以上32ビット即値を引くならテーブルに
- *    3つ以上のルーチンから引かれるシンボルもテーブルに
- */
-
-		//テーブル作成 開始
-	.macro	begin_table
-		.section ".rodata","a"
-		.align   4
-	_table_base:
-	.endm
-
-		//テーブルエントリ定義
-	.macro	entry	symbol
-					.extern	\symbol
-		p_\symbol:	.long	\symbol
-	.endm
-
-		//テーブル作成 終了
-	.macro	end_table
-	.endm
-
-		//テーブル上のシンボル参照
-	.macro	lds	dest, index, symbol
-		ld	\dest, @(p_\symbol - _table_base, \index)
-	.endm
-
-		//テーブルインデックスの参照
-	.macro	ldidx dest
-/*		bl	1f
-			.long	_table_base
-		1:	ld	r14, @r14 */
-		seth	\dest, #shigh(_table_base)
-		or3		\dest, \dest, #low(_table_base)
-	.endm
-
-/*
- * 割込み許可
- *  引数はつぶしてもいいレジスタ
- */
-	.macro	ei work=r0
-		mvfc	\work, psw
-		or3		\work, \work, 0x40
-		mvtc	\work, psw
-	.endm
-
-/*
- * 割込み禁止
- *  引数はつぶしてもいいレジスタ
- */
-	.macro	di work=r0
-		mvfc	\work, psw
-		and3	\work, \work, 0xcf
-		mvtc	\work, psw
 	.endm
 
 /* 外部参照可能なシンボルの作成 */
@@ -124,24 +69,21 @@
 		jmp  r14
 	.endm
 
-/* 関数呼出 */
-	.macro call \name
-		st	r14,@-r15
-		bl	\name
-	.endm
-
 /* スタック積み */
 	.macro stmdb regset
 		.irp reg, \regset
-			st	\reg, @-r15
+		st	\reg, @-r15
 		.endr
 	.endm
 
 /* スタック戻し */
+
 	.macro ldmia regset
 		.irp reg, \regset
-			ld	\reg, @r15+
+		ld	\reg, @r15+
 		.endr
 	.endm
 
 #endif
+
+

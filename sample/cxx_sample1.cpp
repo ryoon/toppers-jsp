@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cxx_sample1.cpp,v 1.6 2004/09/17 09:11:34 honda Exp $
+ *  @(#) $Id: cxx_sample1.cpp,v 1.7 2007/03/27 08:55:29 hiro Exp $
  */
 
 /* 
@@ -317,7 +317,7 @@ void main_task(VP_INT exinf)
 		case 'A':
 			syslog(LOG_INFO, "#can_act(%d)", tskno);
 			syscall(ercd = can_act(tskid));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "can_act(%d) returns %d",
 						tskno, ercd);
 			}
@@ -341,7 +341,7 @@ void main_task(VP_INT exinf)
 		case 'G':
 			syslog(LOG_INFO, "#get_pri(%d, &tskpri)", tskno);
 			syscall(ercd = get_pri(tskid, &tskpri));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "priority of task %d is %d",
 						tskno, tskpri);
 			}
@@ -353,7 +353,7 @@ void main_task(VP_INT exinf)
 		case 'W':
 			syslog(LOG_INFO, "#can_wup(%d)", tskno);
 			syscall(ercd = can_wup(tskid));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "can_wup(%d) returns %d",
 						tskno, ercd);
 			}

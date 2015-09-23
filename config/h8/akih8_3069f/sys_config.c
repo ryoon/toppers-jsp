@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2007 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
@@ -38,7 +38,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.11 2005/11/07 01:49:53 honda Exp $
+ *  @(#) $Id: sys_config.c,v 1.12 2007/03/23 07:22:15 honda Exp $
  */
 
 /*
@@ -46,6 +46,7 @@
  */
 
 #include "jsp_kernel.h"
+#include <sil.h>
 
 /*
  *  ターゲットシステム依存 初期化ルーチン
@@ -66,3 +67,36 @@ sys_exit(void)
   while (1)
   	;
 }
+
+#ifdef REDBOOT
+/*
+ *  Redbootが使用する割込みベクタの退避と復元
+ */
+/*  割込みベクタの退避  */
+void
+load_vector(TMP_VECTOR *p) {
+	UW *redboot_trap_vector = (UW *)VECTOR_TABLE_ADDR + TRAP8;
+	UW *pirq5 = (UW *)VECTOR_TABLE_ADDR + IRQ_EXT5;
+	
+	/* ベクタテーブルの内、trapa命令分を退避 */
+	memcpy(&(p->trap_vector), redboot_trap_vector, TRAP_VECTOR_SIZE*4);
+
+	/*  IRQ5:Ethernet割込みの先頭アドレスを退避  */
+	p->irq5 = sil_rew_mem((VP)pirq5);		
+}
+
+/*  割込みベクタの復元  */
+void
+save_vector(TMP_VECTOR *p) {
+	UW *redboot_trap_vector = (UW *)VECTOR_TABLE_ADDR + TRAP8;
+	UW *pirq5 = (UW *)VECTOR_TABLE_ADDR + IRQ_EXT5;
+	
+	/*  IRQ5:Ethernet割込みの先頭アドレスを復元  */
+	sil_wrw_mem((VP)pirq5, p->irq5);		
+
+	/* ベクタテーブルの内、trapa命令分を復元 */
+	memcpy(redboot_trap_vector, &(p->trap_vector), TRAP_VECTOR_SIZE*4);
+}
+
+#endif	/* of #ifdef REDBOOT */
+

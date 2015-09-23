@@ -34,7 +34,7 @@
  * 含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  * 接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_support.S,v 1.14 2005/07/27 10:38:55 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.15 2007/04/19 06:38:27 honda Exp $
  */
 
 #define _MACRO_ONLY
@@ -331,11 +331,11 @@ dispatcher_2:
 ret_exc:
 ret_int:
 	swi  r0,  r13,  reqflg   /* reqflg を FALSE に */
-	lwi  r5,  r13,  runtsk   /* r5 <- runtsk        */
+	lwi  r4,  r13,  runtsk   /* r4 <- runtsk        */
 	lwi  r6,  r13,  enadsp   /* r6 <- enadsp        */
 	beqi r6,  ret_int_1      /* enadsp が FALSE なら ret_int_1 へ */
-	lwi  r4,  r13,  schedtsk /* r4 <- schedtsk                    */
-	sub  r6,  r4,   r5       /* runtsk と schedtsk が同じなら     */
+	lwi  r5,  r13,  schedtsk /* r5 <- schedtsk                    */
+	sub  r6,  r5,   r4       /* runtsk と schedtsk が同じなら     */
 	beqi r6,  ret_int_1      /* ret_int_1 へ                      */
 	addi  r1,  r1,  -52      /* 残りのレジスタを保存する          */
 	swi   r19, r1,  48
@@ -351,9 +351,9 @@ ret_int:
 	swi   r29, r1,  8
 	swi   r30, r1,  4
 	swi   r31, r1,  0	
-	swi   r1 , r5,  TCB_sp 	   /* タスクスタックをTCBに保存 */	
+	swi   r1 , r4,  TCB_sp 	   /* タスクスタックをTCBに保存 */	
 	la    r6 , r0,  ret_int_r  /* 実行再開番地を保存 */
-	swi   r6 , r5,  TCB_pc     /* 実行再開番地をTCBに保存   */
+	swi   r6 , r4,  TCB_pc     /* 実行再開番地をTCBに保存   */
 	bri   dispatcher
 
 ret_int_r:	
@@ -378,7 +378,6 @@ ret_int_1:
 	 * タスク例外ルーチンの起動
 	 * ret_int_r は dispatcher から呼び出されるため，
 	 * tcb のアドレスは r4 に入っている
-     * Not Yet!
 	 */
 	lwi  r5,  r4,  TCB_enatex  /* r5 <- enatex                 */
 	andi r6,  r5,  TCB_enatex_mask  

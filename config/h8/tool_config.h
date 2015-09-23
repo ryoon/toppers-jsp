@@ -7,6 +7,8 @@
  *                              Toyohashi Univ. of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
+ *  Copyright (C) 2007 by Industrial Technology Institute,
+ *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -35,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.14 2005/11/15 10:50:59 honda Exp $
+ *  @(#) $Id: tool_config.h,v 1.16 2007/03/23 07:22:15 honda Exp $
  */
 
 /*
@@ -65,13 +67,19 @@
  */
 #ifndef _MACRO_ONLY
 
-extern void	software_term_hook(void);
-
 Inline void
 call_atexit(void)
 {
-	if (software_term_hook != 0) {
-		software_term_hook();
+	extern void	software_term_hook(void);
+	volatile FP	fp = software_term_hook;
+
+	/*
+	 *  software_term_hookへのポインタを，一旦volatile FP型のfpに
+	 *  代入してから使うのは，0との比較が最適化で削除されないよう
+	 *  にするためである．
+	 */
+	if (fp != 0) {
+		(*fp)();
 	}
 }
 

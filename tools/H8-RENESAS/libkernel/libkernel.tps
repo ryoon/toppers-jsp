@@ -8,7 +8,7 @@
 "Debug" 
 "Release" 
 [CURRENT_CONFIGURATION]
-"Release" 
+"Debug" 
 [CURRENT_SESSION]
 "DefaultSession" 
 [GENERAL_DATA_PROJECT]

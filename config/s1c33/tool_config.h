@@ -65,9 +65,15 @@ Inline void
 call_atexit()
 {
 	extern void	software_term_hook(void);
+	volatile FP	fp = software_term_hook;
 
-	if (software_term_hook != 0) {
-		software_term_hook();
+	/*
+	 *  software_term_hookへのポインタを，一旦volatile FP型のfpに
+	 *  代入してから使うのは，0との比較が最適化で削除されないよう
+	 *  にするためである．
+	 */
+	if (fp != 0) {
+		(*fp)();
 	}
 }
 

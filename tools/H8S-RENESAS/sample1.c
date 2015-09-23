@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.1 2005/12/12 09:00:13 honda Exp $
+ *  @(#) $Id: sample1.c,v 1.6 2007/04/02 03:14:01 honda Exp $
  */
 
 /* 
@@ -91,7 +91,7 @@
  *  'c' : 周期ハンドラを動作させる．
  *  'C' : 周期ハンドラを停止させる．
  *  'z' : CPU例外を発生させる．
- *  'Z' : CPUロック状態でCPU例外を発生させる（プログラムを終了する）．
+ *  'Z' : プログラムを終了する．
  *  'V' : vxget_tim で性能評価用システム時刻を2回読む．
  *  'v' : 発行したシステムコールを表示する（デフォルト）．
  *  'q' : 発行したシステムコールを表示しない．
@@ -159,13 +159,11 @@ void task(VP_INT exinf)
 			syslog(LOG_NOTICE, "#%d#raise CPU exception", tskno);
 			RAISE_CPU_EXCEPTION;
 			break;
-		case 'Z':
-			loc_cpu();
-			syslog(LOG_NOTICE, "#%d#raise CPU exception", tskno);
-			RAISE_CPU_EXCEPTION;
-			unl_cpu();
-			break;
 #endif /* CPUEXC1 */
+		case 'Z':
+			syslog(LOG_NOTICE, "Sample program ends with exception.");
+			kernel_exit();
+			break;
 		default:
 			break;
 		}
@@ -242,6 +240,14 @@ void cyclic_handler(VP_INT exinf)
 	irot_rdq(LOW_PRIORITY);
 }
 
+
+#define PORTID_SCI2	3
+#if PORTID_SCI2 == TASK_PORTID
+#error PORTID_SCI2 == TASK_PORTID is not allowed.
+#endif /*  PORTID_SCI2 == TASK_PORTID  */
+
+static const char output_text[] = "This is SCI2 output test.";
+
 /*
  *  メインタスク
  */
@@ -260,9 +266,16 @@ void main_task(VP_INT exinf)
 
 	vmsk_log(LOG_UPTO(LOG_INFO), LOG_UPTO(LOG_EMERG));
 	syslog(LOG_NOTICE, "Sample program starts (exinf = %d).", (int)exinf);
+	syslog(LOG_NOTICE, "This program output low level log to port POL_PORTID");
 	syscall(serial_ctl_por(TASK_PORTID,
 			(IOCTL_CRLF | IOCTL_FCSND | IOCTL_FCRCV)));
 
+	/*  SCI2への出力  */
+	syscall(serial_opn_por(PORTID_SCI2));
+	syscall(serial_ctl_por(PORTID_SCI2,
+			(IOCTL_CRLF | IOCTL_FCSND | IOCTL_FCRCV)));
+	syscall(serial_wri_dat(PORTID_SCI2, output_text, sizeof(output_text)));
+	
 	/*
  	 *  ループ回数の設定
 	 */
@@ -315,7 +328,7 @@ void main_task(VP_INT exinf)
 		case 'A':
 			syslog(LOG_INFO, "#can_act(%d)", tskno);
 			syscall(ercd = can_act(tskid));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "can_act(%d) returns %d",
 						tskno, ercd);
 			}
@@ -339,7 +352,7 @@ void main_task(VP_INT exinf)
 		case 'G':
 			syslog(LOG_INFO, "#get_pri(%d, &tskpri)", tskno);
 			syscall(ercd = get_pri(tskid, &tskpri));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "priority of task %d is %d",
 						tskno, tskpri);
 			}
@@ -351,7 +364,7 @@ void main_task(VP_INT exinf)
 		case 'W':
 			syslog(LOG_INFO, "#can_wup(%d)", tskno);
 			syscall(ercd = can_wup(tskid));
-			if (MERCD(ercd) >= 0) {
+			if (ercd >= 0) {
 				syslog(LOG_NOTICE, "can_wup(%d) returns %d",
 						tskno, ercd);
 			}

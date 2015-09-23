@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2007 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN

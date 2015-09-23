@@ -8,7 +8,7 @@
 #                              Toyohashi Univ. of Technology, JAPAN
 #  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
 #              Graduate School of Information Science, Nagoya Univ., JAPAN
-#  Copyright (C) 2005 by Industrial Technology Institute,
+#  Copyright (C) 2005-2007 by Industrial Technology Institute,
 #                              Miyagi Prefectural Government, JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -38,7 +38,7 @@
 #  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 #  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: genvector.pl,v 1.4 2005/11/24 12:03:40 honda Exp $
+#  @(#) $Id: genvector.pl,v 1.5 2007/03/23 07:19:00 honda Exp $
 # 
 
 
@@ -46,8 +46,6 @@
 #  ベクタテーブル生成スクリプト
 #  　make depend時に生成されるtmp_script.plを読み込むことによって
 #  　実行できるようになる
-
-require "getopt.pl";
 
 #  オプションの定義
 #
@@ -57,6 +55,41 @@ require "getopt.pl";
 #		書き込む
 #		実行環境（Makefileで定義しているDBGENVマクロの値）や
 #		モニタの仕様により、必要に応じて用いる
+
+
+require "getopt.pl";
+
+
+#
+#  割込みハンドラをベクタテーブルに登録
+#　　 tmp_script.pl内から呼ばれる。
+
+sub define_inh {
+	my($inhno, $inthdr) = @_;
+	
+	if ($inhno == 0) {
+		print STDERR <<ERRMESSAGE
+In generating vector.S
+Error in DEF_INH($inhno, {TA_HLNG, $inthdr});
+\t Macro of interrupt handler number $inhno isn't defined.
+\t If you define macro $inhno in header files,
+\t it's necessary to use "#include" directive in configuration files
+\t to genarate vector.S. 
+\t (And it's also necessary to use static API "INCLUDE()" 
+\t in configuration files to genarate kernel_cfg.c. )
+\t Check configuration files and header files.
+
+ERRMESSAGE
+		;
+		exit(1);
+	}
+	else {
+		# ベクタテーブルに割込みハンドラを登録
+		#　　 割込みハンドラ名の前後に"__kernel_"と"_entry"を付加
+		$vector_table[$inhno] = "__kernel_" . $inthdr . "_entry";
+	}
+}	
+
 
 #
 #  オプションの処理

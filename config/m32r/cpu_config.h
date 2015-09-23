@@ -5,6 +5,9 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2006 by Monami Software Limited Partnership, JAPAN	
+ *  Copyright (C) 2007 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +36,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.8 2004/09/04 16:38:40 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.11 2007/05/30 03:56:47 honda Exp $
  */
 
 //#include <sys_config.h>
@@ -45,8 +48,9 @@
 #ifndef _CPU_CONFIG_H_
 #define _CPU_CONFIG_H_
 
-
 #include <cpu_rename.h>
+
+#include "m32r.h"
 
 /*
  *  chg_ipm/get_ipm をサポートするかどうかの定義
@@ -73,7 +77,6 @@
 typedef struct task_context_block {
 	unsigned long sp;		/* スタックポインタ */
 	FP	pc;					/* プログラムカウンタ */
-	unsigned long psw;		/* プログラムステータスワード */
 } CTXB;
 
 #define t_sense_lock	sense_lock
@@ -81,7 +84,9 @@ typedef struct task_context_block {
 
 /*
  *  CPUロックとその解除
- *     CPUロックはCPUが持つ割込み要求許可/禁止に対応付ける
+ *
+ *  CPUロックはCPUが持つ割込み要求許可/禁止に対応付ける。PSWのIEビット
+ *  を操作する。
  */
 
 #define t_lock_cpu		lock_cpu
@@ -108,7 +113,9 @@ unlock_cpu()
 }
 
 /*
- * sense_context : ユーザスタックを使っているならタスクコンテキスト
+ *  sense_context
+ *  
+ *  ユーザスタックを使っているならタスクコンテキスト
  */
 
 Inline BOOL
@@ -120,7 +127,9 @@ sense_context(void)
 }
 
 /*
- * sense_lock : 割込み禁止ならCPUロック状態
+ *  sense_lock
+ *  
+ *  割込み禁止ならCPUロック状態
  */
 Inline BOOL
 sense_lock(void)
@@ -190,10 +199,8 @@ define_exc(EXCNO excno, FP exchdr)
  *  に起動された割込みハンドラ内でディスパッチが要求された場合に，ディ
  *  スパッチされない．
  */
-
-
 #define INT_ENTRY(hdr) hdr
-#define INTHDR_ENTRY(entry)	extern void entry()
+#define INTHDR_ENTRY(entry)	extern void entry();
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
@@ -207,23 +214,24 @@ define_exc(EXCNO excno, FP exchdr)
  *  に起動された割込みハンドラ内でディスパッチが要求された場合に，ディ
  *  スパッチされない．
  */
-
 #define EXC_ENTRY(hdr) hdr
-#define EXCHDR_ENTRY(entry)	extern void entry()
+#define EXCHDR_ENTRY(entry)	extern void entry();
 
 /*
  *  CPU例外の発生した時のシステム状態の参照
  */
 
 /*
- *  CPU例外の発生した時のディスパッチ
+ *  CPU例外の発生した時のコンテキスト
+ *
+ *  非タスクコンテキストの場合にTRUEを返す．p_excinfに例外ハンドラを呼
+ *  び出す際のスタックポインタが格納されている（cpu_support.S）ので，
+ *  そこから例外発生時のpswを取得しコンテキストを判断する．
  */
 Inline BOOL
 exc_sense_context(VP p_excinf)
 {
-	int psw;
-	__asm("mvfc	%0, psw" : "=r"(psw));
-	return (psw & 0x8000) != 0 ? FALSE : TRUE;
+	return (((unsigned int*)p_excinf)[1] & 0x8000) == 0;
 }
 
 /*
@@ -232,9 +240,7 @@ exc_sense_context(VP p_excinf)
 Inline BOOL
 exc_sense_lock(VP p_excinf)
 {
-	int psw;
-	__asm("mvfc	%0, psw" : "=r"(psw));
-	return (psw & 0x4000) != 0 ? FALSE : TRUE;
+	return (((unsigned int*)p_excinf)[1] & 0x4000) == 0;
 }
 
 /*
