@@ -86,7 +86,9 @@ extern	ER	vxget_tim(SYSUTIM *pk_sysutim) throw();
 
 #ifndef _MACRO_ONLY
 
-/*  割込みコントローラの割込みマスクの型定義  */
+/*
+ *  割込みコントローラの割込みマスクの型定義
+ */
 typedef struct{
 	UH	msysint1;	/*  システム割込みマスクレジスタ1  */
 	UH	msysint2;	/*  システム割込みマスクレジスタ2  */

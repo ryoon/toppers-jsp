@@ -39,7 +39,7 @@
 #ifndef _VR4131_RTC_H_
 #define _VR4131_RTC_H_
 
-#include <s_services.h>
+#include <s_services.h>		/* デバイスドライバ用標準インクルードファイル */
 
 /*
  *  VR4131内蔵リアルタイムクロックユニット(RTC)関連の定義
@@ -48,20 +48,14 @@
 
 /* RTC内レジスタのアドレス */
 /* TClockカウンタ関係 */
-#define TCLKLREG	(BASE_ADDR + 0x0f000120)
-#define TCLKHREG	(BASE_ADDR + 0x0f000122)
-#define TCLKCNTLREG	(BASE_ADDR + 0x0f000124)
-#define TCLKCNTHREG	(BASE_ADDR + 0x0f000126)
+#define TCLKLREG	0x0f000120
+#define TCLKHREG	0x0f000122
+#define TCLKCNTLREG	0x0f000124
+#define TCLKCNTHREG	0x0f000126
 
-#define RTCINTREG	(BASE_ADDR + 0x0f00013e)
+#define RTCINTREG	0x0f00013e
 
 /*  TClockカウンタ割込み要求ビット  */
 #define RTCINTR3  	BIT3	/*  RTC割込みレジスタ  */
-
-/*
- *  タイマのレジスタへのアクセス関数
- */
-#define vr4131_rtc_read( reg )		sil_reh_mem( reg )
-#define vr4131_rtc_write( reg, val )	sil_wrh_mem( reg, val )
 
 #endif /* _VR4131_RTC_H_ */

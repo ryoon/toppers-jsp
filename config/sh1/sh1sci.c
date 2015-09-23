@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sh1sci.c,v 1.3 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: sh1sci.c,v 1.8 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -127,6 +127,9 @@
 
 /*
  *  分周比とビットレートの設定
+ */
+#if CONFIG_BAUD == 9600
+/*
  *
  *  クロック	　20MHzの場合
  *  ビットレート　9600bps
@@ -146,8 +149,6 @@
  *  クロック	　19.6608MHz
  *  ビットレート　9600bps
  *
- *  　N = CLOCK*10^6 / (64*2^(2n-1)*BPS) - 1
- *  より
  *  　n=0(分周しないのでそのまま)
  *  　N=63で誤差0%
  *  よって、
@@ -163,8 +164,6 @@
  *  クロック	　16MHz
  *  ビットレート　9600bps
  *
- *  　N = CLOCK*10^6 / (64*2^(2n-1)*BPS) - 1
- *  より
  *  　n=0(分周しないのでそのまま)
  *  　N=51で誤差0.16%
  *  よって、
@@ -176,7 +175,6 @@
 #define SCI_BRR 	51u	/*  ビットレート  	*/
 #endif
 
-
 /*
  *  ボーレート設定後、クロックが安定するまでの待ち時間
  *  　（最初の1ビット分）　
@@ -184,6 +182,127 @@
  *  　t = 1 / BPS = 104,167 = 105,000[nsec]
  */
 #define SH1SCI_DELAY 	105000
+
+
+#elif CONFIG_BAUD == 19200
+
+
+/*
+ *
+ *  クロック	　20MHzの場合
+ *  ビットレート　19200bps
+ *
+ *  　n=0(分周しないのでそのまま)
+ *  　N=32で誤差 -1.36%
+ *  よって、
+ *  　シリアルモードレジスタSMRのクロックセレクトビットCKS=00
+ *  　ビットレートレジスタBRR=32
+ */
+#ifdef CONFIG_20MHZ
+#define SMR_CKS 	0x0u	/*  分周比  		*/
+#define SCI_BRR 	32u	/*  ビットレート  	*/
+#endif
+
+/*
+ *  クロック	　19.6608MHz
+ *  ビットレート　19200bps
+ *
+ *  　n=0(分周しないのでそのまま)
+ *  　N=31で誤差0%
+ *  よって、
+ *  　シリアルモードレジスタSMRのクロックセレクトビットCKS=00
+ *  　ビットレートレジスタBRR=31
+ */
+#ifdef CONFIG_19MHZ
+#define SMR_CKS 	0x0u	/*  分周比  		*/
+#define SCI_BRR 	31u	/*  ビットレート  	*/
+#endif
+
+/*
+ *  クロック	　16MHz
+ *  ビットレート　19200bps
+ *
+ *  　n=0(分周しないのでそのまま)
+ *  　N=25で誤差0.16%
+ *  よって、
+ *  　シリアルモードレジスタSMRのクロックセレクトビットCKS=00
+ *  　ビットレートレジスタBRR=25
+ */
+#ifdef CONFIG_16MHZ
+#define SMR_CKS 	0x0u	/*  分周比  		*/
+#define SCI_BRR 	25u	/*  ビットレート  	*/
+#endif
+
+/*
+ *  ボーレート設定後、クロックが安定するまでの待ち時間
+ *  　（最初の1ビット分）　
+ *  BPS=19200bpsの場合
+ *  　t = 1 / BPS = 52,083 = 53,000[nsec]
+ */
+#define SH1SCI_DELAY 	53000
+
+
+#elif CONFIG_BAUD == 38400
+
+
+/*
+ *
+ *  クロック	　20MHzの場合
+ *  ビットレート　38400bps
+ *
+ *  　n=0(分周しないのでそのまま)
+ *  　N=15で誤差1.73%
+ *  よって、
+ *  　シリアルモードレジスタSMRのクロックセレクトビットCKS=00
+ *  　ビットレートレジスタBRR=15
+ */
+#ifdef CONFIG_20MHZ
+#define SMR_CKS 	0x0u	/*  分周比  		*/
+#define SCI_BRR 	15u	/*  ビットレート  	*/
+#endif
+
+/*
+ *  クロック	　19.6608MHz
+ *  ビットレート　38400bps
+ *
+ *  　n=0(分周しないのでそのまま)
+ *  　N=15で誤差0%
+ *  よって、
+ *  　シリアルモードレジスタSMRのクロックセレクトビットCKS=00
+ *  　ビットレートレジスタBRR=15
+ */
+#ifdef CONFIG_19MHZ
+#define SMR_CKS 	0x0u	/*  分周比  		*/
+#define SCI_BRR 	15u	/*  ビットレート  	*/
+#endif
+
+/*
+ *  クロック	　16MHz
+ *  ビットレート　38400bps
+ *
+ *  　n=0(分周しないのでそのまま)
+ *  　N=12で誤差0.16%
+ *  よって、
+ *  　シリアルモードレジスタSMRのクロックセレクトビットCKS=00
+ *  　ビットレートレジスタBRR=16
+ */
+#ifdef CONFIG_16MHZ
+#define SMR_CKS 	0x0u	/*  分周比  		*/
+#define SCI_BRR 	16u	/*  ビットレート  	*/
+#endif
+
+/*
+ *  ボーレート設定後、クロックが安定するまでの待ち時間
+ *  　（最初の1ビット分）　
+ *  BPS=38400bpsの場合
+ *  　t = 1 / BPS = 26,042 = 27,000[nsec]
+ */
+#define SH1SCI_DELAY 	27000
+
+#else	/*  CONFIG_BAUD  */
+	ここでコンパイルエラー（サポート外のボーレート）
+
+#endif 	/*  CONFIG_BAUD  */
 
 
 /*
@@ -204,6 +323,7 @@ static SIOPCB	siopcb_table[TNUM_SIOP];
 /*
  *  シリアルI/OポートIDから管理ブロックを取り出すためのマクロ
  */
+				/*  ポートIDからデバイス番号を求めるマクロ  */
 #define INDEX_SIOP(siopid)	((UINT)((siopid) - 1))
 #define get_siopcb(siopid)	(&(siopcb_table[INDEX_SIOP(siopid)]))
 
@@ -238,7 +358,7 @@ sh1sci_getchar(SIOPCB *siopcb)
 	data = sil_reb_mem(SCI_RDR0);
 	
 	/*  レシーブデータレジスタフル・フラグのクリア  */
-	sh1_b_and(SCI_SSR0, (VB)~SSR_RDRF);
+	sh1_anb_reg(SCI_SSR0, (VB)~SSR_RDRF);
 	return data;
 }
 
@@ -248,10 +368,14 @@ sh1sci_getchar(SIOPCB *siopcb)
 Inline void
 sh1sci_putchar(SIOPCB *siopcb, char c)
 {
+#ifdef GDB_STUB
+	gdb_stub_putc( c );
+#else
 	sil_wrb_mem(SCI_TDR0 ,c);
 	
 	/*  トランスミットデータレジスタエンプティ・フラグのクリア*/
-	sh1_b_and(SCI_SSR0, (VB)~SSR_TDRE);
+	sh1_anb_reg(SCI_SSR0, (VB)~SSR_TDRE);
+#endif
 }
 
 /*
@@ -290,13 +414,13 @@ sh1sci_openflag(void)
 SIOPCB *
 sh1sci_opn_por(ID siopid, VP_INT exinf)
 {
-	SIOPCB *siopcb;
+	SIOPCB *siopcb = get_siopcb(siopid);
+
+#ifndef GDB_STUB
 	VB scr0, smr0;
 	VH pbcr1;
 
-	siopcb = get_siopcb(siopid);
-
-	sh1_b_and(SCI_SCR0, (VB)~(SCR_TE | SCR_RE));	/*  送受信停止  */
+	sh1_anb_reg(SCI_SCR0, (VB)~(SCR_TE | SCR_RE));	/*  送受信停止  */
 
 	/*  ピンアサイン
 	 *     シリアルデバイス自体の事項ではないので
@@ -329,11 +453,13 @@ sh1sci_opn_por(ID siopid, VP_INT exinf)
 	sil_dly_nse(SH1SCI_DELAY);
 
 					/* エラーフラグをクリア	*/
-	sh1_b_and(SCI_SSR0, (VB)~(SSR_ORER | SSR_FER | SSR_PER));
+	sh1_anb_reg(SCI_SSR0, (VB)~(SSR_ORER | SSR_FER | SSR_PER));
 					/* 受信割り込み許可   	*/
 					/* 送受信許可  		*/
-	sh1_b_or(SCI_SCR0, (SCR_RIE | SCR_TE | SCR_RE));
+	sh1_orb_reg(SCI_SCR0, (SCR_RIE | SCR_TE | SCR_RE));
 			/*  送信割込みの許可は送信制御関数で行う  */
+
+#endif	/*  GDB_STUB  */
 
 	siopcb->exinf = exinf;
 	siopcb->openflag = TRUE;
@@ -347,7 +473,7 @@ void
 sh1sci_cls_por(SIOPCB *siopcb)
 {
 				/*  送受信停止、割込み禁止 	*/
-	sh1_b_and(SCI_SCR0, (VB)~(SCR_TIE | SCR_RIE | SCR_TE | SCR_RE));
+	sh1_anb_reg(SCI_SCR0, (VB)~(SCR_TIE | SCR_RIE | SCR_TE | SCR_RE));
 	siopcb->openflag = FALSE;
 }
 
@@ -372,6 +498,7 @@ sh1sci_rcv_chr(SIOPCB *siopcb)
 {
 	if (sh1sci_getready(siopcb)) {
 		return((INT)(UB) sh1sci_getchar(siopcb));
+		/*  (UB)でキャストするのはゼロ拡張にするため  */
 	}
 	return(-1);
 }
@@ -384,10 +511,10 @@ sh1sci_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 {
 	switch (cbrtn) {
 	case SIO_ERDY_SND:	/* 送信割り込み要求を許可 */
-		sh1_b_or(SCI_SCR0, SCR_TIE);
+		sh1_orb_reg(SCI_SCR0, SCR_TIE);
 		break;
 	case SIO_ERDY_RCV:	/* 受信割り込み要求を許可 */
-		sh1_b_or(SCI_SCR0, SCR_RIE);
+		sh1_orb_reg(SCI_SCR0, SCR_RIE);
 		break;
 	}
 }
@@ -400,10 +527,10 @@ sh1sci_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 {
 	switch (cbrtn) {
 	case SIO_ERDY_SND:	/* 送信割り込み要求を禁止 */
-		sh1_b_and(SCI_SCR0, (VB)~SCR_TIE);
+		sh1_anb_reg(SCI_SCR0, (VB)~SCR_TIE);
 		break;
 	case SIO_ERDY_RCV:	/* 受信割り込み要求を禁止 */
-		sh1_b_and(SCI_SCR0, (VB)~SCR_RIE);
+		sh1_anb_reg(SCI_SCR0, (VB)~SCR_RIE);
 		break;
 	}
 }
@@ -451,7 +578,7 @@ void
 sh1sci_isr_out(void)
 {
 	if (siopcb_table[0].openflag) {
-		sh1sci_isr_siop_out(&(siopcb_table[0]));
+		sh1sci_isr_siop_out(get_siopcb(1));
 	}
 }
 
@@ -466,7 +593,7 @@ void
 sh1sci_isr_in(void)
 {
 	if (siopcb_table[0].openflag) {
-		sh1sci_isr_siop_in(&(siopcb_table[0]));
+		sh1sci_isr_siop_in(get_siopcb(1));
 	}
 }
 

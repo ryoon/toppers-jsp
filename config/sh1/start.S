@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.8 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: start.S,v 1.12 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -46,13 +46,36 @@
 #include <t_config.h>
 
 
-#ifndef CQ_SH1_DEB
 
+/*
+ *　　例外ベクタの定義（SH1用）
+ *　　　ここではリセット時に必要な最低限のベクタしか用意しない
+ *　　　cpu_initialize()で例外ベクタの移動（VBRの書き換え）を行う
+ */
+#ifdef KERNEL_HAS_A_VECTOR_TABLE
+
+/*
+ *   以下の例外要因でデフォルトとは異なる例外ベクタを定義
+ *   する場合は、sys_config.hで該当するマクロを定義する。
+ */
+	.section ".vector","ax"
+	.align 2
+	.long   TO_ASM(RESET_VECTOR)	/*   0:パワーオンリセット  */
+	.long   INIT_STACK		/*       SPの初期値        */
+	.long   TO_ASM(RESET_VECTOR)	/*   2:マニュアルリセット  */
+	.long   INIT_STACK		/*       SPの初期値        */
+	.long   TO_ASM(GII_VECTOR)	/*   4:一般不当命令        */
+	.long   TO_ASM(RESERVED_VECTOR)	/*   5:システム予約        */
+	.long   TO_ASM(SII_VECTOR)	/*   6:スロット不当命令    */
+	.long   TO_ASM(RESERVED_VECTOR)	/*   7:システム予約        */
+	.long   TO_ASM(RESERVED_VECTOR)	/*   8:システム予約        */
+	.long   TO_ASM(CAE_VECTOR)	/*   9:CPUアドレスエラー   */
+	.long   TO_ASM(DAE_VECTOR)	/*  10:DMAアドレスエラー   */
+	.long   TO_ASM(NMI_VECTOR)	/*  11:MNI                 */
+#endif /* KERNEL_HAS_A_VECTOR_TABLE */
 
 /*
  *   SH1用スタートアップモジュール
- *   カーネルはアプリケーションとリンクして使用する
- *   だけなのでJSPカーネルのみ使用する。
  */
 	.global	_start
 	.section .text
@@ -81,12 +104,26 @@ _start:
 	 *  sys_support.S 内で hardware_init_hook を定義してい
 	 *  る．
 	 */
-
 start_0:
+	/*
+	 *  プロセッサ内蔵RAMが利用できる場合はそのアドレスを
+	 *  INNER_RAM_ADDRESSマクロとしてsys_config.hまたは
+	 *  コンパイラ・オプションで定義する。
+	 *　（内蔵RAMの先頭アドレスではなく、スタックの底で
+	 *　　ある点に注意）
+	 *
+	 *  その場合、hardware_init_hook()関数をC言語で
+	 *  記述してよい。
+	 *  一般にC言語の関数呼び出しはスタックを使用するので
+	 *  バスコントローラの初期化前にできない。
+	 */
+#ifdef INNER_RAM_ADDRESS
+	mov.l  _inner_ram_address_k, r15
+#endif /* INNER_RAM_ADDRESS */
 	mov.l   _hardware_init_k, r0
 	tst    r0,r0
 	bt     start_1
-	jsr     @r0
+	jsr    @r0
         nop
 
 
@@ -94,6 +131,13 @@ start_0:
          * bssセクションをクリア
 	 */
 start_1:
+	/*
+         * スタックポインタを外部RAMに再設定する。（上記参照）
+	 */
+#ifdef INNER_RAM_ADDRESS
+	mov.l  _stack_k, r15
+#endif /* INNER_RAM_ADDRESS */
+
 	mov.l	_bss_start_k,r0
 	mov.l	_end_k,r1
 	cmp/eq  r0,r1
@@ -162,13 +206,19 @@ start_6:
 	nop
 
 
-	.align 4
+	.align 2
 _intnest_k:
 	.long	_intnest
 _init_sr:
 	.long	MAX_IPM << 4
 _stack_k:
 	.long   STACKTOP
+
+#ifdef INNER_RAM_ADDRESS
+_inner_ram_address_k:
+	.long   INNER_RAM_ADDRESS
+#endif /* INNER_RAM_ADDRESS */
+
 _bss_start_k:
 	.long   __bss_start
 
@@ -199,279 +249,3 @@ _hardware_init_k:
 _software_init_hook_k:
 	.long   _software_init_hook
 
-#endif	/* CQ_SH1_DEB */
-
-
-/*  リセットベクタの定義  */
-#ifdef GDB_STUB
-	/* スタブ完成後に定義 */
-
-#else	/*  GDB_STUB  */
-#define _reset_start  _start
-#endif	/*  GDB_STUB  */
-
-#define _init_stack  STACKTOP
-
-#ifndef CQ_SH1_DEB
-	.section ".vector","ax"
-	.align 4
-
-	.long   _reset_start	/*  パワーオンリセット  */
-	.long   _init_stack
-	.long   _reset_start	/*  マニュアルリセット  */
-	.long   _init_stack
-				/*  残りはデフォルトの例外処理  */
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-	.long   _no_reg_exception
-
-#endif	/* CQ_SH1_DEB */

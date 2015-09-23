@@ -1,7 +1,7 @@
                ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                             （H8 ターゲット依存部）
    
-               （Release 1.4対応，最終更新: 8-Dec-2003）
+               （Release 1.4.1対応，最終更新: 30-Jun-2004）
    
    ------------------------------------------------------------------------ 
     TOPPERS/JSP Kernel
@@ -9,16 +9,17 @@
         Toyohashi Open Platform for Embedded Real-Time Systems/
         Just Standard Profile Kernel
    
-    Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+    Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
                                 Toyohashi Univ. of Technology, JAPAN
-    Copyright (C) 2001-2003 by Industrial Technology Institute,
+    Copyright (C) 2001-2004 by Industrial Technology Institute,
                                 Miyagi Prefectural Government, JAPAN
-    Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
+    Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
                      Tomakomai National College of Technology, JAPAN
-    Copyright (C) 2001-2003 by Kunihiko Ohnaka
-    Copyright (C) 2003 by Katsuhiro Amano
+    Copyright (C) 2001-2004 by Kunihiko Ohnaka
+    Copyright (C) 2004 by Katsuhiro Amano
    
     上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+
     によって公表されている GNU General Public License の Version 2 に記
     述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
     を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
@@ -45,7 +46,7 @@
     含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
     接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
    
-    @(#) $Id: h8.txt,v 1.8 2003/12/20 09:28:17 honda Exp $
+    @(#) $Id: h8.txt,v 1.9 2004/09/03 15:41:36 honda Exp $
 
    ------------------------------------------------------------------------
 
@@ -124,8 +125,7 @@ long long に定義しているが、 コンパイラ (gcc-2.95.3) の制約から、32 ビッ
 UI ビットで全体の割り込みを制御している。
   内蔵ディバイスや外部割込みは個別のレジスタにあるビットのマスクと、割
 込み優先レジスタ (IPRA と IPRB) の個別割り込みの優先度で制御している。
-マスクが分散しているので、 chg_ipm 等の IPM の操作機能はサポートしてい
-ない。
+マスクが分散しているので、 chg_ipm 等の IPM の操作機能はサポートしていない。
 
 2. 3  CPU 例外管理機能と CPU 例外ハンドラ
 
@@ -196,8 +196,7 @@ TIC_NUME と TIC_DENO で定義されており、ディフォルトは 1[ms] 周期である。
 H8/3048F のクロックが 16[MHz] で、 タイマの精度が 0.5[us]、H8/3052F の
 クロックが 25[MHz] で、タイマの精度が 0.32[us]、 H8/3067F、 H8/3068F、
 H8/3069F のクロックが 20[MHz] で、 タイマの精度が 0.4[us] のため、これ
-ら単位で端数になる値を設定すると、 isig_tim の呼出し周期に誤差が発生す
-る。
+ら単位で端数になる値を設定すると、 isig_tim の呼出し周期に誤差が発生する。
   ディフォルトのクロックディバイスは H8/3048F と H8/3052F が ITU0、
 H8/3067F、H8/3068F、H8/3069F が 16 ビットタイマユニット 0 を使用してい
 る。
@@ -205,8 +204,7 @@ H8/3067F、H8/3068F、H8/3069F が 16 ビットタイマユニット 0 を使用してい
 3. 2  性能評価用システム時刻参照機能
 
   H8 では、性能評価用システム時刻参照機能 (vxget_tim) をサポートしてい
-る。精度は 0.5[us] で、SYSUTIM 型は UD 型 (32 ビット符号なし整数型) で
-ある。
+る。精度は 0.5[us] で、SYSUTIM 型は UD 型 (32 ビット符号なし整数型) である。
 
 3. 3  シリアルインタフェースドライバ
 
@@ -492,7 +490,6 @@ sys_config.h の以下の部分を適当に編集する。
     */
    /*#define ENABLE_LOWER_DATA*/
    #define ENABLE_P8_CS        (H8P8DDR_CS0|H8P8DDR_CS1|\
-                                H8P8DDR_CS2|H8P8DDR_CS3)
    /*#define ENABLE_PA_CS      (H8PADDR_CS4|H8PADDR_CS5|H8PADDR_CS6)*/
    /*#define ENABLE_PB_CS       H8PBDDR_CS7*/
    #define ENABLE_PA_A21_A23   (H8BRCR_A23E|H8BRCR_A22E|H8BRCR_A21E)

@@ -33,10 +33,10 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: singleton.h,v 1.11 2003/12/20 06:51:58 takayuki Exp $
+ *  @(#) $Id: singleton.h,v 1.12 2004/09/06 15:00:49 honda Exp $
  */
 
-// $Header: /home/CVS/configurator/base/singleton.h,v 1.11 2003/12/20 06:51:58 takayuki Exp $
+// $Header: /home/CVS/configurator/base/singleton.h,v 1.12 2004/09/06 15:00:49 honda Exp $
 
 #include "base/testsuite.h"
 
@@ -227,7 +227,7 @@ protected:
     {
         T * instance = 0;
         try {
-            instance = new(nothrow) T(getLocker());
+            instance = new(std::nothrow) T(getLocker());
 
             if(instance != 0) {
                 if(!addDestructor(destructor))
@@ -246,7 +246,7 @@ protected:
         //インスタンス生成 (bad_alloc例外をスローする実装)
     static T * createInstance(void) throw(std::bad_alloc)
     {
-        instance = createInstance(nothrow);
+        instance = createInstance(std::nothrow);
         if(instance == 0)
             throw std::bad_alloc();
         return instance;
@@ -265,7 +265,7 @@ public:
     inline static T * getInstance(std::nothrow_t) throw()
     {
         if(instance == 0)
-            instance = createInstance(nothrow);
+            instance = createInstance(std::nothrow);
         return instance;
     }
 

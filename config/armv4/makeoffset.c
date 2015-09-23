@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,9 +35,8 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: makeoffset.c,v 1.6 2003/06/19 17:13:57 honda Exp $
+ *  @(#) $Id: makeoffset.c,v 1.7 2004/09/06 16:00:15 hiro Exp $
  */
-
 
 #include "jsp_kernel.h"
 #include "task.h"
@@ -45,12 +46,12 @@
                         ((INT) &(((structure *) 0)->field))
 
 #define OFFSET_DEF(TYPE, FIELD)						\
-	Asm("! BEGIN\n" #TYPE "_" #FIELD " = %0\n\t! END"		\
+	Asm("OFFSET_DEF " #TYPE "_" #FIELD " = %0"			\
 	  : /* no output */						\
 	  : "g"(offsetof(TYPE, FIELD)))
 
 #define OFFSET_DEF2(TYPE, FIELD, FIELDNAME)				\
-	Asm("! BEGIN\n" #TYPE "_" #FIELDNAME " = %0\n\t! END"		\
+	Asm("OFFSET_DEF " #TYPE "_" #FIELDNAME " = %0"			\
 	  : /* no output */						\
 	  : "g"(offsetof(TYPE, FIELD)))
 
@@ -62,22 +63,16 @@ makeoffset()
     OFFSET_DEF2(TCB, tskctxb.pc, pc);
 }
 
-
-asm("! BIT_REF");
-UW	ref_4 = 0x12345678;
-UH	ref_2 = 0x1234;
-UB	ref_1 = 0x12;
-asm("! END");
-
+UW	BIT_REF_4 = 0x12345678;
+UH	BIT_REF_2 = 0x1234;
+UB	BIT_REF_1 = 0x12;
 
 #ifdef __ARMEL__
-asm("! BIT_LB");
+TCB	BIT_LB_TCB_enatex = {
 #else
-asm("! BIT_BB");
+TCB	BIT_BB_TCB_enatex = {
 #endif /* __ARMEL__ */
-TCB     TCB_enatex = {
                { NULL, NULL }, NULL, 0, 0,
                FALSE, FALSE, TRUE,
                0, NULL, {NULL, NULL }
 };
-asm("! END");

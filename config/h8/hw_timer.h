@@ -3,11 +3,11 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_timer.h,v 1.8 2003/11/11 10:07:15 honda Exp $
+ *  @(#) $Id: hw_timer.h,v 1.9 2004/09/03 15:39:07 honda Exp $
  */
 
 #ifndef _HW_TIMER_H_
@@ -96,7 +96,8 @@ Inline void
 hw_timer_int_clear(void)
 {
     /* GRAコンペアマッチの割り込み要求フラグをクリア */
-    /*outb(SYSTEM_TIMER_IFR, inb(SYSTEM_TIMER_IFR) & ~SYSTEM_TIMER_IF);*/
+    /*sil_wrb_mem((VP)SYSTEM_TIMER_IFR,
+                  sil_reb_mem((VP)SYSTEM_TIMER_IFR) & ~SYSTEM_TIMER_IF);*/
     UW addr = SYSTEM_TIMER_IFR;
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
@@ -116,30 +117,32 @@ hw_timer_initialize()
     UW addr = SYSTEM_TIMER_TSTR;
 
     /* タイマ停止 */
-    /*outb(SYSTEM_TIMER_TSTR, inb(SYSTEM_TIMER_TSTR) & ~SYSTEM_TIMER_STR);*/
+    /*sil_wrb_mem((VP)SYSTEM_TIMER_TSTR,
+                  sil_reb_mem((VP)SYSTEM_TIMER_TSTR) & ~SYSTEM_TIMER_STR);*/
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
 	BITCLR(_TO_STRING(SYSTEM_TIMER_STR_BIT));
 #undef  BITCLR
 
     /*  GRAコンペアマッチでカウンタをクリア、分周比設定 */
-    outb(SYSTEM_TIMER_TCR, SYSTEM_TIMER_TCR_BIT);
+    sil_wrb_mem((VP)SYSTEM_TIMER_TCR, SYSTEM_TIMER_TCR_BIT);
 
     /*  GRAコンペアマッチによる割込み要求を許可 */
-    outb(SYSTEM_TIMER_IER, SYSTEM_TIMER_IE);
+    sil_wrb_mem((VP)SYSTEM_TIMER_IER, SYSTEM_TIMER_IE);
 
     /*  GRAコンペアマッチによる端子出力禁止 */
-    outb(SYSTEM_TIMER_TIOR, SYSTEM_TIMER_TIOR_BIT);
+    sil_wrb_mem((VP)SYSTEM_TIMER_TIOR, SYSTEM_TIMER_TIOR_BIT);
 
     /*  GRAレジスタ設定（カウンタ目標値）  	*/
-    outw(SYSTEM_TIMER_GR, CLOCK_PER_TICK);
+    sil_wrh_mem((VP)SYSTEM_TIMER_GR, CLOCK_PER_TICK);
 
-    outw(SYSTEM_TIMER_CNT, 0);	/* カウンタをクリア	*/
+    sil_wrh_mem((VP)SYSTEM_TIMER_CNT, 0);	/* カウンタをクリア	*/
 
-    hw_timer_int_clear();		/*  割込み要求をクリア  */
+    hw_timer_int_clear();			/*  割込み要求をクリア	*/
 
     /* タイマスタート */
-    /*outb(SYSTEM_TIMER_TSTR, inb(SYSTEM_TIMER_TSTR) | SYSTEM_TIMER_STR);*/
+    /*sil_wrb_mem((VP)SYSTEM_TIMER_TSTR,
+                  sil_reb_mem((VP)SYSTEM_TIMER_TSTR) | SYSTEM_TIMER_STR);*/
 
 #define BITSET(bit)	Asm("bset #" bit ", @%0" : : "r"(addr))
 	BITSET(_TO_STRING(SYSTEM_TIMER_STR_BIT));
@@ -156,7 +159,8 @@ hw_timer_terminate()
     UW addr = SYSTEM_TIMER_TSTR;
 
     /* タイマ停止 */
-    /*outb(SYSTEM_TIMER_TSTR, inb(SYSTEM_TIMER_TSTR) & ~SYSTEM_TIMER_STR);*/
+    /*sil_wrb_mem((VP)SYSTEM_TIMER_TSTR,
+                  sil_reb_mem((VP)SYSTEM_TIMER_TSTR) & ~SYSTEM_TIMER_STR);*/
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
 	BITCLR(_TO_STRING(SYSTEM_TIMER_STR_BIT));
@@ -174,7 +178,7 @@ hw_timer_terminate()
 Inline CLOCK
 hw_timer_get_current(void)
 {
-	return((CLOCK)(inw(SYSTEM_TIMER_CNT)));
+	return((CLOCK)(sil_reh_mem((VP)SYSTEM_TIMER_CNT)));
 }
 
 /*
@@ -184,7 +188,7 @@ hw_timer_get_current(void)
 Inline BOOL
 hw_timer_fetch_interrupt(void)
 {
-	return(inb(SYSTEM_TIMER_IFR) & SYSTEM_TIMER_IF);
+	return(sil_reb_mem((VP)SYSTEM_TIMER_IFR) & SYSTEM_TIMER_IF);
 }
 
 #endif	/* of #ifndef _MACRO_ONLY */

@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h,v 1.8 2003/12/24 07:34:37 honda Exp $
+ *  @(#) $Id: sys_config.h,v 1.9 2004/09/06 13:51:36 honda Exp $
  */
 
 
@@ -68,8 +68,6 @@
 #define LOGTASK_PORTID	1
 
 #ifndef _MACRO_ONLY
-extern  INT  board_id;
-extern  INT  board_addr;
 
 
 extern void sys_initialize(void);

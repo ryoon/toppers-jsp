@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: devicecontrol.h,v 1.5 2003/12/24 07:37:57 takayuki Exp $
+ *  @(#) $Id: devicecontrol.h,v 1.6 2004/01/18 08:59:29 takayuki Exp $
  */
 
 #ifndef __DEVICECONTROL_H_
@@ -91,7 +91,7 @@ class ATL_NO_VTABLE CDeviceControl :
 public:
 	CDeviceControl()
         :   cookie(), manager(), KernelStarted(false),
-            DataPointer(0), Limitation(0), Offset(0), AccessSize(0)
+            DataPointer(0), Limitation(0), Offset(0), AccessSize(1)
     {
         m_bWindowOnly = TRUE;
     }

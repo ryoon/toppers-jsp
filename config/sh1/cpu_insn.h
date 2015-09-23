@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_insn.h,v 1.7 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: cpu_insn.h,v 1.11 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -67,11 +67,12 @@ set_sr(UW sr)
 
 /*
  *  NMIを除くすべての割込みを禁止
+ *  　（カーネルが管理する割込みのみ禁止）
  */
 Inline void
 disint()
 {
-    set_sr((current_sr() & ~0x000000f0u) |  MAX_IPM << 4 );
+    set_sr((current_sr() & ~0x000000f0u) |  (MAX_IPM << 4) );
 }
 
 /*
@@ -107,7 +108,8 @@ set_vbr(VP vbr)
 /*
  *  レディキューサーチのためのビットマップサーチ関数
  *
- *　　機種非依存部で用意する関数を利用
+ *　　機種非依存部で用意する関数を利用するので
+ *　　CPU_BITMAP_SEARCHマクロは定義しない
  */
 
 #endif /* _CPU_INSN_H_ */

@@ -6,6 +6,8 @@
 # 
 #  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
+#  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+#              Graduate School of Information Science, Nagoya Univ., JAPAN
 # 
 #  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
 #  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +36,7 @@
 #  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
 #  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: makedep,v 1.9 2003/12/24 07:44:30 honda Exp $
+#  @(#) $Id: makedep,v 1.10 2004/09/06 16:05:12 hiro Exp $
 # 
 
 require "getopt.pl";
@@ -123,6 +125,7 @@ sub makedepend_one {
 	while ($line = <INPUT>) {
 		if ($line =~ /^\#\s*([0-9]+)\s*\"([^\"]+)\"/) {
 			$filename = $2;
+			$filename =~ s/ /\\ /;
 			if ($filename !~ /^\<.*\>$/) {
 				$dependlist{$filename} = 1;
 			}

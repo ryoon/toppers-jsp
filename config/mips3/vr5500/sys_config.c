@@ -46,36 +46,64 @@ ICU_IPM icu_intmask_table[ TMAX_ALL_INTNO ];
  *  ターゲットシステム依存 初期化ルーチン
  */
 void sys_initialize() {
-	/*
-	 *  割込みコントローラの割込みマスクの初期化
-	 */
+
 	ICU_IPM icu_ipm0 = {INIT_INT0M, INIT_INT1M};
 
-	/*  割込みコントローラICUのIPM初期化  */
+	/*
+	 *  外部割込みコントローラの割込みマスクの初期化
+	 */
 	icu_set_ipm( &icu_ipm0 );
 
 	/*
-	 *  シリアルコントローラの初期化 
-	 *  (GDB_STUBを定義しているときは、TNUM_PORT = 1)
+	 *  バナー表示用シリアルポートの初期化
 	 */
-	scc_init( (VP) UART_CH01 );	/* SCC0用 */
-#if TNUM_PORT >= 2
-	scc_init( (VP) UART_CH02 );	/* SCC1用 */
-#endif /* TNUM_PORT >= 2 */
-
+	sio_init();
 }
 
 /*
  *  ターゲットシステムの終了ルーチン
  */
 void sys_exit(void) {
+
+#ifndef GDB_STUB
+	while (1);
+#else	/*  GDB_STUB  */
 	vr5500_exit();
+#endif	/*  GDB_STUB  */
+
 }
+
+/*
+ *  GDB STUB / 直接呼出し コンソール呼出しルーチン
+ */
+
+/*
+ *  gdb stub によるコンソール出力
+ */
+/* a0($4) = 0xfe00, a1($5) = 出力したいキャラクタ を代入して、
+   SYSCALL 例外を発生させる。 */
+
+/* この関数を呼び出す時には、ステータスレジスタのEXLビット = 0 で呼び出すこと。
+   なお、現在、カーネルでは、バナー表示時、シリアル出力時に呼出を行っている。*/
+Inline void stub_putc(int c) {
+
+	Asm("	move	$5, %0;		\
+	     	li	$4, 0xfe00;	\
+		syscall;		\
+		nop"
+		:: "r"(c)
+		: "$4","$5" );
+}
+
+#ifdef GDB_STUB
+#define vr5500_putc(c) stub_putc( c )
+#else  /* GDB_STUB */
+#define	vr5500_putc(c) sio_snd_chr_pol( c )
+#endif /* GDB_STUB */
 
 /*
  *   システム文字出力先の指定
  */
-
 void
 sys_putc(char c)
 {

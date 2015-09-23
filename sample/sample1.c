@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.17 2003/12/20 08:11:59 hiro Exp $
+ *  @(#) $Id: sample1.c,v 1.20 2004/06/05 14:39:14 honda Exp $
  */
 
 /* 
@@ -116,10 +118,10 @@ UW	tex_loop;		/* 例外処理ルーチン内でのループ回数 */
 void task(VP_INT exinf)
 {
 	volatile UW	i;
-	INT	n = 0;
-	INT	tskno = (INT) exinf;
-	char	*graph[] = { "|", "  +", "    *" };
-	char	c;
+	INT		n = 0;
+	INT		tskno = (INT) exinf;
+	const char	*graph[] = { "|", "  +", "    *" };
+	char		c;
 
 	ena_tex();
 	while (1) {
@@ -316,7 +318,7 @@ void main_task(VP_INT exinf)
 			syscall(ercd = can_act(tskid));
 			if (MERCD(ercd) >= 0) {
 				syslog(LOG_NOTICE, "can_act(%d) returns %d",
-						tskid, ercd);
+						tskno, ercd);
 			}
 			break;
 		case 't':
@@ -340,7 +342,7 @@ void main_task(VP_INT exinf)
 			syscall(ercd = get_pri(tskid, &tskpri));
 			if (MERCD(ercd) >= 0) {
 				syslog(LOG_NOTICE, "priority of task %d is %d",
-						tskid, tskpri);
+						tskno, tskpri);
 			}
 			break;
 		case 'w':
@@ -352,7 +354,7 @@ void main_task(VP_INT exinf)
 			syscall(ercd = can_wup(tskid));
 			if (MERCD(ercd) >= 0) {
 				syslog(LOG_NOTICE, "can_wup(%d) returns %d",
-						tskid, ercd);
+						tskno, ercd);
 			}
 			break;
 		case 'l':
@@ -372,11 +374,11 @@ void main_task(VP_INT exinf)
 			syscall(frsm_tsk(tskid));
 			break;
 		case 'x':
-			syslog(LOG_INFO, "#ras_tsk(%d, 0x0001)", tskno);
+			syslog(LOG_INFO, "#ras_tex(%d, 0x0001)", tskno);
 			syscall(ras_tex(tskid, 0x0001));
 			break;
 		case 'X':
-			syslog(LOG_INFO, "#ras_tsk(%d, 0x0002)", tskno);
+			syslog(LOG_INFO, "#ras_tex(%d, 0x0002)", tskno);
 			syscall(ras_tex(tskid, 0x0002));
 			break;
 		case 'r':

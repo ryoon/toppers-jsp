@@ -60,65 +60,15 @@
 
 /*============================================================================*/
 
-/*
- *  GDB STUB / PARTNER-Jシステムコール / 直接呼出し コンソール呼出しルーチン
- *  (PARTNER-J はテストしていません。)
- */
-
-/*
- *  gdb stub によるコンソール出力
- */
-/* a0($4) = 0xfe00, a1($5) = 出力したいキャラクタ を代入して、
-   SYSCALL 例外を発生させる。 */
 #ifndef _MACRO_ONLY
 
-/* この関数を呼び出す時には、ステータスレジスタのEXLビット = 0 で呼び出すこと。
-   なお、現在、カーネルでは、バナー表示時、シリアル出力時に呼出を行っている。*/
-Inline void stub_putc(int c) {
-
-	Asm("	move	$5, %0;		\
-	     	li	$4, 0xfe00;	\
-		syscall;		\
-		nop"
-		:: "r"(c)
-		: "$4","$5" );
-}
-
-#endif /* _MACRO_ONLY */
-
-#ifdef GDB_STUB
-#define vr5500_putc(c) stub_putc(c)
-#else  /* GDB_STUB */
-#define	vr5500_putc(c) tl16pir552_write_por( (VP) UART_CH01, THR, (UB) c )
-#endif /* GDB_STUB */
-
-/*
- *  PARTNER-J のシステムコールによるコンソール出力（テストしていません。）
- */
-#ifndef _MACRO_ONLY
-
-Inline void partner_putc(int c) {
-
-	Asm("	move	$2, %0;		\
-		li	$1, 0xfe00;	\
-		jal	SYSCALL;	\
-		nop"
-		:: "r"(c)
-		: "$1","$2" );
-}
-
-#endif /* _MACRO_ONLY */
-
-#ifdef PARTNER_J	/* PARTNER_J の場合 *
-#define vr5500_putc(c) partner_putc(c)
-#else  /* GDB_STUB */
-#define	vr5500_putc(c) tl16pir552_write_por( (VP) UART_CH01, THR, (UB) c )
-#endif /* GDB_STUB */
-
-#ifndef _MACRO_ONLY
 Inline void
 vr5500_exit() {
+	while(1);
+	/* GDB_STUB 使用時には、STUBの頭に飛ぶ処理が必要かも。 */
 }
+
 #endif /* _MACRO_ONLY */
 
 #endif /* _VR5500_H_  */
+

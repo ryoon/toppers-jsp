@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2003 Takagi Nobuhisa
+ *  Copyright (C) 2003-2004 Takagi Nobuhisa
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cxx_sample1.cpp,v 1.3 2003/12/24 08:33:32 honda Exp $
+ *  @(#) $Id: cxx_sample1.cpp,v 1.6 2004/09/17 09:11:34 honda Exp $
  */
 
 /* 
@@ -319,7 +319,7 @@ void main_task(VP_INT exinf)
 			syscall(ercd = can_act(tskid));
 			if (MERCD(ercd) >= 0) {
 				syslog(LOG_NOTICE, "can_act(%d) returns %d",
-						tskid, ercd);
+						tskno, ercd);
 			}
 			break;
 		case 't':
@@ -343,7 +343,7 @@ void main_task(VP_INT exinf)
 			syscall(ercd = get_pri(tskid, &tskpri));
 			if (MERCD(ercd) >= 0) {
 				syslog(LOG_NOTICE, "priority of task %d is %d",
-						tskid, tskpri);
+						tskno, tskpri);
 			}
 			break;
 		case 'w':
@@ -355,7 +355,7 @@ void main_task(VP_INT exinf)
 			syscall(ercd = can_wup(tskid));
 			if (MERCD(ercd) >= 0) {
 				syslog(LOG_NOTICE, "can_wup(%d) returns %d",
-						tskid, ercd);
+						tskno, ercd);
 			}
 			break;
 		case 'l':
@@ -375,11 +375,11 @@ void main_task(VP_INT exinf)
 			syscall(frsm_tsk(tskid));
 			break;
 		case 'x':
-			syslog(LOG_INFO, "#ras_tsk(%d, 0x0001)", tskno);
+			syslog(LOG_INFO, "#ras_tex(%d, 0x0001)", tskno);
 			syscall(ras_tex(tskid, 0x0001));
 			break;
 		case 'X':
-			syslog(LOG_INFO, "#ras_tsk(%d, 0x0002)", tskno);
+			syslog(LOG_INFO, "#ras_tex(%d, 0x0002)", tskno);
 			syscall(ras_tex(tskid, 0x0002));
 			break;
 		case 'r':

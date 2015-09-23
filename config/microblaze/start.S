@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.6 2003/12/24 07:30:16 honda Exp $
+ *  @(#) $Id: start.S,v 1.9 2004/02/05 09:16:25 honda Exp $
  */
 
 #define _MACRO_ONLY
@@ -48,12 +48,28 @@
  *  # 0x10 #		Imm instr for interrupt address [Hi halfword]
  *  # 0x14 #		Jump to interrupt handler       [Lo halfword]
  */
-    
+
+        
 	.text
 	.global _start
 	.align  2
     .ent _start
 _start:
+    /*
+     *  msrを初期化
+     */
+    la   r1, r0, MSR_CACHE_SETTING         
+    mts  rmsr,r1 
+                
+    /*
+     *  opb_mdm を使うと msr のBIPビットが'1'で実行されるため，
+     *  rtbd命令により'0'に初期化する．
+     *  stub を使う場合は必要ないが特に副作用がないため，無条件に実行する．
+     */
+    la    r1, r0, _start_
+    rtbd  r1,0
+_start_:        
+               
     /*
      * R2とR3の設定
      *・R2  : Read-only small data area anchor
@@ -145,8 +161,50 @@ start_2:
      *  dataセクションの初期化は行わない
      *  ただし場合によっては実装することを考えてラベルのみ定義しておく
 	 */
-start_3:	
+start_3:
+	la    r3,  r0,  __idata_start
+	la    r4,  r0,  __idata_end
+	sub   r5,  r4,  r3     /* サイズをチェック */
+	beqi  r5,  start_5
+	la    r6,  r0,  __data_start
 start_4:
+	lbu   r7,  r0,  r3
+    sb    r7,  r0,  r6
+	addi  r3,  r3,  1
+	addi  r6,  r6,  1
+	sub   r5,  r4,  r3
+	bgti  r5,  start_4
+
+
+start_5:
+	la    r3,  r0,  __isdata2_start
+	la    r4,  r0,  __isdata2_end
+	sub   r5,  r4,  r3     /* サイズをチェック */
+	beqi  r5,  start_7
+	la    r6,  r0,  __sdata2_start
+start_6:
+	lbu   r7,  r0,  r3
+    sb    r7,  r0,  r6
+	addi  r3,  r3,  1
+	addi  r6,  r6,  1
+	sub   r5,  r4,  r3
+	bgti  r5,  start_6
+
+
+start_7:
+	la    r3,  r0,  __isdata_start
+	la    r4,  r0,  __isdata_end
+	sub   r5,  r4,  r3     /* サイズをチェック */
+	beqi  r5,  start_9
+	la    r6,  r0,  __sdata_start
+start_8:
+	lbu   r7,  r0,  r3
+    sb    r7,  r0,  r6
+	addi  r3,  r3,  1
+	addi  r6,  r6,  1
+	sub   r5,  r4,  r3
+	bgti  r5,  start_8
+
 
 	/*
 	 *  _software_init_hook を呼び出す（0 でない場合）．
@@ -155,12 +213,12 @@ start_4:
 	 *  理がある場合は，software_init_hook という関数を用意すれば
 	 *  よい．
 	 */
-start_5:
+start_9:
 	la    r3,  r0,  _software_init_hook
-	beqi  r3,  start_6
+	beqi  r3,  start_10
 	brald r15, r3
 	nop
 
-start_6:
+start_10:
 	brlid	r15, kernel_start
     addik r1,r1,4            /* スタックを元に戻す */

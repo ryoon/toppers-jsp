@@ -47,6 +47,8 @@
 /*
  *  ターゲットハードウェア依存する初期化処理
  */
+#ifndef GDB_STUB
+
 	.section .reset
 	.global	hardware_init_hook
 
@@ -141,21 +143,24 @@ loop_sram_clear:
 	addiu	t1, t1, -4
 
 	/* 割り込みコントローラの設定 */
-	sb	zero, 0xb9000020	/* PIC_INTR；割込み要求のクリア */
-	li	t0, 0x01		/* 割込み線のうち、1本のみ使う */
+	sb	zero, 0xb9000000	/* PIC_INT0M；全割込みのマスク */
+	sb	zero, 0xb9000010	/* PIC_INT1M；全割込みのマスク */
+	sb	zero, 0xb9000020	/* PIC_INTR ；割込み要求のクリア */
+	li	t0, 0x01		/* 割込み線は片方のみ使う */
 	sb	t0, 0xb9000030		/* PIC_INTEN */
 
 	/*----------*/
 
-
 	j	ra		/*  呼び出し元へリターン  */
 	nop
+
+#endif /* GDB_STUB */
 
 /*============================================================================*/
 
 /* 割込み処理に関する、割込み要因の判断分岐処理のシステム依存部 */
 
-	.align 3
+	.align 2
 	.section .text
 	.global proc_interrupt_sys
 	.global int_table	/* 割込みハンドラの擬似ベクタテーブル
@@ -184,6 +189,10 @@ proc_interrupt_sys:
 	bne     t9, zero, proc_IP6
 	nop
 
+	/* なんらかの原因で分岐できない場合 */
+	j       join_interrupt_and_exception
+	nop
+
 /*  MIPS3コアレベルで分岐したレベルでの処理	*/
 /*    割込み要因番号をt0に入れて		*/
 /*    割込み要求クリアのための定数をt1に入れて	*/
@@ -210,11 +219,11 @@ proc_IP2:   /*  割込み要因IP2の場合  */
 	xori    t1, zero, Cause_IP2
 	j       set_ICU_IPM
 	nop
-#else
+#else /* PROC_INT0 */
 	xori    t1, zero, Cause_IP2
 	j       set_ICU_IPM
 	ori     t0, zero, INTNO_IP2
-#endif
+#endif /* PROC_INT0 */
 
 proc_IP3:   /*  割込み要因IP3の場合  */ 
             /*    割込みコントローラ依存の定義があれば、そちらを実行する  */
@@ -223,11 +232,11 @@ proc_IP3:   /*  割込み要因IP3の場合  */
 	xori    t1, zero, Cause_IP3
 	j       set_ICU_IPM
 	nop
-#else
+#else /* PROC_INT1 */
 	xori    t1, zero, Cause_IP3
 	j       set_ICU_IPM
 	ori     t0, zero, INTNO_IP3
-#endif
+#endif /* PROC_INT1 */
 
 proc_IP4:   /*  割込み要因IP4の場合  */ 
             /*    割込みコントローラ依存の定義があれば、そちらを実行する  */
@@ -236,11 +245,11 @@ proc_IP4:   /*  割込み要因IP4の場合  */
 	xori    t1, zero, Cause_IP4
 	j       set_ICU_IPM
 	nop
-#else
+#else /* PROC_INT2 */
 	xori    t1, zero, Cause_IP4
 	j       set_ICU_IPM
 	ori     t0, zero, INTNO_IP4
-#endif
+#endif /* PROC_INT2 */
 
 proc_IP5:   /*  割込み要因IP5の場合  */ 
             /*    割込みコントローラ依存の定義があれば、そちらを実行する  */
@@ -249,30 +258,30 @@ proc_IP5:   /*  割込み要因IP5の場合  */
 	xori    t1, zero, Cause_IP5
 	j       set_ICU_IPM
 	nop
-#else
+#else /* PROC_INT3 */
 	xori    t1, zero, Cause_IP5
 	j       set_ICU_IPM
 	ori     t0, zero, INTNO_IP5
-#endif
+#endif /* PROC_INT3 */
 
 proc_IP6:   /*  割込み要因IP6の場合  */ 
             /*    割込みコントローラ依存の定義があれば、そちらを実行する  */
 #ifdef PROC_INT4
 	PROC_INT4		/* システム依存部で定義するマクロ */
 	xori    t1, zero, Cause_IP6
-#else
+#else /* PROC_INT4 */
 	xori    t1, zero, Cause_IP6
 	ori     t0, zero, INTNO_IP6
-#endif
+#endif /* PROC_INT4 */
 
 /*  割込みコントローラ依存のマスク設定  */
 set_ICU_IPM:
 
 #ifdef SET_ICU_IPM
-	SET_ICU_IPM	/* システム依存部で定義するマクロ		    */
+	SET_ICU_IPM	/* 割込みマスクを設定するマクロ			    */
 			/*   実装を行うときには、下記にてt0、t1は利用するの */
 			/*   で破壊しないように、注意しなければならない。   */
-#endif
+#endif /* SET_ICU_IPM */
 
 /*
  *  原因レジスタIPビットに保持されている各種割込みの割込み要求をクリアする。
@@ -289,7 +298,7 @@ set_ICU_IPM:
 				      TNT_TABLE型は、
 					ハンドラのアドレス(4バイト)
 					＋MIPS3コアの割込みマスク(4バイト)
-				      8バイト。 */
+				      の、合計8バイト。 */
 	add     t5, t3, t4      /*  ベクタアドレスを算出  */
 	lw      t6, INT_TABLE_intmask(t5)
            		    	/*  IPM(割込み許可ビット)読み出し。

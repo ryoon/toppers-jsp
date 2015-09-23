@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: fc_binutils.cpp,v 1.19 2003/12/20 06:51:58 takayuki Exp $
+ *  @(#) $Id: fc_binutils.cpp,v 1.21 2004/09/04 15:50:13 honda Exp $
  */
 
 #if defined(FILECONTAINER_BINUTILS) || defined(TESTSUITE)
@@ -171,8 +171,11 @@ namespace {
             }
         }
 
-        file.clear();
-        file.seekg(0, ios::beg);    //先頭に戻しておく
+		if(!result) {
+	        file.clear();
+    	    file.seekg(0, ios::beg);    //先頭に戻しておく
+		}
+
         return result;
     }
 
@@ -207,10 +210,6 @@ namespace {
             ExceptionMessage("Program failed to convert the binary '%' into suitable style. Please specify a suitable TEXT file.",
                             "プログラムはバイナリファイル'%'の変換に失敗しました。正しいテキストファイルを指定し直してください。")
                                 << filename << throwException;
-
-            /* テキストモードで開きなおす */
-        file.close();
-        file.open(filename.c_str(), ios::in);
     }
 
         /* 一時的なファイル名の生成 */
@@ -218,7 +217,7 @@ namespace {
     {
         static char filename[10];
 
-    sprintf(filename, "cfg%06x", (int)(rand() & 0xffffffl));
+        sprintf(filename, "cfg%06x", (int)(rand() & 0xffffffl));
 
         return filename;
     }
@@ -234,6 +233,9 @@ namespace {
 
         symfile.assign(makeTemporaryFilename());
         cmdline = string(CMD_GNUNM) + " " + filename + " > " + symfile;
+        VerboseMessage("[EXEC] %\n") << cmdline;
+
+		system(cmdline.c_str());
 
             /* 正しく開けたらファイルを削除 */
         file.open(symfile.c_str(), ios::in);
@@ -251,7 +253,10 @@ namespace {
         string srecfile;
 
         srecfile.assign(makeTemporaryFilename());
-        cmdline = string(CMD_GNUNM) + " -F srec " + filename + " " + srecfile;
+        cmdline = string(CMD_GNUOBJCOPY) + " -F srec " + filename + " " + srecfile;
+        VerboseMessage("[EXEC] %\n") << cmdline;
+
+		system(cmdline.c_str());
 
             /* 正しく開けたらファイルを削除 */
         file.open(srecfile.c_str(), ios::in);
@@ -343,6 +348,8 @@ namespace {
         while(readGnuNmLine(file, address, attribute, symbolname)) {
             symbol_table.insert(map<string, address_t>::value_type(symbolname, address));
         }
+
+		VerboseMessage("% symbols loaded\n") << symbol_table.size() << &throwException;
 
         file.close();
     }

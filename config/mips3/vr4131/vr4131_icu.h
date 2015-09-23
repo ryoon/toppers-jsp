@@ -39,17 +39,11 @@
 #ifndef _VR4131_ICU_H_
 #define _VR4131_ICU_H_
 
-#include <kz-vr4131pci-01.h>	/* BASE_ADDR */
-
-#ifndef _MACRO_ONLY
-#include <sil.h>
-#endif /* _MACRO_ONLY */
-
 /*
  *  割込みコントローラ(ICU)関係の定義
  */
 
-/*  割込み番号の定義（0-7はmips3.hで使用。8以降を指定する。） */
+/*  割込み番号の定義（0-7番は mips3.h で使用。8番以降を指定する。） */
 /*  SYSINT1REG  */
 #define INTNO_BAT        8	/*  バッテリ割込み  */
 #define INTNO_POWER      9	/*  パワースイッチ割込み  */
@@ -75,8 +69,9 @@
 #define TMAX_ICU_INTNO	17u
 
 /*  割込みコントローラのレジスタのアドレス定義  */
-/* 以下のxxx_offsetは、アセンブラで使う。 */
-#define ICU_BASE_ADDR	(BASE_ADDR + 0x0f000000)
+/* 以下の xxx_asm、xxx_offset は、アセンブラでの利用向け。 */
+#define ICU_BASE_ADDR		0x0f000000
+#define ICU_BASE_ADDR_asm	ASM_SIL( ICU_BASE_ADDR )
 
 #define SYSINT1_offset		0x80
 #define MSYSINT1_offset		0x8c
@@ -84,9 +79,12 @@
 #define SYSINT2_offset		0xa0
 #define MSYSINT2_offset		0xa6
 
-#define MSYSINT1REG	(ICU_BASE_ADDR + MSYSINT1_offset)	/* システム割込みマスクレジスタ1(レベル1) */
-#define MDSIUINTREG	(ICU_BASE_ADDR + MDSIUINT_offset)	/* DSIU割込みマスクレジスタ(レベル2)  */
-#define MSYSINT2REG	(ICU_BASE_ADDR + MSYSINT2_offset)	/* システム割込みマスクレジスタ2(レベル1) */
+#define MSYSINT1REG	(ICU_BASE_ADDR + MSYSINT1_offset)
+				/* システム割込みマスクレジスタ1(レベル1) */
+#define MDSIUINTREG	(ICU_BASE_ADDR + MDSIUINT_offset)
+				/* DSIU割込みマスクレジスタ(レベル2)  */
+#define MSYSINT2REG	(ICU_BASE_ADDR + MSYSINT2_offset)
+				/* システム割込みマスクレジスタ2(レベル1) */
 
 /*  割込み要因ビットパターン (下記、アセンブラ部分でも利用している。) */
 /* MSYSINT1REG / SYSINT1REG 関係 */
@@ -98,6 +96,7 @@
 #define RTCL1INTR	BIT2	/* RTCLong1タイマ 割込み */
 #define POWERINTR	BIT1	/* パワースイッチ割込み */
 #define BATINTR		BIT0	/* バッテリ割込み */
+
 /* MSYSINT2REG / SYSINT2REG 関係 */
 #define BCUINTR		BIT9	/* BCU 割込み */
 #define CSIINTR		BIT8	/* CSI 割込み */
@@ -108,18 +107,16 @@
 #define TCLKINTR	BIT3	/* VTClockカウンタ 割込み */
 #define LEDINTR		BIT1	/* LED 割込み */
 #define RTCL2INTR	BIT0	/* RTCLong2 割込み */
+
 /* MDSIUINTREG 関係 */
 #define INTDSIU  	BIT11	/* DSIUの変化割込み許可 */
-
-/* 割込みコントローラ内のレジスタアクセス用の関数  */
-#define vr4131_icu_read( reg )		sil_reh_mem( reg )
-#define vr4131_icu_write( reg, val )	sil_wrh_mem( reg, val )
 
 /*
  *  割込みコントローラの割込みマスク関係
  */
 
-/*  構造体ICU_IPM内のオフセットを求めるためのマクロ（makeoffset.cで用いる）*/
+/*  構造体ICU_IPM内のオフセットを求めるためのマクロ（makeoffset.cで用いる）
+    なお、このマクロで定義した値は、特に利用していない。*/
 #define OFFSET_DEF_ICU_IPM	OFFSET_DEF(ICU_IPM, msysint2)
 
 /*  MSYSINT1,2に設定してはいけないビット  */
@@ -138,22 +135,22 @@ extern ICU_IPM icu_intmask_table[];
 
 /*  割込みコントローラのintmaskテーブルの設定  */
 Inline void icu_set_ilv(INTNO intno, ICU_IPM *ipm) {
-	/* CHECK_ICU_IPM(ipm); ERR型でリターンしてしまうので不可  */
+	/* CHECK_ICU_IPM(ipm) は、上位ルーチンで実行済み */
 	icu_intmask_table[intno].msysint1 = ipm->msysint1;
 	icu_intmask_table[intno].msysint2 = ipm->msysint2;
 }
 
 /*  割り込みコントローラのマスク設定  */
 Inline void icu_set_ipm(ICU_IPM *ipm) {
-	/* CHECK_ICU_IPM(ipm); ERR型でリターンしてしまうので不可  */
-	vr4131_icu_write( (VP) MSYSINT1REG, ipm->msysint1 );
-	vr4131_icu_write( (VP) MSYSINT2REG, ipm->msysint2 );
+	/* CHECK_ICU_IPM(ipm) は、上位ルーチンで実行済み */
+	vr4131_wrh_mem( (VP) MSYSINT1REG, ipm->msysint1 );
+	vr4131_wrh_mem( (VP) MSYSINT2REG, ipm->msysint2 );
 }
 
 /*  割り込みコントローラのマスク取得  */
 Inline void icu_get_ipm(ICU_IPM *ipm) {
-	ipm->msysint1 = vr4131_icu_read( (VP) MSYSINT1REG );
-	ipm->msysint2 = vr4131_icu_read( (VP) MSYSINT2REG );
+	ipm->msysint1 = vr4131_reh_mem( (VP) MSYSINT1REG );
+	ipm->msysint2 = vr4131_reh_mem( (VP) MSYSINT2REG );
 }
 
 #endif /* _MACRO_ONLY */
@@ -164,7 +161,7 @@ Inline void icu_get_ipm(ICU_IPM *ipm) {
 /*  割込み許可ビットの待避と復元  */
 /*  割込みコントローラICUのIPMをスタックに保存  */
 #define PUSH_ICU_IPM						\
-    li      t1, ICU_BASE_ADDR;					\
+    li      t1, ICU_BASE_ADDR_asm;				\
     addi    sp, sp, -2*2;					\
     lh      t3, MSYSINT1_offset(t1);	/* t3 = MSYSINT1REG */	\
     lh      t4, MSYSINT2_offset(t1);	/* t4 = MSYSINT2REG */	\
@@ -173,7 +170,7 @@ Inline void icu_get_ipm(ICU_IPM *ipm) {
 
 /*  割込みコントローラICUのIPMをスタックから復元  */
 #define POP_ICU_IPM							      \
-    li      t1, ICU_BASE_ADDR;						      \
+    li      t1, ICU_BASE_ADDR_asm;					      \
     lw      t3, (sp);			/* t3 = MSYSINT2REG:MSYSINT1REG */    \
 					/* 注意：リトルエンディアン依存 */    \
     sh      t3, MSYSINT1_offset(t1);	/* MSYSINT1REG = t3の下位2バイト*/    \
@@ -188,7 +185,7 @@ Inline void icu_get_ipm(ICU_IPM *ipm) {
 #define SET_ICU_IPM							      \
     la      t4, icu_intmask_table;	/* データテーブルの先頭アドレス */    \
     sll     t2, t0, 2;			/* オフセット＝割込み要因番号×4倍 */ \
-    li      t3, ICU_BASE_ADDR;						      \
+    li      t3, ICU_BASE_ADDR_asm;					      \
     add     t4, t4, t2;			/* 先頭アドレス＋オフセット */        \
     lw      t5, (t4);			/* t5 = MSYSINT2REG:MSYSINT1REG */    \
 					/* 注意：リトルエンディアン依存 */    \
@@ -196,8 +193,8 @@ Inline void icu_get_ipm(ICU_IPM *ipm) {
     srl     t6, t5, 16;							      \
     sh      t6, MSYSINT2_offset(t3)	/* MSYSINT2REG = t5の上位2バイト */
 
-/*  デバイス名から個別処理を展開するマクロ  */
-/*    割込み要因をt0に入れてproc_ENDに飛ぶ  */
+/*  デバイス名から個別処理を展開するマクロ
+      割込み要因を t0 に入れて proc_END に飛ぶ  */
 #define MAKE_PROC(device)	\
 proc_##device:			\
     li      t0, INTNO_##device;	\
@@ -208,7 +205,7 @@ proc_##device:			\
 /*    割込みコントローラはMIPS3コアのInt0に接続されているマスクのチェック */
 #define PROC_INT0						\
 /*  タイマの応答性を上げるため、SYSINT2REGから調べる  */	\
-    li      t1, ICU_BASE_ADDR;					\
+    li      t1, ICU_BASE_ADDR_asm;				\
     lh      t3, SYSINT2_offset(t1);    /* t3 = SYSINT2REG */	\
     lh      t4, MSYSINT2_offset(t1);   /* t4 = MSYSINT2REG */	\
     and     t5, t3, t4;     /*  割込み要求ビットにマスク  */	\
@@ -315,10 +312,15 @@ proc_END:
 	/* VR4131の場合、Cause_IP5とCause_IP6は未接続なので省略 */		\
 	/*（ハードウェア編p196参照）*/						\
 										\
-/*  MIPS3コアレベルで分岐したレベルでの処理	*/				\
-/*    割込み要因番号をt0に入れて		*/				\
-/*    割込み要求クリアのための定数をt1に入れて	*/				\
-/*    set_ICU_IPMへ飛ぶ				*/				\
+	/* なんらかの原因で分岐できない場合 */					\
+	j       join_interrupt_and_exception;					\
+	nop;									\
+										\
+										\
+/*  MIPS3コアレベルで分岐したレベルでの処理		*/			\
+/*    割込み要因番号を t0 に入れて			*/			\
+/*    割込み要求クリアのための定数を t1 に入れて	*/			\
+/*    set_ICU_IPM へ飛ぶ				*/			\
 proc_IP7:   /*  割込み要因IP7（タイマ）の場合  */				\
 	xori    t1, zero, Cause_IP7;						\
 	j       set_ICU_IPM;							\
@@ -356,15 +358,13 @@ proc_IP4:   /*  割込み要因IP4（Int2）の場合  */ 				\
 /*  割込みコントローラ依存のマスク設定  */					\
 set_ICU_IPM:									\
 										\
-	/* デバッグのためには、#ifdef-#endifで囲みたいところ。 */		\
-	SET_ICU_IPM;	/* システム依存部で定義するマクロ		    */	\
+	SET_ICU_IPM;	/* 割込みマスクを設定するマクロ			    */	\
 			/*   実装を行うときには、下記にてt0、t1は利用するの */	\
 			/*   で破壊しないように、注意しなければならない。   */	\
 										\
-/*										\
- *  原因レジスタIPビットに保持されている各種割込みの割込み要求をクリアする。	\
- *  t1には、割込み要求ビットを反転したものが入っている。			\
- */										\
+/*  原因レジスタIPビットに保持されている各種割込みの割込み要求をクリアする。	\
+    t1には、割込み要求ビットを反転したものが入っている。 */			\
+										\
 	mfc0    t8, Cause;							\
 	and     t8, t8, t1;							\
 	mtc0    t8, Cause;							\
@@ -376,7 +376,7 @@ set_ICU_IPM:									\
 				      INT_TABLE型は、				\
 					ハンドラのアドレス(4バイト)		\
 					＋MIPS3コアの割込みマスク(4バイト)	\
-				      8バイト。 */				\
+				      の、合計8バイト。 */			\
 	add     t5, t3, t4;      /* ベクタアドレスを算出 */			\
 	lw      t6, INT_TABLE_intmask(t5);					\
            		    	/*  IPM(割込み許可ビット)読み出し。		\

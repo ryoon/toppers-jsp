@@ -3,11 +3,11 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.c,v 1.5 2003/12/11 07:00:10 honda Exp $
+ *  @(#) $Id: hw_serial.c,v 1.6 2004/09/03 15:39:07 honda Exp $
  */
 
 /*
@@ -111,30 +111,31 @@ SCI_initialize (ID sioid)
 
 	SCI_cls_por(inib->base);
 
-	outb(inib->base + H8SMR, inib->smr_init);
+	sil_wrb_mem((VP)(inib->base + H8SMR), inib->smr_init);
 
 					/*  ボーレート設定  	*/
-	outb(inib->base + H8BRR, H8BRR_RATE(inib->baudrate));
+	sil_wrb_mem((VP)(inib->base + H8BRR), H8BRR_RATE(inib->baudrate));
 
 			/* 割込み禁止とクロックソースの選択	*/
-	outb(inib->base + H8SCR,
-	 inb(inib->base + H8SCR) & ~(H8SCR_TIE  | H8SCR_RIE  |
-	                             H8SCR_MPIE | H8SCR_TEIE |
-	                             H8SCR_CKE1 | H8SCR_CKE0 ));
+	sil_wrb_mem((VP)(inib->base + H8SCR),
+	            sil_reb_mem((VP)(inib->base + H8SCR)) & ~(H8SCR_TIE  | H8SCR_RIE  |
+	                                                      H8SCR_MPIE | H8SCR_TEIE |
+	                                                      H8SCR_CKE1 | H8SCR_CKE0 ));
 
 	/* ボーレートの設定後、1ビット分待たなければならない。*/
 	for(i = SCI_SETUP_COUNT(inib->baudrate); i -- > 0; )
 		;
 
 					/* エラーフラグをクリア		*/
-	outb(inib->base + H8SSR,
-	 inb(inib->base + H8SSR) & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+	sil_wrb_mem((VP)(inib->base + H8SSR),
+	            sil_reb_mem((VP)(inib->base + H8SSR)) &
+	                        ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
 
 	/* 受信割り込みと送信割込みの許可はシリアル I/O で行う */
 	/* 送受信許可 */
 
-	outb(inib->base + H8SCR,
-	 inb(inib->base + H8SCR) | (H8SCR_TE | H8SCR_RE));
+	sil_wrb_mem((VP)(inib->base + H8SCR),
+	            sil_reb_mem((VP)(inib->base + H8SCR)) | (H8SCR_TE | H8SCR_RE));
 	}
 
 /*
@@ -147,15 +148,16 @@ SCI_cls_por (UW base)
 	int i;
 
 	/* TDRE が 1 になるまで待つ */
-	while ((inb(base + H8SSR) & H8SSR_TDRE) == 0)
+	while ((sil_reb_mem((VP)(base + H8SSR)) & H8SSR_TDRE) == 0)
 		;
 
 	/* 11ビット送信分待つ。*/
 	for(i = SCI_SETUP_COUNT(H8_MIN_BAUD_RATE) * 11; i -- > 0; )
 		;
 					/* 送受信停止		*/
-	outb(base + H8SCR,
-	 inb(base + H8SCR) & ~(H8SCR_TIE | H8SCR_RIE | H8SCR_TE | H8SCR_RE));
+	sil_wrb_mem((VP)(base + H8SCR),
+	            sil_reb_mem((VP)(base + H8SCR)) &
+	                        ~(H8SCR_TIE | H8SCR_RIE | H8SCR_TE | H8SCR_RE));
 	}
 
 /*
@@ -169,14 +171,15 @@ SCI_in_handler(ID sioid)
 	UB	status;
 
 	pcb = get_siopcb(sioid);
-	status = inb(pcb->inib->base + H8SSR);
+	status = sil_reb_mem((VP)(pcb->inib->base + H8SSR));
 	
 	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
 
 		/* エラー処理		*/
 
 	    	/* エラーフラグをクリア	*/
-		outb(pcb->inib->base + H8SSR, status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+		sil_wrb_mem((VP)(pcb->inib->base + H8SSR),
+		            status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
 		}
 
 	if (status & H8SSR_RDRF) {
@@ -184,7 +187,7 @@ SCI_in_handler(ID sioid)
 			/* 受信可能コールバックルーチンを呼出す。*/
 			SCI_ierdy_rcv(pcb->exinf);
 		else
-			outb(pcb->inib->base + H8SSR, status & ~H8SSR_RDRF);
+			sil_wrb_mem((VP)(pcb->inib->base + H8SSR), status & ~H8SSR_RDRF);
 		}
 	}
 
@@ -217,13 +220,14 @@ SCI_err_handler(ID sioid)
 	UB	status;
 
 	pcb = get_siopcb(sioid);
-	status = inb(pcb->inib->base + H8SSR);
+	status = sil_reb_mem((VP)(pcb->inib->base + H8SSR));
 	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
 
 		/* エラー処理		*/
 
 	    	/* エラーフラグをクリア	*/
-		outb(pcb->inib->base + H8SSR, status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
+		sil_wrb_mem((VP)(pcb->inib->base + H8SSR),
+		            status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
 		}
 	}
 

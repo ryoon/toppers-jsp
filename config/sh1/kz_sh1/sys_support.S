@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_support.S,v 1.7 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: sys_support.S,v 1.11 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -45,7 +45,7 @@
 #define	_MACRO_ONLY
 #include "jsp_kernel.h"
 
-
+#ifndef GDB_STUB
 /*
  *   バスステートコントローラ
  */
@@ -118,7 +118,7 @@ _hardware_init_hook:
 	
 	
 	
-	.align 4
+	.align 2
 _hw_hook_wcr1:
 	.long	WCR1
 _hw_hook_wcr3:
@@ -128,3 +128,4 @@ _hw_hook_wcr1_data:
 _hw_hook_wcr3_a02lw:	
 	.word	~WCR3_A02LW & 0xffff
 	
+#endif /* GDB_STUB */

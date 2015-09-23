@@ -5,6 +5,8 @@
  *
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  *
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: sample1.h,v 1.27 2003/12/19 10:21:45 honda Exp $
+ *  @(#) $Id: sample1.h,v 1.30 2004/09/04 16:04:04 honda Exp $
  */
 
 /*
@@ -97,7 +99,7 @@
 #undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
 #define STACK_SIZE	2048		/* タスクのスタックサイズ */
 
-#elif defined(I386)
+#elif defined(IA32)
 
 #define CPUEXC1		0		/* ゼロ除算例外 */
 #define RAISE_CPU_EXCEPTION   syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0)
@@ -123,11 +125,30 @@
 #define CPUEXC1     Bp      /* ブレークポイント例外（ゼロ除算時に発生） */
 #define RAISE_CPU_EXCEPTION   syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0)
 
+#elif defined(M16C) && defined(OAKS16)
+
+#define CPUEXC1     32      /* CPU例外ハンドラ番号 */
+#define RAISE_CPU_EXCEPTION asm("   int #32") /* ソフトウェア割込み発生 */
+#define STACK_SIZE  512     /* タスクのスタックサイズ */
+#define TASK_PORTID 2       /* 文字入力するシリアルポートID */
+
+#elif defined(M16C) && defined(OAKS16_MINI)
+
+#define CPUEXC1     32      /* CPU例外ハンドラ番号 */
+#define RAISE_CPU_EXCEPTION asm("   int #32") /* ソフトウェア割込み発生 */
+#define STACK_SIZE  384     /* タスクのスタックサイズ */
+#define TASK_PORTID 2       /* 文字入力するシリアルポートID */
+
 #elif defined(LINUX)
 
 #undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
 #define OMIT_VGET_TIM
 #define LOOP_REF	4000000		/* 速度計測用のループ回数 */
+
+#elif defined(NIOS2)
+
+#define CPUEXC1		0		  /* 未実装命令例外 */
+#define RAISE_CPU_EXCEPTION	  Asm("div zero, zero, zero");
 
 #endif
 

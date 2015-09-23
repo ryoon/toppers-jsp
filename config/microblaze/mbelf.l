@@ -1,10 +1,20 @@
 /*
- *  @(#) $Id: mbelf.l,v 1.3 2003/07/01 15:59:15 honda Exp $
+ *  @(#) $Id: mbelf.l,v 1.4 2004/01/09 10:32:36 honda Exp $
  */
 
 PROVIDE(_hardware_init_hook = 0);
 PROVIDE(_software_init_hook = 0);
 PROVIDE(software_term_hook = 0);
+PROVIDE(__idata_start = 0);
+PROVIDE(__idata_end = 0);
+PROVIDE(__isdata2_start = 0);
+PROVIDE(__isdata2_end = 0);
+PROVIDE(__isdata_start = 0);
+PROVIDE(__isdata_end = 0);
+PROVIDE(__data_start = 0);
+PROVIDE(__sdata2_start = 0);
+PROVIDE(__sdata_start = 0);
+
 /*
  * Specify the default entry point to the program
  */

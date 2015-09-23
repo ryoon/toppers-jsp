@@ -82,15 +82,15 @@ typedef struct task_context_block {
 
 /*
  *  コンテキスト参照
- *  割込みネストカウンタを読み出した直後に割込みが発生しても、戻ったときにはコン
- *  テキストも元に戻っている。
+ *    割込みネストカウンタを読み出した直後に割込みが発生しても、戻ったときには
+ *    コンテキストも元に戻っている。
  */
 Inline BOOL sense_context() {
 
 	UW intnest;
-	
+
 	Asm("move %0, "str_k0 :"=r"(intnest));
-	
+
 	return(intnest > 0);
 }
 
@@ -106,19 +106,19 @@ Inline BOOL sense_lock() {
 
 /*
  *  CPUロックとその解除（タスクコンテキスト用）
- *  (CPUロック状態の判断は、ステータスレジスタのIEビットを用いて判断している。)
+ *    CPUロック状態の判断は、ステータスレジスタのIEビットを用いて判断している。
  */
 
 #ifndef _MACRO_ONLY
 
 Inline void t_lock_cpu() {
 
-	disint();		/*  cpu_insn.h  */
+	disint();		/* cpu_insn.h */
 }
 
 Inline void t_unlock_cpu() {
 
-	enaint();		/*  cpu_insn.h  */
+	enaint();		/* cpu_insn.h */
 }
 
 #endif /* _MACRO_ONLY */
@@ -138,14 +138,14 @@ Inline void t_unlock_cpu() {
 
 /*
  *  最高優先順位タスクへのディスパッチ（cpu_support.S）
- *  dispatch は、タスクコンテキストから呼び出されたサービスコール処理内で、
- *  CPUロック状態で呼び出さなければならない。
+ *    dispatch は、タスクコンテキストから呼び出されたサービスコール処理内で、
+ *    CPUロック状態で呼び出さなければならない。
  */
 extern void	dispatch(void);
 
 /*
  *  現在のコンテキストを捨ててディスパッチ（cpu_support.S）
- *  exit_and_dispatch は、CPUロック状態で呼び出さなければならない。
+ *    exit_and_dispatch は、CPUロック状態で呼び出さなければならない。
  */
 extern void	exit_and_dispatch(void);
 
@@ -185,14 +185,14 @@ Inline void define_exc(EXCNO excno, FP exchdr) {
  *  割込みハンドラの出入口処理の生成マクロ
  */
 
-#define	INTHDR_ENTRY(inthdr)  extern void inthdr(void);
+#define	INTHDR_ENTRY(inthdr)  extern void inthdr(void)
 #define INT_ENTRY(inthdr) inthdr
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
  *
  */
-#define	EXCHDR_ENTRY(exchdr)  extern void exchdr(VP sp);
+#define	EXCHDR_ENTRY(exchdr)  extern void exchdr(VP sp)
 #define	EXC_ENTRY(exchdr)     exchdr
 
 /*
@@ -207,11 +207,12 @@ Inline void define_exc(EXCNO excno, FP exchdr) {
 Inline BOOL exc_sense_context(VP p_excinf) {
 
 	UW  nest;
-	Asm("move %0, "str_k0 :"=r"(nest));
-        
-	/* １と比較するのは、現在実行中のCPU例外の分 		*/
-	/*  割込みネストカウンタがインクリメントされているため 	*/
-	return(nest > 1);
+
+	Asm( "move %0, "str_k0 : "=r"(nest) );
+
+	return( nest > 1 );
+		/* 1と比較するのは、現在実行中のCPU例外の分だけ割込みネスト
+		   カウンタがインクリメントされているため */
 }
 
 /*
@@ -240,8 +241,8 @@ extern void	cpu_terminate(void);
 /*  共通ドキュメントにはない、独自の部分  */
 
 /*  プロセッサコア＋割込みコントローラに設定する割込みマスクのチェック  */
-#define CHECK_IPM(ipm)	     CHECK_CORE_IPM( (ipm.core >> 8) & 0xff )	\
-				CHECK_ICU_IPM( ipm.icu )
+#define CHECK_IPM(ipm)	     CHECK_CORE_IPM( (ipm.core >> 8) & 0xff );	\
+			     CHECK_ICU_IPM( ipm.icu )
 
 #ifndef _MACRO_ONLY
 
@@ -251,7 +252,7 @@ extern void	cpu_terminate(void);
 
 Inline void all_set_ilv(INTNO intno, IPM *ipm) {
 
-	/*  コアのintmaskテーブルの設定  */
+	/*  MIPSコアの intmask テーブルの設定  */
 	int_table[intno].intmask = SR_BEV | (ipm->core) | SR_IE;
 			/* 割込みベクタを、kseg1に持ってくるため、BEV=1 */
 

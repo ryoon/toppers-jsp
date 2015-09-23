@@ -47,7 +47,7 @@
 /*
  *  起動メッセージのターゲットボード名
  */
-#define	TARGET_NAME	"RTE-VR5500-CB"
+#define	TARGET_NAME	"RTE-VR5500-CB(64)"
 
 /*
  *  INTNO型と割込みの禁止/許可

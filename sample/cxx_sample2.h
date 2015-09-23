@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2003 Takagi Nobuhisa
+ *  Copyright (C) 2003-2004 Takagi Nobuhisa
  *
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cxx_sample2.h,v 1.2 2003/12/18 06:38:42 honda Exp $
+ *  @(#) $Id: cxx_sample2.h,v 1.3 2004/09/17 09:11:34 honda Exp $
  */
 
 #include <t_services.h>
@@ -49,6 +49,89 @@
 #define HIGH_PRIORITY	9		/* 並列に実行されるタスクの優先度 */
 #define MID_PRIORITY	10
 #define LOW_PRIORITY	11
+
+/*
+ *  ターゲット依存の定義（CPU例外ハンドラの起動方法など）
+ */
+
+#ifdef M68K
+
+#define CPUEXC1		5		/* ゼロ除算例外 */
+#define RAISE_CPU_EXCEPTION	syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0)
+
+#elif defined(SH3)
+
+#define CPUEXC1		224		/* ロードエラー例外 */
+#define RAISE_CPU_EXCEPTION	(*((volatile int *) 0xFFFFFEC1))
+
+#elif defined(SH1)
+
+#define CPUEXC1		9		/* CPUアドレスエラー例外 */
+#define RAISE_CPU_EXCEPTION	(*((volatile int *) 0xFFFFFEC1))
+#ifdef TOKIWA_SH1
+#define	STACK_SIZE	512		/* タスクのスタックサイズ */
+#endif /* TOKIWA_SH1 */
+
+#elif defined(ARMV4)
+
+#define CPUEXC1		4		/* ロードエラー例外 */
+#define RAISE_CPU_EXCEPTION	(*((volatile int *) 0xFFFFFEC1))
+
+#elif defined(V850)
+
+#elif defined(H8)
+
+#undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
+#define	TASK_PORTID	2		/* 文字入力するシリアルポートID */
+
+#elif defined(H8S)
+
+#undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
+#define LOOP_REF	4000L		/* 速度計測用のループ回数 */
+
+#elif defined(MICROBLAZE)
+
+#undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
+#define STACK_SIZE	2048		/* タスクのスタックサイズ */
+
+#elif defined(IA32)
+
+#define CPUEXC1		0		/* ゼロ除算例外 */
+#define RAISE_CPU_EXCEPTION   syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0)
+#define OMIT_VGET_TIM
+
+#elif defined(TMS320C54X)
+
+#undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
+#define STACK_SIZE	320		/* タスクのスタックサイズ */
+#define LOOP_REF	500000L		/* 速度計測用のループ回数 */
+
+#elif defined(XSTORMY16)
+
+#define CPUEXC1		0		/* 無効命令例外 */
+#define RAISE_CPU_EXCEPTION	__asm__( ".hword 0x0006" )
+#define OMIT_VGET_TIM			/* vxget_tim()は非サポート */
+#define LOOP_REF 	4000L		/* 速度計測用のループ回数 */
+#define STACK_SIZE	256		/* タスクのスタックサイズ */
+#define TASK_PORTID	2		/* SIOはポート2を用いる */
+
+#elif defined(MIPS3)
+
+#define CPUEXC1     Bp      /* ブレークポイント例外（ゼロ除算時に発生） */
+#define RAISE_CPU_EXCEPTION   syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0)
+
+#elif defined(LINUX)
+
+#undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
+#define OMIT_VGET_TIM
+#define LOOP_REF	4000000		/* 速度計測用のループ回数 */
+
+#elif defined(NIOS2)
+
+#define CPUEXC1		0		  /* 未実装命令例外 */
+#define RAISE_CPU_EXCEPTION	  Asm("div zero, zero, zero");
+
+#endif
 
 /*
  *  ターゲットに依存する可能性のある定数の定義

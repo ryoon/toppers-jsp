@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.8 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.13 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -51,12 +51,18 @@
 #ifndef _CPU_DEFS_H_
 #define _CPU_DEFS_H_
 
+/*
+ *  ユーザー定義情報
+ */
+#include <user_config.h>	/*  SUPPORT_VXGET_TIMマクロの定義  */
+
+
 #define SH1			/* プロセッサ略称 */
 #define SH7032
 
 /* カーネル起動時のメッセージ   */
 #define COPYRIGHT_CPU \
-"Copyright (C) 2001-2003 by Industrial Technology Institute,\n" \
+"Copyright (C) 2001-2004 by Industrial Technology Institute,\n" \
 "                            Miyagi Prefectural Government, JAPAN\n"
 
 #ifndef _MACRO_ONLY
@@ -69,6 +75,12 @@ typedef	UINT	EXCNO;		/* CPU例外ハンドラ番号 */
 
 /*
  *  割込みマスクの型と割込みマスクの変更／参照
+ *  
+ *  本来は#ifdef SUPPORT_CHG_IPM〜#endifで囲むべきだが、
+ *  このファイルがcpu_config.hより先にインクルードされるため
+ *  省略している。
+ *  この部分が残ることにより、生成されるコードはほとんどないので
+ *  実害はないと判断した。
  */
 typedef	UINT	IPM;		/* 割込みマスク */
 
@@ -83,17 +95,18 @@ extern ER	get_ipm(IPM *p_ipm) throw();
 /*
  *  現在の割込みマスクの読出し
  */
-Inline UW
-_current_intmask_()
-{
-	UW sr;
+#define _current_intmask_	current_intmask
 
-	Asm("stc  sr,%0" : "=r"(sr));
-	return(sr & 0x000000f0u);
-}
+/*
+ *  割込みマスクの設定
+ */
+#define _set_intmask_		set_intmask
 
 /*
  *  NMIを除くすべての割込みを禁止
+ *  　disint()がカーネルが管理する割込みのみを禁止するのに対して
+ *  　_disint_()はカーネル管理外の割込みも含めて禁止する。
+ *  　具体的にはGDB stubのシリアル受信割込みの扱いが異なる。
  */
 Inline void
 _disint_()
@@ -105,18 +118,6 @@ _disint_()
 	Asm("ldc %0, sr" : : "r"(sr) );
 }
 
-/*
- *  割込みマスクの設定
- */
-Inline void
-_set_intmask_(UW intmask)
-{
-	UW sr;
-
-	Asm("stc  sr,%0" : "=r"(sr));
-	sr = (sr & ~0x000000f0u) |  intmask;
-	Asm("ldc %0, sr" : : "r"(sr) );
-}
 
 /*
  *  割込みロック状態の制御
@@ -124,6 +125,7 @@ _set_intmask_(UW intmask)
 #define	SIL_PRE_LOC	UW _intmask_ = _current_intmask_()
 #define	SIL_LOC_INT()	_disint_()
 #define	SIL_UNL_INT()	_set_intmask_(_intmask_)
+
 
 #endif /* _MACRO_ONLY */
 
@@ -137,10 +139,13 @@ _set_intmask_(UW intmask)
 /*
  *  性能評価用システム時刻の参照
  */
+
+#ifdef SUPPORT_VXGET_TIM
 typedef	UD	SYSUTIM;	/* 性能評価用システム時刻 */
 
 extern ER	vxget_tim(SYSUTIM *p_sysutim) throw();
 
+#endif /*  SUPPORT_VXGET_TIM  */
 
 #endif /* _MACRO_ONLY */
 

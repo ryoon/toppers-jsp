@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -75,85 +75,118 @@ _kernel_eh_table:
         .hword 0,0,0,0
 
 /*
+ *  割り込みベクトル
+ *  (このsectionは8000h-8083hにリンクされる)
+ */
+        .section .int_vec,"ax"
+        .global _start
+        .align 1
+_start:
+	clr1 psw,#7
+        br _kernel_int_irq_0
+	clr1 psw,#7
+        br _kernel_int_irq_1
+	clr1 psw,#7
+        br _kernel_int_irq_2
+	clr1 psw,#7
+        br _kernel_int_irq_3
+	clr1 psw,#7
+        br _kernel_int_irq_4
+	clr1 psw,#7
+        br _kernel_int_irq_5
+	clr1 psw,#7
+        br _kernel_int_irq_6
+	clr1 psw,#7
+        br _kernel_int_irq_7
+	clr1 psw,#7
+        br _kernel_int_irq_8
+	clr1 psw,#7
+        br _kernel_int_irq_9
+	clr1 psw,#7
+        br _kernel_int_irq_a
+	clr1 psw,#7
+        br _kernel_int_irq_b
+	clr1 psw,#7
+        br _kernel_int_irq_c
+	clr1 psw,#7
+        br _kernel_int_irq_d
+	clr1 psw,#7
+        br _kernel_int_irq_e
+	clr1 psw,#7
+        br _kernel_int_irq_f
+        .org 0x80
+        jmpf _kernel_int_irq_ex
+
+/*
  *  割り込みハンドラ入り口
  */
-        .text
-        .global _kernel_int_irq_0
 _kernel_int_irq_0:
+                                /*
+                                 *  ワッチドッグタイマ割り込みかRESETかの判断
+                                 */
+        bn __WDTCR,#4,_after_reset
+        bp __WDTCR,#5,_after_reset
         push r0
         mov r0,#_kernel_ih_table+0
         br _int_common
-        .global _kernel_int_irq_1
+_after_reset:
+	jmpf _int_reset
 _kernel_int_irq_1:
         push r0
         mov r0,#_kernel_ih_table+2
         br _int_common
-        .global _kernel_int_irq_2
 _kernel_int_irq_2:
         push r0
         mov r0,#_kernel_ih_table+4
         br _int_common
-        .global _kernel_int_irq_3
 _kernel_int_irq_3:
         push r0
         mov r0,#_kernel_ih_table+6
         br _int_common
-        .global _kernel_int_irq_4
 _kernel_int_irq_4:
         push r0
         mov r0,#_kernel_ih_table+8
         br _int_common
-        .global _kernel_int_irq_5
 _kernel_int_irq_5:
         push r0
         mov r0,#_kernel_ih_table+10
         br _int_common
-        .global _kernel_int_irq_6
 _kernel_int_irq_6:
         push r0
         mov r0,#_kernel_ih_table+12
         br _int_common
-        .global _kernel_int_irq_7
 _kernel_int_irq_7:
         push r0
         mov r0,#_kernel_ih_table+14
         br _int_common
-        .global _kernel_int_irq_8
 _kernel_int_irq_8:
         push r0
         mov r0,#_kernel_ih_table+16
         br _int_common
-        .global _kernel_int_irq_9
 _kernel_int_irq_9:
         push r0
         mov r0,#_kernel_ih_table+18
         br _int_common
-        .global _kernel_int_irq_a
 _kernel_int_irq_a:
         push r0
         mov r0,#_kernel_ih_table+20
         br _int_common
-        .global _kernel_int_irq_b
 _kernel_int_irq_b:
         push r0
         mov r0,#_kernel_ih_table+22
         br _int_common
-        .global _kernel_int_irq_c
 _kernel_int_irq_c:
         push r0
         mov r0,#_kernel_ih_table+24
         br _int_common
-        .global _kernel_int_irq_d
 _kernel_int_irq_d:
         push r0
         mov r0,#_kernel_ih_table+26
         br _int_common
-        .global _kernel_int_irq_e
 _kernel_int_irq_e:
         push r0
         mov r0,#_kernel_ih_table+28
         br _int_common
-        .global _kernel_int_irq_f
 _kernel_int_irq_f:
         push r0
         mov r0,#_kernel_ih_table+30
@@ -168,10 +201,6 @@ _int_common:
                                  */
         push r1
         push r2
-                                /*
-                                 *  スタック切り替え前後での割り込みを禁止
-                                 */
-        clr1 psw,#7
                                 /*
                                  *  ネストした割り込みかどうかチェック
                                  */

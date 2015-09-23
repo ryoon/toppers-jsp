@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_serial.h,v 1.3 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: hw_serial.h,v 1.5 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -64,12 +64,6 @@
 #define INHNO_SERIAL_OUT 	TXI0
 #define INHNO_SERIAL_ERROR  	ERI0
 
-/*
- * SCIの割り込みレベル
- * 　割込みハンドラは送受信別々に登録できるが、割込みレベルは
- * 　送信も受信も同じレベルにしか設定できない。
- */
-#define SCIINTLVL	6	/*  送受信共用  */
 #define LEVEL0		0	/*  割込み解除時のレベル  */
 #define SCI_SHIFT	0	/*  割込みレベル登録時のビットシフト  */
 
@@ -106,7 +100,7 @@ sio_opn_por(ID siopid, VP_INT exinf)
 	 *  　シリアルI/O割込みの割込みレベルを設定する
 	 */
 	if (!openflag) {
-		define_int_plevel(IPRD, SCIINTLVL, SCI_SHIFT);
+		define_int_plevel(IPRD, SCI_INTLVL, SCI_SHIFT);
 	}
 	return(siopcb);
 }

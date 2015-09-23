@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_support.S,v 1.6 2003/12/11 00:44:27 honda Exp $
+ *  @(#) $Id: sys_support.S,v 1.7 2004/09/17 13:45:55 honda Exp $
  */
 
 #define _MACRO_ONLY
@@ -269,22 +269,24 @@ IRQ_Handler:
         msr   cpsr_all, sp
         stmfd sp!, {r0-r3,ip,lr,pc} /* pcはダミー */
 
-
   
         /*
          * spsrと戻り番地を取得するためにIRQモードへ
          */
-		mov   r0,#(CPSR_IRQ | CPSR_FIQ_BIT | CPSR_IRQ_BIT)
-        msr   cpsr,r0
-        sub   r0,lr,#4
-        mrs   r1,spsr
+		mov     r0,#(CPSR_IRQ | CPSR_FIQ_BIT | CPSR_IRQ_BIT)
+        msr     cpsr,r0
+        sub     r0,lr,#4
+        mrs     r1,spsr
+        
    
         /*
          *  スーパーバイザーモードに
-         */
-        msr   cpsr_all, sp
-        str   r0, [sp,#0x18] /* Store pc */
-        stmfd sp!,{r1}       /* spsr */
+         */ 
+        and     r2,  r1, #CPSR_FIQ_BIT /* FIQビットの継承 */
+        orr     r2,  r2, #(CPSR_SVC|CPSR_IRQ_BIT)
+        msr     cpsr, r2
+        str     r0, [sp,#0x18] /* Store pc */
+        stmfd   sp!,{r1}       /* spsr */
 
 
         /*
@@ -299,7 +301,6 @@ IRQ_Handler:
         moveq   r2,sp            /* ネスト割り込みでない場合 */
         ldreq   sp,=STACKTOP     /* スタックの変更    */
         stmeqfd sp!,{r2}         /* タスクスタックの保存 */
-
 
         /*
          *  割り込み要因の判定．
@@ -325,8 +326,9 @@ IRQ_Handler:
         
         /* 
          * 割り込み許可 
-         */                
-        mov     r2,#(CPSR_SVC|CPSR_FIQ_BIT)
+         */
+        mrs     r2, cpsr
+        and     r2,  r2, #~CPSR_IRQ_BIT /* 割込み許可 */
         msr     cpsr,r2
 
         /* 
@@ -338,7 +340,9 @@ IRQ_Handler:
         /* 
          * 割り込み禁止 
          */
-        mov     r2,#(CPSR_SVC|CPSR_FIQ_BIT|CPSR_IRQ_BIT) 
+        mrs     r2, cpsr
+        and     r2,  r2, #CPSR_FIQ_BIT /* FIQビットの継承 */         
+        orr     r2,  r2, #(CPSR_SVC|CPSR_IRQ_BIT)
         msr     cpsr,r2
 
         ldmfd   sp!, {r0}                 /* ペンディングビットの復帰 */
@@ -376,7 +380,11 @@ return_to_task_irq:
          *  問題はない
          */
         ldmfd   sp!,{r1}           /* CPSRの復帰処理 */
-        msr     spsr, r1           /* 割り込み許可   */
+        mrs     r2, cpsr           /* FIQを継承            */
+        and     r2, r2, #CPSR_FIQ_BIT
+        and     r1, r1, #~CPSR_FIQ_BIT
+        orr     r1, r1, r2            
+        msr     spsr, r1           
         ldmfd   sp!,{r0-r3,ip,lr,pc}^ /*タスク復帰 + 割込み許可 */
 
         /*

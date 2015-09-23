@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sh1sci.h,v 1.3 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: sh1sci.h,v 1.7 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -51,8 +51,8 @@
 #ifndef _SH1SCI_H_
 #define _SH1SCI_H_
 
-#include <t_config.h>
-#include <sil_sh1.h>
+#include <t_services.h>
+#include <sh1_sil.h>
 
 /*
  *  シリアルI/Oポート管理ブロックの定義

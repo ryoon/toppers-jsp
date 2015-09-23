@@ -38,13 +38,10 @@
  */
 
 #include <tl16pir552.h>
-#include <s_services.h>
 
 /*
- *	μPD72001用 簡易SIOドライバ
+ *	TL16PIR552(TI)用 簡易SIOドライバ
  */
-
-/* TNUM_PORT:サポートするシリアルポート数 (デフォルト値 2), sys_defs.h に記載 */
 
 /*
  *  シリアルI/Oポート初期化ブロックの定義
@@ -66,41 +63,62 @@ struct sio_port_control_block {
 	const SIOPINIB	*siopinib;	/* シリアルI/Oポート初期化ブロック */
 	VP_INT		exinf;		/* 拡張情報 */
 	BOOL		openflag;	/* オープン済みフラグ */
-	UB		ier;		/* IERの値 */
 	BOOL		getready;	/* 文字を受信した状態 */
 	BOOL		putready;	/* 文字を送信できる状態 */
 };
 
 /*
  *  シリアルI/Oポート初期化ブロック
- *
- *  ID = 1 をポート1，ID = 2 をポート2に対応させている．
+ *    ID = 1 をポート1，ID = 2 をポート2に対応させている．
  */
-const SIOPINIB siopinib_table[TNUM_PORT] = {
+const SIOPINIB siopinib_table[TNUM_SIOP] = {
 	{ (VP)  UART_CH01,
 	  (UB)	WORD_LENGTH_8 | STOP_BITS_1 | PARITY_NON,
 	  (UB)	PRE_DIVISOR,
 	  (UB)	HI8(DIVISOR),
 	  (UB)	LO8(DIVISOR) },
-#if TNUM_PORT >= 2
+#if TNUM_SIOP >= 2
 	{ (VP)  UART_CH02,
 	  (UB)	WORD_LENGTH_8 | STOP_BITS_1 | PARITY_NON,
 	  (UB)	PRE_DIVISOR,
 	  (UB)	HI8(DIVISOR),
 	  (UB)	LO8(DIVISOR) },
-#endif /* TNUM_PORT >= 2 */
+#endif /* TNUM_SIOP >= 2 */
 };
+
+/*
+ *  シリアルI/Oポート初期化ブロックの取出し
+ */
+#define INDEX_SIOPINIB(siopid)	((UINT)((siopid) - 1))
+#define get_siopinib(siopid)	(&(siopinib_table[INDEX_SIOPINIB(siopid)]))
+
 
 /*
  *  シリアルI/Oポート管理ブロックのエリア
  */
-SIOPCB	siopcb_table[TNUM_PORT];
+SIOPCB	siopcb_table[TNUM_SIOP];
 
 /*
  *  シリアルI/OポートIDから管理ブロックを取り出すためのマクロ
  */
 #define INDEX_SIOP(siopid)	((UINT)((siopid) - 1))
 #define get_siopcb(siopid)	(&(siopcb_table[INDEX_SIOP(siopid)]))
+
+/*
+ *  SIO用レジスタ操作関数
+ */
+Inline void
+tl16pir552_orb( VP addr, UW reg, UB val )
+{
+	tl16pir552_wrb( addr, reg, tl16pir552_reb( addr, reg ) | val );
+}
+
+Inline void
+tl16pir552_andb( VP addr, UW reg, UB val )
+{
+	tl16pir552_wrb( addr, reg, tl16pir552_reb( addr, reg ) & val );
+}
+
 
 /*
  *  状態の読出し（IIRの読出し）
@@ -110,7 +128,7 @@ tl16pir552_get_stat(SIOPCB *siopcb)
 {
 	UB	iir;
 
-	iir = tl16pir552_read_reg( siopcb->siopinib->channel_addr, IIR) & INT_MASK;
+	iir = tl16pir552_reb( siopcb->siopinib->channel_addr, IIR) & INT_MASK;
 
 	switch( iir ) {
 		case INT_TRANS_EMPTY :
@@ -123,7 +141,6 @@ tl16pir552_get_stat(SIOPCB *siopcb)
 		default :
 			break;
 	}
-
 
 }
 
@@ -152,7 +169,10 @@ Inline char
 tl16pir552_getchar(SIOPCB *siopcb)
 {
 	siopcb->getready = FALSE;
-	return((char) tl16pir552_read_reg( siopcb->siopinib->channel_addr, RBR ));
+	return((char) tl16pir552_reb( siopcb->siopinib->channel_addr, RBR ));
+	/* 1byte 単位での文字の取り出しを行ったいるため、tl16pir552_opn_por内の
+	   受信バッファ設定を増やしたとしても性能の向上は見られない。
+	   性能の向上には、バッファ全体のブロック転送を行うなどの修正が必要。*/
 }
 
 /*
@@ -162,7 +182,7 @@ Inline void
 tl16pir552_putchar(SIOPCB *siopcb, char c)
 {
 	siopcb->putready = FALSE;
-	tl16pir552_write_reg( siopcb->siopinib->channel_addr, THR, c );
+	tl16pir552_wrb( siopcb->siopinib->channel_addr, THR, c );
 }
 
 /*
@@ -177,10 +197,58 @@ tl16pir552_initialize()
 	/*
 	 *  シリアルI/Oポート管理ブロックの初期化
 	 */
-	for (siopcb = siopcb_table, i = 0; i < TNUM_PORT; siopcb++, i++) {
+	for (siopcb = siopcb_table, i = 0; i < TNUM_SIOP; siopcb++, i++) {
 		siopcb->siopinib = &(siopinib_table[i]);
 		siopcb->openflag = FALSE;
 	}
+}
+
+/*
+ *  SIOレジスタ初期化ルーチン
+ */
+void
+tl16pir552_init_siopinib( const SIOPINIB  *siopinib )
+{
+	/*
+	 * SIOレジスタの初期化
+	 */
+	/* 初期処理 */
+	tl16pir552_wrb( siopinib->channel_addr, IER, DIS_INT );
+
+	tl16pir552_wrb( siopinib->channel_addr, MCR, ENABLE_EXT_INT );
+
+	/* ボーレートの設定 */
+	tl16pir552_wrb( siopinib->channel_addr, LCR, siopinib->lcr_def | DIVISOR_LATCH_ACC );
+
+	tl16pir552_wrb( siopinib->channel_addr, SCR, siopinib->scr_def );
+
+	tl16pir552_wrb( siopinib->channel_addr, DLL, siopinib->boud_lo_def );
+	tl16pir552_wrb( siopinib->channel_addr, DLM, siopinib->boud_hi_def );
+
+	/* モードの設定 */
+	tl16pir552_wrb( siopinib->channel_addr, LCR, siopinib->lcr_def );
+
+	/* FIFOの設定 */
+	tl16pir552_wrb( siopinib->channel_addr, FCR, FIFO_ENABLE );
+	tl16pir552_wrb( siopinib->channel_addr, FCR, FIFO_ENABLE | RECEIVE_FIFO_RESET | TRANS_FIFO_RESET | RECEIVE_TRIG_1_BYTE );
+	tl16pir552_wrb( siopinib->channel_addr, FCR, FIFO_ENABLE | RECEIVE_TRIG_1_BYTE );
+
+	/* 終了処理 */
+	tl16pir552_wrb( siopinib->channel_addr, MCR, DTR | RTS | ENABLE_EXT_INT );
+
+	tl16pir552_wrb( siopinib->channel_addr, IER, RECEIVE_DATA_AVAILABLE);
+}
+
+/*
+ *  カーネル起動時のバーナー出力用の初期化
+ */
+void
+tl16pir552_init(void)
+{
+	tl16pir552_init_siopinib( get_siopinib(1) );
+#if TNUM_SIOP >= 2
+	tl16pir552_init_siopinib( get_siopinib(2) );
+#endif /* TNUM_SIOP >= 2 */
 }
 
 /*
@@ -189,11 +257,11 @@ tl16pir552_initialize()
 BOOL
 tl16pir552_openflag(void)
 {
-#if TNUM_PORT < 2
+#if TNUM_SIOP < 2
 	return(siopcb_table[0].openflag);
-#else /* TNUM_PORT < 2 */
+#else /* TNUM_SIOP < 2 */
 	return(siopcb_table[0].openflag || siopcb_table[1].openflag);
-#endif /* TNUM_PORT < 2 */
+#endif /* TNUM_SIOP < 2 */
 }
 
 /*
@@ -202,36 +270,11 @@ tl16pir552_openflag(void)
 SIOPCB *
 tl16pir552_opn_por(ID siopid, VP_INT exinf)
 {
-	SIOPCB		*siopcb;
-	const SIOPINIB	*siopinib;
-	VP	 scc_base_addr;
-
-	siopcb = get_siopcb(siopid);
-	siopinib = siopcb->siopinib;
+	SIOPCB		*siopcb = get_siopcb(siopid);
+	const SIOPINIB	*siopinib = siopcb->siopinib;
 
 	/* シリアルコントローラの初期化 */
-	scc_base_addr = siopinib->channel_addr;
-
-	tl16pir552_write_reg( scc_base_addr, IER,	DIS_INT );
-
-	tl16pir552_write_reg( scc_base_addr, MCR,	ENABLE_EXT_INT );
-
-	tl16pir552_write_reg( scc_base_addr, LCR,	siopinib->lcr_def | DIVISOR_LATCH_ACC );
-
-	tl16pir552_write_reg( scc_base_addr, SCR,	siopinib->scr_def );
-
-	tl16pir552_write_reg( scc_base_addr, DLL,	siopinib->boud_lo_def );
-	tl16pir552_write_reg( scc_base_addr, DLM,	siopinib->boud_hi_def );
-
-	tl16pir552_write_reg( scc_base_addr, LCR,	siopinib->lcr_def );
-
-	tl16pir552_write_reg( scc_base_addr, FCR,	FIFO_ENABLE );
-	tl16pir552_write_reg( scc_base_addr, FCR,	FIFO_ENABLE | RECEIVE_FIFO_RESET | TRANS_FIFO_RESET | RECEIVE_TRIG_1_BYTE);
-	tl16pir552_write_reg( scc_base_addr, FCR,	FIFO_ENABLE | RECEIVE_TRIG_1_BYTE );
-
-	tl16pir552_write_reg( scc_base_addr, MCR,	DTR | RTS | ENABLE_EXT_INT );
-
-	tl16pir552_write_reg( scc_base_addr, IER,	RECEIVE_DATA_AVAILABLE);
+	tl16pir552_init_siopinib( siopinib );
 
 	/* 割込みレベル設定、割込み要求クリアは、sio_opn_por(hw_serial.h)で行う。 */
 
@@ -248,7 +291,7 @@ tl16pir552_opn_por(ID siopid, VP_INT exinf)
 void
 tl16pir552_cls_por(SIOPCB *siopcb)
 {
-	tl16pir552_write_reg( siopcb->siopinib->channel_addr, IER, DIS_INT );
+	tl16pir552_wrb( siopcb->siopinib->channel_addr, IER, DIS_INT );
 
 	siopcb->openflag = FALSE;
 }
@@ -284,7 +327,6 @@ tl16pir552_rcv_chr(SIOPCB *siopcb)
 void
 tl16pir552_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 {
-	UB	temp;
 	UB	ier_bit = 0;
 
 	switch (cbrtn) {
@@ -292,14 +334,11 @@ tl16pir552_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 		ier_bit = TRANS_REG_EMPTY;
 		break;
 	case SIO_ERDY_RCV:
-		ier_bit = RECEIVE_DATA_AVAILABLE | RECEIVE_LINE_STATUS;
+		ier_bit = (RECEIVE_DATA_AVAILABLE | RECEIVE_LINE_STATUS);
 		break;
 	}
 
-	temp = tl16pir552_read_reg( siopcb->siopinib->channel_addr, IER );
-	temp |= ier_bit;
-	siopcb->ier = temp;
-	tl16pir552_write_reg( siopcb->siopinib->channel_addr, IER, temp );
+	tl16pir552_orb( siopcb->siopinib->channel_addr, IER, ier_bit );
 }
 
 /*
@@ -308,7 +347,6 @@ tl16pir552_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 void
 tl16pir552_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 {
-	UB	temp;
 	UB	ier_bit = 0;
 
 	switch (cbrtn) {
@@ -316,14 +354,11 @@ tl16pir552_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 		ier_bit = TRANS_REG_EMPTY;
 		break;
 	case SIO_ERDY_RCV:
-		ier_bit = RECEIVE_DATA_AVAILABLE | RECEIVE_LINE_STATUS;
+		ier_bit = (RECEIVE_DATA_AVAILABLE | RECEIVE_LINE_STATUS);
 		break;
 	}
 
-	temp = tl16pir552_read_reg( siopcb->siopinib->channel_addr, IER );
-	temp &= ~ier_bit;
-	siopcb->ier = temp;
-	tl16pir552_write_reg( siopcb->siopinib->channel_addr, IER, temp );
+	tl16pir552_andb( siopcb->siopinib->channel_addr, IER, ~ier_bit );
 }
 
 /*
@@ -358,7 +393,7 @@ tl16pir552_uart0_isr()
 	}
 }
 
-#if TNUM_PORT >= 2
+#if TNUM_SIOP >= 2
 void
 tl16pir552_uart1_isr()
 {
@@ -367,3 +402,17 @@ tl16pir552_uart1_isr()
 	}
 }
 #endif /* TNUM_SIOP >= 2 */
+
+/*
+ *  シリアルI/Oポートへのポーリングでの出力
+ */
+void
+tl16pir552_putchar_pol( char val ) {
+
+	const SIOPINIB  *siopinib = get_siopinib( LOGTASK_PORTID );
+
+	/* 送信部エンプティになるまで待つ。 */
+	while( (tl16pir552_reb( siopinib->channel_addr, LSR ) & (TEMT) ) == 0 );
+
+	tl16pir552_wrb( siopinib->channel_addr, THR, val );
+}

@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  *
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  *
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,13 +35,13 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: shelf.ld,v 1.8 2003/12/20 09:28:17 honda Exp $
+ *  @(#) $Id: shelf.ld,v 1.12 2004/09/22 08:47:52 honda Exp $
  */
 
 OUTPUT_FORMAT("elf32-sh","elf32-sh","elf32-sh")
 OUTPUT_ARCH(sh)
 
-
+ENTRY(__kernel_start)
 PROVIDE (__stack = 0) ;
 PROVIDE(_hardware_init_hook = 0);
 PROVIDE(_software_init_hook = 0);

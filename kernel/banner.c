@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: banner.c,v 1.9 2003/06/04 01:46:16 hiro Exp $
+ *  @(#) $Id: banner.c,v 1.10 2004/01/05 04:07:07 hiro Exp $
  */
 
 /*
@@ -50,7 +50,7 @@
 #define COPYRIGHT_SYS
 #endif /* COPYRIGHT_SYS */
 
-static char const banner[] = "\n"
+static const char banner[] = "\n"
 "JSP Kernel Release %d.%d (patchlevel = %d) for " TARGET_NAME
 " (" __DATE__ ", " __TIME__ ")\n"
 "Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory\n"

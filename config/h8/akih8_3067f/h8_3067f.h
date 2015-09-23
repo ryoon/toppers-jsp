@@ -3,13 +3,13 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Kunihiko Ohnaka
+ *  Copyright (C) 2001-2004 by Kunihiko Ohnaka
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -38,7 +38,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: h8_3067f.h,v 1.6 2003/11/11 10:07:15 honda Exp $
+ *  @(#) $Id: h8_3067f.h,v 1.7 2004/09/03 15:39:08 honda Exp $
  */
 
 #ifndef _H8_3067F_H_
@@ -591,6 +591,63 @@
 #define H8TIOR_IOA2		(1<<H8TIOR_IOA2_BIT)
 #define H8TIOR_IOA1		(1<<H8TIOR_IOA1_BIT)
 #define H8TIOR_IOA0		(1<<H8TIOR_IOA0_BIT)
+
+/* 8 bit Timer */
+
+#define H88TU0			0xffff80	/* base address */
+#define H88TU1			0xffff81
+#define H88TU2			0xffff90
+#define H88TU3			0xffff91
+
+/* address offset */
+
+#define H88TCR			0
+#define H88TCSR			2
+#define H88TCORA		4
+#define H88TCORB		6
+#define H88TCNT			8
+
+/* 8 Bit Timer Control Register (8TCR) */
+
+#define H88TCR_CMIEB_BIT	7
+#define H88TCR_CMIEA_BIT	6
+#define H88TCR_OVIE_BIT		5
+#define H88TCR_CCLR1_BIT	4
+#define H88TCR_CCLR0_BIT	3
+#define H88TCR_CKS2_BIT		2
+#define H88TCR_CKS1_BIT		1
+#define H88TCR_CKS0_BIT		0
+
+#define H88TCR_CMIEB		(1<<H88TCR_CMIEB_BIT)
+#define H88TCR_CMIEA		(1<<H88TCR_CMIEA_BIT)
+#define H88TCR_OVIE		(1<<H88TCR_OVIE_BIT)
+#define H88TCR_CCLR1		(1<<H88TCR_CCLR1_BIT)
+#define H88TCR_CCLR0		(1<<H88TCR_CCLR0_BIT)
+#define H88TCR_CKS2		(1<<H88TCR_CKS2_BIT)
+#define H88TCR_CKS1		(1<<H88TCR_CKS1_BIT)
+#define H88TCR_CKS0		(1<<H88TCR_CKS0_BIT)
+
+/* 8 Bit Timer Control/Status Register (8TCSR) */
+
+#define H88TCSR_CMFB_BIT	7
+#define H88TCSR_CMFA_BIT	6
+#define H88TCSR_OVF_BIT		5
+#define H88TCSR_ADTE_BIT	4
+#define H88TCSR_ICE_BIT		4
+#define H88TCSR_OIS3_BIT	3
+#define H88TCSR_OIS2_BIT	2
+#define H88TCSR_OS1_BIT		1
+#define H88TCSR_OS0_BIT		0
+
+#define H88TCSR_CMFB		(1<<H88TCSR_CMFB_BIT)
+#define H88TCSR_CMFA		(1<<H88TCSR_CMFA_BIT)
+#define H88TCSR_OVF		(1<<H88TCSR_OVF_BIT)
+#define H88TCSR_ADTE		(1<<H88TCSR_ADTE_BIT)
+#define H88TCSR_ICE		(1<<H88TCSR_ICE_BIT)
+#define H88TCSR_OIS3		(1<<H88TCSR_OIS3_BIT)
+#define H88TCSR_OIS2		(1<<H88TCSR_OIS2_BIT)
+#define H88TCSR_OS1		(1<<H88TCSR_OS1_BIT)
+#define H88TCSR_OS0		(1<<H88TCSR_OS0_BIT)
 
 /* Serial Communication Interface (SCI) */
 

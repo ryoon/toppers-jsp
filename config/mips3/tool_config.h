@@ -33,8 +33,10 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: tool_config.h,v 1.5 2003/12/24 05:51:22 honda Exp $
+ *  @(#) $Id: tool_config.h,v 1.6 2004/09/03 16:56:41 honda Exp $
  */
+
+#include <kernel_debug.h>	/* ITRON DB/IF 対応用 */
 
 /*
  *	開発環境依存モジュール
@@ -45,8 +47,6 @@
 
 #ifndef _TOOL_CONFIG_H_
 #define _TOOL_CONFIG_H_
-
-#include <sys_tool_config.h>
 
 /*
  *  ラベルの別名を定義するためのマクロ
@@ -78,8 +78,15 @@ call_atexit()
 #endif /* _MACRO_ONLY */
 
 /*
+ *  システムタスクが使用するライブラリに関する定義
+ */
+#define NEWLIB				/* newlib を用いる */
+
+/*
  *  トレースログの設定
  */
+
+#include <sys_tool_config.h>		/* 割込みコントローラに関する部分 */
 
 #define	LOG_INH_ENTER(inhno)		/* プロセッサ依存部 */
 #define	LOG_INH_LEAVE(inhno)		/* プロセッサ依存部 */

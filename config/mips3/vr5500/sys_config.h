@@ -59,12 +59,14 @@
  *  シリアルポート数の定義
  */
 #ifndef GDB_STUB
-#define TNUM_PORT	2u	/* サポートするシリアルポートの数 */
-#else	/*  GDB_STUB  */
-#define TNUM_PORT	1u	/* サポートするシリアルポートの数 */
+#define TNUM_SIOP	2u	/* サポートするシリアルポートの数 */
+#define TNUM_PORT	2u	/* サポートするシリアルI/Oポートの数 */
+#else  /* GDB_STUB */
+#define TNUM_SIOP	1u	/* サポートするシリアルポートの数 */
+#define TNUM_PORT	1u	/* サポートするシリアルI/Oポートの数 */
 				/* GDB_STUB を利用するときは、SCC1を GDB_STUB が
 				   利用するために、SCC0のみしか利用できない。 */
-#endif	/*  GDB_STUB  */
+#endif /* GDB_STUB */
 
 
 /*
@@ -83,17 +85,14 @@
  */
 
 /*  MIPS3コアの関係 */
+/*  実質的な割込み制御は、外部割込みコントローラで行うため、MIPS3コアに関しては
+    可能な分を許可する。*/
 /*  RTE-VR5500-CBでは2本の割込み線が接続されている。 */
-#define INIT_CORE_IPM	( Cause_Int0 | Cause_Int0 )
+#define INIT_CORE_IPM	( Cause_Int1 | Cause_Int0 )
 
-/*  割込みコントローラ関係  */
-
-#if TNUM_PORT >= 2
-#define INIT_INT0M	( SERIAL1 | SERIAL0 | TIMER0 )
-#else	/* TNUM_PORT >= 2 */
-#define INIT_INT0M	( SERIAL0 | TIMER0 )
-#endif	/* TNUM_PORT >= 2 */
-
+/*  外部割込みコントローラ関係  */
+/*  (割込み線０において、タイマ０のみ割込み許可） */
+#define INIT_INT0M	TIMER0
 #define INIT_INT1M	0u
 
 #ifndef _MACRO_ONLY
@@ -128,21 +127,17 @@ extern void	sys_putc(char c) throw();
 /*
  *  ステータスレジスタの初期値
  */
-#define INIT_SR		(SR_BEV | INIT_CORE_IPM)
+#define INIT_SR		(SR_BEV | INIT_CORE_IPM | SR_DE)
 	/*
 	 *  BEV = 1：例外ベクタをkseg0セグメントに配置
 	 *  IM = 0：CPUロック状態 (割込み禁止)
+	 *  DE = 1 : キャッシュパリティエラーによる例外発生の禁止
 	 */
 
 /*
  *  コンフィグレジスタ初期値設定用マスク
  */
 #define INIT_CONFIG_MASK	0x0
-
-/*
- *  システムタスクが使用するライブラリに関する定義
- */
-#define NEWLIB			/* newlib を用いる */
 
 /*
  *  シリアルコントローラのボーレートの設定 (分周比設定データ；[bps]で指定)

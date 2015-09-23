@@ -46,31 +46,31 @@
  */
 
 /* uPD71054のレジスタのアドレス */
-#define PCNT0	(TIMER_BASE_ADDR + 0x00)
-#define PCNT1	(TIMER_BASE_ADDR + 0x10)
-#define PCNT2	(TIMER_BASE_ADDR + 0x20)
-#define PCNTL	(TIMER_BASE_ADDR + 0x30)
+#define PCNT0		0x00
+#define PCNT1		0x10
+#define PCNT2		0x20
+#define PCNTL		0x30
 
 /* control word foemat */
-#define BINARY		0u	/* BIT0 */
-#define BCD		BIT0
+#define BINARY			0u	/* BIT0 */
+#define BCD			BIT0
 
-#define MODE_0		0u	/* BIT1, 2, 3 */
-#define MODE_1		BIT1
-#define MODE_2		BIT2
-#define MODE_3		BIT2 | BIT1
-#define MODE_4		BIT3
-#define MODE_5		BIT3 | BIT1
+#define MODE_0			0u	/* BIT1, 2, 3 */
+#define MODE_1			BIT1
+#define MODE_2			BIT2
+#define MODE_3			(BIT2 | BIT1)
+#define MODE_4			BIT3
+#define MODE_5			(BIT3 | BIT1)
 
-#define COUNT_LATCH_COMM 0u	/* BIT5, 4 */
-#define LOWER_BYTE	BIT4
-#define HIGH_BYTE	BIT5
-#define LOW_HIGH_BYTE	BIT5 | BIT4
+#define COUNT_LATCH_COMM	0u	/* BIT5, 4 */
+#define LOWER_BYTE		BIT4
+#define HIGH_BYTE		BIT5
+#define LOW_HIGH_BYTE		(BIT5 | BIT4)
 
-#define COUNTER_0	0u	/* BIT6, 7 */
-#define COUNTER_1	BIT6
-#define COUNTER_2	BIT7
-#define MULT_LATCH_COMM	BIT7 | BIT6
+#define COUNTER_0		0u	/* BIT6, 7 */
+#define COUNTER_1		BIT6
+#define COUNTER_2		BIT7
+#define MULT_LATCH_COMM		(BIT7 | BIT6)
 
 /* multiple latch command format */
 #define SEL_COUNTER_0		BIT1
@@ -84,7 +84,7 @@
 /*
  *  タイマのレジスタへのアクセス関数
  */
-#define upd71054_read( addr )		sil_reb_mem( addr )
-#define upd71054_write( addr, val )	sil_wrb_mem( addr, val )
+#define upd71054_reb( addr )		sil_reb_mem( (VP)(TIMER_BASE_ADDR + addr) )
+#define upd71054_wrb( addr, val )	sil_wrb_mem( (VP)(TIMER_BASE_ADDR + addr), val )
 
 #endif /* _UPD71054_H_ */

@@ -37,7 +37,7 @@
  */
 
 /*
- *	タイマドライバ（VR4131内蔵RTC内TClockタイマ用）
+ *   タイマドライバ（VR4131内蔵RTC内TClockタイマ用）
  */
 
 #ifndef _HW_TIMER_H_
@@ -51,6 +51,7 @@
 #define	INHNO_TIMER	INTNO_TCLK
 
 #ifndef _MACRO_ONLY
+
 /*
  *  タイマ値の内部表現の型
  */
@@ -65,7 +66,7 @@ typedef UH		CLOCK;
 /* 1ミリ秒周期(isig_tim を呼び出す周期;1kHz)を発生させるためのカウント数 */
 #define	TO_CLOCK(nume, deno)	(TIMER_CLOCK * (nume) / (deno))
 /* clock を usec 単位に変換するマクロ */
-#define	TO_USEC(clock)		((clock) * 1000 / TIMER_CLOCK)
+#define	TO_USEC(clock)		((clock) * 1000u / TIMER_CLOCK)
 
 /*
  *  タイマ周期の単位を内部表現に変換
@@ -93,21 +94,26 @@ typedef UH		CLOCK;
 
 #ifndef _MACRO_ONLY
 /*
+ *  タイマ割込み要求のクリア
+ */
+Inline void hw_timer_int_clear() {
+
+	vr4131_wrh_mem( (VP) RTCINTREG, RTCINTR3 );
+}
+
+/*
  *  タイマの起動処理
- *
- *  タイマを初期化し，周期的なタイマ割込み要求を発生させる．
+ *    タイマを初期化し，周期的なタイマ割込み要求を発生させる．
  */
 Inline void hw_timer_initialize() {
-
-	UH	temp;
 
 	/*
 	 *  タイマ周期を設定し，タイマの動作を開始する．
 	 */
 	assert( CLOCK_PER_TICK <= MAX_CLOCK );
 
-	vr4131_rtc_write( (VP) TCLKLREG, (UH) LO16(CLOCK_PER_TICK) );
-	vr4131_rtc_write( (VP) TCLKHREG, (UH) HI16(CLOCK_PER_TICK) );
+	vr4131_wrh_mem( (VP) TCLKLREG, (UH) LO16(CLOCK_PER_TICK) );
+	vr4131_wrh_mem( (VP) TCLKHREG, (UH) HI16(CLOCK_PER_TICK) );
 
 	/*
 	 *  タイマ割込みの割込みレベルを設定し，要求をクリアした後，
@@ -115,18 +121,10 @@ Inline void hw_timer_initialize() {
 	 */
 	all_set_ilv( INHNO_TIMER, &((IPM) IPM_TIMER) );	/* 割込みレベルの設定 */
 
-	vr4131_rtc_write( (VP) RTCINTREG, RTCINTR3 );	/* 割込み要求をクリア */
+	hw_timer_int_clear();				/* 割込み要求をクリア */
 
-	temp = vr4131_icu_read( (VP) MSYSINT2REG );	/* 割込みマスク解除 */
-	vr4131_icu_write( (VP) MSYSINT2REG, temp | TCLKINTR );
-}
-
-/*
- *  タイマ割込み要求のクリア
- */
-Inline void hw_timer_int_clear() {
-
-	vr4131_rtc_write( (VP) RTCINTREG, RTCINTR3 );
+	/* マスク解除処理(レベル１、レベル２に相当するレジスタは無い) */
+	vr4131_orh( (VP) MSYSINT2REG, TCLKINTR );
 }
 
 /*
@@ -135,17 +133,15 @@ Inline void hw_timer_int_clear() {
  */
 Inline void hw_timer_terminate() {
 
-	UH	temp;
-
 	/*  タイマの動作を停止する  */
-	vr4131_rtc_write( (VP) TCLKLREG, 0 );
-	vr4131_rtc_write( (VP) TCLKHREG, 0 );
+	vr4131_wrh_mem( (VP) TCLKLREG, 0 );
+	vr4131_wrh_mem( (VP) TCLKHREG, 0 );
 
 	/*
 	 *  タイマ割込みをマスクし，要求をクリアする．
 	 */
-	temp = vr4131_icu_read( (VP) MSYSINT2REG );	/* タイマ割込みをマスク */
-	vr4131_icu_write( (VP) MSYSINT2REG, temp & ~TCLKINTR );
+	/* マスク設定処理(レベル１、レベル２に相当するレジスタは無い) */
+	vr4131_andh( (VP) MSYSINT2REG, ~TCLKINTR );
 
 	hw_timer_int_clear();				/* 割込み要求をクリア */
 }
@@ -160,11 +156,11 @@ Inline CLOCK hw_timer_get_current() {
 
 	/* カウンタ値の読み出し */
 	/* 2回読み出している理由は、ハードウェア編p261参照 */
-	lo1 = vr4131_rtc_read( (VP) TCLKCNTLREG );
-	hi1 = vr4131_rtc_read( (VP) TCLKCNTHREG );
+	lo1 = vr4131_reh_mem( (VP) TCLKCNTLREG );
+	hi1 = vr4131_reh_mem( (VP) TCLKCNTHREG );
 
-	lo2 = vr4131_rtc_read( (VP) TCLKCNTLREG );
-	hi2 = vr4131_rtc_read( (VP) TCLKCNTHREG );
+	lo2 = vr4131_reh_mem( (VP) TCLKCNTLREG );
+	hi2 = vr4131_reh_mem( (VP) TCLKCNTHREG );
 
 	if( hi2 == hi1 )
 		count = JOIN16( hi1, lo1 );
@@ -179,7 +175,7 @@ Inline CLOCK hw_timer_get_current() {
  */
 Inline BOOL hw_timer_fetch_interrupt() {
 
-	return( ( vr4131_rtc_read( (VP) RTCINTREG ) & RTCINTR3 ) != 0);
+	return( ( vr4131_reh_mem( (VP) RTCINTREG ) & RTCINTR3 ) != 0);
 }
 
 #endif /* _MACRO_ONLY */

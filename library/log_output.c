@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: log_output.c,v 1.5 2003/07/01 13:30:08 hiro Exp $
+ *  @(#) $Id: log_output.c,v 1.8 2004/06/15 13:07:44 hiro Exp $
  */
 
 /*
@@ -83,18 +85,18 @@ convert(unsigned _intptr_ val, unsigned int radix, const char *radchar,
 /*
  *  ログ情報のフォーマット出力
  */
-static char const raddec[] = "0123456789";
-static char const radhex[] = "0123456789abcdef";
-static char const radHEX[] = "0123456789ABCDEF";
+static const char raddec[] = "0123456789";
+static const char radhex[] = "0123456789abcdef";
+static const char radHEX[] = "0123456789ABCDEF";
 
 void
-syslog_printf(char *format, VP_INT *args, void (*putc)(char))
+syslog_printf(const char *format, VP_INT *args, void (*putc)(char))
 {
 	int		c;
 	int		width;
 	int		padzero;
 	_intptr_	val;
-	char		*str;
+	const char	*str;
 
 	while ((c = *format++) != '\0') {
 		if (c != '%') {
@@ -108,7 +110,7 @@ syslog_printf(char *format, VP_INT *args, void (*putc)(char))
 			c = *format++;
 		}
 		while ('0' <= c && c <= '9') {
-			width = width*10 + c - '0';
+			width = width * 10 + c - '0';
 			c = *format++;
 		}
 		switch (c) {
@@ -143,7 +145,7 @@ syslog_printf(char *format, VP_INT *args, void (*putc)(char))
 			(*putc)((char)(_intptr_)(*args++));
 			break;
 		case 's':
-			str = (char *)(*args++);
+			str = (const char *)(*args++);
 			while ((c = *str++) != '\0') {
 				(*putc)((char) c);
 			}
@@ -158,7 +160,7 @@ syslog_printf(char *format, VP_INT *args, void (*putc)(char))
 			break;
 		}
 	}
-	putc('\n');
+	(*putc)('\n');
 }
 
 void
@@ -166,7 +168,7 @@ syslog_print(SYSLOG *p_log, void (*putc)(char))
 {
 	switch (p_log->logtype) {
 	case LOG_TYPE_COMMENT:
-		syslog_printf((char *)(p_log->loginfo[0]),
+		syslog_printf((const char *)(p_log->loginfo[0]),
 					&(p_log->loginfo[1]), putc);
 		break;
 	case LOG_TYPE_ASSERT:
@@ -179,8 +181,8 @@ syslog_print(SYSLOG *p_log, void (*putc)(char))
 void
 syslog_output(void (*putc)(char))
 {
+	static const char	lostmsg[] = "%d messages are lost.";
 	SYSLOG	log;
-	char	*lostmsg = "%d messages are lost.";
 	INT	lostnum, n;
 
 	lostnum = 0;

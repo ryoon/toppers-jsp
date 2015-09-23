@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.c,v 1.8 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: cpu_config.c,v 1.12 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -67,12 +67,32 @@ UW	int_intmask;
 UW	intnest;
 
 /*
- *  例外ベクタテーブル
+ *  オリジナルのベクタベースレジスタの保存領域
  */
-#ifdef EXCVT_KERNEL
-EXCVE BASE_VBR[EXCVT_SIZE];
-#endif	/*  EXCVT_KERNEL  */
+#ifdef KERNEL_HAS_A_VECTOR_TABLE
+static VP org_vbr;
+#endif /* KERNEL_HAS_A_VECTOR_TABLE */
 
+#ifdef SUPPORT_CPU_EXC_ENTRY_CHECK
+
+/*
+ *  CPU例外の要因数
+ */
+#ifndef NUM_EXC
+#define NUM_EXC	(6 + 2)
+#endif	/*  NUM_EXC  */
+
+/*
+ *  登録されたCPU例外の要因数
+ */
+static UW num_exc;
+
+/*
+ *  CPU例外の入口処理の先頭アドレス
+ */
+static FP exc_entries[NUM_EXC];
+
+#endif /* SUPPORT_CPU_EXC_ENTRY_CHECK */
 
 /*
  *  プロセッサ依存の初期化
@@ -105,19 +125,25 @@ cpu_initialize()
 
 #endif	/*  GDB_STUB  */
 
-#ifndef CQ_SH1_DEB
-#ifdef EXCVT_KERNEL
+#ifdef KERNEL_HAS_A_VECTOR_TABLE
 	/*
-	 *  ベクタテーブルの初期化
+	 *  ベクタテーブルは初期値付き変数（配列）にしたので、
+	 *  スタートアップルーチンでdataセクションをコピーする際に
+	 *  初期化される。
+	 *  （ここで初期化する必要はない。）
 	 */
-	memcpy(EXCVT_KERNEL, EXCVT_ORIG, EXCVT_SIZE*sizeof(VP));
 	
 	/*
 	 *  ベクタベースレジスタの初期化
 	 */
-	set_vbr(EXCVT_KERNEL);
-#endif /* EXCVT_KERNEL */
-#endif /* CQ_SH1_DEB */
+	org_vbr = current_vbr();
+	set_vbr((VP)vector_table);
+#endif /* KERNEL_HAS_A_VECTOR_TABLE */
+
+#ifdef SUPPORT_CPU_EXC_ENTRY_CHECK
+	num_exc = 0;
+#endif /* SUPPORT_CPU_EXC_ENTRY_CHECK */
+
 }
 
 /*
@@ -126,10 +152,70 @@ cpu_initialize()
 void
 cpu_terminate()
 {
-#ifdef EXCVT_KERNEL
-	set_vbr(EXCVT_ORIG);
-#endif /* EXCVT_KERNEL */
+#ifdef KERNEL_HAS_A_VECTOR_TABLE
+	set_vbr(org_vbr);
+#endif /* KERNEL_HAS_A_VECTOR_TABLE */
 }
+
+/*
+ *  CPU例外ハンドラの設定
+ *
+ *  ベクトル番号 excno のCPU例外ハンドラの起動番地を exchdr に設定する．
+ */
+void
+define_exc(EXCNO excno, FP exchdr)
+{
+	/*  SH1は割込みもCPU例外も同じ形式  */
+	define_inh((INHNO)excno, exchdr);
+
+#ifdef SUPPORT_CPU_EXC_ENTRY_CHECK
+//	CHECK_PAR(num_exc < NUM_EXC);
+	exc_entries[num_exc++] = exchdr;
+#endif /* SUPPORT_CPU_EXC_ENTRY_CHECK */
+}
+
+#ifdef SUPPORT_CPU_EXC_ENTRY_CHECK
+/*
+ *  CPU例外の入口処理で割込み禁止するまでの命令数
+ */
+#define NUM_INST_DIS_INT	5
+
+
+/*
+ *  割込みからの戻り先のチェック
+ *
+ *  　引数
+ *  　　VP pc：スタック上に積まれた戻り番地
+ *  　戻り値
+ *  　　TRUE：戻り先がCPU例外の入口処理（割込み禁止する前）
+ *  　　FALSE：戻り先が上記以外
+ *  　備考
+ *  　　割込みの出口処理で割込み禁止で呼ばれる。
+ */
+
+/* cpu_support.Sのret_intだけから呼ばれるので 	*/
+/* ヘッダーファイルには含めない。 		*/
+BOOL check_cpu_exc_entry(VP pc)   throw();
+
+BOOL check_cpu_exc_entry(VP pc)
+{
+	UW i;
+	UH *entry;	/* 2バイト長命令へのポインタ */
+	
+	for(i = 0; i < num_exc; i++) {
+		entry = (UH *)exc_entries[i];
+		if (((UW)entry <= (UW)pc) &&
+		     ((UW)pc <= (UW)(entry + NUM_INST_DIS_INT)) ) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+
+#endif /* SUPPORT_CPU_EXC_ENTRY_CHECK */
+
+
 
 #ifdef SUPPORT_CHG_IPM
 
@@ -154,7 +240,7 @@ chg_ipm(IPM ipm)
 
 	LOG_CHG_IPM_ENTER(ipm);
 	CHECK_TSKCTX_UNL();
-	CHECK_PAR(0 <= ipm && ipm <= MAX_IPM - 1);
+	CHECK_PAR(0 <= ipm && ipm <= (MAX_IPM - 1) );
 
 	t_lock_cpu();
 	task_intmask = (ipm << 4);

@@ -65,7 +65,7 @@ typedef UH		CLOCK;
 /* 1ミリ秒周期(isig_tim を呼び出す周期;1kHz)を発生させるためのカウント数 */
 #define	TO_CLOCK(nume, deno)	(TIMER_CLOCK * (nume) / (deno))
 /* clock を usec 単位に変換するマクロ */
-#define	TO_USEC(clock)		((clock) * 1000 * TIC_DENO / TIMER_CLOCK)
+#define	TO_USEC(clock)		((clock) * 1000u / TIMER_CLOCK)
 
 /*
  *  タイマ周期の単位を内部表現に変換
@@ -92,24 +92,31 @@ typedef UH		CLOCK;
 #define	TIMER_STOP_DELAY	200u
 
 #ifndef _MACRO_ONLY
+
+/*
+ *  タイマ割込み要求のクリア
+ */
+Inline void hw_timer_int_clear() {
+
+	icu_wrb( (VP) ICU_INTR, TIMER0 );
+}
+
+
 /*
  *  タイマの起動処理
- *
- *  タイマを初期化し，周期的なタイマ割込み要求を発生させる．
+ *  ・タイマを初期化し，周期的なタイマ割込み要求を発生させる．
  */
 Inline void hw_timer_initialize() {
 
-	UB	temp;
-
-	upd71054_write( (VP) PCNTL, (UB) COUNTER_0 | LOW_HIGH_BYTE | MODE_2 | BINARY );
+	upd71054_wrb( (VP) PCNTL, (COUNTER_0 | LOW_HIGH_BYTE | MODE_2 | BINARY) );
 
 	/*
 	 *  タイマ周期を設定し，タイマの動作を開始する．
 	 */
 	assert( CLOCK_PER_TICK <= MAX_CLOCK );
 
-	upd71054_write( (VP) PCNT0, (UB) LO8(CLOCK_PER_TICK) );
-	upd71054_write( (VP) PCNT0, (UB) HI8(CLOCK_PER_TICK) );
+	upd71054_wrb( (VP) PCNT0, (UB) LO8(CLOCK_PER_TICK) );
+	upd71054_wrb( (VP) PCNT0, (UB) HI8(CLOCK_PER_TICK) );
 
 	/*
 	 *  タイマ割込みの割込みレベルを設定し，要求をクリアした後，
@@ -117,18 +124,9 @@ Inline void hw_timer_initialize() {
 	 */
 	all_set_ilv( INHNO_TIMER, &((IPM) IPM_TIMER0) );/* 割込みレベルの設定 */
 
-	icu_write( (VP) ICU_INTR, TIMER0 );		/* 割込み要求をクリア */
+	hw_timer_int_clear();				/* 割込み要求をクリア */
 
-	temp = icu_read( (VP) ICU_INT0M );		/* 割込みマスク解除 */
-	icu_write( (VP) ICU_INT0M, temp | TIMER0 );
-}
-
-/*
- *  タイマ割込み要求のクリア
- */
-Inline void hw_timer_int_clear() {
-
-	icu_write( (VP) ICU_INTR, TIMER0 );
+	icu_orb( (VP) ICU_INT0M, TIMER0 );		/* 割込みマスク解除 */
 }
 
 /*
@@ -137,19 +135,16 @@ Inline void hw_timer_int_clear() {
  */
 Inline void hw_timer_terminate() {
 
-	UB	temp;
-
 	/*  タイマの動作を停止する  */
-	upd71054_write( (VP) PCNTL, COUNTER_0 | LOW_HIGH_BYTE | MODE_2 | BINARY );
+	upd71054_wrb( (VP) PCNTL, (COUNTER_0 | LOW_HIGH_BYTE | MODE_2 | BINARY) );
 
-	upd71054_write( (VP) PCNT0, 0 );
-	upd71054_write( (VP) PCNT0, 0 );
+	upd71054_wrb( (VP) PCNT0, 0 );
+	upd71054_wrb( (VP) PCNT0, 0 );
 
 	/*
 	 *  タイマ割込みをマスクし，要求をクリアする．
 	 */
-	temp = icu_read( (VP) ICU_INT0M );		/* 割込みをマスク */
-	icu_write( (VP) ICU_INT0M, temp & ~TIMER0 );
+	icu_andb( (VP) ICU_INT0M, ~TIMER0 );		/* 割込みをマスク */
 
 	hw_timer_int_clear();				/* 割込み要求をクリア */
 }
@@ -163,10 +158,10 @@ Inline CLOCK hw_timer_get_current() {
 	UB	hi, lo;
 
 	/* カウンタ値の読み出し */
-	upd71054_write( (VP) PCNTL, COUNTER_0 | COUNT_LATCH_COMM );
+	upd71054_wrb( (VP) PCNTL, (COUNTER_0 | COUNT_LATCH_COMM) );
 
-	lo = upd71054_read( (VP) PCNT0 );
-	hi = upd71054_read( (VP) PCNT0 );
+	lo = upd71054_reb( (VP) PCNT0 );
+	hi = upd71054_reb( (VP) PCNT0 );
 	count = JOIN8( hi, lo );
 
 	return (CLOCK_PER_TICK - count);
@@ -177,7 +172,7 @@ Inline CLOCK hw_timer_get_current() {
  */
 Inline BOOL hw_timer_fetch_interrupt() {
 
-	return( ( icu_read( (VP) ICU_INTR ) & TIMER0 ) != 0);
+	return( ( icu_reb( (VP) ICU_INTR ) & TIMER0 ) != 0);
 }
 
 #endif /* _MACRO_ONLY */

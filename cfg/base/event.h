@@ -33,10 +33,10 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: event.h,v 1.8 2003/12/15 07:32:13 takayuki Exp $
+ *  @(#) $Id: event.h,v 1.9 2004/09/06 15:00:49 honda Exp $
  */
 
-// $Header: /home/CVS/configurator/base/event.h,v 1.8 2003/12/15 07:32:13 takayuki Exp $
+// $Header: /home/CVS/configurator/base/event.h,v 1.9 2004/09/06 15:00:49 honda Exp $
 
 #ifndef EVENT_H
 #define EVENT_H
@@ -77,7 +77,7 @@ public:
             //登録解除
         virtual ~Handler(void) throw()
         {
-            typename Event<T>::Handler::instance_list_type * list = Singleton<instance_list_type>::getInstance(nothrow);
+            typename Event<T>::Handler::instance_list_type * list = Singleton<instance_list_type>::getInstance(std::nothrow);
             typename Event<T>::Handler::instance_list_type::iterator scope;
 
             if(list != 0) {
@@ -115,7 +115,7 @@ public:
         typename Event<T>::handler_list_type * list;
         typename Event<T>::handler_list_type::iterator scope;
 
-        list = Singleton<handler_list_type>::getInstance(nothrow);
+        list = Singleton<handler_list_type>::getInstance(std::nothrow);
         if(list != 0) {
             scope = list->begin();
             while(scope != list->end()) {

@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h,v 1.6 2003/12/11 00:44:27 honda Exp $
+ *  @(#) $Id: sys_config.h,v 1.7 2004/09/04 16:38:40 honda Exp $
  */
 
 /*
@@ -119,7 +119,7 @@ extern void IRQ_Handler(void);
  *  割込みハンドラの出入口処理の生成マクロ
  *
  */
-#define INTHDR_ENTRY(inthdr)  extern void inthdr(void);
+#define INTHDR_ENTRY(inthdr)  extern void inthdr(void)
 
 #define INT_ENTRY(inthdr) inthdr
 

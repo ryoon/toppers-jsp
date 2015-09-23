@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2003 by Takagi Nobuhisa
+ *  Copyright (C) 2003-2004 by Takagi Nobuhisa
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,12 +34,16 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: newlibrt.c,v 1.1 2003/12/18 06:38:42 honda Exp $
+ *  @(#) $Id: newlibrt.c,v 1.2 2004/09/17 09:11:44 honda Exp $
  */
 #include <stddef.h>
 #include <reent.h>
 #include <errno.h>
 #include "../kernel/jsp_kernel.h"
+
+#ifndef	HEAP_TOP
+#define	HEAP_TOP		~0UL
+#endif
 
 /*
  *	For malloc (Newlib)
@@ -66,7 +70,7 @@ void *_sbrk_r(struct _reent *ptr, ptrdiff_t nbyte)
 {
 	extern char end;
 	static char *heap_ptr = &end;
-	static char *heap_end = (char*)~0L;
+	static char *heap_end = (char*)HEAP_TOP;
 	char *base;
 
 	if (!iniflg)

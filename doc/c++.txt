@@ -2,7 +2,7 @@
         ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                     （C++バインディング）
 
-        （Release 1.4 対応，最終更新: 18-Dec-2003）
+        （Release 1.4.1 対応，最終更新: 16-Sep-2004）
 
 ------------------------------------------------------------------------
  TOPPERS/JSP Kernel
@@ -11,7 +11,7 @@
 
  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
- Copyright (C) 2003 by Takagi Nobuhisa
+ Copyright (C) 2003-2004 by Takagi Nobuhisa
 
  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  によって公表されている GNU General Public License の Version 2 に記
@@ -57,9 +57,9 @@ C++バインディングでは、GCC等のGNU開発環境を使用する。なお、Windows上
 のシミュレーション環境（Visual C++）でC++を使用する際は、C++バインデ
 ィングの機能を必要としない。
 
-現在、C++バインディングがサポートする実行環境は、MS7727CP01(SH3)だけ
-である。他の実行環境で使用するには、ターゲット依存部のMakefile.config
-およびリンカスクリプトの修正が必要となる。
+現在、C++バインディングがサポートする実行環境は、MS7727CP01(SH3)およ
+びAKI-H8/3069Fである。他の実行環境で使用するには、ターゲット依存部の
+Makefile.configおよびリンカスクリプトの修正が必要となる。
 また、Linux上のシミュレーション環境では使用することができない。
 
 1.3 C++バインディングの機能の概要
@@ -213,16 +213,8 @@ std::exit関数を用いて終了した場合、ローカルオブジェクトのデストラクタ
 
 3.2 タスクからの例外リーク
 
-タスクのエントリ関数からキャッチされない例外がリークした場合、現在の
-実装ではstd::terminate関数が呼出される。しかし、タスク動作中にext_tsk
-やter_tskによって終了した後に再起動した場合、例外がリークすると未定義
-の動作になる。再起動後の例外処理を正しく動作させるには、タスクの先頭
-で_toppers_cxxrt_reset_specific関数を明示的に呼出す必要がある。詳細は
-5.3 (3)を参照のこと。
-
-上記のように_toppers_cxxrt_reset_specific関数を用いることでタスクから
-例外がリークした場合の動作を規定することができるが、他の環境との互換
-性に配慮するのであれば、リーク時の動作は未定義として扱うべきである。
+タスクのエントリ関数からキャッチされない例外がリークした場合の動作は
+未定義である。
 
 3.3 ATT_INIとVATT_TER
 
@@ -257,8 +249,8 @@ C++開発環境の構築は、基本的には「GNU開発環境構築マニュアル」の内容に
 
 4.1 必要なソフトウェア
 
-C++開発環境を構築するには、GCC-COREではなく、GCCが必要となる。また、
-NEWLIBは必須である。
+C++開発環境を構築するには、GCC-COREおよびG++、またはGCCが必要になる。
+また、NEWLIBは必須である。
 
     GNU開発環境
        BINUTILS（アセンブラ，リンカなど）
@@ -285,7 +277,7 @@ BINUTILSは、GCCのインストールに必要なため，GCCに先だってインストール
 4.3 GCCへのパッチ
 
 Cygwin上でGCC 3.2.3をmakeする場合に一部障害が発生するため、次のパッチ
-が必要となる。
+が必要となる。（SH版のみ。GCC 3.3.x以降では不要）
 
     % cp gcc-3.2.3_fixinc_gnu-regex.patch <GCC-SRCDIR>
     % cd <GCC-SRCDIR>
@@ -309,7 +301,7 @@ GCCのインストールにはNEWLIBが必要であるが、NEWLIBをインストールするに
       --enable-languages=c,c++ --enable-threads=toppers\
       --disable-nls
     % make all-gcc
-    % make install
+    % make install-host
 
 4.5 NEWLIBのインストール
 
@@ -414,19 +406,6 @@ dtorには、キーを削除する際に、タスクごとの各変数に対して実行すべき終
 _toppers_cxxrt_key_create関数で作成したキーを削除する。
 成功時には0を返し、失敗時には負の値を返す。
 
-(3) void _toppers_cxxrt_reset_specific(void);
-
-実行中のタスクに属すタスクローカル記憶域の変数を初期化する。明示的に
-タスクローカル記憶域を使用する場合だけでなく、タスク内で例外処理を直
-接的・間接的に使用する場合には、必ずタスク起動直後にこの関数を呼出す
-必要がある。
-
-この関数は特定のヘッダに関数原型が宣言されているわけではないため、使
-用にあたっては、明示的に関数原型を記述する必要がある。C++で関数原型を
-記述する場合は下記のようにすること。
-
-extern "C" void _toppers_cxxrt_reset_specific(void) throw();
-
 5.4 NEWLIBのカスタマイズ
 
 (1) void __malloc_lock(struct _reent *ptr);
@@ -449,6 +428,8 @@ ENOMEMを設定する。
 メモリマップ上、複数のメモリイメージが発生するターゲットでは、.bssセ
 クションとスタックポインタの初期値を同一イメージ上に配置する必要があ
 る。
+ヒープ領域と起動時のスタック領域が連続していない場合、sys_config.h内
+でHEAP_TOPマクロをヒープの終端アドレスに定義する必要がある。
 
 本来であれば、_sbrk_r関数の原始関数にあたる_sbrk関数をカスタマイズす
 べきであるが、ターゲットによっては、_write関数等と同一の翻訳単位にオ
@@ -467,13 +448,14 @@ C++対応ランタイムでは、リンクを解決することのみを目的としてmain関数を
 定義する。
 
 
-６．SH3環境における実装
+６．ターゲット依存部の実装
 
-現在、C++バインディングがサポートする実行環境は、MS7727CP01(SH3)だけ
-である。
-また、GNU開発環境のターゲットとして、sh-hitachi-elfを使用している。
+現在、C++バインディングがサポートする実行環境は、MS7727CP01(SH3)およ
+びAKI-H8/3069Fである。
+また、GNU開発環境のターゲットとして、SH用にはsh-hitachi-elf、H8用には
+h8300-hmsを使用している。
 
-6.3 GNU開発環境に関するもの
+6.1 GNU開発環境に関するもの
 
 GNU開発環境全般に関する要素として、以下のものがある。
 
@@ -690,31 +672,11 @@ GCCでは、configure時に--enable-sjlj-exceptionsを指定した場合、例外処
 
 (2) タスク再起動時の初期化
 
-タスク内で例外処理を使用し、かつext_tsk等でタスクを休止状態にした後、
-act_tsk等で再起動する可能性があるタスクは_toppers_cxxrt_reset_specific
-関数を用いて初期化を行う必要がある。
-
-extern "C" void _toppers_cxxrt_reset_specific() throw();
-
-extern "C"
-void task(VP_INT exinf)
-{
-  _toppers_cxxrt_reset_specific();
-  try
-  {
-    // タスクの処理
-  }
-  catch (...)
-  {
-  }
-}
-
-例外処理を直接的にも間接的にも使用する場合が対象となる。
-例外指定のある関数をユーザ定義した場合や、new演算子、dynamic_cast演算
-子、typeid演算子を使用した場合も、間接的に例外処理が使用されるため、
-注意が必要である。
-C++を用いる場合には、タスクの先頭では必ず_toppers_cxxrt_reset_specific
-関数を、特別な事情がない限り呼出すことを強く推奨する。
+JSP 1.4では再起動時の初期化処理として_toppers_cxxrt_reset_specific関
+数を呼び出す必要があったが、JSP 1.4.1では_toppers_cxxrt_reset_specific
+関数の呼び出しは必要としない。
+その代わり、タスクのエントリ関数から例外が動作した場合の動作は未定義
+である。
 
 (3) 効率の向上
 
@@ -770,3 +732,4 @@ C++関数からC関数を呼出す場合、C関数には例外指定throw()を付加すべきで
 ある。こうすることで大幅に効率の向上が期待できる。
 
 以上
+

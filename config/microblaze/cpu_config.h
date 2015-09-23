@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.6 2003/12/11 00:58:01 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.8 2004/09/04 16:38:40 honda Exp $
  */
 
 
@@ -70,6 +70,20 @@
  */
 #define	TBIT_TCB_PRIORITY	8	/* priority フィールドのビット幅 */
 #define	TBIT_TCB_TSTAT		8	/* tstat フィールドのビット幅 */
+
+
+/*
+ *  キャッシュの状態
+ */
+#if defined(D_CACHE_ENABLE) && defined(I_CACHE_ENABLE)
+#define MSR_CACHE_SETTING  MSR_DCE|MSR_ICE
+#elif defined(D_CACHE_ENABLE)
+#define MSR_CACHE_SETTING  MSR_DCE
+#elif defined(I_CACHE_ENABLE)
+#define MSR_CACHE_SETTING  MSR_ICE
+#else
+#define MSR_CACHE_SETTING  0x00
+#endif        
 
 
 #ifndef _MACRO_ONLY
@@ -216,7 +230,7 @@ define_exc(EXCNO excno, FP exchdr)
  *  割込みハンドラの出入口処理の生成マクロ
  */
 
-#define	INTHDR_ENTRY(inthdr)  extern void inthdr(void);
+#define	INTHDR_ENTRY(inthdr)  extern void inthdr(void)
 
 #define INT_ENTRY(inthdr) inthdr
 
@@ -224,7 +238,7 @@ define_exc(EXCNO excno, FP exchdr)
  *  CPU例外ハンドラの出入口処理の生成マクロ
  *
  */
-#define	EXCHDR_ENTRY(exchdr)  extern void exchdr(VP sp);
+#define	EXCHDR_ENTRY(exchdr)  extern void exchdr(VP sp)
 
 #define	EXC_ENTRY(exchdr)     exchdr
 

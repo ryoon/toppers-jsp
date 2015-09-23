@@ -39,7 +39,7 @@
 #ifndef _VR4131_DSIU_H_
 #define _VR4131_DSIU_H_
 
-#include <t_config.h>
+#include <s_services.h>		/* デバイスドライバ用標準インクルードファイル */
 
 /*
  *  VR4131内蔵デバッグシリアルインタフェースユニット(DSIU)関連の定義
@@ -47,28 +47,28 @@
  */
 
 /* DSIUレジスタのアドレス */
-#define DSIURB		(BASE_ADDR + 0x0f000820)	/* 受信バッファレジスタ(リード時) */
-#define DSIUTH		(BASE_ADDR + 0x0f000820)	/* 送信保持レジスタ(ライト時) */
-#define DSIUDLL		(BASE_ADDR + 0x0f000820)	/* 分周比下位レジスタ */
-#define DSIUIE		(BASE_ADDR + 0x0f000821)	/* 割込み許可レジスタ */
-#define DSIUDLM		(BASE_ADDR + 0x0f000821)	/* 分周比上位レジスタ */
-#define DSIUIID		(BASE_ADDR + 0x0f000822)	/* 割込み表示レジスタ(リード時) */
-#define DSIUFC		(BASE_ADDR + 0x0f000822)	/* FIFO 制御レジスタ(ライト時) */
-#define DSIULC		(BASE_ADDR + 0x0f000823)	/* ライン制御レジスタ */
-#define DSIUMC		(BASE_ADDR + 0x0f000824)	/* モデム制御レジスタ */
-#define DSIULS		(BASE_ADDR + 0x0f000825)	/* ライン状態レジスタ */
-#define DSIUMS		(BASE_ADDR + 0x0f000826)	/* モデム状態レジスタ */
-#define DSIUSC		(BASE_ADDR + 0x0f000827)	/* スクラッチレジスタ */
+#define DSIURB		0x0f000820	/* 受信バッファレジスタ(リード時) */
+#define DSIUTH		0x0f000820	/* 送信保持レジスタ(ライト時) */
+#define DSIUDLL		0x0f000820	/* 分周比下位レジスタ */
+#define DSIUIE		0x0f000821	/* 割込み許可レジスタ */
+#define DSIUDLM		0x0f000821	/* 分周比上位レジスタ */
+#define DSIUIID		0x0f000822	/* 割込み表示レジスタ(リード時) */
+#define DSIUFC		0x0f000822	/* FIFO 制御レジスタ(ライト時) */
+#define DSIULC		0x0f000823	/* ライン制御レジスタ */
+#define DSIUMC		0x0f000824	/* モデム制御レジスタ */
+#define DSIULS		0x0f000825	/* ライン状態レジスタ */
+#define DSIUMS		0x0f000826	/* モデム状態レジスタ */
+#define DSIUSC		0x0f000827	/* スクラッチレジスタ */
 
 /* for DSIULC */
-#define	WORD_LENGTH_8		BIT1 | BIT0
-#define	STOP_BITS_1		0		/* BIT2 */
-#define	PARITY_NON		0		/* BIT3, 4 */
+#define	WORD_LENGTH_8		(BIT1 | BIT0)
+#define	STOP_BITS_1		0u		/* BIT2 */
+#define	PARITY_NON		0u		/* BIT3, 4 */
 /* BIT5,6 省略 */
 #define	DIVISOR_LATCH_ACC	BIT7
 
 /* for DSIUIE */
-#define	DIS_INT			0
+#define	DIS_INT			0u
 #define	RECEIVE_DATA_AVAILABLE	BIT0
 #define	TRANS_REG_EMPTY		BIT1
 #define RECEIVE_LINE_STATUS	BIT2
@@ -82,30 +82,40 @@
 #define	FIFO_ENABLE		BIT0
 #define	RECEIVE_FIFO_RESET	BIT1
 #define	TRANS_FIFO_RESET	BIT2
-#define RECEIVE_TRIG_1_BYTE	0	/* BIT6, 7 */
+#define RECEIVE_TRIG_1_BYTE	0u	/* BIT6, 7 */
 #define RECEIVE_TRIG_4_BYTE	BIT6
 #define	RECEIVE_TRIG_8_BYTE	BIT7
-#define	RECEIVE_TRIG_14_BYTE	BIT6 | BIT7
+#define	RECEIVE_TRIG_14_BYTE	(BIT6 | BIT7)
 
 /* for DSIUIID */
-#define	INT_MASK		0x0e
+#define	INT_MASK		0x0eu
 #define	INT_RECEIVE_DATA	BIT2
-#define INT_CHAR_TIME_OUT	BIT3 | BIT2
+#define INT_CHAR_TIME_OUT	(BIT3 | BIT2)
 #define	INT_TRANS_EMPTY		BIT1
 
+/* for DSIULS */
+#define	THRE			BIT5
+#define TEMT			BIT6
+
 /* ボーレート定義関係 */
-#define	DIVISOR			XIN_CLOCK / (16 * DEVIDE_RATIO)
+#define	DIVISOR			XIN_CLOCK / (16u * DEVIDE_RATIO)
+
+#ifndef _MACRO_ONLY
 
 /*
  *  シリアルI/Oポート初期化ブロック
  */
 typedef struct sio_port_control_block	SIOPCB;
 
+#endif /* _MACRO_ONLY */
+
 /*
  *  コールバックルーチンの識別番号
  */
 #define SIO_ERDY_SND	1u		/* 送信可能コールバック */
 #define SIO_ERDY_RCV	2u		/* 受信通知コールバック */
+
+#ifndef _MACRO_ONLY
 
 /*
  *  SIOドライバの初期化ルーチン
@@ -162,61 +172,16 @@ extern void	vr4131_dsiu_ierdy_snd(VP_INT exinf);
  */
 extern void	vr4131_dsiu_ierdy_rcv(VP_INT exinf);
 
-/*============================================================================*/
-/* 以下は、本当はvr4131_dsiu_sil.hというファイルに入るべきだと思う。 */
+/*
+ *  カーネル起動時用の初期化 (sys_putcで利用)
+ */
+extern void	vr4131_dsiu_init(void);
 
 /*
- *  デバイスレジスタのアクセス間隔時間（nsec単位）
+ *  シリアルI/Oポートへの文字送信（ポーリング）
  */
-#define	VR4131_DSIU_DELAY	100u		/* 値に根拠はない */
+extern void	vr4131_dsiu_putchar_pol(char c);
 
-/*
- *  デバイスレジスタのアクセス間隔時間（ポーリング出力向け；nsec単位）
- *
- *  ・用途例：起動時のバナー出力
- *  ・値は、kseg1(キャッシュ有効時)での動作時に、文字を落とさない程度に設定
- *  ・kseg0(キャッシュ無効時)での動作時は、
- *      VR4131_DSIU_DELAY_POR = 1000000u 程度に設定すると、ちょうど良い。
- */
-#define	VR4131_DSIU_DELAY_POR	100000000u
-
-/*
- *  デバイスレジスタへのアクセス関数
- */
-Inline UB vr4131_dsiu_read_reg( VP reg ) {
-
-	UB	val;
-
-	/* ここで、regの範囲チェックを入れらればうれしいな。 */
-	val = sil_reb_mem( reg );
-	sil_dly_nse( VR4131_DSIU_DELAY );
-
-	return( val );
-}
-
-Inline void vr4131_dsiu_write_reg( VP reg, UB val) {
-
-	/* ここで、regの範囲チェックを入れらればうれしいな。 */
-	sil_wrb_mem( reg, (VB) (val & 0x000000ff) );
-	sil_dly_nse( VR4131_DSIU_DELAY );
-}
-
-/* ポーリング出力 sys_putc(c) 向け */
-Inline void vr4131_dsiu_write_por( VP reg, UB val) {
-
-	/* ここで、regの範囲チェックを入れらればうれしいな。 */
-	sil_wrb_mem( reg, (VB) (val & 0x000000ff) );
-	sil_dly_nse( VR4131_DSIU_DELAY_POR );
-}
-
-/*============================================================================*/
-/* sys_config.c向け(ポーリング出力時用の最低限の)シリアルコントローラの初期化 */
-#define scc_init							\
-	vr4131_dsiu_write_reg( (VP) DSIUIE,  DIS_INT );			\
-	vr4131_dsiu_write_reg( (VP) DSIULC,  WORD_LENGTH_8 | STOP_BITS_1 | PARITY_NON | DIVISOR_LATCH_ACC ); \
-	vr4131_dsiu_write_reg( (VP) DSIUDLL, LO8(DIVISOR) );		\
-	vr4131_dsiu_write_reg( (VP) DSIUDLM, HI8(DIVISOR) );		\
-	vr4131_dsiu_write_reg( (VP) DSIULC,  WORD_LENGTH_8 | STOP_BITS_1 | PARITY_NON ); \
-	vr4131_dsiu_write_reg( (VP) DSIUIE,  RECEIVE_DATA_AVAILABLE)
+#endif /* _MACRO_ONLY */
 
 #endif /* _VR4131_DSIU_H_ */

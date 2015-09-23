@@ -33,10 +33,10 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: jsp_common.h,v 1.7 2003/12/15 07:32:14 takayuki Exp $
+ *  @(#) $Id: jsp_common.h,v 1.8 2004/09/06 15:00:49 honda Exp $
  */
 
-// $Header: /home/CVS/configurator/jsp/jsp_common.h,v 1.7 2003/12/15 07:32:14 takayuki Exp $
+// $Header: /home/CVS/configurator/jsp/jsp_common.h,v 1.8 2004/09/06 15:00:49 honda Exp $
 
 
 #ifndef JSP_COMMON_H
@@ -71,7 +71,7 @@ namespace ToppersJsp {
             if(old != 0)
                 delete old;
 
-            result = new(nothrow) T;
+            result = new(std::nothrow) T;
             if(result == 0)
                 ExceptionMessage("Internal error : Object creation failure [ToppersJsp::KernelCfg::createKernelCfg]","内部エラー : オブジェクト生成時エラー [createKernelCfg]") << throwException;
 

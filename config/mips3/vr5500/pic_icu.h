@@ -43,10 +43,10 @@
 #include <sil.h>
 #endif /* _MACRO_ONLY */
 
-#include <rte-vr5500-cb.h>	/* ICU_BASE_ADDR */
+#include <rte_vr5500_cb.h>	/* ICU_BASE_ADDR */
 
 /*
- *  割込みコントローラ関係の定義
+ *  割込みコントローラ(Programable Interrupt Controler)関係の定義
  */
 
 /*  割込み番号の定義（0-7はmips3.hで使用。8以降を指定する。） */
@@ -69,10 +69,10 @@
 #define INTR_offset	0x20
 #define INTEN_offset	0x30
 
-#define ICU_INT0M	(ICU_BASE_ADDR + INT0M_offset)
-#define ICU_INT1M	(ICU_BASE_ADDR + INT1M_offset)
-#define ICU_INTR	(ICU_BASE_ADDR + INTR_offset)
-#define ICU_INTEN	(ICU_BASE_ADDR + INTEN_offset)
+#define ICU_INT0M	INT0M_offset
+#define ICU_INT1M	INT1M_offset
+#define ICU_INTR	INTR_offset
+#define ICU_INTEN	INTEN_offset
 
 /*  割込み要因ビットパターン (下記、アセンブラ部分でも利用している。) */
 #define TIMER0		BIT0
@@ -85,14 +85,18 @@
 #define DMAC		BIT7
 
 /* ICU内のレジスタアクセス用の関数  */
-#define icu_read( addr )	sil_reb_mem( addr )
-#define icu_write( addr, val )	sil_wrb_mem( addr, val )
+#define icu_reb( addr )		sil_reb_mem( (VP)(ICU_BASE_ADDR + addr) )
+#define icu_wrb( addr, val )	sil_wrb_mem( (VP)(ICU_BASE_ADDR + addr), val )
+
+#define icu_orb( mem, val )	icu_wrb( mem, icu_reb( mem ) | val )
+#define icu_andb( mem, val )	icu_wrb( mem, icu_reb( mem ) & val )
 
 /*
  *  割込みコントローラの割込みマスク関係
  */
 
-/*  構造体ICU_IPM内のオフセットを求めるためのマクロ（makeoffset.cで用いる）*/
+/*  構造体ICU_IPM内のオフセットを求めるためのマクロ（makeoffset.cで用いる）
+    なお、このマクロで定義した値は、特に利用していない。*/
 #define OFFSET_DEF_ICU_IPM	OFFSET_DEF(ICU_IPM, int1m)
 
 /*  割込みコントローラに設定可能な割込みマスクビットパターン（最高値）*/
@@ -110,22 +114,22 @@ extern ICU_IPM icu_intmask_table[];
 
 /*  割込みコントローラのintmaskテーブルの設定  */
 Inline void icu_set_ilv(INTNO intno, ICU_IPM *ipm) {
-	/* CHECK_ICU_IPM(ipm); ERR型でリターンしてしまうので不可  */
+	/* CHECK_ICU_IPM(ipm) は、上位ルーチンで実行済み */
 	icu_intmask_table[intno].int0m = ipm->int0m;
 	icu_intmask_table[intno].int1m = ipm->int1m;
 }
 
 /*  割り込みコントローラのマスク設定  */
 Inline void icu_set_ipm(ICU_IPM *ipm) {
-	/* CHECK_ICU_IPM(ipm); ERR型でリターンしてしまうので不可  */
-	icu_write( (VP) ICU_INT0M, ipm->int0m );
-	icu_write( (VP) ICU_INT1M, ipm->int1m );
+	/* CHECK_ICU_IPM(ipm) は、上位ルーチンで実行済み */
+	icu_wrb( (VP) ICU_INT0M, ipm->int0m );
+	icu_wrb( (VP) ICU_INT1M, ipm->int1m );
 }
 
 /*  割り込みコントローラのマスク取得  */
 Inline void icu_get_ipm(ICU_IPM *ipm) {
-	ipm->int0m = icu_read( (VP) ICU_INT0M );
-	ipm->int1m = icu_read( (VP) ICU_INT1M );
+	ipm->int0m = icu_reb( (VP) ICU_INT0M );
+	ipm->int1m = icu_reb( (VP) ICU_INT1M );
 }
 
 #endif /* _MACRO_ONLY */
@@ -138,44 +142,45 @@ Inline void icu_get_ipm(ICU_IPM *ipm) {
 /*  ワード境界の関係で、本来は1バイトのマスクではあるけれども、
     ワード境界のために2バイト単位で扱う必要がある。 */
 #define PUSH_ICU_IPM						\
-    li      t1, ICU_BASE_ADDR;					\
-    addi    sp, sp, -2*2;					\
-    lb      t3, INT0M_offset(t1);	/*  t3=INT0M  */	\
-    lb      t4, INT1M_offset(t1);	/*  t4=INT1M  */	\
-    sh      t3, (sp);						\
-    sh      t4, 2(sp)
+	li	t1, ICU_BASE_ADDR;				\
+	addi	sp, sp, -2*2;					\
+	lb	t3, INT0M_offset(t1);	/* t3 = INT0M */	\
+	lb	t4, INT1M_offset(t1);	/* t4 = INT1M */	\
+	sh	t3, (sp);					\
+	sh	t4, 2(sp)
 
 /*  割込みコントローラICUのIPMをスタックから復元  */
 #define POP_ICU_IPM						\
-    li      t1, ICU_BASE_ADDR;					\
-    lh      t3, (sp);						\
-    lh      t4, 2(sp);						\
-    sb      t3, INT0M_offset(t1);	/*  INT0M=t3  */	\
-    sb      t4, INT1M_offset(t1);	/*  INT1M=t4  */	\
-    addi    sp, sp, 2*2
+	li	t1, ICU_BASE_ADDR;				\
+	lh	t3, (sp);					\
+	lh	t4, 2(sp);					\
+	sb	t3, INT0M_offset(t1);	/* INT0M = t3 */	\
+	sb	t4, INT1M_offset(t1);	/* INT1M = t4 */	\
+	addi	sp, sp, 2*2
 
 /*  割込みコントローラICUのIPMを設定  */
 /*      t0に割込み要因番号が入った状態で呼ばれる  */
 /*      t0の内容を壊してはいけない  */
 /*      t1に割込み要求クリアの定数が入っているので破壊してはならない。  */
-#define SET_ICU_IPM							       \
-    la      t4, icu_intmask_table;	/*  データテーブルの先頭アドレス  */   \
-    sll     t2, t0, 1;			/*  オフセット＝割込み要因番号×2倍(マスクは、2バイト)  */ \
-    li      t3, ICU_BASE_ADDR;						       \
-    add     t4, t4, t2;			/*  先頭アドレス＋オフセット  */       \
-    lh      t5, (t4);			/*  t5=INT0M:INT1M  */		       \
-					/*  注意：リトルエンディアン依存  */   \
-    sb      t5, INT0M_offset(t3);	/*  INT0M=t5の下位1バイト  */	       \
-    srl     t6, t5, 8;							       \
-    sb      t6, INT1M_offset(t3);	/*  INT1M=t5の上位1バイト  */
+#define SET_ICU_IPM								\
+	la	t4, icu_intmask_table;	/*  データテーブルの先頭アドレス  */	\
+	sll	t2, t0, 1;		/*  オフセット＝割込み要因番号×2倍	\
+						(マスクは、2バイト)  */		\
+	li	t3, ICU_BASE_ADDR;						\
+	add	t4, t4, t2;		/*  先頭アドレス＋オフセット  */	\
+	lh	t5, (t4);		/*  t5 = INT0M:INT1M  */		\
+					/*  注意：リトルエンディアン依存  */	\
+	sb	t5, INT0M_offset(t3);	/*  INT0M=t5の下位1バイト  */		\
+	srl	t6, t5, 8;							\
+	sb	t6, INT1M_offset(t3);	/*  INT1M=t5の上位1バイト  */
 
 /*  デバイス名から個別処理を展開するマクロ  */
 /*    割込み要因をt0に入れて proc_END に飛ぶ  */
-#define MAKE_PROC(device)       \
-proc_##device:			\
-    li      t0, INTNO_##device;	\
-    j       proc_END;		\
-    nop;
+#define MAKE_PROC(device)		\
+proc_##device:				\
+	li	t0, INTNO_##device;	\
+ 	j	proc_END;		\
+	nop;
 
 /*  割込み要因の判別  */
 /*    割込みコントローラはMIPS3コアのInt0に接続されている  */

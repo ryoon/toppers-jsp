@@ -47,7 +47,7 @@
  */
 typedef struct sio_port_initialization_block {
 	UB	lcr_def;	/* LCR設定値 b0-b6;
-				(送受信ビット数、ストップビット，パリティ) */
+				   (送受信ビット数、ストップビット，パリティ) */
 	UB	boud_hi_def;	/* DLM設定値（ボーレート上位の設定値） */
 	UB	boud_lo_def;	/* DLL設定値（ボーレート下位の設定値） */
 } SIOPINIB;
@@ -59,25 +59,30 @@ struct sio_port_control_block {
 	const SIOPINIB	*siopinib;	/* シリアルI/Oポート初期化ブロック */
 	VP_INT		exinf;		/* 拡張情報 */
 	BOOL		openflag;	/* オープン済みフラグ */
-	UB		ie;		/* DSIUIEの値 */
 	BOOL		getready;	/* 文字を受信した状態 */
 	BOOL		putready;	/* 文字を送信できる状態 */
 };
 
 /*
  *  シリアルI/Oポート初期化ブロック
- *  ID = 1 をDSIUに対応させている
+ *  （ポートは１つしかないが、他のソースコードとの親和性から配列で定義する）
  */
-const SIOPINIB siopinib_table[TNUM_PORT] = {
+const SIOPINIB siopinib_table[TNUM_SIOP] = {
 	{ (UB)	WORD_LENGTH_8 | STOP_BITS_1 | PARITY_NON,
 	  (UB)	HI8(DIVISOR),
 	  (UB)	LO8(DIVISOR) }
 };
 
 /*
+ *  シリアルI/Oポート初期化ブロックの取出し
+ */
+#define INDEX_SIOPINIB(siopid)	((UINT)((siopid) - 1))
+#define get_siopinib(siopid)	(&(siopinib_table[INDEX_SIOPINIB(siopid)]))
+
+/*
  *  シリアルI/Oポート管理ブロックのエリア
  */
-SIOPCB	siopcb_table[TNUM_PORT];
+SIOPCB	siopcb_table[TNUM_SIOP];
 
 /*
  *  シリアルI/OポートIDから管理ブロックを取り出すためのマクロ
@@ -93,7 +98,7 @@ vr4131_dsiu_get_stat(SIOPCB *siopcb)
 {
 	UB	iid;
 
-	iid = vr4131_dsiu_read_reg( (VP) DSIUIID ) & INT_MASK;
+	iid = vr4131_reb_mem( (VP) DSIUIID ) & INT_MASK;
 
 	switch( iid ) {
 		case INT_TRANS_EMPTY :
@@ -135,7 +140,7 @@ Inline char
 vr4131_dsiu_getchar(SIOPCB *siopcb)
 {
 	siopcb->getready = FALSE;
-	return((char) vr4131_dsiu_read_reg( (VP) DSIURB ));
+	return((char) vr4131_reb_mem( (VP) DSIURB ));
 }
 
 /*
@@ -147,10 +152,10 @@ vr4131_dsiu_putchar(SIOPCB *siopcb, char c)
 	siopcb->putready = FALSE;
 
 #ifndef GDB_STUB
-	vr4131_dsiu_write_reg( (VP) DSIUTH, c );
-#else
+	vr4131_wrb_mem( (VP) DSIUTH, c );
+#else /* GDB_STUB */
 	stub_putc( c );
-#endif
+#endif /* GDB_STUB */
 }
 
 /*
@@ -170,12 +175,53 @@ vr4131_dsiu_initialize()
 }
 
 /*
+ *  SIOレジスタ初期化ルーチン
+ */
+void
+vr4131_dsiu_init_siopinib( const SIOPINIB  *siopinib )
+{
+	/*
+	 * DSIUレジスタの初期化
+	 */
+	/* 初期処理 */
+	vr4131_wrb_mem( (VP) DSIUIE,  DIS_INT );
+
+	/* ボーレートの設定 */
+	vr4131_wrb_mem( (VP) DSIULC,  siopinib->lcr_def | DIVISOR_LATCH_ACC );
+
+	vr4131_wrb_mem( (VP) DSIUDLL, siopinib->boud_lo_def );
+	vr4131_wrb_mem( (VP) DSIUDLM, siopinib->boud_hi_def );
+
+	/* モードの設定 */
+	vr4131_wrb_mem( (VP) DSIULC,  siopinib->lcr_def );
+
+	/* FIFOの設定 */
+	vr4131_wrb_mem( (VP) DSIUFC,  FIFO_ENABLE );
+	vr4131_wrb_mem( (VP) DSIUFC,  FIFO_ENABLE | RECEIVE_FIFO_RESET | TRANS_FIFO_RESET | RECEIVE_TRIG_1_BYTE );
+	vr4131_wrb_mem( (VP) DSIUFC,  FIFO_ENABLE | RECEIVE_TRIG_1_BYTE );
+
+	/* 終了処理 */
+	vr4131_wrb_mem( (VP) DSIUMC,  RTS );
+
+	vr4131_wrb_mem( (VP) DSIUIE,  RECEIVE_DATA_AVAILABLE);
+}
+
+/*
+ *  カーネル起動時のバーナー出力用の初期化
+ */
+void
+vr4131_dsiu_init(void)
+{
+	vr4131_dsiu_init_siopinib( get_siopinib(1) );
+}
+
+/*
  *  オープンしているポートがあるか？
  */
 BOOL
 vr4131_dsiu_openflag(void)
 {
-	return(siopcb_table[0].openflag);
+	return( siopcb_table[0].openflag );
 }
 
 /*
@@ -184,35 +230,12 @@ vr4131_dsiu_openflag(void)
 SIOPCB *
 vr4131_dsiu_opn_por(ID siopid, VP_INT exinf)
 {
-	SIOPCB		*siopcb;
-	const SIOPINIB	*siopinib;
-	UH		temp;
-
-	siopcb = get_siopcb(siopid);
-	siopinib = siopcb->siopinib;
+	SIOPCB		*siopcb = get_siopcb(siopid);
+	const SIOPINIB	*siopinib = siopcb->siopinib;
 
 #ifndef GDB_STUB
-	/* DSIUへのクロック供給開始 */
-	temp = sil_reh_mem( (VP) CMUCLKMSK );
-	sil_wrh_mem( (VP) CMUCLKMSK, temp | (MSKDSIU | MSKSSIU | MSKSIU) );
-
 	/* DSIUレジスタの初期化 */
-	vr4131_dsiu_write_reg( (VP) DSIUIE,	DIS_INT );
-
-	vr4131_dsiu_write_reg( (VP) DSIULC,	siopinib->lcr_def | DIVISOR_LATCH_ACC );
-
-	vr4131_dsiu_write_reg( (VP) DSIUDLL,	siopinib->boud_lo_def );
-	vr4131_dsiu_write_reg( (VP) DSIUDLM,	siopinib->boud_hi_def );
-
-	vr4131_dsiu_write_reg( (VP) DSIULC,	siopinib->lcr_def );
-
-	vr4131_dsiu_write_reg( (VP) DSIUFC,	FIFO_ENABLE );
-	vr4131_dsiu_write_reg( (VP) DSIUFC,	FIFO_ENABLE | RECEIVE_FIFO_RESET | TRANS_FIFO_RESET | RECEIVE_TRIG_1_BYTE);
-	vr4131_dsiu_write_reg( (VP) DSIUFC,	FIFO_ENABLE | RECEIVE_TRIG_1_BYTE );
-
-	vr4131_dsiu_write_reg( (VP) DSIUMC,	RTS );
-
-	vr4131_dsiu_write_reg( (VP) DSIUIE,	RECEIVE_DATA_AVAILABLE);
+	vr4131_dsiu_init_siopinib( siopinib );
 #endif	/*  GDB_STUB  */
 
 	/* 割込みレベル設定、割込み要求クリアは、sio_opn_por(hw_serial.h)で行う。 */
@@ -230,7 +253,7 @@ vr4131_dsiu_opn_por(ID siopid, VP_INT exinf)
 void
 vr4131_dsiu_cls_por(SIOPCB *siopcb)
 {
-	vr4131_dsiu_write_reg( (VP) DSIUIE, DIS_INT );
+	vr4131_wrb_mem( (VP) DSIUIE, DIS_INT );
 
 	siopcb->openflag = FALSE;
 }
@@ -266,7 +289,6 @@ vr4131_dsiu_rcv_chr(SIOPCB *siopcb)
 void
 vr4131_dsiu_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 {
-	UB	temp;
 	UB	ie_bit = 0;
 
 	switch (cbrtn) {
@@ -278,10 +300,8 @@ vr4131_dsiu_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 		break;
 	}
 
-	temp = vr4131_dsiu_read_reg( (VP) DSIUIE );
-	temp |= ie_bit;
-	siopcb->ie = temp;
-	vr4131_dsiu_write_reg( (VP) DSIUIE, temp );}
+	vr4131_orb( (VP) DSIUIE, ie_bit );
+}
 
 /*
  *  シリアルI/Oポートからのコールバックの禁止
@@ -289,7 +309,6 @@ vr4131_dsiu_ena_cbr(SIOPCB *siopcb, UINT cbrtn)
 void
 vr4131_dsiu_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 {
-	UB	temp;
 	UB	ie_bit = 0;
 
 	switch (cbrtn) {
@@ -301,10 +320,7 @@ vr4131_dsiu_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 		break;
 	}
 
-	temp = vr4131_dsiu_read_reg( (VP) DSIUIE );
-	temp &= ~ie_bit;
-	siopcb->ie = temp;
-	vr4131_dsiu_write_reg( (VP) DSIUIE, temp );
+	vr4131_andb( (VP) DSIUIE, ~ie_bit );
 }
 
 /*
@@ -338,4 +354,16 @@ vr4131_dsiu_isr()
 	if (siopcb_table[0].openflag) {
 		vr4131_dsiu_isr_siop(&(siopcb_table[0]));
 	}
+}
+
+/*
+ *  VR4131 内蔵 DSIU 用ポーリング出力 (sys_putcで利用)
+ */
+void
+vr4131_dsiu_putchar_pol( char val ) {
+
+	/* 送信部エンプティになるまで待つ。 */
+	while( (vr4131_reb_mem( (VP)DSIULS ) & (TEMT) ) == 0 );
+
+	vr4131_wrb_mem( (VP)DSIUTH, (VB) val );
 }

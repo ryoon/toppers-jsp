@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2003 by Takagi Nobuhisa
+ *  Copyright (C) 2003-2004 by Takagi Nobuhisa
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cxxrt.c,v 1.1 2003/12/18 06:38:42 honda Exp $
+ *  @(#) $Id: cxxrt.c,v 1.3 2004/09/17 09:11:44 honda Exp $
  */
 #include "../kernel/jsp_kernel.h"
 #include "../kernel/task.h"
@@ -180,24 +180,9 @@ int _toppers_cxxrt_key_delete(struct _toppers_cxxrt_tls *key)
 	return 0;
 }
 
+/* JSP 1.4との互換性のために_toppers_cxxrt_reset_specificを残しておく */
 void _toppers_cxxrt_reset_specific(void)
 {
-	ID tskid = 0;
-	struct _toppers_cxxrt_tls *p;
-
-	if (iniflg)
-		tskid = _get_tid();
-
-	for (p = &tls[0]; p < &tls[CXXRT_KEY_MAX]; p++)
-	{
-		void **data = &p->data[tskid];
-		if (*data != NULL)
-		{
-			if (p->dtor != 0)
-				(*p->dtor)(*data);
-			*data = NULL;
-		}
-	}
 }
 
 void _toppers_cxxrt_init(void)

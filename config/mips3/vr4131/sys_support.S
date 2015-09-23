@@ -46,6 +46,8 @@
 /*
  *  ターゲットハードウェア依存する初期化処理 (reset.S から呼び出される)
  */
+#ifndef GDB_STUB
+
 	.section .reset
 	.global	hardware_init_hook
 
@@ -54,59 +56,59 @@ hardware_init_hook:
 	/*
 	 *  バスコントロールユニット(BCU)関係の初期設定
 	 */
-	li	t0, ROMSIZEREG
+	li	t0, ASM_SIL( ROMSIZEREG )
 	lh	t1, (t0)
-	ori	t1, t1, SIZE3_4 | SIZE2_4 | SIZE1_4 | SIZE0_4
+	ori	t1, t1, (SIZE3_4 | SIZE2_4 | SIZE1_4 | SIZE0_4)
 	sh	t1, (t0)
 
-	li	t0, ROMSPEEDREG
+	li	t0, ASM_SIL( ROMSPEEDREG )
 	lh	t1, (t0)
-	ori	t1, t1, ROM4_WAIT_5VTClock | ROM2_WAIT_8VTClock
+	ori	t1, t1, (ROM4_WAIT_5VTClock | ROM2_WAIT_8VTClock)
 	sh	t1, (t0)
 
-	li	t0, BCUCNTREG3
+	li	t0, ASM_SIL( BCUCNTREG3 )
 	lh	t1, (t0)
-	ori	t1, t1, EXT_ROMCS_3ROM_2ROM | IO32 | LCDSEL1_BUFFER | LCDSEL0_BUFFER
+	ori	t1, t1, (EXT_ROMCS_3ROM_2ROM | IO32 | LCDSEL1_BUFFER | LCDSEL0_BUFFER)
 	sh	t1, (t0)
 
 	/*
 	 * SDRAMコントロールユニット(SDRAMU)関係の初期設定
 	 */
 
-	li	t0, SDRAMMODEREG
+	li	t0, ASM_SIL( SDRAMMODEREG )
 	lh	t1, (t0)
-	ori	t1, t1, SCLK | LTMODE_2
+	ori	t1, t1, (SCLK | LTMODE_2)
 	sh	t1, (t0)
 
-	li	t0, SDRAMCNTREG
+	li	t0, ASM_SIL( SDRAMCNTREG )
 	lh	t1, (t0)
-	ori	t1, t1, TRC_3VTClock | TDAL_2VTClock | TRCD_2VTClock
+	ori	t1, t1, (TRC_3VTClock | TDAL_2VTClock | TRCD_2VTClock)
 	sh	t1, (t0)
 
-	li	t0, BCURFCNTREG
+	li	t0, ASM_SIL( BCURFCNTREG )
 	lh	t1, (t0)
 	ori	t1, t1, 0x3ec
 	sh	t1, (t0)
 
-	li	t0, BCURFCNTREG
+	li	t0, ASM_SIL( BCURFCNTREG )
 	lh	t1, (t0)
 	ori	t1, t1, 0x3ec
 	sh	t1, (t0)
 
-	li	t0, RAMSIZEREG
+	li	t0, ASM_SIL( RAMSIZEREG )
 	lh	t1, (t0)
-	ori	t1, t1, SIZE3_64 | SIZE2_64 | SIZE1_64 | SIZE0_64
+	ori	t1, t1, (SIZE3_64 | SIZE2_64 | SIZE1_64 | SIZE0_64)
 	sh	t1, (t0)
 
 	/*
 	 *  バスコントロールユニット(BCU)関係の初期設定
 	 */
-	li	t0, IO0SPEEDREG
+	li	t0, ASM_SIL( IO0SPEEDREG )
 	lh	t1, (t0)
 	ori	t1, t1, IO0_1_WAIT_4
 	sh	t1, (t0)
 
-	li	t0, IO1SPEEDREG
+	li	t0, ASM_SIL( IO1SPEEDREG )
 	lh	t1, (t0)
 	ori	t1, t1, IO1_3_WAIT_11
 	sh	t1, (t0)
@@ -116,7 +118,7 @@ hardware_init_hook:
 	 *  CPU起動後、4秒以内に行わなければならない
 	 *  PMUコントロールレジスタのHALTimerリセットビットに１を書き込む
 	 */
-	li	t0, PMUCNTREG
+	li	t0, ASM_SIL( PMUCNTREG )
 	lh	t1, (t0)
 	ori	t1, t1, HALTIMERRST
 	sh	t1, (t0)
@@ -125,7 +127,7 @@ hardware_init_hook:
 	 *  HALTimerリセットのクリア
 	 *  PMU割込み／ステータスレジスタのTIMOUTRSTビットに１を書き込む
 	 */
-	li	t0, PMUINTREG
+	li	t0, ASM_SIL( PMUINTREG )
 	lh	t1, (t0)
 	ori	t1, t1, TIMOUTRST
 	sh	t1, (t0)
@@ -180,3 +182,4 @@ return_to_common:
 	j	ra
 	nop
 
+#endif /* GDB_STUB */

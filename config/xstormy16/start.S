@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -48,45 +48,11 @@
         .equ dummy,_chip_info
 
 /*
- *  割り込みベクトル
- *  (このsectionは8000h-8083hにリンクされる)
- */
-        .section .int_vec,"ax"
-        .global _start
-        .align 1
-_start:
-        jmpf _int_reset
-        jmpf _kernel_int_irq_1
-        jmpf _kernel_int_irq_2
-        jmpf _kernel_int_irq_3
-        jmpf _kernel_int_irq_4
-        jmpf _kernel_int_irq_5
-        jmpf _kernel_int_irq_6
-        jmpf _kernel_int_irq_7
-        jmpf _kernel_int_irq_8
-        jmpf _kernel_int_irq_9
-        jmpf _kernel_int_irq_a
-        jmpf _kernel_int_irq_b
-        jmpf _kernel_int_irq_c
-        jmpf _kernel_int_irq_d
-        jmpf _kernel_int_irq_e
-        jmpf _kernel_int_irq_f
-        .org 0x80
-        jmpf _kernel_int_irq_ex
-
-/*
  *      RESET時の初期化処理
  */
         .text
+	.global _int_reset
 _int_reset:
-
-                                /*
-                                 *  ワッチドッグタイマ割り込みのチェック
-                                 */
-        bn __WDTCR,#4,_after_reset
-        bp __WDTCR,#5,_after_reset
-        jmpf _kernel_int_irq_0
-_after_reset:
 
                                 /*
                                  *  スタックポインタの初期化

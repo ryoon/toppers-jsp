@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.20 2003/12/24 06:51:02 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.23 2004/10/04 12:11:59 honda Exp $
  */
 
 /*
@@ -67,8 +67,8 @@ dispatch:
         adr   r2, dispatch_r
         str   r2, [r1,#TCB_pc]      /* 実行再開番地を保存 */
         ldr   r6, =interrupt_count  /* r6 <-interrupt_count */
-        mov   r5, #(CPSR_SVC|CPSR_FIQ_BIT|CPSR_IRQ_BIT)  /* 割り込み禁止(システムモード) */
-        mov   r4, #(CPSR_SVC|CPSR_FIQ_BIT)               /* 割り込み許可(システムモード) */
+        mov   r5, #(CPSR_SVC|CPSR_IRQ_BIT)  /* 割り込み禁止(システムモード) */
+        mov   r4, #(CPSR_SVC)               /* 割り込み許可(システムモード) */
         b     dispatcher_1
 
 dispatch_r:
@@ -96,19 +96,22 @@ exit_and_dispatch:
         /*
          *  FIQは常に禁止する．
          */
-        mov   r5, #(CPSR_SVC|CPSR_FIQ_BIT|CPSR_IRQ_BIT) /* 割り込み禁止(システムモード) */
-        mov   r4, #(CPSR_SVC|CPSR_FIQ_BIT)  /* 割り込み許可(システムモード) */
-        msr   cpsr, r5          /* システムモード */
+        mov   r5, #(CPSR_SVC|CPSR_IRQ_BIT) /* 割り込み禁止(システムモード) */
+        mov   r4, #(CPSR_SVC)              /* 割り込み許可(システムモード) */
+        mrs   r0, cpsr                     /* FIQを継承            */
+        and   r0, r0, #CPSR_FIQ_BIT
+        orr   r0, r0, r5
+        msr   cpsr, r0          /* システムモード */
 dispatcher_1:
         /*
          *  ここではシステムモード・割込み禁止状態でなければならない．
          */
         ldr   r0, =schedtsk   /* schedtsk を読み込む */
         ldr   r1, [r0]
-        cmp   r1, #0
-        beq   dispatcher_2
         ldr   r2, =runtsk     /* schedtsk を runtskに */
-        str   r1, [r2]
+        str   r1, [r2]        /* schedtsk がいない場合はruntskをNULLに */
+        cmp   r1, #0
+        beq   dispatcher_2        
 dispatcher_3:           
         ldr   sp, [r1,#TCB_sp] /* タスクスタックを復帰 */
         ldr   pc, [r1,#TCB_pc] /* 実行再開番地を復帰   */
@@ -116,9 +119,15 @@ dispatcher_2:
         mov   r3,#1
         str   r3, [r6]
         /* sleepモードを持つCPUなら書き換える */
-        msr   cpsr, r4        /* 割込み待ち      */
-        WAIT_INTERRUPT        
-        msr   cpsr, r5        /* 割込み禁止      */
+        mrs   r0, cpsr                     /* FIQを継承            */
+        and   r0, r0, #CPSR_FIQ_BIT
+        orr   r0, r0, r4
+        msr   cpsr, r0        /* 割込み待ち      */
+        WAIT_INTERRUPT
+        mrs   r0, cpsr                     /* FIQを継承            */
+        and   r0, r0, #CPSR_FIQ_BIT
+        orr   r0, r0, r5
+        msr   cpsr, r0        /* 割込み禁止      */        
         mov   r3,#0
         str   r3, [r6]        
         b     dispatcher_1
@@ -132,6 +141,9 @@ dispatcher_2:
         .globl activate_r
 activate_r:
         mov   r1,#(CPSR_SVC|CPSR_FIQ_BIT) /* 割り込み許可(システムモード) */
+        mrs   r2, cpsr         /* FIQを継承   */
+        and   r2, r2, #CPSR_FIQ_BIT
+        orr   r1, r1, r2            
         msr   cpsr, r1         /* 割込み許可 */
         ldr   lr, =ext_tsk     /* 戻り番地設定 */
         ldmfd sp!, {r0,pc}     /* 引数,PC設定  */
@@ -183,11 +195,13 @@ ret_int_1:
         blne  call_texrtn            /* タスク例外ルーチンの呼び出し */        
 ret_int_2:              
         ldmfd sp!, {r0}       /* spsr を復帰 */
+        mrs   r2, cpsr        /* FIQを継承            */
+        and   r2, r2, #CPSR_FIQ_BIT
+        and   r0, r0, #~CPSR_FIQ_BIT
+        orr   r0, r0, r2                    
         msr   cpsr, r0      
         ldmfd sp!, {r0 - r3,ip,lr,pc} /* タスクへ戻る */
         
-
-
         /*
          *  微少時間待ち
          */

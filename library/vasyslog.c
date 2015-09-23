@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: vasyslog.c,v 1.4 2003/06/18 12:48:38 hiro Exp $
+ *  @(#) $Id: vasyslog.c,v 1.6 2004/05/18 07:16:54 hiro Exp $
  */
 
 /*
@@ -61,9 +63,7 @@ syslog(UINT prio, const char *format, ...)
 			continue;
 		}
 
-		if ((c = *format++) == '0') {
-			c = *format++;
-		}
+		c = *format++;
 		while ('0' <= c && c <= '9') {
 			c = *format++;
 		}
@@ -83,7 +83,7 @@ syslog(UINT prio, const char *format, ...)
 			log.loginfo[i++] = (VP_INT) va_arg(ap, int);
 			break;
 		case 's':
-			log.loginfo[i++] = (VP_INT) va_arg(ap, char *);
+			log.loginfo[i++] = (VP_INT) va_arg(ap, const char *);
 			break;
 		case '\0':
 			format--;

@@ -47,6 +47,7 @@
 /*
  *  割込みコントローラ・ボード依存のインクルードファイルの読み込み
  */
+#include <vr4131_sil.h>
 #include <vr4131_icu.h>	/* 割込みコントローラ関係の情報をcpu_config.hに渡す為 */
 #include <vr4131.h>	/* NOP_FOR_CP0_HAZARDの情報をcpu_support.Sに渡す為 */
 			/* CMUCLKMSKの情報をsys_support.cに渡す為 */
@@ -60,6 +61,7 @@
  *  デバッグシリアルポート数の定義 (VR4131内蔵のDSIUを利用する。)
  */
 #define TNUM_PORT	1u	/* サポートするシリアルポートの数 */
+#define	TNUM_SIOP	1u	/* サポートするシリアルI/Oポートの数 */
 
 /*
  *  システムタスクに関する定義
@@ -69,21 +71,29 @@
 /*
  *  微少時間待ちのための定義
  */
+/* コードが kseg1 で測定 */
+#define	SIL_DLY_TIM1	33
+#define	SIL_DLY_TIM2	10
+/* コードが kseg0 で測定 */
+/*
 #define	SIL_DLY_TIM1	11280
 #define	SIL_DLY_TIM2	1818
+*/
 
 /*
  *  割込みマスクの初期値 (MIPS3コアのもターゲットシステム依存なので、ここで定義)
  */
 
 /*  MIPS3コアの関係 */
+/*  実質的な割込み制御は、外部割込みコントローラで行うため、MIPS3コアに関しては
+    可能な分を許可する。*/
 /*  Int2: RTCLong2割込み Int1: RTCLong1割込み Int0: その他の割込み */
 #define INIT_CORE_IPM	( Cause_Int0 | Cause_Int1 | Cause_Int2 )
 
-/*  割込みコントローラ関係  */
-/*  BATINTRについては、ハードウェア編p224参照  */
+/*  外部割込みコントローラ関係  */
+/*  (BATINTR 以外は、割込み禁止。ハードウェア編p224参照)  */
 #define INIT_MSYSINT1	BATINTR
-#define INIT_MSYSINT2	(TCLKINTR | DSIUINTR)
+#define INIT_MSYSINT2	0
 
 #ifndef _MACRO_ONLY
 
@@ -127,19 +137,16 @@ extern void	sys_putc(char c) throw();
  *  コンフィグレジスタ初期値設定用マスク
  *
  *  ・BPビットの設定について
- *   分岐予測機能の不具合（VR4131の制限事項４：ジャンプ命令の２つ後に条件分岐
- *   命令が入ると正しく動作しない）に対応するために、BPビットを1にセットする
- *   ようにしている。
- *   なぜならば、C言語部分では回避できないので、分岐予測機能をオフにするため。
+ *    分岐予測機能の不具合（VR4131の制限事項４：ジャンプ命令の２つ後に条件分岐
+ *    命令が入ると正しく動作しない）に対応するために、BPビットを1にセットする
+ *    ようにしている。
+ *    なぜならば、C言語部分では回避できないので、分岐予測機能をオフにするため。
  */
 #define INIT_CONFIG_MASK	(BP)
 
 /*
- *  システムタスクが使用するライブラリに関する定義
+ *  シリアルコントローラのボーレートの設定（分周比設定データ；[bps]で指定）
  */
-#define NEWLIB			/* newlib を用いる */
-
-/*  シリアルコントローラのボーレートの設定（分周比設定データ；[bps]で指定）  */
 #define DEVIDE_RATIO	9600u	/*  9600bpsを選択  */
 
 #endif /* _SYS_CONFIG_H_ */

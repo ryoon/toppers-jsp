@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: kernel.h,v 1.18 2003/12/06 13:01:37 hiro Exp $
+ *  @(#) $Id: kernel.h,v 1.20 2004/05/18 07:10:23 hiro Exp $
  */
 
 /*
@@ -54,7 +56,8 @@
  *  ドされることはない．
  *
  *  この中でインクルードしているファイルを除いて，他のインクルードファ
- *  イルに依存していない．*/
+ *  イルに依存していない．
+ */
 
 #ifndef _KERNEL_H_
 #define _KERNEL_H_
@@ -282,7 +285,7 @@ extern BOOL	vsns_ini(void) throw();
 #define	TKERNEL_MAKER	0x0118u		/* カーネルのメーカーコード */
 #define	TKERNEL_PRID	0x0001u		/* カーネルの識別番号 */
 #define	TKERNEL_SPVER	0x5402u		/* ITRON仕様のバージョン番号 */
-#define	TKERNEL_PRVER	0x1040u		/* カーネルのバージョン番号 */
+#define	TKERNEL_PRVER	0x1041u		/* カーネルのバージョン番号 */
 
 /*
  *  キューイング／ネスト回数の最大値

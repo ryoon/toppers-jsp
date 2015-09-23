@@ -5,7 +5,7 @@
  *
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2003 Takagi Nobuhisa
+ *  Copyright (C) 2003-2004 Takagi Nobuhisa
  *
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cxx_sample1.h,v 1.3 2003/12/24 08:34:17 honda Exp $
+ *  @(#) $Id: cxx_sample1.h,v 1.6 2004/09/17 09:11:34 honda Exp $
  */
 
 /*
@@ -98,7 +98,7 @@
 #undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
 #define STACK_SIZE	2048		/* タスクのスタックサイズ */
 
-#elif defined(I386)
+#elif defined(IA32)
 
 #define CPUEXC1		0		/* ゼロ除算例外 */
 #define RAISE_CPU_EXCEPTION   syslog(LOG_NOTICE, "zerodiv = %d", 10 / 0)
@@ -129,6 +129,11 @@
 #undef CPUEXC1				/* CPU例外ハンドラをサポートしない */
 #define OMIT_VGET_TIM
 #define LOOP_REF	4000000		/* 速度計測用のループ回数 */
+
+#elif defined(NIOS2)
+
+#define CPUEXC1		0		  /* 未実装命令例外 */
+#define RAISE_CPU_EXCEPTION	  Asm("div zero, zero, zero");
 
 #endif
 

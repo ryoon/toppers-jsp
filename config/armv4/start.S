@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: start.S,v 1.14 2003/12/11 00:44:27 honda Exp $
+ *  @(#) $Id: start.S,v 1.17 2004/09/17 13:45:55 honda Exp $
  */
                 
 /*
@@ -44,9 +44,9 @@
 #include <sys_defs.h>
         
 #include <t_config.h>
+ 
 
 
-#ifndef GDB_STUB
         /*
          * Vectorテーブルとジャンプテーブル
          * サイズは合計0x3c
@@ -83,7 +83,7 @@ irq_vector:
 fiq_vector:
         .long   fiq_exception
 
-#endif /* GDB_STUB */
+
 
 
         .text
@@ -92,7 +92,6 @@ fiq_vector:
         .global    start
 start:
         mov  r1,  #(CPSR_SVC|CPSR_FIQ_BIT|CPSR_IRQ_BIT) /* To System mode */
-        msr  cpsr_all, r1
 
         /*
          * スタックポインタと，フレームポインタの初期化

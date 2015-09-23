@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h,v 1.7 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: sys_config.h,v 1.12 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -51,6 +51,11 @@
 #define _SYS_CONFIG_H_
 
 /*
+ *  ユーザー定義情報
+ */
+#include <user_config.h>
+
+/*
  *  カーネルの内部識別名のリネーム
  */
 #include <sys_rename.h>
@@ -61,61 +66,29 @@
 #include <kz_sh1.h>
 
 /*
+ *  数値データ文字列化用マクロの定義
+ */
+#include <util.h>
+
+/*
  *  起動メッセージのターゲットシステム名
  */
 #define	TARGET_NAME	"KMC KZ-SH1-01"
 
-
 /*
- *  数値データ文字列化用マクロ
+ *　非タスクコンテキスト用スタックの初期値
  */
-#define _TO_STRING(arg)	#arg
-#define TO_STRING(arg)	_TO_STRING(arg)
-
-/*
- *  JSPカーネル動作時のメモリマップ
- *      0x0000,0000 - 0x0004,0000  コード領域(256KB)
- *      0x0a00,0000 -              データ領域(256KB)
- *                  - 0x0a03,ffff  タスク独立部用スタック メモリ終了
- */
-
-/*
- *   スタック領域の定義
- *	非タスクコンテキスト用スタックの初期値
- */
-#define STACKTOP    	0x0a03fffc
 #define str_STACKTOP	TO_STRING(STACKTOP)
 
 /*
- *  シリアルポート数の定義
- *
- *  TNUM_PORTはシリアルドライバ（serial.c）、つまり GDICレベルでサポー
- *  トしているシリアルポートの数であり、機種依存部で定義するよう共通部
- *  とのインターフェースで規定されている。
- *  一方、TNUM_SIOPはPDICレベルでサポートしているシリアルポートの数で
- *  あり、機種依存部の中でのみ用いている。
- *　
- */
-#define TNUM_PORT 1	/* GDICレベルでサポートするシリアルポートの数 */
-#define	TNUM_SIOP 1	/* PDICレベルでサポートするシリアルポートの数 */
-
-#define	LOGTASK_PORTID	1  /* システムログに用いるシリアルポート番号 */
-
-/*
  *  微少時間待ちのための定義
+ *  　本当はクロック周波数に依存する。
+ *  　（クロック20MHz時の実測値なので、安全側に倒している。）
  */
 #define	SIL_DLY_TIM1	1143
 #define	SIL_DLY_TIM2	 832
 
 #ifndef _MACRO_ONLY
-/*
- *  プロセッサ識別のための変数（マルチプロセッサ対応）
- *　　　SH1では未実装
- */
-#if 0
-extern UINT	board_id;	/* ボードID */
-extern VP	board_addr;	/* ローカルメモリの先頭アドレス */
-#endif
 
 /*
  *  ターゲットシステム依存の初期化
@@ -126,7 +99,6 @@ extern void	sys_initialize(void);
  *  ターゲットシステムの終了
  *
  *  システムを終了する時に使う．
- *　　ROMモニタ／GDB STUB呼出しは未実装
  */
 extern void	sys_exit(void);
 
@@ -134,9 +106,37 @@ extern void	sys_exit(void);
  *  ターゲットシステムの文字出力
  *
  *  システムの低レベルの文字出力ルーチン．
- *　　ROMモニタ／GDB STUB呼出しは未実装
  */
 extern void	sys_putc(char c) throw();
 
 #endif /* _MACRO_ONLY */
+
+/*
+ *  例外ベクタテーブル関連のマクロ定義
+ *  　　マクロの説明
+ *  　　　KERNEL_HAS_A_VECTOR_TABLE
+ *  　　　　カーネルが例外ベクタテーブルを持つ
+ *  　　　SIO_RESERVED
+ *  　　　　シリアルデバイスがデバッガによって使用されている
+ */
+#ifdef GDB_STUB
+/*
+ *  GDB-stubの場合
+ *  　　カーネルは例外ベクタテーブルを持たず、割込みの際には
+ *　　　stubが管理している例外ベクタテーブルを参照する
+ *  　　シリアルポートはstubが占有している
+ */
+#define SIO_RESERVED
+
+#else /* GDB_STUB */
+/*
+ *  ROM化の場合
+ *  　　リセット時：ROM上にある例外ベクタテーブルを参照する
+ *  　　初期化後：RAM上にある例外ベクタテーブルを参照する
+ */
+#define KERNEL_HAS_A_VECTOR_TABLE
+
+#endif /* GDB_STUB */
+
+
 #endif /* _SYS_CONFIG_H_ */

@@ -3,11 +3,11 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: hw_serial.h,v 1.9 2003/12/11 07:00:10 honda Exp $
+ *  @(#) $Id: hw_serial.h,v 1.10 2004/09/03 15:39:07 honda Exp $
  */
 
 #ifndef _HW_SERIAL_H_
@@ -129,7 +129,7 @@ SCI_putchar(SIOPCB *p, UB c)
 {
 	UW addr = p->inib->base + H8SSR;
 
-	outb(p->inib->base + H8TDR, c);
+	sil_wrb_mem((VP)(p->inib->base + H8TDR), c);
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
 	BITCLR(_TO_STRING(H8SSR_TDRE_BIT));
@@ -146,9 +146,9 @@ SCI_wait_putchar (int base, int c)
 	UW addr = base + H8SSR;
 
 	/* TDRE が 1 になるまで待つ */
-	while ((inb(addr) & H8SSR_TDRE) == 0)
+	while ((sil_reb_mem((VP)addr) & H8SSR_TDRE) == 0)
 		;
-	outb(base + H8TDR, c);
+	sil_wrb_mem((VP)(base + H8TDR), c);
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
 	BITCLR(_TO_STRING(H8SSR_TDRE_BIT));
@@ -165,7 +165,7 @@ SCI_getchar(SIOPCB *p)
 	INT	ch;
 	UW	addr = p->inib->base + H8SSR;
 
-	ch = inb(p->inib->base + H8RDR);
+	ch = sil_reb_mem((VP)(p->inib->base + H8RDR));
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
 	BITCLR(_TO_STRING(H8SSR_RDRF_BIT));
@@ -181,7 +181,7 @@ SCI_getchar(SIOPCB *p)
 Inline BOOL
 SCI_putready(SIOPCB *pcb)
 {
-	return (inb(pcb->inib->base + H8SSR) & H8SSR_TDRE) != 0;
+	return (sil_reb_mem((VP)(pcb->inib->base + H8SSR)) & H8SSR_TDRE) != 0;
 	}
 
 /*
@@ -191,7 +191,7 @@ SCI_putready(SIOPCB *pcb)
 Inline BOOL
 SCI_getready(SIOPCB *pcb)
 {
-	return (inb(pcb->inib->base + H8SSR) & H8SSR_RDRF) != 0;
+	return (sil_reb_mem((VP)(pcb->inib->base + H8SSR)) & H8SSR_RDRF) != 0;
 	}
 
 /*

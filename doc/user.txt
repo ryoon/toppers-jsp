@@ -1,7 +1,7 @@
 
             ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
 
-             （Release 1.4対応，最終更新: 20-Dec-2003）
+            （Release 1.4.1対応，最終更新: 14-Oct-2004）
 
 ※ このユーザズマニュアルは，μITRON4.0仕様書（Ver. 4.02.00）の内容を
 前提に記述してあります．μITRON4.0仕様書は，以下のURLからダウンロード
@@ -15,6 +15,8 @@
 
  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
+ Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+             Graduate School of Information Science, Nagoya Univ., JAPAN
 
  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  によって公表されている GNU General Public License の Version 2 に記
@@ -43,7 +45,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: user.txt,v 1.63 2003/12/20 09:43:43 hiro Exp $
+ @(#) $Id: user.txt,v 1.68 2004/10/14 05:48:10 hiro Exp $
 ----------------------------------------------------------------------
  * μITRON4.0仕様は，トロン協会が中心となって策定されたオープンなリア
    ルタイムカーネル仕様です．μITRON4.0仕様の仕様書は，トロン協会のホー
@@ -93,15 +95,22 @@ JSPカーネルは，現時点で，以下のターゲットプロセッサ／ターゲットシステ
                                 ※ RISC評価キットSH-1（CQ出版）でも動作
         SH1（SH7032）           SH1/CPUB（常盤商行）
 
+    sh2                     GNU開発環境
+        SH2(SH7145)             AP_SH2F_6A（アルファプロジェクト）
+        SH2(SH7615)             HSB7615IT （北斗電子）
+
     h8                      GNU開発環境
         H8（H8/3048F）          AKI-H8/3048F（秋月電子通商）
         H8（H8/3052F）          AKI-H8/3052F（秋月電子通商）
         H8（H8/3067F）          AKI-H8/3067F（秋月電子通商）
         H8（H8/3068F）          AKI-H8/3068F（秋月電子通商）
         H8（H8/3069F）          AKI-H8/3069F（秋月電子通商）
+    
+    h8s                     GNU開発環境
+        H8S（2350）             H8S/2350 評価ボード(ミスポ)
 
     armv4                   GNU開発環境
-        ARM9 （ARM922T）        KZ-ARM9EXPCI-01（京都マイクロコンピュータ）
+        ARM9（ARM922T）         KZ-ARM9EXPCI-01（京都マイクロコンピュータ）
 
     armv4-ghs               GHS開発環境
         ARM9 （ARM920T）        Integrator/AP+CM920T（ARM）
@@ -124,6 +133,24 @@ JSPカーネルは，現時点で，以下のターゲットプロセッサ／ターゲットシステ
     mips3                   GNU開発環境
         MIPS3（VR4131）         KZ-Vr4131PCI-01（京都マイクロコンピュータ）
         MIPS3（VR5500）         RTE-VR5500-CB(64)（マイダス・ラボ）
+
+    m16c-renesas            Renesas社の開発環境
+        M16C（M30620FCAFP-CPU） OASKS16（オークス電子）
+        M16C（M30262F8FG-CPU）  OAKS16-MINI（オークス電子）
+
+    s1c33                   GNU開発環境
+        SC33                    DMT33209（EPSON）
+        SC33                    LUXUN2（EPSON）
+
+    s1c33-gnu33             GNU33開発環境
+        SC33                    DMT33209（EPSON）
+        SC33                    LUXUN2（EPSON）
+
+    powerpc32               GNU開発環境
+        PowerPC32（MPC860T）    TB6102S（タンバック）
+
+    nios2                   GNU開発環境
+        Nios2                   NiosII Development Board（アルテラ）
 
 JSPカーネルは，カーネルのできる限り多くの部分をC言語で記述する，ターゲッ
 ト非依存部と依存部を明確に分離するなど，他のターゲットプロセッサへのポ
@@ -1277,7 +1304,7 @@ prio でログ情報として出力するためのライブラリ関数で，引数の数を可変に
 重要度 prio 以上の重要度がすべてセットされたビットマップを作るマクロ． 
 vmsk_log に渡す引数を作るために用いる．
 
-(6) void syslog_printf(char *format, VP_INT *args, void (*putc)(char))
+(6) void syslog_printf(const char *format, VP_INT *args, void (*putc)(char))
 (7) void syslog_print(SYSLOG *p_sys, void (*putc)(char))
 (8) void syslog_output(void (*putc)(char))
 
@@ -2589,5 +2616,7 @@ itron-club-ctl@ertl.jp 宛てに，本文に
     2002年4月15日       Release 1.3             M32R，MicroBlaze，TMS320C54x，
                                                 i386，H8Sの追加など
     2003年12月25日      Release 1.4             多数の改良
+    2004年10月14日      Release 1.4 (PL=1)      SH2，M16C，SC33，PowerPC32，
+                                                Nios2の追加など
 
 以上

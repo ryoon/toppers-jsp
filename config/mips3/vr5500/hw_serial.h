@@ -37,7 +37,7 @@
  */
 
 /*
- *	シリアルI/Oデバイス（SIO）ドライバ（RTE-VR5500-CB用）
+ *	シリアルI/Oデバイス（SIO）ドライバ（TI16PIR552用）
  */
 
 #ifndef _HW_SERIAL_H_
@@ -46,9 +46,22 @@
 #include <tl16pir552.h>		/* siopcb, tl16pir552_openflag */
 
 /*
+ *  SIOの割込みハンドラのベクタ番号
+ */
+#define INHNO_SIO1		INTNO_SERIAL0
+#define INHNO_SIO2		INTNO_SERIAL1
+
+/*
  *  SIOドライバの初期化ルーチン
  */
-#define	sio_initialize	tl16pir552_initialize
+#define	sio_initialize		tl16pir552_initialize
+
+/*
+ *  カーネル起動時用の初期化 (sys_putcで利用)
+ */
+#define sio_init		tl16pir552_init
+
+#ifndef _MACRO_ONLY
 
 /*
  *  シリアルI/Oポートのオープン
@@ -58,7 +71,8 @@ sio_opn_por(ID siopid, VP_INT exinf)
 {
 	SIOPCB	*siopcb;
 	BOOL	openflag;
-	UB	temp, mask = 0;
+
+	UB	mask = 0;
 
 	/*
 	 *  オープンしたポートがあるかを openflag に読んでおく．
@@ -74,8 +88,6 @@ sio_opn_por(ID siopid, VP_INT exinf)
 	 *  シリアルI/O割込みの割込みレベルを設定し，マスクを解除する．
 	 */
 	if (!openflag) {
-		temp = icu_read( (VP) ICU_INT0M );
-#if TNUM_PORT >= 2
 		switch(siopid) {
 		case 1 :	/* ポート１; シリアル０ */
 			all_set_ilv( INTNO_SERIAL0, &((IPM) IPM_SCC0) );
@@ -88,13 +100,8 @@ sio_opn_por(ID siopid, VP_INT exinf)
 			mask = SERIAL1;
 			break;
 		}
-#else	/* TNUM_PORT >= 2 */
-		all_set_ilv( INTNO_SERIAL0, &((IPM) IPM_SCC0) );
-							/* 割込みレベル設定 */
-		mask = SERIAL0;
-#endif	/* TNUM_PORT >= 2 */
-		icu_write( (VP) ICU_INT0M, temp | mask );
-							/* マスク解除処理 */
+		icu_orb( (VP) ICU_INT0M, mask );
+							/* マスク設定処理 */
 	}
 
 	return(siopcb);
@@ -106,8 +113,6 @@ sio_opn_por(ID siopid, VP_INT exinf)
 Inline void
 sio_cls_por(SIOPCB *siopcb)
 {
-	UB	temp;
-
 	/*
 	 *  デバイス依存のクローズ処理．
 	 */
@@ -117,47 +122,54 @@ sio_cls_por(SIOPCB *siopcb)
 	 *  シリアルI/O割込みをマスクする．(ポート１、２の両方)
 	 */
 	if (!tl16pir552_openflag) {
-		temp = icu_read( (VP) ICU_INT0M );	/* マスク設定処理 */
-		icu_write( (VP) ICU_INT0M, temp & ~(SERIAL0 | SERIAL1) );
+		icu_andb( (VP) ICU_INT0M, ~(SERIAL0 | SERIAL1) );
+							/* マスク設定処理 */
 	}
 }
+
+#endif /* _MACRO_ONLY */
 
 /*
  *  SIOの割込みハンドラ
  */
-#define	scc0_handler	tl16pir552_uart0_isr
-#if TNUM_PORT >= 2
-#define scc1_handler	tl16pir552_uart1_isr
-#endif /* TNUM_PORT */
+#define	sio1_handler		tl16pir552_uart0_isr
+#if TNUM_SIOP >= 2
+#define sio2_handler		tl16pir552_uart1_isr
+#endif /* TNUM_SIOP */
 
 /*
  *  シリアルI/Oポートへの文字送信
  */
-#define	sio_snd_chr	tl16pir552_snd_chr
+#define	sio_snd_chr		tl16pir552_snd_chr
+
+/*
+ *  シリアルI/Oポートへの文字送信（ポーリング）
+ */
+#define	sio_snd_chr_pol		tl16pir552_putchar_pol
 
 /*
  *  シリアルI/Oポートからの文字受信
  */
-#define	sio_rcv_chr	tl16pir552_rcv_chr
+#define	sio_rcv_chr		tl16pir552_rcv_chr
 
 /*
  *  シリアルI/Oポートからのコールバックの許可
  */
-#define	sio_ena_cbr	tl16pir552_ena_cbr
+#define	sio_ena_cbr		tl16pir552_ena_cbr
 
 /*
  *  シリアルI/Oポートからのコールバックの禁止
  */
-#define	sio_dis_cbr	tl16pir552_dis_cbr
+#define	sio_dis_cbr		tl16pir552_dis_cbr
 
 /*
  *  シリアルI/Oポートからの送信可能コールバック
  */
-#define	sio_ierdy_snd	tl16pir552_ierdy_snd
+#define	sio_ierdy_snd		tl16pir552_ierdy_snd
 
 /*
  *  シリアルI/Oポートからの受信通知コールバック
  */
-#define	sio_ierdy_rcv	tl16pir552_ierdy_rcv
+#define	sio_ierdy_rcv		tl16pir552_ierdy_rcv
 
 #endif /* _HW_SERIAL_H_ */

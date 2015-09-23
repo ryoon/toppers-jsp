@@ -47,47 +47,73 @@ ICU_IPM icu_intmask_table[ TMAX_ALL_INTNO ];
  */
 void sys_initialize() {
 
-	/*
-	 *  割込みコントローラの割込みマスクの初期化
-	 */
 	ICU_IPM icu_ipm0 = {INIT_MSYSINT1, INIT_MSYSINT2};
 
-	UH	temp;
-
-	/*  割込みコントローラICUのIPM初期化  */
+	/*
+	 *  外部割込みコントローラの割込みマスクの初期化
+	 */
 	icu_set_ipm( &icu_ipm0 );
 
 #ifndef GDB_STUB
 
-	/*  DSIUへのクロック供給開始 */
-	temp = sil_reh_mem( (VP) CMUCLKMSK );
-	sil_wrh_mem( (VP) CMUCLKMSK, temp | (MSKDSIU | MSKSSIU | MSKSIU) );
+	/*
+	 *  DSIUへのクロック供給開始
+	 */
+	vr4131_orh( (VP) CMUCLKMSK, (MSKDSIU | MSKSSIU | MSKSIU) );
 
-	/*  シリアルコントローラ(DSIU)の初期化  */
-	scc_init;
+	/*
+	 *  バナー表示用シリアルコントローラ(DSIU)の初期化
+	 */
+	sio_init();
 
 #endif	/*  GDB_STUB  */
 
-	/* マスク解除処理(レベル１) */
-	temp = vr4131_icu_read( (VP) MSYSINT2REG );
-	vr4131_icu_write( (VP) MSYSINT2REG, temp | DSIUINTR );
-
-	/* マスク解除処理(レベル２) */
-	temp = vr4131_icu_read( (VP) MDSIUINTREG );
-	vr4131_icu_write( (VP) MDSIUINTREG, temp | INTDSIU );
 }
 
 /*
  *  ターゲットシステムの終了ルーチン
  */
 void sys_exit(void) {
+
+#ifndef GDB_STUB
+	while (1);
+#else	/*  GDB_STUB  */
 	vr4131_exit();
+#endif	/*  GDB_STUB  */
+
 }
+
+/*
+ *  GDB STUB / 直接呼出し コンソール呼出しルーチン
+ */
+
+/*
+ *  gdb stub によるコンソール出力
+ */
+/* a0($4) = 0xfe00, a1($5) = 出力したいキャラクタ を代入して、
+   SYSCALL 例外を発生させる。 */
+
+/* この関数を呼び出す時には、ステータスレジスタのEXLビット = 0 で呼び出すこと。
+   なお、現在、カーネルでは、バナー表示時、シリアル出力時に呼出を行っている。*/
+void stub_putc(int c) {
+
+	Asm("	move	$5, %0;		\
+	     	li	$4, 0xfe00;	\
+		syscall;		\
+		nop"
+		:: "r"(c)
+		: "$4","$5" );
+}
+
+#ifdef GDB_STUB			/* GDB_STUB の場合 */
+#define vr4131_putc(c)	stub_putc( c )
+#else /* GDB_STUB */		/* その他 */
+#define	vr4131_putc(c)	sio_snd_chr_pol( c )
+#endif /* GDB_STUB */
 
 /*
  *   システム文字出力先の指定
  */
-
 void sys_putc(char c) {
 
 	if (c == '\n') {
@@ -95,3 +121,5 @@ void sys_putc(char c) {
 	}
 	vr4131_putc(c);
 }
+
+/*============================================================================*/

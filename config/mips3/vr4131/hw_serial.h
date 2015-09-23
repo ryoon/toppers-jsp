@@ -46,9 +46,21 @@
 #include <vr4131_dsiu.h>		/* siopcb, vr4131_dsiu_openflag */
 
 /*
+ *  SIOの割込みハンドラのベクタ番号
+ */
+#define INHNO_SIO		INTNO_DSIU
+
+/*
  *  SIOドライバの初期化ルーチン
  */
-#define	sio_initialize	vr4131_dsiu_initialize
+#define	sio_initialize		vr4131_dsiu_initialize
+
+/*
+ *  カーネル起動時用の初期化 (sys_putcで利用)
+ */
+#define sio_init		vr4131_dsiu_init
+
+#ifndef _MACRO_ONLY
 
 /*
  *  シリアルI/Oポートのオープン
@@ -58,12 +70,16 @@ sio_opn_por(ID siopid, VP_INT exinf)
 {
 	SIOPCB	*siopcb;
 	BOOL	openflag;
-	UH	temp;
 
 	/*
 	 *  オープンしたポートがあるかを openflag に読んでおく．
 	 */
 	openflag = vr4131_dsiu_openflag();
+
+	/*
+	 * DSIUへのクロック供給開始
+	 */
+	vr4131_orh( (VP) CMUCLKMSK, (MSKDSIU | MSKSSIU | MSKSIU) );
 
 	/*
 	 *  デバイス依存のオープン処理．
@@ -75,15 +91,13 @@ sio_opn_por(ID siopid, VP_INT exinf)
 	 */
 	if (!openflag) {
 		/* 割込みレベル設定 */
-		all_set_ilv( (UINT) INTNO_DSIU, &((IPM) IPM_DSIC) );
+		all_set_ilv( (UINT) INTNO_DSIU, &((IPM) IPM_DSIU) );
 
 		/* マスク解除処理(レベル１) */
-		temp = vr4131_icu_read( (VP) MSYSINT2REG );
-		vr4131_icu_write( (VP) MSYSINT2REG, temp | DSIUINTR );
+		vr4131_orh( (VP) MSYSINT2REG, DSIUINTR );
 
 		/* マスク解除処理(レベル２) */
-		temp = vr4131_icu_read( (VP) MDSIUINTREG );
-		vr4131_icu_write( (VP) MDSIUINTREG, temp | INTDSIU );
+		vr4131_orh( (VP) MDSIUINTREG, INTDSIU );
 	}
 
 	return(siopcb);
@@ -95,7 +109,16 @@ sio_opn_por(ID siopid, VP_INT exinf)
 Inline void
 sio_cls_por(SIOPCB *siopcb)
 {
-	UB	temp;
+	/*
+	 *  シリアルI/O割込みをマスクする．
+	 */
+	if (!vr4131_dsiu_openflag) {
+		/* マスク設定処理(レベル１) */
+		vr4131_andh( (VP) MSYSINT2REG, ~DSIUINTR );
+
+		/* マスク設定処理(レベル２) */
+		vr4131_andh( (VP) MDSIUINTREG, ~INTDSIU );
+	}
 
 	/*
 	 *  デバイス依存のクローズ処理．
@@ -103,52 +126,52 @@ sio_cls_por(SIOPCB *siopcb)
 	vr4131_dsiu_cls_por(siopcb);
 
 	/*
-	 *  シリアルI/O割込みをマスクする．
+	 *  DSIUへのクロック供給停止
 	 */
-	if (!vr4131_dsiu_openflag) {
-		/* マスク設定処理(レベル１) */
-		temp = vr4131_icu_read( (VP) MSYSINT2REG );
-		vr4131_icu_write( (VP) MSYSINT2REG, temp & ~DSIUINTR );
+	vr4131_andh( (VP) CMUCLKMSK, ~(MSKDSIU | MSKSSIU | MSKSIU) );
 
-		/* マスク設定処理(レベル２) */
-		temp = vr4131_icu_read( (VP) MDSIUINTREG );
-		vr4131_icu_write( (VP) MDSIUINTREG, temp & ~INTDSIU );
-	}
 }
+
+#endif /* _MACRO_ONLY */
 
 /*
  *  SIOの割込みハンドラ
  */
-#define	sio_handler	vr4131_dsiu_isr
+#define	sio_handler		vr4131_dsiu_isr
 
 /*
  *  シリアルI/Oポートへの文字送信
  */
-#define	sio_snd_chr	vr4131_dsiu_snd_chr
+#define	sio_snd_chr		vr4131_dsiu_snd_chr
+
+/*
+ *  シリアルI/Oポートへの文字送信（ポーリング）
+ */
+#define	sio_snd_chr_pol		vr4131_dsiu_putchar_pol
 
 /*
  *  シリアルI/Oポートからの文字受信
  */
-#define	sio_rcv_chr	vr4131_dsiu_rcv_chr
+#define	sio_rcv_chr		vr4131_dsiu_rcv_chr
 
 /*
  *  シリアルI/Oポートからのコールバックの許可
  */
-#define	sio_ena_cbr	vr4131_dsiu_ena_cbr
+#define	sio_ena_cbr		vr4131_dsiu_ena_cbr
 
 /*
  *  シリアルI/Oポートからのコールバックの禁止
  */
-#define	sio_dis_cbr	vr4131_dsiu_dis_cbr
+#define	sio_dis_cbr		vr4131_dsiu_dis_cbr
 
 /*
  *  シリアルI/Oポートからの送信可能コールバック
  */
-#define	sio_ierdy_snd	vr4131_dsiu_ierdy_snd
+#define	sio_ierdy_snd		vr4131_dsiu_ierdy_snd
 
 /*
  *  シリアルI/Oポートからの受信通知コールバック
  */
-#define	sio_ierdy_rcv	vr4131_dsiu_ierdy_rcv
+#define	sio_ierdy_rcv		vr4131_dsiu_ierdy_rcv
 
 #endif /* _HW_SERIAL_H_ */

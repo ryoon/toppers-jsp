@@ -34,32 +34,30 @@
  * 含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  * 接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  *
- *  @(#) $Id: cpu_support.S,v 1.11 2003/12/11 00:58:01 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.13 2004/02/05 09:16:25 honda Exp $
  */
 
 #define _MACRO_ONLY
-
-#include <t_config.h>
+        
+/*
+ *  アプリケーションと共通のインクルードファイル
+ */
+#include <kernel.h>
                 
+/*
+ *  ターゲット依存情報の定義
+ */
+#include <t_config.h>
+
 #include "jsp_kernel.h"
 #include "offset.h"
 #include <microblaze_asm.inc>
 #include <microblaze.h>
 
-/*
- * MDK2.1のINTCの構造は，多重割り込みをサポートすることが不可能である．
- * しかしながら，今後の変更により多重割り込みが可能になることを考慮して
- * 設計する．
- * 具体的には，割り込みを受け付けた時点でもっとも割り込み優先度が高い
- * 割り込みについてのみ処理を行う．
- *
- */
-
 
 /*
  * INTCの設計について，
- */
-/*
+ *
  *  保存するレジスタ
  *  R3-R4   Return Valus        (Volatile)
  *  R5-R10  Passing parameters  (Volatile)
@@ -144,21 +142,19 @@ nest_int:
 	lwi   r5,  r3, int_handler_table /* ハンドラアドレスの読み込み */
 	lwi   r6,  r3, int_bit_table     /* マスクビットの読み込み     */
 	swi   r6,  r0, INTC_CIE          /* 発生した割込みをマスク     */
-	ori   r4,  r0, 0x02              /* r4 = 0x02                  */
+	ori   r4,  r0, 0x02 | MSR_CACHE_SETTING /* r4 = 0x02           */
 	Push  r6                         /* マスクビットをスタックに   */
-
-//    swi   r0,  r0, INTC_MER          /* INTC_MER = 0x0 INTC停止          */
 
 	mts   rmsr,r4                    /* 割込み許可(MSR(IE)をセット)*/
 
 	brald r15, r5             /* ハンドラ呼び出し */
 	 nop
 
-	mts   rmsr,r0                    /* 割込み禁止                 */
+    la    r4, r0, MSR_CACHE_SETTING  
+	mts   rmsr,r4                    /* 割込み禁止                 */
 
 //    ori   r4,  r0, 0x03       /* r4 = 0x03                         */
 //    swi   r4,  r0, INTC_MER   /* INTC_MER = 0x0 INTCスタート       */
-
 
 	Pop   r6                         /* マスクビットの取り出し     */
 //	swi   r6,  r0, INTC_IAR          /* ACK                        */        
@@ -224,8 +220,10 @@ no_reg_interrupt:
 	.globl dispatch
 	.align  2
 dispatch:
-	addi  r1,  r1,  -60  /* スクラッチレジスタ以外を保存する */
-	swi   r15, r1,  56
+	addi  r1,  r1,  -64  /* スクラッチレジスタ以外を保存する */
+	swi   r15, r1,  60
+	mfs   r3,  rmsr      /* msrの保存(キャッシュの設定の保存) */
+	swi   r3,  r1,  56                
 	swi   r18, r1,  52   /* 必要か? */
 	swi   r19, r1,  48
 	swi   r20, r1,  44
@@ -261,7 +259,9 @@ dispatch_r:
 	lwi  r20,  r1, 44
 	lwi  r19,  r1, 48
 	lwi  r18,  r1, 52
-	addi r1,   r1, 56   /* スタックポインタを戻す */
+    lwi  r3,   r1, 56   /* MSRを戻す(キャッシュの設定を戻す) */
+    mts  rmsr,r3            
+	addi r1,   r1, 60   /* スタックポインタを戻す */
 	/*
 	 *  タスク例外処理ルーチンの起動
 	 *  dispatch_r は dispatcher から呼び出されるため，
@@ -305,12 +305,13 @@ dispatcher_1:
 	la   r1,  r0,  STACKTOP         /* 割込みスタックに変更             */
 	la   r6,  r0,  1                /* interrupt_count を1に            */
 	swi  r6,  r13, interrupt_count
-	la   r5,  r0, 0x02              /* r5 = 0x02                        */
+	la   r5,  r0, 0x02 | MSR_CACHE_SETTING /* IE = '1'               */
+	la   r4,  r0, MSR_CACHE_SETTING        /* IE = '0'               */        
 dispatcher_2:
-	mts   rmsr, r5                  /* 割込み許可(MSR(IE)をセット)      */
+	mts   rmsr, r5   /* 割込み許可(MSR(IE)をセット)      */
 	nop
 	nop
-	mts   rmsr, r0                  /* 割込み禁止(MSR(IE)をクリア)      */
+	mts   rmsr, r4                  /* 割込み禁止(MSR(IE)をクリア)      */
 	lwi   r6,  r13,  reqflg         /* r6 <- reqflg                     */
 	beqi  r6,  dispatcher_2         /* reqflg が FALSE なら             */
 	swi   r0,  r13, interrupt_count /* interrupt_count をクリア         */
@@ -370,6 +371,8 @@ ret_int_r:
 	lwi  r20,  r1,  44
 	lwi  r19,  r1,  48
 	addi r1,   r1,  52
+	lwi  r3,   r1,   0    /* MSR を戻す（キャッシュの設定を戻す）*/
+	mts  rmsr, r3                
 ret_int_1:
 	/*
 	 * タスク例外ルーチンの起動
@@ -429,12 +432,12 @@ ret_int_2:
      *             --------------------
      *  High Address
 	 */
-        
+
 	.text
 	.globl activate_r
 	.align 2
 activate_r:
-	ori   r4,  r0, 0x02        /* r4 = 0x02                        */
+	ori   r4,  r0, 0x02 | MSR_CACHE_SETTING  /* msrの初期値        */
 	mts   rmsr,r4              /* 割込み許可(MSR(IE)をセット)      */
     lw    r11, r1, r0          /* タスクの実行番地                 */
     lwi   r5,  r1,  4          /* 引数（exinf）                    */

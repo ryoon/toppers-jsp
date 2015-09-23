@@ -33,10 +33,10 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: jsp_parser.cpp,v 1.57 2003/12/20 05:29:13 takayuki Exp $
+ *  @(#) $Id: jsp_parser.cpp,v 1.60 2004/09/09 19:22:41 takayuki Exp $
  */
 
-// $Header: /home/CVS/configurator/jsp/jsp_parser.cpp,v 1.57 2003/12/20 05:29:13 takayuki Exp $
+// $Header: /home/CVS/configurator/jsp/jsp_parser.cpp,v 1.60 2004/09/09 19:22:41 takayuki Exp $
 
 #include <stdarg.h>
 
@@ -47,6 +47,8 @@
 
 #include <set>
 #include <map>
+#include <cctype>
+#include <algorithm>
 #include <iomanip>
 
 using namespace ToppersJsp;
@@ -97,27 +99,32 @@ void CoreParser::parseOption(Directory & container)
     checkOption("var","variable-id");
 }
 
-static int displayHandler(Directory & container, const char * category, const char * format)
-{
-    Directory * node  = 0;
-    Directory * scope = 0;
+namespace {
+	int displayHandler(Directory & container, const char * category, const char * format)
+	{
+	    Directory * node  = 0;
+	    Directory * scope = 0;
 
-    node = container.findChild(OBJECTTREE,category,NULL);
-    if(node == 0 || node->size() == 0)
-        return 0;
+	    node = container.findChild(OBJECTTREE,category,NULL);
+	    if(node == 0 || node->size() == 0)
+		return 0;
 
-    VerboseMessage("Handler assignment list [%]\n","ハンドラ割付表 [%]\n") << category;
+	    VerboseMessage("Handler assignment list [%]\n","ハンドラ割付表 [%]\n") << category;
 
-    scope = node->getFirstChild();
-    while(scope != 0)
-    {
-        VerboseMessage::getStream() << scope->format(format);
-        scope = scope->getNext();
-    }
+	    scope = node->getFirstChild();
+	    while(scope != 0)
+	    {
+		VerboseMessage::getStream() << scope->format(format);
+		scope = scope->getNext();
+	    }
 
-    return node->size();
+	    return node->size();
+	}
+
+	//マクロ化されたtoupperを関数化する (STL-algorithm用)
+	int toupper_function(int c)
+	{ return toupper(c); }
 }
-
 /*
  *  outputContainer - デバッグ時 or ダンプ指定時にオブジェクト情報を所定のファイル形式で出力する
  */
@@ -653,6 +660,9 @@ void ConfigurationFileGenerator::parseOption(Directory & parameter)
         return;
     }
 
+    checkOption("cfg","cfg");
+    checkOption("id","id");
+
         /*
          *  カーネルコンフィギュレーション結果のファイル (kernel_cfg.c) の初期設定
          */
@@ -712,16 +722,18 @@ void ConfigurationFileGenerator::createObjectDefinition(MultipartStream * out, D
         //必要な情報の作成
     work = string(va_arg(vl, const char *));
     id["id"]  = work;
-    for(i=0; i<(signed)work.size(); i++)
-        work[i] = work[i] - 'a' + 'A';
+    transform(work.begin(), work.end(), work.begin(), toupper_function);
     id["ID"]  = work;
+    
 
     if((flag & SHORT_ID) != 0)
     {
         work = string(va_arg(vl, const char *));
         id["sid"]  = work;
-        for(i=0; i<(signed)work.size(); i++)
-            work[i] = work[i] - 'a' + 'A';
+	for(i=0; i<(signed)work.size(); i++) {
+	  if (work[i] >= 'a' && work[i] <= 'z')
+	    work[i] = work[i] - 'a' + 'A';
+	}
         id["SID"]  = work;
     }else
     {

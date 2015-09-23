@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: kz_sh1.h,v 1.7 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: kz_sh1.h,v 1.11 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -48,46 +48,39 @@
 #define _KZ_SH1_H_
 
 /*
- *  GDB STUB呼出しルーチン（未完成）
+ *  GDB STUB呼出しルーチン
  */
 #ifndef _MACRO_ONLY
 #ifdef GDB_STUB
 
-#define kz_sh1_exit	stub_exit
-#define kz_sh1_putc	stub_putc
+#define kz_sh1_exit	gdb_stub_exit
+#define kz_sh1_putc	gdb_stub_putc
 
 Inline void
-stub_exit(void)
+gdb_stub_exit(void)
 {
-}
-
-Inline void
-stub_putc(char c)
-{
+	Asm("trapa #0xff"::);		/*  未完成  */
 }
 
 /*
- *  CQ出版 RISC評価キットのモニタ呼出しルーチン（未完成）
+ *  gdb stubによる出力
  */
-#elif defined(CQ_SH1_DEB) 	/* GDB_STUB */
-
-#define kz_sh1_exit	monitor_exit
-#define kz_sh1_putc(c)	monitor_putc(c)
-
-Inline void
-monitor_exit()
+Inline int
+gdb_stub_putc(int c)
 {
-	while(1);
+	Asm("mov   #0x00,r0
+	     mov   %0,r4
+	     trapa #0x21"
+               : /* no output */
+               : "r"(c)
+               : "r0","r4");
+	return(c);
 }
 
-int monitor_putc(int c);
-
-
-
 /*
- *  GDB stubやモニタを使わない場合（ROM化用）
+ *  ROM化の場合
  */
-#else /* GDB_STUB、CQ_SH1_DEB*/
+#else /* GDB_STUB */
 
 Inline void
 kz_sh1_exit()
@@ -103,6 +96,6 @@ kz_sh1_putc(char c)
 	sh1sci_putc_pol(c);
 }
 
-#endif /* GDB_STUB、CQ_SH1_DEB */
+#endif /* GDB_STUB */
 #endif /* _MACRO_ONLY */
 #endif /* _KZ_SH1_H_ */

@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2000-2003 by Industrial Technology Institute,
+ *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -38,7 +40,7 @@
 #ifndef _TL16PIR552_H_
 #define _TL16PIR552_H_
 
-#include <t_config.h>
+#include <s_services.h>		/* デバイスドライバ用標準インクルードファイル */
 
 /*
  *  シリアル／パラレル I/O TL16PIR552(TI) 関連の定義
@@ -58,14 +60,14 @@
 #define	SCR	0x70	/* Scratch Register */
 
 /* for LCR */
-#define	WORD_LENGTH_8		BIT1 | BIT0
-#define	STOP_BITS_1		0		/* BIT2 */
-#define	PARITY_NON		0		/* BIT3, 4 */
+#define	WORD_LENGTH_8		(BIT1 | BIT0)
+#define	STOP_BITS_1		0u		/* BIT2 */
+#define	PARITY_NON		0u		/* BIT3, 4 */
 /* BIT5,6 省略 */
 #define	DIVISOR_LATCH_ACC	BIT7
 
 /* for IER */
-#define	DIS_INT			0
+#define	DIS_INT			0u
 #define	RECEIVE_DATA_AVAILABLE	BIT0
 #define	TRANS_REG_EMPTY		BIT1
 #define RECEIVE_LINE_STATUS	BIT2
@@ -81,31 +83,48 @@
 #define	FIFO_ENABLE		BIT0
 #define	RECEIVE_FIFO_RESET	BIT1
 #define	TRANS_FIFO_RESET	BIT2
-#define RECEIVE_TRIG_1_BYTE	0	/* BIT6, 7 */
+#define RECEIVE_TRIG_1_BYTE	0u		/* BIT6, 7 */
 #define RECEIVE_TRIG_4_BYTE	BIT6
 #define	RECEIVE_TRIG_8_BYTE	BIT7
-#define	RECEIVE_TRIG_14_BYTE	BIT6 | BIT7
+#define	RECEIVE_TRIG_14_BYTE	(BIT6 | BIT7)
 
 /* for IIR */
 #define	INT_MASK		0x0f
 #define	INT_RECEIVE_DATA	BIT2
-#define INT_CHAR_TIME_OUT	BIT3 | BIT2
+#define INT_CHAR_TIME_OUT	(BIT3 | BIT2)
 #define	INT_TRANS_EMPTY		BIT1
+
+/* for LSR */
+#define	THRE			BIT5
+#define TEMT			BIT6
 
 /* ボーレート定義関係 */
 #define	PRE_DIVISOR	4
 #define	DIVISOR		XIN_CLOCK / (8 * DEVIDE_RATIO * PRE_DIVISOR)
+
+#ifndef _MACRO_ONLY
 
 /*
  *  シリアルI/Oポート管理ブロックの定義
  */
 typedef struct sio_port_control_block	SIOPCB;
 
+#endif /* _MACRO_ONLY */
+
+/*
+ *  SIO用システムインタフェースレイヤー
+ */
+/* x : ポートのベースアドレス、y : レジスタオフセット、z : レジスタ値 */
+#define tl16pir552_wrb( x, y, z )	sil_wrb_mem( (VP)(x + y), z )
+#define tl16pir552_reb( x, y )		sil_reb_mem( (VP)(x + y) )
+
 /*
  *  コールバックルーチンの識別番号
  */
 #define SIO_ERDY_SND	1u		/* 送信可能コールバック */
 #define SIO_ERDY_RCV	2u		/* 受信通知コールバック */
+
+#ifndef _MACRO_ONLY
 
 /*
  *  SIOドライバの初期化ルーチン
@@ -163,51 +182,15 @@ extern void	tl16pir552_ierdy_snd(VP_INT exinf);
  */
 extern void	tl16pir552_ierdy_rcv(VP_INT exinf);
 
-/*============================================================================*/
-/* 以下は、本当はti16pir552_sil.hというファイルに入るべきだと思う。 */
+/*
+ *  カーネル起動時用の初期化 (sys_putcで利用)
+ */
+extern void	tl16pir552_init(void);
 
 /*
- *  デバイスレジスタのアクセス間隔時間（nsec単位）
+ *  シリアルI/Oポートへの文字送信（ポーリング）
  */
-#define	tl16pir552_DELAY	100u		/* 値に根拠はない */
-/* バナー向け */
-#define	tl16pir552_DELAY_POR	1100000u	/* 文字を落とさない程度に設定 */
+extern void	tl16pir552_putchar_pol(char c);
 
-/*
- *  デバイスレジスタへのアクセス関数
- */
-Inline UB tl16pir552_read_reg( VP addr, UB reg ) {
-
-	UB	val;
-
-	val = (UB) sil_reb_mem( (VP) (addr + reg) );
-	sil_dly_nse( tl16pir552_DELAY );
-
-	return(val);
-}
-
-Inline void tl16pir552_write_reg(VP addr, UB reg, UB val) {
-
-	sil_wrb_mem( (VP) (addr + reg), (VB) val );
-	sil_dly_nse( tl16pir552_DELAY );
-}
-
-/* sys_putc(c)向け */
-Inline void tl16pir552_write_por(VP addr, UB reg, UB val) {
-
-	sil_wrb_mem( (VP) (addr + reg), (VB) val );
-	sil_dly_nse( tl16pir552_DELAY_POR );
-}
-
-/*============================================================================*/
-/* sys_config.c向けシリアルコントローラの初期化 */
-#define scc_init( addr )						\
-	tl16pir552_write_reg( addr, IER, DIS_INT );			\
-	tl16pir552_write_reg( addr, LCR, WORD_LENGTH_8 | STOP_BITS_1 | PARITY_NON | DIVISOR_LATCH_ACC ); \
-	tl16pir552_write_reg( addr, SCR, PRE_DIVISOR );			\
-	tl16pir552_write_reg( addr, DLL, LO8(DIVISOR) );		\
-	tl16pir552_write_reg( addr, DLM, HI8(DIVISOR) );		\
-	tl16pir552_write_reg( addr, LCR, WORD_LENGTH_8 | STOP_BITS_1 | PARITY_NON ); \
-	tl16pir552_write_reg( addr, IER, RECEIVE_DATA_AVAILABLE)
-
+#endif /* _MACRO_ONLY */
 #endif /* _TL16PIR552_H_ */

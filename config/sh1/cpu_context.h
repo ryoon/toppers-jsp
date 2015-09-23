@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_context.h,v 1.7 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: cpu_context.h,v 1.11 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -77,17 +77,19 @@ extern void	activate_r(void);
 Inline void
 activate_context(TCB *tcb)
 {
-	VW	*sp;
+	UW	*sp;
 
-	sp = (VW *)(((VB *) tcb->tinib->stk) + tcb->tinib->stksz);
+	sp = (UW *)(((VB *) tcb->tinib->stk) + tcb->tinib->stksz);
 	tcb->tskctxb.sp = sp;
 	tcb->tskctxb.pc = activate_r;	/*  cpu_support.S  */
 }
 
 /*
  *  ext_tsk がスタック上に確保するダミー領域のサイズ
+ *     
+ *      SH1ではスタック上にダミー領域がいらないので、マクロ
+ *      ACTIVATED_STACK_SIZEは定義しない
  */
-#define	ACTIVATED_STACK_SIZE	0
 
 /*
  *  calltex は使用しない

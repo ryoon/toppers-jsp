@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: excalibur.c,v 1.5 2003/12/24 08:00:42 honda Exp $
+ *  @(#) $Id: excalibur.c,v 1.7 2004/05/27 09:10:05 honda Exp $
  */
 
 /*
@@ -162,7 +162,7 @@ uart_disable_rcv(SIOPCB *siopcb)
 void
 uart_init(void){
     /* Data 8bit, 1 stop bit, No parity */
-    sil_wrw_mem((VP)UART_MC,(VW)UART_DATA_FOMAT);
+    sil_wrw_mem((VP)UART_MC,(VW)UART_DATA_FORMAT);
     
     /* Set bound rate */
     sil_wrw_mem((VP)UART_DIV_LO,(VW)(CAL_BPS(UART_BPS,AHB1_CLK/2) & 0xff));
@@ -235,10 +235,8 @@ uart_opn_por(ID siopid, VP_INT exinf)
     siopcb = get_siopcb(siopid);
     siopinib = siopcb->siopinib;
 
-    uart_init();
-    
     /* Data 8bit, 1 stop bit, No parity */
-    sil_wrw_mem((VP)UART_MC,(VW)UART_DATA_FOMAT);
+    sil_wrw_mem((VP)UART_MC,(VW)UART_DATA_FORMAT);
     
     /* Set bound rate */
     sil_wrw_mem((VP)UART_DIV_LO,(VW)(CAL_BPS(UART_BPS,AHB1_CLK/2) & 0xff));

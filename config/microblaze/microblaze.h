@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: microblaze.h,v 1.5 2003/07/29 08:27:03 honda Exp $
+ *  @(#) $Id: microblaze.h,v 1.6 2004/02/05 09:16:25 honda Exp $
  */
 
 #ifndef _MICROBLAZE_H_
@@ -47,13 +47,18 @@
 #endif /* _MACRO_ONLY */
 
 
-
-
 /*
  *  MSRのビット
  */
-#define MSR_IE 0x02
-#define MSR_BE 0x01
+#define MSR_CC  0x80000000
+#define MSR_DCE 0x80
+#define MSR_DZ  0x40
+#define MSR_ICE 0x20
+#define MSR_FSL 0x10
+#define MSR_BIP 0x08
+#define MSR_C   0x04
+#define MSR_IE  0x02
+#define MSR_BE  0x01
 
 
 /*

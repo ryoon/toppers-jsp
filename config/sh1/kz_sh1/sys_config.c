@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.7 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: sys_config.c,v 1.11 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -47,15 +47,6 @@
 #include "jsp_kernel.h"
 
 /*
- *  プロセッサ識別のための変数（マルチプロセッサ対応）
- *　　　　SH1では未実装
- */
-#if 0
-UINT	board_id;		/* ボードID */
-VP	board_addr;		/* ローカルメモリの先頭アドレス */
-#endif
-
-/*
  *  ターゲットシステム依存の初期化
  */
 void
@@ -63,9 +54,8 @@ sys_initialize()
 {
 	/*
 	 *  プロセッサ識別のための変数の初期化
+	 *  　SH1では未実装
 	 */
-	/*  SH1では未実装  */
-
 }
 
 /*

@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: t_syslog.h,v 1.3 2003/06/18 12:46:54 hiro Exp $
+ *  @(#) $Id: t_syslog.h,v 1.4 2004/01/05 05:15:01 hiro Exp $
  */
 
 /*
@@ -281,8 +283,8 @@ extern ER	syslog(UINT prio, const char *format, ...) throw();
 /* 
  *  ログ情報のフォーマット出力（log_output.c）
  */
-extern void	syslog_printf(char *format, VP_INT *args, void (*putc)(char))
-								throw();
+extern void	syslog_printf(const char *format, VP_INT *args,
+						void (*putc)(char)) throw();
 extern void	syslog_print(SYSLOG *p_log, void (*putc)(char)) throw();
 extern void	syslog_output(void (*putc)(char)) throw();
 

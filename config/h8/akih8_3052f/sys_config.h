@@ -3,11 +3,11 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2004 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -37,7 +37,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h,v 1.5 2003/12/11 07:00:10 honda Exp $
+ *  @(#) $Id: sys_config.h,v 1.7 2004/09/04 16:52:27 honda Exp $
  */
 
 #ifndef _SYS_CONFIG_H_
@@ -73,12 +73,6 @@
 
 #define STACKTOP    	(H8IN_RAM_BASE + H8IN_RAM_SIZE)	/* タスク独立部用スタックの初期値 */
 #define str_STACKTOP	_TO_STRING(STACKTOP)
-
-/*
- *  システムタスクが使用するライブラリに関する定義
- */
-
-#define NEWLIB			/* newlib を用いる */
 
 #ifndef _MACRO_ONLY
 

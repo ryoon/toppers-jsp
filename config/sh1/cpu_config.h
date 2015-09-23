@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.9 2003/12/19 10:13:47 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.14 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -61,6 +61,16 @@
 #include <sh1.h>
 
 /*
+ *  数値データ文字列化用マクロの定義
+ */
+#include <util.h>
+
+/*
+ *  ユーザー定義情報
+ */
+#include <user_config.h>
+
+/*
  *  設定可能な最高優先度
  */
 #ifdef GDB_STUB
@@ -69,10 +79,7 @@
 #define MAX_IPM  0xf	/* スタブなしの場合は最高優先度でCPUロック */
 #endif /*  GDB_STUB  */
 
-#define str_MAX_IPM  	TO_STRING(MAX_IPM)
-#define str_intnest  	TO_STRING(_intnest)
-#define str_reqflg  	TO_STRING(_reqflg)
-#define str_ret_int  	TO_STRING(_ret_int)
+#define str_MAX_IPM  		TO_STRING(MAX_IPM)
 
 /*
  *  プロセッサの特殊命令のインライン関数定義
@@ -80,17 +87,6 @@
 #ifndef _MACRO_ONLY
 #include <cpu_insn.h>
 #endif /* _MACRO_ONLY */
-
-
-/*
- *  chg_ipm/get_ipm をサポートするかどうかの定義
- */
-#define	SUPPORT_CHG_IPM
-
-/*
- *  vxget_tim をサポートするかどうかの定義
- */
-#define	SUPPORT_VXGET_TIM
 
 /*
  *  TCB 中のフィールドのビット幅の定義
@@ -104,9 +100,12 @@
 #ifndef _MACRO_ONLY
 /*
  *  タスクコンテキストブロックの定義
+ *  
+ *  　spをUW *型としているのは4バイト境界を意識しているため
+ *  
  */
 typedef struct task_context_block {
-        VP	sp;             /* スタックポインタ */
+        UW 	*sp;            /* スタックポインタ */
         FP	pc;             /* プログラムカウンタ */
 } CTXB;
 
@@ -161,7 +160,7 @@ sense_context()
 Inline BOOL
 sense_lock()
 {
-	return(current_intmask() == MAX_IPM << 4);
+	return(current_intmask() == (MAX_IPM << 4));
 }
 
 #define t_sense_lock	sense_lock
@@ -244,27 +243,26 @@ extern void	dispatch(void);
  */
 extern void	exit_and_dispatch(void);
 
+#endif /* _MACRO_ONLY */
+
 /*
  *  割込みハンドラ／CPU例外ハンドラの設定
  */
 
 /*
- *  例外ベクタテーブルの構造の定義
+ *  例外ベクタテーブルの定義
+ *  　　マクロの説明
+ *  　　　KERNEL_HAS_A_VECTOR_TABLE
+ *  　　　　カーネルが例外ベクタテーブルを持つ
+ *  　　　SIO_RESERVED
+ *  　　　　シリアルデバイスがデバッガによって使用されている
  */
-typedef struct exc_vector_entry {
-	FP	exchdr;			/* 例外ハンドラの起動番地 */
-} EXCVE;
+#ifndef _MACRO_ONLY
 
-#define EXCVT_SIZE	256
+#ifdef KERNEL_HAS_A_VECTOR_TABLE
+extern FP vector_table[];	/*  例外ベクタテーブル  */
+#endif /* KERNEL_HAS_A_VECTOR_TABLE */
 
-#ifndef CQ_SH1_DEB
-
-extern EXCVE BASE_VBR[EXCVT_SIZE];
-
-#define EXCVT_KERNEL	BASE_VBR
-#define EXCVT_ORIG	0
-
-#endif /* CQ_SH1_DEB */
 
 /*
  *  割込みハンドラの設定
@@ -274,30 +272,26 @@ extern EXCVE BASE_VBR[EXCVT_SIZE];
 Inline void
 define_inh(INHNO inhno, FP inthdr)
 {
-	EXCVE	*excvt;
+#ifdef GDB_STUB
+	/*  スタブ呼び出し  */
+	Asm("mov   #0x08,r0
+	     mov   %0,r4
+	     mov   %1,r5
+	     trapa #0x21"
+               : /* no output */
+               : "r"(inhno),"r"(inthdr)
+               : "r0","r4","r5");
 
-#ifdef EXCVT_KERNEL
-	/*
-	 *  EXCVT_KERNEL が定義されている時は，初期化処理の中で VBR を
-	 *  EXCVT_KERNEL に設定するので，EXCVT_KERNEL を使う．
-	 */
-	excvt = (EXCVE *) EXCVT_KERNEL;
-	excvt[inhno].exchdr = inthdr;
-#else /* EXCVT_KERNEL */
-	excvt = (EXCVE *) current_vbr();
+#else	/*  GDB_STUB  */
 
-#ifdef CQ_SH1_DEB	/*  シリアル割り込みは避ける  */
+#ifdef KERNEL_HAS_A_VECTOR_TABLE
+
+#ifdef SIO_RESERVED	/*  シリアル割り込みは避ける  */
 	if ((inhno != RXI0) && (inhno != TXI0))
-#endif /* CQ_SH1_DEB */
-		excvt[inhno].exchdr = inthdr;
+#endif /* SIO_RESERVED */
+		vector_table[inhno] = inthdr;
 
-
-#endif /* EXCVT_KERNEL */
-
-
-
-#ifdef GDB_STUB	/*  スタブ呼び出し  */
-
+#endif /* KERNEL_HAS_A_VECTOR_TABLE */
 
 #endif	/*  GDB_STUB  */
 }
@@ -307,15 +301,11 @@ define_inh(INHNO inhno, FP inthdr)
  *
  *  ベクトル番号 excno のCPU例外ハンドラの起動番地を exchdr に設定する．
  */
-Inline void
-define_exc(EXCNO excno, FP exchdr)
-{
-	/*  SH1は割込みもCPU例外も同じ形式  */
-	define_inh((INHNO)excno, exchdr);
-}
+extern void define_exc(EXCNO excno, FP exchdr)  throw();
+
 
 /*
- *  割込みハンドラ／CPU例外ハンドラの出入口処理
+ *  割込みハンドラ／CPU例外ハンドラの入口処理
  */
 
 /*  C言語ルーチンの関数名から入口処理のラベルを生成  
@@ -325,221 +315,92 @@ define_exc(EXCNO excno, FP exchdr)
 #define	EXC_ENTRY(exchdr)	_kernel_##exchdr##_entry
 
 /*
- *  CPU例外ハンドラの出入口処理の生成マクロ
- *
- *  CPU例外ハンドラは，非タスクコンテキストで実行する．そのため，CPU例
- *  外ハンドラを呼び出す前に割込みモードに移行し，リターンしてきた後に
- *  元のモードに戻す．元のモードに戻すために，割込みモードに移行する前
- *  の SR を割込みスタック上に保存する．CPU例外がタスクコンテキストで
- *  発生し，reqflg が TRUE になった時に，ret_exc へ分岐する．
- *  reqflg をチェックする前に割込みを禁止しないと，reqflg をチェック後
- *  に起動された割込みハンドラ内でディスパッチが要求された場合に，ディ
- *  スパッチされない．
- */
-
-/*
- *  割込みハンドラ／CPU例外ハンドラの入口処理
+ *  割込みハンドラ／CPU例外ハンドラの入口処理の共通部分
  *
  *	SH1では、割込みとCPU例外の扱いがほとんど同じなので、
  *	入口処理のマクロも共通に定義している
+ *
+ *　　引数
+ *	label：入口処理のラベル
+ *	inthdr：C言語ルーチンの先頭アドレス
+ *	common_routine：cpu_support.S内の分岐先アドレス
+ *			interrupt_entry：割込みの場合
+ *			cpu_exception_entry：CPU例外の場合
+ *
+ *　　レジスタ割当
+ *　　　　r1：割込み受付直後のSRのコピー
+ *　　　　r0：interrupt_entry
+ *　　　　r2：C言語ルーチンの先頭アドレス
  *
  *	割込みとCPU例外の相違点
  *	　　・CPU例外ハンドラに引数を与える
  *	　　・CPU例外では、例外発生時のIPMと同じ値で割込みを許可する
  *		（CPU例外により、IPMを変化させない）
  *
- *	entry：入口処理のラベル
- *	inthdr：C言語ルーチンの先頭アドレス
- *	set_exchdr_arg1：
- *	set_exchdr_arg2：
- *		CPU例外ハンドラの引数設定用の命令
- *
+ *	　　・割込みハンドラの場合				
+ *	　　  	割込み受付時にハードウェアがIPMを設定する	
+ *	　　  	割込み許可にはこのIPMの値を用いる		
+ *	　　・CPU例外ハンドラの場合				
+ *	　　  	CPU例外受付時にIPMの値は変化しない		
+ *	　　  	割込み許可にはCPU例外発生時のIPMの値を用いる	
  */
-#define	_INTHDR_ENTRY(entry, inthdr, 					   \
-			set_exchdr_arg1, set_exchdr_arg2) 		   \
-asm(".text								\n"\
-"	.align 2							\n"\
-"	.global _"#entry"						\n"\
-"_"#entry ":								\n"\
+#define	HANDLER_ENTRY_PROC(label, handler, common_routine)		   \
+asm(".text;								  "\
+"	.align 2;							  "\
+"	.global _"#label";						  "\
+"_"#label":;								  "\
 			/*  必要最小限のレジスタをスタックに待避  */	   \
-"	mov.l	r0,@-r15						\n"\
+"	mov.l	r0,@-r15;						  "\
+"	mov.l	r1,@-r15;						  "\
 				/*  割込み禁止とSR復元の準備  		*/ \
-		/*  割込みハンドラの場合				*/ \
-		/*  	割込み受付時にハードウェアがIPMを設定する	*/ \
-		/*  	割込み許可にはこのIPMの値を用いる		*/ \
-		/*  CPU例外ハンドラの場合				*/ \
-		/*  	CPU例外受付時にIPMの値は変化しない		*/ \
-		/*  	割込み許可にはCPU例外発生時のIPMの値を用いる	*/ \
-"	mov.l	r1,@-r15						\n"\
-				/*  srをr1にコピー			*/ \
-"	stc	sr,r1							\n"\
-				/*  割込み禁止  			*/ \
-"	mov.l	_mask_ipm_"#inthdr",r0					\n"\
-"	ldc	r0,sr							\n"\
-				/*  r2をスタックに待避  		*/ \
-"	mov.l	r2,@-r15						\n"\
-			/*  割込み／CPU例外ネストカウンタのチェック 	*/ \
-"	mov.l	_intnest_k_"#inthdr", r0				\n"\
-"	mov.l	@r0,r2							\n"\
-				/* 割込み発生時のコンテキストを判定  	*/ \
-"	tst     r2,r2   						\n"\
-				/*  割込みネストカウンタをインクリメント*/ \
-"	add	#0x1,r2							\n"\
-				/*  add命令ではsrのTビットは変化しない	*/ \
-"	mov.l	r2,@r0							\n"\
-				/* 多重割込みならジャンプ   		*/ \
-"	bf	_interrupt_from_int_"#inthdr"				\n"\
-	/*  遅延スロットなし  */					   \
-				/* スタック入れ替え元の			*/ \
-				/* タスクスタックポインタを保存        	*/ \
-"	mov     r15,r2							\n"\
-				/* 割込みスタックに切り替え		*/ \
-"	mov.l   _stacktop_k_"#inthdr",r15				\n"\
-				/*  割込み許可  */			   \
-"	ldc  	r1,sr							\n"\
-				/*  残りのスクラッチレジスタを保存  	*/ \
-				/*  	r2:タスクスタックポインタ  	*/ \
-"	mov.l   r3,@-r2							\n"\
-"	mov.l   r4,@-r2							\n"\
-"	mov.l   r5,@-r2							\n"\
-"	mov.l   r6,@-r2							\n"\
-"	mov.l   r7,@-r2							\n"\
-"	sts.l	pr,@-r2							\n"\
-	set_exchdr_arg1		/*  CPU例外の場合の引数設定  		*/ \
-				/*  C言語ルーチン呼び出し		*/ \
-"	mov.l	_c_routine_"#inthdr",r1					\n"\
-"	jsr	@r1							\n"\
-"	mov.l	r2,@-r15 \n"	/*  遅延スロット　  			*/ \
-				/*  タスクスタックポインタを		*/ \
-				/*  割込みスタックに積む  		*/ \
+"	stc	sr,r1;							  "\
+	/*  割込み禁止  						*/ \
+	/*     割込みを禁止する前に別の割込みが入った場合の注意点は 	*/ \
+	/*     cpu_suppourt.Sのret_intを参照 				*/ \
+"	mov.l	_mask_ipm_"#handler",r0;				  "\
+"	ldc	r0,sr;							  "\
+"	mov.l	r2,@-r15;						  "\
+"	mov.l	_common_routine_"#handler",r0;				  "\
+"	mov.l	_c_routine_"#handler",r2;" /* C言語ルーチンの先頭アドレス*/\
+"	jmp	@r0;		"/*  interrupt_entryへジャンプ 		*/ \
+"	nop;				"	/*  遅延スロット  	*/ \
+	/* 備考 							*/ \
+	/* 　遅延スロットにPC相対アドレッシングのロード命令を 		*/ \
+	/* 　入れると誤動作する。 					*/ \
+	/*  　（スロット不当命令例外が発生しないので発見が難しい。） 	*/ \
 									   \
-				/*  割込み禁止		*/		   \
-"	mov.l	_mask_ipm_"#inthdr",r0					\n"\
-"	ldc	r0,sr							\n"\
-				/* 割込み／CPU例外ネストカウンタをクリア*/ \
-"	mov.l	_intnest_k_"#inthdr",r0				  	\n"\
-"	mov	#0x0,r1							\n"\
-"	mov.l	r1,@r0							\n"\
-				/* スタック切替え  			*/ \
-"	mov.l	@r15,r15						\n"\
-				/* reqflgのチェック                    	*/ \
-"	mov.l	_reqflg_k_"#inthdr",r4					\n"\
-"       mov.l	@r4,r1							\n"\
-			/* reqflgがFALSEならret_to_task_intに飛ぶ 	*/ \
-"	tst	r1,r1							\n"\
-"	bt   	_ret_to_task_int_"#inthdr"				\n"\
-	/*  遅延スロットなし  */					   \
-"	mov	#0x0,r0							\n"\
-"	mov.l	ret_int_"#inthdr",r1					\n"\
-				/*  ret_intへジャンプ  			*/ \
-"	jmp	@r1							\n"\
-				/*  遅延スロット reqflgをクリア        	*/ \
-"	mov.l	r0,@r4							\n"\
-									   \
-									   \
-/*   多重割込みの処理 							*/ \
-/* 	割込み発生時のコンテキストを判別後、 				*/ \
-/*   		割込み禁止 						*/ \
-/*   		r1：割込み受付時のsrのコピー 				*/ \
-/* 	の状態でここに飛んでくる 					*/ \
-/* 	（割込みネストカウンタのインクリメントは済んでいる） 		*/ \
-									   \
-"_interrupt_from_int_"#inthdr":						\n"\
-				/* 割込み許可  				*/ \
-"	ldc	r1,sr							\n"\
-			/*  残りのスクラッチレジスタをスタックに積む　	*/ \
-"	mov.l	r3,@-r15						\n"\
-"	mov.l	r4,@-r15						\n"\
-"	mov.l	r5,@-r15						\n"\
-"	mov.l	r6,@-r15						\n"\
-"	mov.l	r7,@-r15						\n"\
-"	sts.l	pr,@-r15						\n"\
-	set_exchdr_arg2			/*  CPU例外の場合の引数設定  	*/ \
-					/*  C言語ルーチン呼び出し 	*/ \
-"	mov.l	_c_routine_"#inthdr",r1					\n"\
-"	jsr	@r1							\n"\
-"	nop			\n"	/*  遅延スロット　 		*/ \
-									   \
-					/*  割込み禁止			*/ \
-"	mov.l	_mask_ipm_"#inthdr",r0					\n"\
-"	ldc	r0,sr							\n"\
-		/* 割込み／CPU例外ネストカウンタをディクリメント	*/ \
-"	mov.l	_intnest_k_"#inthdr",r0					\n"\
-"	mov.l	@r0,r2							\n"\
-"	add	#-1,r2							\n"\
-"	mov.l	r2,@r0							\n"\
-									   \
-									   \
-/*   reqflgがFALSEの場合の処理 						*/ \
-/*    									*/ \
-/*   	・ディスパッチもタスク例外処理も必要ない 			*/ \
-/* 	・chg_ipm()の処理は必要ない 					*/ \
-/* 	　（非タスクコンテキストでは、chg_ipm()は使用不可） 		*/ \
-									   \
-"_ret_to_task_int_"#inthdr": \n"					   \
-"	lds.l	@r15+,pr    \n"	/*  レジスタ復元  			*/ \
-"	mov.l	@r15+,r7    \n"						   \
-"	mov.l	@r15+,r6    \n"						   \
-"	mov.l	@r15+,r5    \n"						   \
-"	mov.l	@r15+,r4    \n"						   \
-"	mov.l	@r15+,r3    \n"						   \
-"	mov.l	@r15+,r2    \n"						   \
-"	mov.l	@r15+,r1    \n"						   \
-"	mov.l	@r15+,r0    \n"						   \
-"	rte		    \n"	/*  割込み元に戻る  			*/ \
-"	nop		    \n"						   \
-									   \
-"	.align  4	    \n"						   \
-"_stacktop_k_"#inthdr":     \n"	/* タスク独立部のスタックの初期値  	*/ \
-"	.long  "str_STACKTOP" \n"					   \
-"_intnest_k_"#inthdr":	    \n"	/*  割込み／CPU例外ネストカウンタ  	*/ \
-"	.long  __kernel_intnest	    \n"				  	   \
-"_reqflg_k_"#inthdr":	    \n"						   \
-"	.long  __kernel_reqflg \n"					   \
-"_mask_ipm_"#inthdr":	    \n"	/*  割込み禁止用マスク  		*/ \
-"	.long  "str_MAX_IPM" << 4 \n"	/*  ipm以外のビットはゼロで良い	*/ \
-"_c_routine_"#inthdr":	    \n"						   \
-"	.long  _"#inthdr"   \n" /*  C言語ルーチンの先頭アドレス  	*/ \
-"ret_int_"#inthdr":	    \n"	/*  出口処理ret_intのアドレス  		*/ \
-"	.long  __kernel_ret_int \n"			  		   \
+"	.align 2;							  "\
+"_mask_ipm_"#handler":;	    "	/*  割込み禁止用マスク  		*/ \
+"	.long  "str_MAX_IPM" << 4; "	/*  ipm以外のビットはゼロで良い	*/ \
+"_c_routine_"#handler":;	    					  "\
+"	.long  _"#handler";   "	/* C言語ルーチンの先頭アドレス  	*/ \
+"_common_routine_"#handler":; "	/* cpu_support.S内の分岐先アドレス	*/ \
+"	.long  __kernel_"#common_routine"; "		  		   \
 )
-/*  _INTHDR_ENTRY()マクロ　ここまで  */
-
-
-
 
 /*
- *  割込みハンドラの出入口処理の生成マクロ
+ *  割込みハンドラの入口処理の生成マクロ
  *
  */
-#define INTHDR_ENTRY(inthdr)					\
-	extern void _kernel_##inthdr##_entry(void);		\
-	_INTHDR_ENTRY(_kernel_##inthdr##_entry, inthdr, "", "")
+#define INTHDR_ENTRY(inthdr)	INTHDR_ENTRY2(INT_ENTRY(inthdr), inthdr)
+
+#define INTHDR_ENTRY2(entry, inthdr)					\
+	extern void entry(void);					\
+	HANDLER_ENTRY_PROC(entry, inthdr, interrupt_entry)
 
 
 /*
- *  CPU例外の場合の引数設定用マクロ
- *
- *　　　　タスクスタックポインタをコピー
- *　　　　　（スタック先頭から40バイト下にsrが積まれている）
+ *  CPU例外ハンドラの入口処理の生成マクロ
  */
-#define	SET_EXCHDR_ARG(sp)						\
-"	mov	"#sp",r4						\n"\
-"	add	#40,r4							\n"
+#define	EXCHDR_ENTRY(exchdr)	EXCHDR_ENTRY2(EXC_ENTRY(exchdr), exchdr)
 
-
-/*
- *  CPU例外ハンドラの出入口処理の生成マクロ
- *  　
- *  	一般不当命令の場合は戻り番地を2バイト進める必要があるが
- *	対応していない
- *	（GDB stubがブレークポイントとして使用する。）
- */
-#define	EXCHDR_ENTRY(exchdr)  						\
-	extern void _kernel_##exchdr##_entry(VP sp);			\
-	_INTHDR_ENTRY(_kernel_##exchdr##_entry, exchdr,			\
-			SET_EXCHDR_ARG(r2), SET_EXCHDR_ARG(r15))
-
+#define EXCHDR_ENTRY2(entry, exchdr)					\
+	extern void entry(void);					\
+	HANDLER_ENTRY_PROC(entry, exchdr, cpu_exception_entry)
+	/*
+	 *  void entry()は単なるエントリのラベルなので、
+	 *  引数は付けない
+	 */
 
 /*
  *  CPU例外の発生した時のシステム状態の参照
@@ -551,8 +412,13 @@ asm(".text								\n"\
 Inline BOOL
 exc_sense_context(VP p_excinf)
 {
-	/* １と比較するのは、現在実行中のCPU例外の分 		*/
-	/*  割込みネストカウンタがインクリメントされているため 	*/
+	/* 
+	 *  １と比較するのは、現在実行中のCPU例外の分
+	 *  割込みネストカウンタがインクリメントされているため 	
+	 *  
+	 *  CPU例外の入口処理中に別のCPU例外は発生しないと仮定
+	 *  している
+	 */
 	return(intnest > 1);
 }
 
@@ -563,7 +429,7 @@ Inline BOOL
 exc_sense_lock(VP p_excinf)
 {
 	UW sr = *(UW *)p_excinf; 
-	return((sr& 0x00000f0u) == MAX_IPM << 4);
+	return((sr& 0x00000f0u) == (MAX_IPM << 4));
 }
 
 /*
@@ -575,11 +441,6 @@ extern void	cpu_initialize(void);
  *  プロセッサ依存の終了時処理
  */
 extern void	cpu_terminate(void);
-
-/*
- * プロセッサ依存シリアル出力
- */
-extern void     cpu_putc(char c);
 
 
 /*
@@ -614,4 +475,38 @@ typedef struct exc_stack {
 extern void     cpu_experr(EXCSTACK *);
 
 #endif /* _MACRO_ONLY */
+
+
+/*
+ *  例外ベクタに設定するデフォルトの値
+ *  	以下の例外要因でデフォルトとは異なる例外ベクタを定義
+ *	する場合は、sys_config.hで該当するマクロを定義する。
+ */
+#define RESET_VECTOR 	start		/*  リセットベクタ  */
+#define INIT_STACK  	STACKTOP	/*  スタックポインタの初期値  */
+
+#define RESERVED_VECTOR	RESET_VECTOR	/*  システム予約のリセットベクタ  */
+					/*  実際には使用されない  */
+
+#ifndef GII_VECTOR	/*  一般不当命令  */
+#define GII_VECTOR	RESET_VECTOR
+#endif /* GII_VECTOR */
+
+#ifndef SII_VECTOR	/*  スロット不当命令  */
+#define SII_VECTOR	RESET_VECTOR
+#endif /* SII_VECTOR */
+
+#ifndef CAE_VECTOR	/*  CPUアドレスエラー  */
+#define CAE_VECTOR	RESET_VECTOR
+#endif /* CAE_VECTOR */
+
+#ifndef DAE_VECTOR	/*  DMAアドレスエラー  */
+#define DAE_VECTOR	RESET_VECTOR
+#endif /* DAE_VECTOR */
+
+#ifndef NMI_VECTOR	/*  NMI  */
+#define NMI_VECTOR	RESET_VECTOR
+#endif /* NMI_VECTOR */
+
+
 #endif /* _CPU_CONFIG_H_ */

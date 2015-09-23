@@ -33,10 +33,10 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: jsp_checkscript.cpp,v 1.16 2003/12/15 07:32:14 takayuki Exp $
+ *  @(#) $Id: jsp_checkscript.cpp,v 1.17 2004/02/06 09:21:16 takayuki Exp $
  */
 
-// $Header: /home/CVS/configurator/jsp/jsp_checkscript.cpp,v 1.16 2003/12/15 07:32:14 takayuki Exp $
+// $Header: /home/CVS/configurator/jsp/jsp_checkscript.cpp,v 1.17 2004/02/06 09:21:16 takayuki Exp $
 
 #include "jsp/jsp_defs.h"
 #include "jsp/jsp_common.h"
@@ -89,6 +89,7 @@ void CheckScriptGenerator::parseOption(Directory & container)
 
         container["/file/kernel_chk"] = stream;
 
+        checkOption("ci","checker-macro");
         activateComponent();
     }
 }
@@ -171,26 +172,38 @@ void CheckScriptGenerator::body(Directory & container)
     out->movePart("header") <<
         "#include \"jsp_kernel.h\"\n"
         "#include \"logtask.h\"\n"
-        "#include \"timer.h\"\n\n"
-        "#define OBJECT(x,y) __asm(\"d\" #x \",\" #y \"@\");\n"
-        "#define MEMBER(x,y) __asm(\"s\" #x \"::\" #y \",(%0),(%1)@\" ::\\\n"
-        "     \"i\"(sizeof(((struct x *)0)->y)), \"i\"(&((struct x *)0)->y));\n"
-        "#define VAR(x) __asm(\"s\" #x \",(%0),(0)@\" :: \"i\"(sizeof(x)));\n"
-        "#define EVAR(x,y) __asm(\"s\" #y \",(%0),(0)@\" :: \"i\"(sizeof(x)));\n"
-        "#define SVAR(x) __asm(\"s\" #x \",(%0),(0)@\" :: \"i\"(sizeof(x[0])));\n"
-        "#define DEFS(x) __asm(\"s\" #x \",(%0),(0)@\" :: \"i\"((unsigned long)x));\n\n"
-        "#include \"queue.h\"\n\n"
-        "#include \"task.h\"\n"
-        "#include \"semaphore.h\"\n"
-        "#include \"eventflag.h\"\n"
-        "#include \"dataqueue.h\"\n"
-        "#include \"mailbox.h\"\n"
-        "#include \"mempfix.h\"\n"
-        "#include \"cyclic.h\"\n"
-        "#include \"../kernel/exception.h\"\n"
-        "#include \"interrupt.h\"\n"
-        "#include \"wait.h\"\n\n"
-        "void checker_function(void)\n{\n";
+        "#include \"timer.h\"\n\n";
+
+
+	string work;
+	if(findOption("ci","checker-macro",&work)) {
+
+			/* 中身が空でなかったらincludeをするが，空ならincludeすら吐かない */
+		if(!work.empty())
+			(*out) << "#include \"" << work << "\"\n\n";
+	}
+	else {
+		(*out) <<	"#define OBJECT(x,y) __asm(\"d\" #x \",\" #y \"@\");\n"
+			        "#define MEMBER(x,y) __asm(\"s\" #x \"::\" #y \",(%0),(%1)@\" ::\\\n"
+			        "     \"i\"(sizeof(((struct x *)0)->y)), \"i\"(&((struct x *)0)->y));\n"
+			        "#define VAR(x) __asm(\"s\" #x \",(%0),(0)@\" :: \"i\"(sizeof(x)));\n"
+			        "#define EVAR(x,y) __asm(\"s\" #y \",(%0),(0)@\" :: \"i\"(sizeof(x)));\n"
+			        "#define SVAR(x) __asm(\"s\" #x \",(%0),(0)@\" :: \"i\"(sizeof(x[0])));\n"
+			        "#define DEFS(x) __asm(\"s\" #x \",(%0),(0)@\" :: \"i\"((unsigned long)x));\n\n";
+	}
+
+    (*out) <<	"#include \"queue.h\"\n\n"
+		        "#include \"task.h\"\n"
+		        "#include \"semaphore.h\"\n"
+		        "#include \"eventflag.h\"\n"
+		        "#include \"dataqueue.h\"\n"
+		        "#include \"mailbox.h\"\n"
+		        "#include \"mempfix.h\"\n"
+		        "#include \"cyclic.h\"\n"
+		        "#include \"../kernel/exception.h\"\n"
+		        "#include \"interrupt.h\"\n"
+		        "#include \"wait.h\"\n\n"
+		        "void checker_function(void)\n{\n";
 
     out->movePart("footer") << "}\n";
 

@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_timer.h,v 1.3 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: hw_timer.h,v 1.8 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -51,7 +51,7 @@
 #define _HW_TIMER_H_
 
 #include <s_services.h>
-#include <sil_sh1.h>
+#include <sh1_sil.h>
 
 #ifndef _MACRO_ONLY
 #include <sh1itu.h>
@@ -63,11 +63,6 @@
 #define	INHNO_TIMER	IMIA0
 
 #ifndef _MACRO_ONLY
-
-/*
- *  タイマーの割り込みレベル
- */
-#define TINTLVL0	4
 
 /*  割込みレベルを設定レジスタに代入するときのシフト数  */
 #define ITU_BIT_SHIFT	4
@@ -97,7 +92,7 @@ hw_timer_initialize()
 	 *  割込み関連の設定
 	 */
 						/* 割り込みレベル設定 	*/
-	define_int_plevel(IPRC, TINTLVL0, ITU_BIT_SHIFT);
+	define_int_plevel(IPRC, TIMER_INTLVL, ITU_BIT_SHIFT);
 	sh1_itu_int_clear();		/*  割込み要求をクリア  */
 
 	sh1_itu_start();		/* タイマスタート    	*/

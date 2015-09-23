@@ -67,17 +67,13 @@ typedef	UINT	EXCNO;			/* CPU例外ハンドラ番号 */
  *  割込みマスクの型と割込みマスクの変更／参照
  */
 
-/*  MIPS3コアの割込みマスクの型定義 (初期値はシステム依存部に記述) */
+/* MIPS3コアの割込みマスクの型定義 (初期値はシステム依存部に記述) */
 typedef	UW	CORE_IPM;
-
-#endif /* _MACRO_ONLY */
-
-#ifndef _MACRO_ONLY
 
 /* 割込みマスクの型 */
 typedef	struct {
-	CORE_IPM core;	/*  MIPS3コアの割込みマスク  */
-	ICU_IPM  icu;	/*  割込みコントローラの割込みマスク  */
+	CORE_IPM	core;	/*  MIPS3コアの割込みマスク  */
+	ICU_IPM		icu;	/*  割込みコントローラの割込みマスク  */
 } IPM;
 
 /* 割込みマスク操作用の関数 */
@@ -88,13 +84,16 @@ extern ER	get_ipm(IPM *p_ipm) throw();	/* 割込みマスクの取得 */
 
 /*
  *  割込みロック状態の制御
- *  MIPS3では、カーネル管理外の割込みが存在しないので、割込みロック状態は
- *  CPUロック状態と同じ。
+ *    MIPS3では、全ての割り込みがカーネル管理内なので、
+ *      割込みロック状態 = CPUロック状態
+ *    となり、このマクロの内容は、標準に提供されているものを使う。
+ *    (もし、個別に定義をしようとするならば、下記のようになる。)
  */
+/*
 #define	SIL_PRE_LOC
 #define	SIL_LOC_INT()	t_lock_cpu()
 #define	SIL_UNL_INT()	t_unlock_cpu()
-
+*/
 /*============================================================================*/
 /*  共通ドキュメントに無い定義  */
 
@@ -105,8 +104,8 @@ extern ER	get_ipm(IPM *p_ipm) throw();	/* 割込みマスクの取得 */
 
 /*  割込みハンドラ／割込みマスク擬似テーブル用の型  */
 typedef struct {
-	FP	inthdr;		/*  割込みハンドラの先頭アドレス  */
-	UW	intmask;	/*  MIPS3コアの割込みマスク  */
+	FP		inthdr;		/*  割込みハンドラの先頭アドレス  */
+	CORE_IPM	intmask;	/*  MIPS3コアの割込みマスク  */
 } INT_TABLE;
 
 #endif /* _MACRO_ONLY */

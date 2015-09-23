@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_defs.h,v 1.7 2003/06/20 09:26:05 honda Exp $
+ *  @(#) $Id: cpu_defs.h,v 1.9 2004/10/04 12:11:59 honda Exp $
  */
 
 /*
@@ -76,7 +76,7 @@ extern ER	ena_int(INTNO intno) throw();
 /*
  *  ターゲットシステム依存のサービスコール
  */
-typedef	UD  SYSUTIM;	/* 性能評価用システム時刻 */
+typedef	UW  SYSUTIM;	/* 性能評価用システム時刻 */
 extern  ER   vxget_tim(SYSUTIM *pk_sysutim) throw();
 
 
@@ -149,7 +149,9 @@ sil_dly_nse(UINT dlytim)
 
 #endif /* _MACRO_ONLY */
 
-/*                                                                              *  プロセッサのエンディアン                                                    */
+/*
+ *  プロセッサのエンディアン
+ */
 #define SIL_ENDIAN  SIL_ENDIAN_BIG  /* ビックエンディアン */
 
 

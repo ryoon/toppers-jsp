@@ -75,13 +75,40 @@
 #define BIT30      0x40000000
 #define BIT31      0x80000000
 
-#define LO8(c)		((c) & 0xff)	/*  下位1バイト取り出し  */
-#define HI8(c)		LO8((c) >> 8)	/*  上位1バイト取り出し  */
+/*
+ *  バイトデータ操作用マクロ
+ */
+/* 以下において、x：不定 */
 
-#define LO16(c)		((c) & 0xffff)	/*  下位2バイト取り出し  */
-#define HI16(c)		LO16((c) >> 16)	/*  上位2バイト取り出し  */
+/* 以下のような書き方と、どっちが良いか？
+     (UH) (((UW) (c)) & 0x0000ffff)
+     (UH) (((UW) (c)) & 0xffff0000) >> 16
+*/
 
-#define JOIN16(hi, lo)	(((hi) << 16) | (lo))	/*  2バイトデータの結合  */
-#define JOIN8(hi, lo)	(((hi) <<  8) | (lo))	/*  1バイトデータの結合  */
+/* (UH) xxaa -> (UB) aa */
+#define LO8(c)		(UB)( (UH)(c) & 0xff )	/*  下位1バイト取り出し  */
+/* (UH) aaxx -> (UB) aa */
+#define HI8(c)		LO8( (UH)(c) >>  8 )	/*  上位1バイト取り出し  */
+
+/* (UW) xxxxaaaa -> (UH) aaaa */
+#define LO16(c)		(UH)( (UW)(c) & 0xffff )/*  下位2バイト取り出し  */
+/* (UW) aaaaxxxx -> (UH) aaaa */
+#define HI16(c)		LO16( (UW)(c) >> 16 )	/*  上位2バイト取り出し  */
+
+/* (UH) aaaa, (UH) bbbb -> (UW) aaaabbbb */
+#define JOIN16(hi, lo)	(UW)( ((UW)(hi) << 16) | (lo) )	/*  2バイトデータの結合  */
+/* (UB) aa, (UB) bb -> (UH) aabb */
+#define JOIN8(hi, lo)	(UH)( ((UH)(hi) <<  8) | (lo) )	/*  1バイトデータの結合  */
+
+/* (UB) xxxxaaaa（２進数） -> (UB) ooooaaaa（２進数） */
+#define TO_LO4(c)	( (UB)(c) & 0xf )		/*  0-3ビットに配置  */
+/* （２進数）xxxxaaaa -> （２進数）aaaaoooo */
+#define TO_HI4(c)	(((UB)(c) << 4) & 0xf0)		/*  4-7ビットに配置  */
+
+/*
+ *  数値データ文字列化用マクロ
+ */
+#define _TO_STRING(arg)	#arg
+#define TO_STRING(arg)	_TO_STRING(arg)
 
 #endif /* _UTIL_H_ */

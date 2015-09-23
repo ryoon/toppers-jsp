@@ -5,6 +5,8 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
+ *  Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+ *              Graduate School of Information Science, Nagoya Univ., JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -33,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: t_stddef.h,v 1.6 2003/12/06 06:18:55 hiro Exp $
+ *  @(#) $Id: t_stddef.h,v 1.7 2004/01/05 05:11:37 hiro Exp $
  */
 
 /*
@@ -87,7 +89,7 @@
 	((void)(!(exp) ? (_syslog_3(LOG_EMERG, LOG_TYPE_ASSERT,		\
 				(VP_INT)(__FILE__), (VP_INT)(__LINE__),	\
 				(VP_INT)(#exp)),			\
-				kernel_abort()) : (void) 0))
+				kernel_abort(), 0) : 0))
 #else /* NDEBUG */
 #define	assert(exp)	((void) 0)
 #endif /* NDEBUG */

@@ -41,8 +41,12 @@
 
 #include <util.h>
 
+/*
+ *  MIPS3 用定義
+ */
+
 /* CPUコアの内部レジスタの名称 */
-#define zero    $0      /* 常にゼロ */
+#define zero    $0      /* 常時ゼロ */
 #define at      $1      /* アセンブラのテンポラリ */
 #define v0      $2      /* 関数の戻り値 */
 #define v1      $3
@@ -50,7 +54,7 @@
 #define a1      $5
 #define a2      $6
 #define a3      $7
-#define t0      $8      /* テンポラリレジスタ：関数呼び出しで破壊 */
+#define t0      $8      /* テンポラリレジスタ tx (x=0-9)：関数呼び出しで破壊 */
 #define t1      $9
 #define t2      $10
 #define t3      $11
@@ -58,7 +62,7 @@
 #define t5      $13
 #define t6      $14
 #define t7      $15
-#define s0      $16     /* 関数呼び出しで不変なレジスタ */
+#define s0      $16     /* sx (x=0-7) : 関数呼び出しで不変なレジスタ */
 #define s1      $17
 #define s2      $18
 #define s3      $19
@@ -66,7 +70,7 @@
 #define s5      $21
 #define s6      $22
 #define s7      $23
-#define t8      $24     /* テンポラリレジスタ：関数呼び出しで破壊 */
+#define t8      $24     /* テンポラリレジスタ tx (x=0-9)：関数呼び出しで破壊 */
 #define t9      $25
 #define k0      $26     /* OS用に予約済み */
 #define kt0     $26
@@ -76,8 +80,8 @@
 #define sp      $29     /* スタックポインタ */
 #define fp      $30     /* フレームポインタ */
 /* もしくは */
-#define s8      $30     /* 関数呼び出しで不変なレジスタ */
-#define ra      $31     /* 関数からの戻り値 */
+#define s8      $30     /* s8 : 関数呼び出しで不変なレジスタ */
+#define ra      $31     /* 関数からの戻りアドレス */
 
 /* CP0の内部レジスタの名称 */
 #define Index           $0
@@ -191,7 +195,7 @@
 #define TMAX_CORE_INTNO		8
 
 /*
- *  MIPS3コアのステータスレジスタに設定可能な割込み許可ビットパターン（最高値）
+ *  MIPS3コアのステータスレジスタに設定可能な最高割込み許可ビットパターン
  */
 #define MAX_IPM  0xff
 
@@ -205,11 +209,12 @@
  */
 #define TMAX_CORE_EXCNO	32u
 
-#ifndef _MACRO_ONLY
 /*
- *  ログ出力時のスタック構造の定義（cpu_config.hにおけるcpu_experr、cpu_interrupt）
- *  cpu_support.Sを参照のこと。
+ *  ログ出力時のスタック構造の定義
+ *    cpu_config.hにおけるcpu_experr関数、cpu_support.Sを参照のこと。
  */
+#ifndef _MACRO_ONLY
+
 typedef struct exc_stack {
 
 	/*  レジスタ群の定義  */
@@ -244,6 +249,5 @@ typedef struct exc_stack {
 } EXCSTACK;
 
 #endif /* _MACRO_ONLY */
-
 
 #endif /* _MIPS3_H_ */

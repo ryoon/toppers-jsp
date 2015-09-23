@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.2 2003/12/24 07:30:16 honda Exp $
+ *  @(#) $Id: sys_defs.h,v 1.3 2004/02/05 09:16:26 honda Exp $
  */
 
 
@@ -135,6 +135,11 @@
 #define SIL_DLY_TIM1    420
 #define SIL_DLY_TIM2    90
 
-
+/*
+ * 起動時のキャッシュの設定
+ * キャッシュをONにしたい場合に定義する．
+ */
+#define D_CACHE_ENABLE
+#define I_CACHE_ENABLE
 
 #endif /* _SYS_DEFS_H_ */

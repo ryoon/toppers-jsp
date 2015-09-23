@@ -47,54 +47,51 @@
  *  ステータスレジスタの操作関数
  */
 
-/*  ステータスレジスタ（SR）の現在値の読出し  */
+/* ステータスレジスタ（SR）の現在値の読出し */
 Inline UW current_sr(void) {
 
-	UW sr;
+	UW	sr;
 
-	Asm("mfc0 %0, "str_Status : "=r"(sr));
+	Asm( "mfc0 %0, "str_Status : "=r"(sr) );
 
-	return(sr);
+	return( sr );
 }
 
 
-/*  ステータスレジスタ（SR）の現在値の変更  */
+/* ステータスレジスタ（SR）の現在値の変更 */
 Inline void set_sr(UW sr) {
 
-	Asm("mtc0 %0, "str_Status : : "r"(sr) );
+	Asm( "mtc0 %0, "str_Status : : "r"(sr) );
 }
 
 
-/*  NMIを除くすべての割込みを禁止  */
+/* NMIを除くすべての割込みを禁止 */
 Inline void disint(void) {
 
-	set_sr((current_sr() & ~SR_IE));
+	set_sr( (current_sr() & ~SR_IE) );
 }
 
 
-/*  割込みを許可  */
+/* 割込みを許可 */
 Inline void enaint() {
 
-	set_sr(current_sr() | SR_IE);
+	set_sr( (current_sr() | SR_IE) );
 }
 
 /*
- *  割込みマスクの設定
+ *  割込みマスク操作ライブラリ（MIPS3コア用）
  */
-Inline void cpu_set_ipm(UW intmask) {
 
-	UW sr;
-	
-	sr = (current_sr() & ~SR_IM) | intmask;
-	set_sr(sr);
+/* 割込みマスクの設定 */
+Inline void cpu_set_ipm(CORE_IPM intmask) {
+
+	set_sr( (CORE_IPM) ((current_sr() & ~SR_IM) | intmask) );
 }
 
-/*
- *  割込みマスクの読出し
- */
-Inline UW cpu_get_ipm() {
+/* 割込みマスクの読出し */
+Inline CORE_IPM cpu_get_ipm() {
 
-	return( current_sr() & SR_IM );
+	return( (CORE_IPM)  (current_sr() &  SR_IM) );
 }
 
 #endif /* _MACRO_ONLY */

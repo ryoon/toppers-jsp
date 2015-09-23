@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.7 2003/12/24 07:35:03 takayuki Exp $
+ *  @(#) $Id: cpu_config.h,v 1.8 2004/09/04 16:38:40 honda Exp $
  */
 
 //#include <sys_config.h>
@@ -193,7 +193,7 @@ define_exc(EXCNO excno, FP exchdr)
 
 
 #define INT_ENTRY(hdr) hdr
-#define INTHDR_ENTRY(entry)	extern void entry();
+#define INTHDR_ENTRY(entry)	extern void entry()
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
@@ -209,7 +209,7 @@ define_exc(EXCNO excno, FP exchdr)
  */
 
 #define EXC_ENTRY(hdr) hdr
-#define EXCHDR_ENTRY(entry)	extern void entry();
+#define EXCHDR_ENTRY(entry)	extern void entry()
 
 /*
  *  CPU例外の発生した時のシステム状態の参照

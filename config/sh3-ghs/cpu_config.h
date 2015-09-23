@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.3 2003/12/19 11:24:55 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.5 2004/09/04 16:38:40 honda Exp $
  */
 
 
@@ -331,7 +331,7 @@ define_int_plevel(UINT dintno, UW plevel)
  *  割込みハンドラの出入口処理の生成マクロ
  */
 
-#define	INTHDR_ENTRY(inthdr)  extern void inthdr(void);
+#define	INTHDR_ENTRY(inthdr)  extern void inthdr(void)
 
 #define INT_ENTRY(inthdr) inthdr
 
@@ -339,7 +339,7 @@ define_int_plevel(UINT dintno, UW plevel)
  *  CPU例外ハンドラの出入口処理の生成マクロ
  *
  */
-#define	EXCHDR_ENTRY(exchdr)  extern void exchdr(VP sp);
+#define	EXCHDR_ENTRY(exchdr)  extern void exchdr(VP sp)
 
 #define	EXC_ENTRY(exchdr)     exchdr
 
@@ -378,12 +378,6 @@ extern void	cpu_initialize(void);
  *  プロセッサ依存の終了時処理
  */
 extern void	cpu_terminate(void);
-
-
-/*
- * プロセッサ依存シリアル出力
- */
-extern void     cpu_putc(char c);
 
 
 /*

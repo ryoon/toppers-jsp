@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: serial.c,v 1.14 2003/12/13 06:21:58 hiro Exp $
+ *  @(#) $Id: serial.c,v 1.15 2004/09/04 16:43:09 honda Exp $
  */
 
 /*
@@ -71,12 +71,12 @@ typedef struct serial_port_initialization_block {
 } SPINIB;
 
 static const SPINIB spinib_table[TNUM_PORT] = {
-	{ SERIAL_RCV_SEM1, SERIAL_SND_SEM1 },
+	{ SERIAL_RCV_SEM1, SERIAL_SND_SEM1 }
 #if TNUM_PORT >= 2
-	{ SERIAL_RCV_SEM2, SERIAL_SND_SEM2 },
+	,{ SERIAL_RCV_SEM2, SERIAL_SND_SEM2 }
 #endif
 #if TNUM_PORT >= 3
-	{ SERIAL_RCV_SEM3, SERIAL_SND_SEM3 },
+	,{ SERIAL_RCV_SEM3, SERIAL_SND_SEM3 }
 #endif
 };
 

@@ -80,11 +80,24 @@ void cpu_terminate() {
 }
 
 /*
- *  微少時間待ち（アセンブラの部分はcpu_support.Sにある。）
+ *  微少時間待ち
  */
 void sil_dly_nse(UINT dlytim) {
-	Asm("move $8, %0" ::"r"(dlytim) );	/* $8 は t0 のこと */
-	Asm("jal sil_dly_nse_asm":::"ra");
+
+	/* $2 : v0, $3 : v1 */
+	Asm("	move	$2, %0" :: "r"(dlytim) );
+	Asm("	li	$3, %0" :: "g"(SIL_DLY_TIM1) );
+
+	Asm("	sub	$2, $2, $3");	/* v0 -= v1 (dlytim -= SIL_DLY_TIM1) */
+	Asm("	blez    $2, sil_dly_nse_2");	/* v0 <= 0 ならリターン */
+
+	Asm("	li      $3, %0" :: "g"(SIL_DLY_TIM2) );
+
+	Asm("sil_dly_nse_1:");
+	Asm("	sub     $2, $2, $3");	/* v0 -= v1 (dlytim -= SIL_DLY_TIM2) */
+	Asm("	bgtz    $2, sil_dly_nse_1");	/* v0 > 0 ならループ */
+
+	Asm("sil_dly_nse_2:");
 }
 
 #ifdef SUPPORT_CHG_IPM
@@ -111,8 +124,9 @@ SYSCALL ER chg_ipm(IPM ipm) {
 	CHECK_IPM(ipm);
 
 	t_lock_cpu();
-	cpu_set_ipm(   ipm.core );	/*  MIPS3コアの割込みマスクの設定  */
-	icu_set_ipm( &(ipm.icu) );	/*  割込みコントローラの割込みマスクの設定  */
+	cpu_set_ipm( ipm.core );	/* MIPS3コアの割込みマスクの設定 */
+	icu_set_ipm( &(ipm.icu) );	/* 外部割込みコントローラの割込みマスク
+					   の設定 */
 	ercd = E_OK;
 	t_unlock_cpu();
 
@@ -132,8 +146,9 @@ SYSCALL ER get_ipm(IPM *p_ipm) {
 	CHECK_TSKCTX_UNL();
 
 	t_lock_cpu();
-	p_ipm->core = cpu_get_ipm();	/*  MIPS3コアの割込みマスク取得  */
-	icu_get_ipm(&(p_ipm->icu));	/*  割込みコントローラの割込みマスクの参照  */
+	p_ipm->core = cpu_get_ipm();	/* MIPS3コアの割込みマスク参照 */
+	icu_get_ipm(&(p_ipm->icu));	/* 外部割込みコントローラの割込みマスク
+					   の参照 */
 	ercd = E_OK;
 	t_unlock_cpu();
 
@@ -143,6 +158,9 @@ SYSCALL ER get_ipm(IPM *p_ipm) {
 }
 
 #endif /* SUPPORT_CHG_IPM */
+
+/*============================================================================*/
+/*  共通ドキュメントにはない、独自の部分  */
 
 /*
  * ハンドラが登録されていない割込み・例外が発生すると呼び出される

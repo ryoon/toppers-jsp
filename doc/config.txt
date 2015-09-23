@@ -1,7 +1,7 @@
 
        ＝ JSPカーネル ターゲット依存部 ポーティングガイド ＝
 
-             （Release 1.4対応，最終更新: 20-Dec-2003）
+             （Release 1.4.1対応，最終更新: 6-Sep-2004）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
@@ -10,6 +10,8 @@
 
  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
+ Copyright (C) 2004 by Embedded and Real-Time Systems Laboratory
+             Graduate School of Information Science, Nagoya Univ., JAPAN
 
  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  によって公表されている GNU General Public License の Version 2 に記
@@ -38,7 +40,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: config.txt,v 1.33 2003/12/20 07:36:28 hiro Exp $
+ @(#) $Id: config.txt,v 1.37 2004/09/06 14:40:39 hiro Exp $
 ------------------------------------------------------------------------
 
 
@@ -330,7 +332,7 @@ kernel_start 関数を起動する必要がある．
 
 (1) コンパイラ依存のデータ型の定義
 
-各サイズの整数型を，以下のシンボルにマクロ定義する．これらの定義は，
+コンパイラ依存のデータ型を以下のシンボルに定義する．これらの定義は，
 typedef ではなく，#define によりマクロ定義しなければならない．
 
 (1-1) _int8_            8ビットの整数型
@@ -338,10 +340,22 @@ typedef ではなく，#define によりマクロ定義しなければならない．
 (1-3) _int32_           32ビットの整数型
 (1-4) _int64_           64ビットの整数型
 
-これらの中で，_int32_ 以外は，コンパイラがサポートしていない場合には定
-義する必要がない．_int32_ の定義は必須である．
+各サイズの整数型を，これらのシンボルにマクロ定義する．_int32_ 以外は，
+コンパイラがサポートしていない場合には定義する必要がない．_int32_ の定
+義は必須である．
 
-(1-5) _intptr_          ポインタを格納できる整数型
+(1-5) _bool_            BOOLの型
+
+BOOL は，標準では int に型定義されるが，それで不都合な場合には，適切な
+型を _bool_ にマクロ定義する．
+
+(1-6) _vp_int_          VP_INTの型
+
+VP_INT は，標準では VP に型定義されるが，それで不都合な場合（例えば，
+ポインタが16ビットで，int が32ビットの場合）には，適切な型を _vp_int_ 
+にマクロ定義する．
+
+(1-7) _intptr_          ポインタを格納できる整数型
 
 _intptr_ は，フォーマット出力において，int型もポインタ型も格納できる整
 数型として使用する．これを定義しない場合，long が使われる．
@@ -664,6 +678,12 @@ ACTIVATE_STACK_SIZE を，create_context と activate_context が書き換え
 ズのダミー領域を確保し，自分の使用しているスタック領域を破壊するのを防
 ぐ．
 
+なお，これを実現するために，処理系依存の機能である alloca を用いている．
+gcc は alloca をサポートしているが，他のコンパイラを用いる場合には，
+alloca をサポートしているか確認が必要である．また，alloca を用いる場合
+にインクルードファイルが必要な場合には，tool_config.h からインクルード
+する必要がある．
+
 (7) ターゲット依存の初期化／終了処理
 
 (7-1) void cpu_initialize(void)
@@ -680,6 +700,10 @@ ACTIVATE_STACK_SIZE を，create_context と activate_context が書き換え
 
 開発環境依存の初期化処理．カーネルの初期化処理で，sys_initialize に続
 いて呼ばれる．
+
+上の3つの関数は，カーネル起動処理（kernel_start 関数）の最初でこの順に
+呼び出される．3つの関数を呼び出した後の時点で，CPUロック状態になってい
+なければならない．
 
 (7-4) void cpu_terminate(void);
 

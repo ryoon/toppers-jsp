@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2003 Takagi Nobuhisa
+ *  Copyright (C) 2003-2004 Takagi Nobuhisa
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cxx_sample2.cpp,v 1.3 2003/12/24 08:33:32 honda Exp $
+ *  @(#) $Id: cxx_sample2.cpp,v 1.4 2004/09/17 09:11:34 honda Exp $
  */
 
 /*
@@ -199,7 +199,7 @@ void task(VP_INT exinf)
 	phil.run();
 }
 
-//	std::atexitで登録する終了時間数
+//	std::atexitで登録する終了時関数
 void finish()
 {
 	syslog(LOG_NOTICE, "finish");

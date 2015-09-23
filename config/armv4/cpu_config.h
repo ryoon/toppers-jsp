@@ -3,7 +3,7 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.17 2003/12/20 07:57:43 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.19 2004/09/17 13:45:55 honda Exp $
  */
 
 /*
@@ -197,27 +197,30 @@ asm(".text                             \n"  \
 "       ldr   sp,.int_stack_"#exchdr"  \n"  /* スタックの切り替え        */\
 "       sub   lr,lr,#4                 \n"  /* undefでもこれでいいか?    */\
 "       stmfd sp!, {r0 - r2,lr}        \n"  /* 一時的にint_stackに待避   */ \
-"       mrs   r0, spsr                 \n"  /* SVCモードに切り替えるため */ \
-"       mov   r1, sp                   \n"  /* 保存する                  */ \
+"       mrs   r1, spsr                 \n"  /* SVCモードに切り替えるため */ \
+"       mov   r0, sp                   \n"  /* 保存する                  */ \
 "       mov   r2,#0xd3                 \n"  /* CPSRの書き換え(SVCモードへ)*/ \
 "       msr   cpsr,r2                  \n" \
-"       ldr   r2,[r1,#0x0C]            \n"     /* load  PC            */\
+"       ldr   r2,[r0,#0x0C]            \n"     /* load  PC            */\
 "       stmfd sp!,{r2}                 \n"     /* Store PC            */\
 "       stmfd sp!,{r3,ip,lr}           \n"     /* Store r3,ip,lr      */\
-"       ldmfd r1!,{r2,ip,lr}           \n"     /* load  r0,r1,r2      */\
-"       stmfd sp!,{r0,r2,ip,lr}        \n"     /* SPSR,Store r0,r1,r2 */\
-"       ldr  r2, .interrupt_count_"#exchdr"\n" /* 多重割り込みか判定  */\
-"       ldr  r3, [r2]                  \n" \
-"       add  r0,r3,#1                  \n" \
-"       str  r0, [r2]                  \n" \
-"       mov  r0,sp                     \n" /* 例外ハンドラへの引数 */\
-"       cmp  r3, #0x00                 \n" \
+"       ldmfd r0!,{r2,ip,lr}           \n"     /* load  r0,r1,r2      */\
+"       stmfd sp!,{r1,r2,ip,lr}        \n"     /* SPSR,Store r0,r1,r2 */\
+"       ldr   r2, .interrupt_count_"#exchdr"\n" /* 多重割り込みか判定  */\
+"       ldr   r3, [r2]                 \n" \
+"       add   r0,r3,#1                 \n" \
+"       str   r0, [r2]                 \n" \
+"       mov   r0,sp                    \n" /* 例外ハンドラへの引数 */\
+"       cmp   r3, #0x00                \n" \
 "       ldreq   sp,stack_"#exchdr"     \n" /* スタックの変更       */\
 "       stmeqfd sp!,{r0}               \n" /* タスクスタックの保存 */\
-"       mov   r2,#0x13                 \n" /* 割り込み許可         */\
+"       and   r2, r1, #0xc0            \n" /* 例外発生時のCPUロック状態(IRQ) */\
+"       orr   r2, r2, #0x13            \n" /* とFIQを継承. SVCモード */\
 "       msr   cpsr,r2                  \n" \
 "       bl    "#exchdr"                \n" /* ハンドラ呼び出し     */\
-"       mov   r2,#0xd3                 \n" /* 割り込み禁止         */\
+"       mrs   r2, cpsr                 \n" /* FIQを継承            */\
+"       and   r2, r2, #0x40            \n" /*                      */\
+"       orr   r2, r2, #0x93            \n" /* 割り込み禁止         */\
 "       msr   cpsr,r2                  \n" \
 "       ldr   r2,.interrupt_count_"#exchdr" \n"/* 割り込み回数を   */\
 "       ldr   r1, [r2]                 \n"     /* デクリメント     */\
@@ -235,7 +238,11 @@ asm(".text                             \n"  \
 "       str   r0,[r1]                  \n" /* Clear reqflg   */\
 "       b     _kernel_ret_exc          \n" /* ret_intへ      */\
 "return_to_task_"#exchdr":             \n" \
-"       ldmfd sp!,{r1}                 \n" /* CPSRの復帰処理 */\
+"       ldmfd sp!,{r1}                 \n" /* CPSRの復帰処理 r1 <- cpsr*/\
+"       mrs   r2, cpsr                 \n" /* FIQを継承            */\
+"       and   r2, r2, #0x40            \n" /*                      */\
+"       and   r1, r1, #~0x40           \n" /*                      */\
+"       orr   r1, r1, r2               \n" /*                      */\
 "       msr   spsr, r1                 \n" /* 割り込み許可   */\
 "       ldmfd sp!,{r0-r3,ip,lr,pc}^    \n"\
 "       .align 4                       \n"\

@@ -33,7 +33,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c,v 1.4 2003/07/11 08:40:55 reiji Exp $
+ *  @(#) $Id: sys_config.c,v 1.5 2004/09/06 13:51:36 honda Exp $
  */
 
 
@@ -41,9 +41,6 @@
 #include <sil.h>
 #include "tl16c550cfn.h"
 
-
-INT board_id;
-INT board_addr;
 
 void
 sys_initialize(void)

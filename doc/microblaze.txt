@@ -2,8 +2,8 @@
              ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                   （Microblaze ターゲット依存部）
 
-             （Release 1.4対応，最終更新: 1-Dec-2003）
-            （Embedded Development Kit（EDK）6.1対応）
+             （Release 1.4.1対応，最終更新: 6-Oct-2004）
+            （Embedded Development Kit（EDK）6.2対応）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
@@ -40,7 +40,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: microblaze.txt,v 1.10 2003/12/24 14:34:51 honda Exp $
+ @(#) $Id: microblaze.txt,v 1.12 2004/10/06 06:51:51 honda Exp $
 ------------------------------------------------------------------------
 
 
@@ -185,7 +185,12 @@ DEF_INH で指定する割込みハンドラ番号（inhno）は，MHSファイルでデバイス
 Microblaze 依存のスタートアップモジュール（start.S）では，次の初期化処
 理を行う．
 
-(A) スモールデータアンカーの設定とスタックポインタの初期化
+(A) MSRの初期化
+
+キャッシュの設定を反映してMSRを初期化する．MDMを使用している場合などは，
+BIPビットが'1'となっている場合があるため，rtbd命令によりクリアする．
+
+(B) スモールデータアンカーの設定とスタックポインタの初期化
 
 最初に，Read-only small data area anchor（R2）とRead-write small data
 area anchor（R13）を初期化する
@@ -194,13 +199,13 @@ area anchor（R13）を初期化する
 のは，スタートアップルーチンのワーク用である．
 
 
-(B) 例外/割込みベクタへのハンドラの登録
+(C) 例外/割込みベクタへのハンドラの登録
 
 0x0C-0x10 の例外ベクタに例外ハンドラ（exception_entry）を，0x10-0x14の
 割込みベクタに割込みハンドラ（interrupt_entry）を登録する．
 
 
-(C) hardware_init_hook の呼出し
+(D) hardware_init_hook の呼出し
 
 hardware_init_hook が 0 でない場合には，hardware_init_hook を呼び出す．
 hardware_init_hook は，カーネルが起動される前に行う必要があるターゲッ
@@ -208,12 +213,12 @@ hardware_init_hook は，カーネルが起動される前に行う必要があるターゲッ
 定義されていない場合，リンカでこのシンボルを 0 に定義する（リンカスク
 リプト内に記述あり）．
 
-(D) bssセクションの初期化
+(E) bssセクションの初期化
 
 bssセクションをゼロクリアする．なお，dataセクションについては，RAMの使
 用量を減らす目的で，ROM化に対応した初期化は行っていない．
 
-(E) software_init_hook の呼出し
+(F) software_init_hook の呼出し
 
 software_init_hook が 0 でない場合には，software_init_hook を呼び出す．
 software_init_hook は，カーネルが起動される前に行う必要があるソフトウェ
@@ -221,7 +226,7 @@ software_init_hook は，カーネルが起動される前に行う必要があるソフトウェ
 software_init_hook がどこでも定義されていない場合，リンカでこのシンボ
 ルを 0 に定義する（リンカスクリプト内に記述あり）．
 
-(E) カーネルの起動
+(G) カーネルの起動
 
 kernel_start へ分岐し，カーネルを起動する．kernel_start からリターンし
 てくることは想定していない．
@@ -243,6 +248,12 @@ Microblze 依存部のシリアルインタフェースドライバは，UART をサポートし
 ばよい．
 
 
+2.7 キャッシュ
+
+キャッシュの有効/無効はシステムの起動から終了まで一律固定とし，ユーザーが
+変更してもその変更はそのタスクのみで有効とする．キャッシュを有効とする
+には，システム依存部の sys_defs.h で，D_CACHE_ENABLE  I_CACHE_ENABLE
+を define すればよい．
 
 ５．その他
 

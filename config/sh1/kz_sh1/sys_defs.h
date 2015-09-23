@@ -3,9 +3,9 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2004 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001-2003 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2004 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
  * 
  *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
@@ -35,7 +35,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h,v 1.7 2003/12/18 06:34:40 honda Exp $
+ *  @(#) $Id: sys_defs.h,v 1.9 2004/09/22 08:47:52 honda Exp $
  */
 
 /*
@@ -67,15 +67,6 @@ extern ER	ena_int(INTNO intno) throw();
 
 #endif /* 0 */
 
-#endif /* _MACRO_ONLY */
-
-/*
- *  タイムティックの定義
- */
-#define	TIC_NUME	1u	/* タイムティックの周期の分子 */
-#define	TIC_DENO	1u	/* タイムティックの周期の分母 */
-
-#ifndef _MACRO_ONLY
 
 /*
  *  システムの停止処理
@@ -85,7 +76,8 @@ extern ER	ena_int(INTNO intno) throw();
 Inline void
 kernel_abort()
 {
-	/*  未実装  */
+    /*  ユーザーブレークと同等の処理  */
+    Asm("trapa #0xff");
 }
 
 #else /* GDB_STUB */
