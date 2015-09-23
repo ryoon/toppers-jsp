@@ -3,56 +3,46 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_support.S,v 1.25 2002/04/14 09:59:39 honda Exp $
+ *  @(#) $Id: cpu_support.S,v 1.36 2003/10/21 06:56:46 honda Exp $
  */
 
 
 #define _MACRO_ONLY
 #include "jsp_kernel.h"
 #include "offset.h"
-#include "sys_config.h"
-#include "cpu_config.h"
- 			
-#if defined(SH7750)
-#define TRA         0xFF000020          
-#define EXPEVT      0xFF000024          
-#define INTEVT      0xff000028          
-#else  /* SH7708 || SH7709 || SH7709A */                                
-#define TRA         0xFFFFFFD0          
-#define EXPEVT      0xFFFFFFD4          
-#define INTEVT      0xFFFFFFD8          
-#define INTEVT2     0xA4000000          
-#endif /* SH7750 */
+#include <t_config.h>
         
+ 			
 /*
  *  例外/割り込み出入り口処理ルーチン
  *  SH3はベクタテーブルを持たず、例外,TRAPAが発生するとVBR+0x100番地を、
@@ -127,7 +117,7 @@ _general_exception:
     mov    r15,r1              /* 戻り先が割り込みハンドラでないのでスタッ  */
     mov.l  _stacktop_exc,r15   /* クを入れ替え元のスタックポインタを保存    */ 
     mov.l  r1,@-r15 
-    mov.l  _expevt,r0          /* 割り込み許可すると消えるレジスタを保存    */
+    mov.l  _expevt,r0          /* 例外を許可すると消えるレジスタを保存      */
     mov.l  @r0,r5              /* EXPEVTレジスタを取得                      */
     ldc    r1,r4_bank          /* CPU例外ハンドラへの引数                   */
     ldc    r5,r5_bank	     
@@ -166,7 +156,7 @@ _general_exception:
  */
 	
 _exception_from_exc:
-    mov.l   _expevt,r0        /* 割り込み許可すると消えるレジスタを保存    */
+    mov.l   _expevt,r0        /* 例外を許可すると消えるレジスタを保存      */
     mov.l   @r0,r5            /* EXPEVTレジスタを取得                      */
     ldc     r15,r4_bank       /* CPU例外ハンドラへの引数                   */
     ldc     r5,r5_bank	     
@@ -312,10 +302,10 @@ dispatcher:
      */
     mov.l  _schedtsk_dis,r12    /* r0 <- schedtsk                   */
     mov.l  @r12,r0             
-    cmp/eq #0,r0                /* schedtsk があるか？              */
-    bt     dispatcher_1         /* 無ければジャンプ                 */
     mov.l  _runtsk_dis,r2
     mov.l  r0,@r2               /* schedtskをruntskに               */
+    cmp/eq #0,r0                /* schedtsk があるか？              */
+    bt     dispatcher_1         /* 無ければジャンプ                 */        
     mov.l  @(TCB_sp,r0),r15     /* TCBからタスクスタックを復帰      */
     mov.l  @(TCB_pc,r0),r1      /* TCBから実行再開番地を復帰        */
     jmp    @r1 
@@ -326,10 +316,15 @@ dispatcher_1:
      * r9  : 割り込み待ち中のSRの値
      * r10 : reqflgの番地
      * r11 : 0x01
-     * r12 : 0x00       
+     * r12 : 0x00
+     * r13 : sleep中のSRの状態       
      */
     mov.l  _mask_md_ipm_dis,r8  /* 割り込み禁止のSRの値             */
-    mov.l  _mask_md_dis,r9      /* 割り込み待ち中のSRの値           */
+#ifdef NO_SLEEP
+    mov.l  _mask_md_dis,r9      /* 割り込み待ち中のSRの値           */        
+#else
+    mov.l  _mask_bl_md_dis,r9   /* 割り込み待ち中のSRの値           */
+#endif                          
 #ifdef SUPPORT_CHG_IPM
     mov.l  _task_intmask_k,r2
     mov.l  @r2,r3
@@ -345,11 +340,27 @@ dispatcher_2:
      *  ここで割込みモードに切り換えるのは，ここで発生する割込み処理
      *  にどのスタックを使うかという問題の解決と，割込みハンドラ内で
      *  のタスクディスパッチの防止という二つの意味がある．
-     */	
+     */
+     /*
+      *  割込み許可後にsleep命令を実行すると，割込み許可命令の実行前に
+      *  割込み要求が入っている場合，割込み許可命令の実行と共に割込みが
+      *  受け付けられその復帰後に，reqflgのチェックではなく sleep 状態
+      *  に入ってしまう．
+      *  この問題は，割込みの許可と sleep 状態への移行がアトミックに実
+      *  行できないことに起因する．
+      *  そのため，sleep 実行直前の SR 変更では BL ビットを'1'に設定す
+      *  ることで，割込みの許可と sleep 状態への以降をアトミックに実行
+      *  する．
+      *  ldc r9,sr ではBLビットがセットされるため，割込みは受け付けずス
+      *  リープモードに移行する．スリープモード中は，BLビットが1でも割
+      *  込みを受け付けるため(SH7709ハードウェアマニュアル 8-10)，スリー
+      *  プモードへの移行直後に割込みを受付スリープモードから復帰する．
+      */
+               
     ldc    r9,sr               /* 割り込みの許可                   */
-#ifndef PARTNER_J        
+#ifndef NO_SLEEP
     sleep                      /* 割込み待ち                       */
-#endif /* PARTNER_J */        
+#endif /* NO_SLEEP */                
     ldc    r8,sr               /* 割り込み禁止                     */  
     mov.l  @r10,r7             /* r7 <- reqflg                     */
     tst    r7,r7               /* reqflg が FALSEなら              */
@@ -370,7 +381,9 @@ _call_texrtn_dis:
 _mask_md_ipm_dis:	
     .long 0x40000000 + MAX_IPM << 4
 _mask_md_dis:	
-    .long 0x40000000	
+    .long 0x40000000
+_mask_bl_md_dis:	
+    .long 0x50000000	        
 dispatch_r_k:	
     .long dispatch_r
 _stacktop_dis:	
@@ -637,10 +650,10 @@ _ret_to_task_int:
 _no_reg_interrupt:
     mov.l _intevt1,r0
     mov.l @r0,r4
-#if defined(SH7709) || defined(SH7709A)            
+#if defined(SH7709) || defined(SH7709A) || defined(SH7729R) || defined(SH7727) 
     mov.l _intevt2,r0    
     mov.l @r0,r5
-#endif /* SH7708 */        
+#endif 
     stc   spc,r6
     stc   ssr,r7
     mov.l _cpu_interrupt_k,r1
@@ -669,11 +682,34 @@ _mask_md_bl_int:
     .long  0x50000000
 _intevt1:        
     .long  INTEVT
-#if defined(SH7709) || defined(SH7709A)                    
+#if defined(SH7709) || defined(SH7709A) || defined(SH7729R) || defined(SH7727) 
 _intevt2:        
     .long  INTEVT2
-#endif /* SH7709 || SH7709A */       
+#endif 
 _cpu_interrupt_k:
     .long  _cpu_interrupt   
 
     
+/*
+ *  微少時間待ち
+ */
+	.globl _sil_dly_nse
+_sil_dly_nse:
+    mov.l  _sil_dly_tim1, r1
+    add    r1, r4
+    cmp/pl r4
+    bt     _sil_dly_nse1
+    rts
+     nop
+_sil_dly_nse1:            
+    mov.l  _sil_dly_tim2, r1
+    add    r1, r4
+    cmp/pl r4
+    bt     _sil_dly_nse1
+    rts
+     nop   
+    .align 4
+_sil_dly_tim1:
+    .long  -SIL_DLY_TIM1    
+_sil_dly_tim2:                         
+    .long  -SIL_DLY_TIM2

@@ -14,6 +14,7 @@ MEMORY {
 
 PROVIDE(_hardware_init_hook = 0);
 PROVIDE(_software_init_hook = 0);
+PROVIDE(_software_term_hook = 0);
 SECTIONS {
 
 	.vectors : {

@@ -10,13 +10,14 @@ MEMORY {
 	/* use 128k - 100 as the main ROM size.  */
 	rom		: o = 0x00100, l = 0x1ff00
 
-	/* use 128k as the main RAM size.  */
-	ram		: o = 0x20000, l = 0x20000
+	/* use 384k as the main RAM size.  */
+	ram		: o = 0x20000, l = 0x60000
 
 	}
 
 PROVIDE(_hardware_init_hook = 0);
 PROVIDE(_software_init_hook = 0);
+PROVIDE(_software_term_hook = 0);
 SECTIONS {
 
 	.vectors : {

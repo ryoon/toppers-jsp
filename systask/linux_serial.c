@@ -3,41 +3,43 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: linux_serial.c,v 1.6 2002/04/08 05:30:13 hiro Exp $
+ *  @(#) $Id: linux_serial.c,v 1.11 2003/12/11 00:36:49 honda Exp $
  */
 
 #define _LINX_SERIAL_
 
-#include <jsp_services.h>
+#include <t_services.h>
+#include <s_services.h>
 #include <signal.h>
 #include <termios.h>
 #include <fcntl.h>
@@ -46,7 +48,7 @@
 #include <unistd.h>
 #include <linux_sigio.h>
 #include "kernel_id.h"
-#include "sys_config.h"
+
 
 /*
  *  シリアルポートの低レベル定義
@@ -181,7 +183,7 @@ static SPCB spcb_table[NUM_PORT] = {
  *  ポートの初期化
  */
 int
-serial_open(ID portid)
+serial_opn_por(ID portid)
 {
 
     SPCB	*spcb;
@@ -228,18 +230,12 @@ serial_open(ID portid)
 
 /*
  *  ポートのシャットダウン
- *
- *  flush が TRUE の場合は，シリアルポートへの送信バッファが空になるま
- *  で待つ．
  */
 
-#define	MAX_FLUSH_LOOP	1000000
-
-int
-serial_close(ID portid, int flush)
+ER
+serial_cls_por(ID portid)
 {
 	SPCB	*spcb;
-	int	i;
 
 	if (!(1 <= portid && portid <= NUM_PORT)) {
 		return(E_PAR);		/* ポート番号のチェック */
@@ -248,17 +244,6 @@ serial_close(ID portid, int flush)
 	spcb = get_spcb(portid);
 	if (!(spcb->init_flag)) {	/* 初期化済かのチェック */
 		return(E_OBJ);
-	}
-
-	/*
-	 *  バッファのフラッシュ処理
-	 */
-	if (flush) {
-		for (i = 0; i < MAX_FLUSH_LOOP; i++) {
-			if (spcb->out_write_ptr == spcb->out_read_ptr) {
-				break;
-			}
-		}
 	}
 
 	/*
@@ -352,10 +337,6 @@ serial_getc(SPCB *spcb, char *c)
         
 	INC(spcb->in_read_ptr);
 
-    if (*c == '\r' && (spcb->ioctl & IOCTL_RAW) == 0) {
-		*c = '\n';
-	}
-
 	if (spcb->ixoff_stopped && (in_buf_area(spcb) > IXOFF_START)) {
 		if (!write_char(spcb, START)) {
 			spcb->ixoff_send = START;
@@ -367,8 +348,8 @@ serial_getc(SPCB *spcb, char *c)
 	return(buffer_empty);
 }
 
-int
-serial_read(int portid, char *buf, unsigned int len)
+ER_UINT
+serial_rea_dat(ID portid, char *buf, UINT len)
 {
     	SPCB	*spcb;
 	BOOL	buffer_empty;
@@ -403,12 +384,6 @@ serial_read(int portid, char *buf, unsigned int len)
 			}
 		}
 		*buf++ = c;
-        if ((spcb->ioctl & IOCTL_RAW) != 0
-                            || ((spcb->ioctl & IOCTL_CANONICAL) != 0
-                                && c == '\n')) {
-			len = i + 1;
-			break;
-		}
 		if (buffer_empty && i < len - 1) {
 			syscall(wai_sem(spcb->in_semid));
 		}
@@ -449,7 +424,7 @@ serial_putc(SPCB *spcb, char c)
 }
 
 ER_UINT
-serial_write(ID portid, char *buf, unsigned int len)
+serial_wri_dat(ID portid, char *buf, UINT len)
 {
 	SPCB	*spcb;
 	BOOL	buffer_full;
@@ -486,7 +461,7 @@ serial_write(ID portid, char *buf, unsigned int len)
  */
 
 int
-serial_ioctl(ID portid, UINT ioctl)
+serial_ctl_por(ID portid, UINT ioctl)
 {
 	SPCB	*spcb;
 
@@ -529,11 +504,11 @@ serial_int_handler(ID portid)
 	 */
 	if (inc(spcb->in_write_ptr) != spcb->in_read_ptr
             && read_char(spcb, &c)) {
-		if ((spcb->ioctl & IOCTL_IXON) != 0 && c == STOP) {
+		if ((spcb->ioctl & IOCTL_FCSND) != 0 && c == STOP) {
 			spcb->ixon_stopped = TRUE;
 		}
-        else if (((spcb->ioctl & IOCTL_IXON) != 0 || spcb->ixon_stopped)
-                                 && (c == START || (spcb->ioctl & IOCTL_IXANY) != 0)) {
+        else if (((spcb->ioctl & IOCTL_FCSND) != 0 || spcb->ixon_stopped)
+                                 && (c == START || (spcb->ioctl & IOCTL_FCANY) != 0)) {
 			spcb->ixon_stopped = FALSE;
 		}
 		else {
@@ -544,7 +519,7 @@ serial_int_handler(ID portid)
                         
 			INC(spcb->in_write_ptr);
                         
-			if ((spcb->ioctl & IOCTL_IXOFF) != 0 && !(spcb->ixoff_stopped)
+			if ((spcb->ioctl & IOCTL_FCRCV) != 0 && !(spcb->ixoff_stopped)
 					&& (in_buf_area(p) < IXOFF_STOP)) {
 				spcb->ixoff_stopped = TRUE;
 				spcb->ixoff_send = STOP;
@@ -566,7 +541,7 @@ serial_int_handler(ID portid)
                       && spcb->out_read_ptr != spcb->out_write_ptr) {
 		if (write_char(spcb, spcb->out_buffer[spcb->out_read_ptr])) {
                     if(OUT_BUFFER_FULL(spcb)){
-			syscall(isig_sem(spcb->out_semid));
+			syscall(sig_sem(spcb->out_semid));
                     }
                     INC(spcb->out_read_ptr);                        
                     flag = 1;
@@ -587,9 +562,9 @@ serial_sigio_callback(VP arg)
 	BOOL	flag;
 
 	do {
-		syscall(loc_cpu());
+//		syscall(loc_cpu());
 		flag = serial_int_handler(1);
-		syscall(unl_cpu());
+//		syscall(unl_cpu());
 	} while (flag);
 	return(0);
 }
@@ -601,20 +576,9 @@ serial_sigio_callback(VP arg)
  */
 
 void
-serial_initialize(VP_INT portid)
+serial_initialize(VP_INT exinf)
 {
-
-	syscall(serial_open((ID) portid));
-
 	serial_sigioeb.callback = serial_sigio_callback;
 	serial_sigioeb.arg = (VP) 0;
 	syscall(enqueue_sigioeb_initialize(&serial_sigioeb));
-	syslog_1(LOG_NOTICE, "Serial driver service starts on port %d.\r",
-		 portid);
 }
-
-
-
-
-
-

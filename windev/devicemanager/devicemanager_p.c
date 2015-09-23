@@ -2,9 +2,9 @@
 
 
 /* File created by MIDL compiler version 5.01.0164 */
-/* at Fri Feb 23 18:49:36 2001
+/* at Thu Oct 23 16:29:48 2003
  */
-/* Compiler settings for C:\Sources\Program sources\CVS home\windev\devicemanager\devicemanager.idl:
+/* Compiler settings for C:\Temporary\Archives\jsp\jsp\windev\devicemanager\devicemanager.idl:
     Oicf (OptLev=i2), W1, Zp8, env=Win32, ms_ext, c_ext
     error checks: allocation ref bounds_check enum stub_data 
 */
@@ -27,8 +27,8 @@
 
 #include "devicemanager.h"
 
-#define TYPE_FORMAT_STRING_SIZE   69                                
-#define PROC_FORMAT_STRING_SIZE   475                               
+#define TYPE_FORMAT_STRING_SIZE   83                                
+#define PROC_FORMAT_STRING_SIZE   587                               
 
 typedef struct _MIDL_TYPE_FORMAT_STRING
     {
@@ -220,7 +220,8 @@ static const unsigned short IKernel_FormatStringOffsetTable[] =
     {
     270,
     310,
-    338
+    338,
+    378
     };
 
 static const MIDL_SERVER_INFO IKernel_ServerInfo = 
@@ -245,7 +246,7 @@ static const MIDL_STUBLESS_PROXY_INFO IKernel_ProxyInfo =
     0
     };
 
-CINTERFACE_PROXY_VTABLE(6) _IKernelProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(7) _IKernelProxyVtbl = 
 {
     &IKernel_ProxyInfo,
     &IID_IKernel,
@@ -254,14 +255,15 @@ CINTERFACE_PROXY_VTABLE(6) _IKernelProxyVtbl =
     IUnknown_Release_Proxy ,
     (void *)-1 /* IKernel::Read */ ,
     (void *)-1 /* IKernel::IsValid */ ,
-    (void *)-1 /* IKernel::Write */
+    (void *)-1 /* IKernel::Write */ ,
+    (void *)-1 /* IKernel::OnLogEvent */
 };
 
 const CInterfaceStubVtbl _IKernelStubVtbl =
 {
     &IID_IKernel,
     &IKernel_ServerInfo,
-    6,
+    7,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
 };
@@ -279,7 +281,7 @@ extern const MIDL_SERVER_INFO _IKernelEvents_ServerInfo;
 #pragma code_seg(".orpc")
 static const unsigned short _IKernelEvents_FormatStringOffsetTable[] = 
     {
-    378
+    412
     };
 
 static const MIDL_SERVER_INFO _IKernelEvents_ServerInfo = 
@@ -334,36 +336,10 @@ extern const MIDL_STUB_DESC Object_StubDesc;
 extern const MIDL_SERVER_INFO _IInformationEvents_ServerInfo;
 
 #pragma code_seg(".orpc")
-extern const USER_MARSHAL_ROUTINE_QUADRUPLE UserMarshalRoutines[1];
-
-static const MIDL_STUB_DESC Object_StubDesc = 
-    {
-    0,
-    NdrOleAllocate,
-    NdrOleFree,
-    0,
-    0,
-    0,
-    0,
-    0,
-    __MIDL_TypeFormatString.Format,
-    1, /* -error bounds_check flag */
-    0x20000, /* Ndr library version */
-    0,
-    0x50100a4, /* MIDL Version 5.1.164 */
-    0,
-    UserMarshalRoutines,
-    0,  /* notify & notify_flag routine table */
-    1,  /* Flags */
-    0,  /* Reserved3 */
-    0,  /* Reserved4 */
-    0   /* Reserved5 */
-    };
-
 static const unsigned short _IInformationEvents_FormatStringOffsetTable[] = 
     {
-    406,
-    446
+    440,
+    480
     };
 
 static const MIDL_SERVER_INFO _IInformationEvents_ServerInfo = 
@@ -404,6 +380,120 @@ const CInterfaceStubVtbl __IInformationEventsStubVtbl =
     &IID__IInformationEvents,
     &_IInformationEvents_ServerInfo,
     5,
+    0, /* pure interpreted */
+    CStdStubBuffer_METHODS
+};
+
+
+/* Object interface: IKernelLog, ver. 0.0,
+   GUID={0x395F900A,0xAC7E,0x4A78,{0x9B,0xC1,0xEE,0x5E,0xF7,0x62,0x54,0xFF}} */
+
+
+extern const MIDL_STUB_DESC Object_StubDesc;
+
+
+#pragma code_seg(".orpc")
+CINTERFACE_PROXY_VTABLE(3) _IKernelLogProxyVtbl = 
+{
+    0,
+    &IID_IKernelLog,
+    IUnknown_QueryInterface_Proxy,
+    IUnknown_AddRef_Proxy,
+    IUnknown_Release_Proxy
+};
+
+const CInterfaceStubVtbl _IKernelLogStubVtbl =
+{
+    &IID_IKernelLog,
+    0,
+    3,
+    0, /* pure interpreted */
+    CStdStubBuffer_METHODS
+};
+
+
+/* Object interface: _IKernelLogEvents, ver. 0.0,
+   GUID={0x35E35399,0x55ED,0x45FC,{0x8F,0x0B,0x4A,0x1B,0xC6,0xCE,0xA3,0xF0}} */
+
+
+extern const MIDL_STUB_DESC Object_StubDesc;
+
+
+extern const MIDL_SERVER_INFO _IKernelLogEvents_ServerInfo;
+
+#pragma code_seg(".orpc")
+extern const USER_MARSHAL_ROUTINE_QUADRUPLE UserMarshalRoutines[1];
+
+static const MIDL_STUB_DESC Object_StubDesc = 
+    {
+    0,
+    NdrOleAllocate,
+    NdrOleFree,
+    0,
+    0,
+    0,
+    0,
+    0,
+    __MIDL_TypeFormatString.Format,
+    1, /* -error bounds_check flag */
+    0x20000, /* Ndr library version */
+    0,
+    0x50100a4, /* MIDL Version 5.1.164 */
+    0,
+    UserMarshalRoutines,
+    0,  /* notify & notify_flag routine table */
+    1,  /* Flags */
+    0,  /* Reserved3 */
+    0,  /* Reserved4 */
+    0   /* Reserved5 */
+    };
+
+static const unsigned short _IKernelLogEvents_FormatStringOffsetTable[] = 
+    {
+    508,
+    530,
+    552
+    };
+
+static const MIDL_SERVER_INFO _IKernelLogEvents_ServerInfo = 
+    {
+    &Object_StubDesc,
+    0,
+    __MIDL_ProcFormatString.Format,
+    &_IKernelLogEvents_FormatStringOffsetTable[-3],
+    0,
+    0,
+    0,
+    0
+    };
+
+static const MIDL_STUBLESS_PROXY_INFO _IKernelLogEvents_ProxyInfo =
+    {
+    &Object_StubDesc,
+    __MIDL_ProcFormatString.Format,
+    &_IKernelLogEvents_FormatStringOffsetTable[-3],
+    0,
+    0,
+    0
+    };
+
+CINTERFACE_PROXY_VTABLE(6) __IKernelLogEventsProxyVtbl = 
+{
+    &_IKernelLogEvents_ProxyInfo,
+    &IID__IKernelLogEvents,
+    IUnknown_QueryInterface_Proxy,
+    IUnknown_AddRef_Proxy,
+    IUnknown_Release_Proxy ,
+    (void *)-1 /* _IKernelLogEvents::OnKernelStart */ ,
+    (void *)-1 /* _IKernelLogEvents::OnKernelExit */ ,
+    (void *)-1 /* _IKernelLogEvents::OnLogEvent */
+};
+
+const CInterfaceStubVtbl __IKernelLogEventsStubVtbl =
+{
+    &IID__IKernelLogEvents,
+    &_IKernelLogEvents_ServerInfo,
+    6,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
 };
@@ -968,23 +1058,23 @@ static const MIDL_PROC_FORMAT_STRING __MIDL_ProcFormatString =
 /* 376 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
-	/* Procedure OnInterruptRequest */
+	/* Procedure OnLogEvent */
 
 /* 378 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
 /* 380 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 384 */	NdrFcShort( 0x3 ),	/* 3 */
+/* 384 */	NdrFcShort( 0x6 ),	/* 6 */
 #ifndef _ALPHA_
-/* 386 */	NdrFcShort( 0xc ),	/* x86, MIPS, PPC Stack size/offset = 12 */
+/* 386 */	NdrFcShort( 0x10 ),	/* x86, MIPS, PPC Stack size/offset = 16 */
 #else
-			NdrFcShort( 0x18 ),	/* Alpha Stack size/offset = 24 */
+			NdrFcShort( 0x20 ),	/* Alpha Stack size/offset = 32 */
 #endif
 /* 388 */	NdrFcShort( 0x8 ),	/* 8 */
 /* 390 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 392 */	0x4,		/* Oi2 Flags:  has return, */
-			0x2,		/* 2 */
+/* 392 */	0x6,		/* Oi2 Flags:  clt must size, has return, */
+			0x3,		/* 3 */
 
-	/* Parameter inhno */
+	/* Parameter sz */
 
 /* 394 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
 #ifndef _ALPHA_
@@ -995,113 +1085,263 @@ static const MIDL_PROC_FORMAT_STRING __MIDL_ProcFormatString =
 /* 398 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
-	/* Return value */
+	/* Parameter data */
 
-/* 400 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 400 */	NdrFcShort( 0xb ),	/* Flags:  must size, must free, in, */
 #ifndef _ALPHA_
 /* 402 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
 #else
 			NdrFcShort( 0x10 ),	/* Alpha Stack size/offset = 16 */
 #endif
-/* 404 */	0x8,		/* FC_LONG */
+/* 404 */	NdrFcShort( 0x44 ),	/* Type Offset=68 */
+
+	/* Return value */
+
+/* 406 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+#ifndef _ALPHA_
+/* 408 */	NdrFcShort( 0xc ),	/* x86, MIPS, PPC Stack size/offset = 12 */
+#else
+			NdrFcShort( 0x18 ),	/* Alpha Stack size/offset = 24 */
+#endif
+/* 410 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
-	/* Procedure OnDeviceChanged */
+	/* Procedure OnInterruptRequest */
 
-/* 406 */	0x33,		/* FC_AUTO_HANDLE */
+/* 412 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
-/* 408 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 412 */	NdrFcShort( 0x3 ),	/* 3 */
+/* 414 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 418 */	NdrFcShort( 0x3 ),	/* 3 */
 #ifndef _ALPHA_
-/* 414 */	NdrFcShort( 0x14 ),	/* x86, MIPS, PPC Stack size/offset = 20 */
+/* 420 */	NdrFcShort( 0xc ),	/* x86, MIPS, PPC Stack size/offset = 12 */
 #else
-			NdrFcShort( 0x28 ),	/* Alpha Stack size/offset = 40 */
+			NdrFcShort( 0x18 ),	/* Alpha Stack size/offset = 24 */
 #endif
-/* 416 */	NdrFcShort( 0x16 ),	/* 22 */
-/* 418 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 420 */	0x4,		/* Oi2 Flags:  has return, */
-			0x4,		/* 4 */
+/* 422 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 424 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 426 */	0x4,		/* Oi2 Flags:  has return, */
+			0x2,		/* 2 */
 
-	/* Parameter reason */
-
-/* 422 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
-#ifndef _ALPHA_
-/* 424 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
-#else
-			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
-#endif
-/* 426 */	0x6,		/* FC_SHORT */
-			0x0,		/* 0 */
-
-	/* Parameter devid */
+	/* Parameter inhno */
 
 /* 428 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
 #ifndef _ALPHA_
-/* 430 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
+/* 430 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
 #else
-			NdrFcShort( 0x10 ),	/* Alpha Stack size/offset = 16 */
+			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
 #endif
 /* 432 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
-	/* Parameter extra */
+	/* Return value */
 
-/* 434 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+/* 434 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
 #ifndef _ALPHA_
-/* 436 */	NdrFcShort( 0xc ),	/* x86, MIPS, PPC Stack size/offset = 12 */
+/* 436 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
 #else
-			NdrFcShort( 0x18 ),	/* Alpha Stack size/offset = 24 */
+			NdrFcShort( 0x10 ),	/* Alpha Stack size/offset = 16 */
 #endif
 /* 438 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
+	/* Procedure OnDeviceChanged */
+
+/* 440 */	0x33,		/* FC_AUTO_HANDLE */
+			0x6c,		/* Old Flags:  object, Oi2 */
+/* 442 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 446 */	NdrFcShort( 0x3 ),	/* 3 */
+#ifndef _ALPHA_
+/* 448 */	NdrFcShort( 0x14 ),	/* x86, MIPS, PPC Stack size/offset = 20 */
+#else
+			NdrFcShort( 0x28 ),	/* Alpha Stack size/offset = 40 */
+#endif
+/* 450 */	NdrFcShort( 0x16 ),	/* 22 */
+/* 452 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 454 */	0x4,		/* Oi2 Flags:  has return, */
+			0x4,		/* 4 */
+
+	/* Parameter reason */
+
+/* 456 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+#ifndef _ALPHA_
+/* 458 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
+#else
+			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
+#endif
+/* 460 */	0x6,		/* FC_SHORT */
+			0x0,		/* 0 */
+
+	/* Parameter devid */
+
+/* 462 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+#ifndef _ALPHA_
+/* 464 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
+#else
+			NdrFcShort( 0x10 ),	/* Alpha Stack size/offset = 16 */
+#endif
+/* 466 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
+	/* Parameter extra */
+
+/* 468 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+#ifndef _ALPHA_
+/* 470 */	NdrFcShort( 0xc ),	/* x86, MIPS, PPC Stack size/offset = 12 */
+#else
+			NdrFcShort( 0x18 ),	/* Alpha Stack size/offset = 24 */
+#endif
+/* 472 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
 	/* Return value */
 
-/* 440 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 474 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
 #ifndef _ALPHA_
-/* 442 */	NdrFcShort( 0x10 ),	/* x86, MIPS, PPC Stack size/offset = 16 */
+/* 476 */	NdrFcShort( 0x10 ),	/* x86, MIPS, PPC Stack size/offset = 16 */
 #else
 			NdrFcShort( 0x20 ),	/* Alpha Stack size/offset = 32 */
 #endif
-/* 444 */	0x8,		/* FC_LONG */
+/* 478 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 	/* Procedure OnKernelChanged */
 
-/* 446 */	0x33,		/* FC_AUTO_HANDLE */
+/* 480 */	0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
-/* 448 */	NdrFcLong( 0x0 ),	/* 0 */
-/* 452 */	NdrFcShort( 0x4 ),	/* 4 */
+/* 482 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 486 */	NdrFcShort( 0x4 ),	/* 4 */
 #ifndef _ALPHA_
-/* 454 */	NdrFcShort( 0xc ),	/* x86, MIPS, PPC Stack size/offset = 12 */
+/* 488 */	NdrFcShort( 0xc ),	/* x86, MIPS, PPC Stack size/offset = 12 */
 #else
 			NdrFcShort( 0x18 ),	/* Alpha Stack size/offset = 24 */
 #endif
-/* 456 */	NdrFcShort( 0x6 ),	/* 6 */
-/* 458 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 460 */	0x4,		/* Oi2 Flags:  has return, */
+/* 490 */	NdrFcShort( 0x6 ),	/* 6 */
+/* 492 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 494 */	0x4,		/* Oi2 Flags:  has return, */
 			0x2,		/* 2 */
 
 	/* Parameter reason */
 
-/* 462 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+/* 496 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
 #ifndef _ALPHA_
-/* 464 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
+/* 498 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
 #else
 			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
 #endif
-/* 466 */	0x6,		/* FC_SHORT */
+/* 500 */	0x6,		/* FC_SHORT */
 			0x0,		/* 0 */
 
 	/* Return value */
 
-/* 468 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 502 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
 #ifndef _ALPHA_
-/* 470 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
+/* 504 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
 #else
 			NdrFcShort( 0x10 ),	/* Alpha Stack size/offset = 16 */
 #endif
-/* 472 */	0x8,		/* FC_LONG */
+/* 506 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
+	/* Procedure OnKernelStart */
+
+/* 508 */	0x33,		/* FC_AUTO_HANDLE */
+			0x6c,		/* Old Flags:  object, Oi2 */
+/* 510 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 514 */	NdrFcShort( 0x3 ),	/* 3 */
+#ifndef _ALPHA_
+/* 516 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
+#else
+			NdrFcShort( 0x10 ),	/* Alpha Stack size/offset = 16 */
+#endif
+/* 518 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 520 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 522 */	0x4,		/* Oi2 Flags:  has return, */
+			0x1,		/* 1 */
+
+	/* Return value */
+
+/* 524 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+#ifndef _ALPHA_
+/* 526 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
+#else
+			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
+#endif
+/* 528 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
+	/* Procedure OnKernelExit */
+
+/* 530 */	0x33,		/* FC_AUTO_HANDLE */
+			0x6c,		/* Old Flags:  object, Oi2 */
+/* 532 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 536 */	NdrFcShort( 0x4 ),	/* 4 */
+#ifndef _ALPHA_
+/* 538 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
+#else
+			NdrFcShort( 0x10 ),	/* Alpha Stack size/offset = 16 */
+#endif
+/* 540 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 542 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 544 */	0x4,		/* Oi2 Flags:  has return, */
+			0x1,		/* 1 */
+
+	/* Return value */
+
+/* 546 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+#ifndef _ALPHA_
+/* 548 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
+#else
+			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
+#endif
+/* 550 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
+	/* Procedure OnLogEvent */
+
+/* 552 */	0x33,		/* FC_AUTO_HANDLE */
+			0x6c,		/* Old Flags:  object, Oi2 */
+/* 554 */	NdrFcLong( 0x0 ),	/* 0 */
+/* 558 */	NdrFcShort( 0x5 ),	/* 5 */
+#ifndef _ALPHA_
+/* 560 */	NdrFcShort( 0x10 ),	/* x86, MIPS, PPC Stack size/offset = 16 */
+#else
+			NdrFcShort( 0x20 ),	/* Alpha Stack size/offset = 32 */
+#endif
+/* 562 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 564 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 566 */	0x6,		/* Oi2 Flags:  clt must size, has return, */
+			0x3,		/* 3 */
+
+	/* Parameter sz */
+
+/* 568 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+#ifndef _ALPHA_
+/* 570 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
+#else
+			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
+#endif
+/* 572 */	0x8,		/* FC_LONG */
+			0x0,		/* 0 */
+
+	/* Parameter data */
+
+/* 574 */	NdrFcShort( 0xb ),	/* Flags:  must size, must free, in, */
+#ifndef _ALPHA_
+/* 576 */	NdrFcShort( 0x8 ),	/* x86, MIPS, PPC Stack size/offset = 8 */
+#else
+			NdrFcShort( 0x10 ),	/* Alpha Stack size/offset = 16 */
+#endif
+/* 578 */	NdrFcShort( 0x44 ),	/* Type Offset=68 */
+
+	/* Return value */
+
+/* 580 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+#ifndef _ALPHA_
+/* 582 */	NdrFcShort( 0xc ),	/* x86, MIPS, PPC Stack size/offset = 12 */
+#else
+			NdrFcShort( 0x18 ),	/* Alpha Stack size/offset = 24 */
+#endif
+/* 584 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 			0x0
@@ -1184,6 +1424,26 @@ static const MIDL_TYPE_FORMAT_STRING __MIDL_TypeFormatString =
 #endif
 /* 66 */	0x1,		/* FC_BYTE */
 			0x5b,		/* FC_END */
+/* 68 */	
+			0x1c,		/* FC_CVARRAY */
+			0x0,		/* 0 */
+/* 70 */	NdrFcShort( 0x1 ),	/* 1 */
+/* 72 */	0x28,		/* Corr desc:  parameter, FC_LONG */
+			0x0,		/*  */
+#ifndef _ALPHA_
+/* 74 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
+#else
+			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
+#endif
+/* 76 */	0x28,		/* Corr desc:  parameter, FC_LONG */
+			0x0,		/*  */
+#ifndef _ALPHA_
+/* 78 */	NdrFcShort( 0x4 ),	/* x86, MIPS, PPC Stack size/offset = 4 */
+#else
+			NdrFcShort( 0x8 ),	/* Alpha Stack size/offset = 8 */
+#endif
+/* 80 */	0x1,		/* FC_BYTE */
+			0x5b,		/* FC_END */
 
 			0x0
         }
@@ -1191,8 +1451,10 @@ static const MIDL_TYPE_FORMAT_STRING __MIDL_TypeFormatString =
 
 const CInterfaceProxyVtbl * _devicemanager_ProxyVtblList[] = 
 {
+    ( CInterfaceProxyVtbl *) &_IKernelLogProxyVtbl,
     ( CInterfaceProxyVtbl *) &__IDeviceEventsProxyVtbl,
     ( CInterfaceProxyVtbl *) &_IKernelProxyVtbl,
+    ( CInterfaceProxyVtbl *) &__IKernelLogEventsProxyVtbl,
     ( CInterfaceProxyVtbl *) &_IInformationProxyVtbl,
     ( CInterfaceProxyVtbl *) &__IKernelEventsProxyVtbl,
     ( CInterfaceProxyVtbl *) &_IDeviceProxyVtbl,
@@ -1202,8 +1464,10 @@ const CInterfaceProxyVtbl * _devicemanager_ProxyVtblList[] =
 
 const CInterfaceStubVtbl * _devicemanager_StubVtblList[] = 
 {
+    ( CInterfaceStubVtbl *) &_IKernelLogStubVtbl,
     ( CInterfaceStubVtbl *) &__IDeviceEventsStubVtbl,
     ( CInterfaceStubVtbl *) &_IKernelStubVtbl,
+    ( CInterfaceStubVtbl *) &__IKernelLogEventsStubVtbl,
     ( CInterfaceStubVtbl *) &_IInformationStubVtbl,
     ( CInterfaceStubVtbl *) &__IKernelEventsStubVtbl,
     ( CInterfaceStubVtbl *) &_IDeviceStubVtbl,
@@ -1213,8 +1477,10 @@ const CInterfaceStubVtbl * _devicemanager_StubVtblList[] =
 
 PCInterfaceName const _devicemanager_InterfaceNamesList[] = 
 {
+    "IKernelLog",
     "_IDeviceEvents",
     "IKernel",
+    "_IKernelLogEvents",
     "IInformation",
     "_IKernelEvents",
     "IDevice",
@@ -1229,10 +1495,10 @@ int __stdcall _devicemanager_IID_Lookup( const IID * pIID, int * pIndex )
 {
     IID_BS_LOOKUP_SETUP
 
-    IID_BS_LOOKUP_INITIAL_TEST( _devicemanager, 6, 4 )
+    IID_BS_LOOKUP_INITIAL_TEST( _devicemanager, 8, 4 )
     IID_BS_LOOKUP_NEXT_TEST( _devicemanager, 2 )
     IID_BS_LOOKUP_NEXT_TEST( _devicemanager, 1 )
-    IID_BS_LOOKUP_RETURN_RESULT( _devicemanager, 6, *pIndex )
+    IID_BS_LOOKUP_RETURN_RESULT( _devicemanager, 8, *pIndex )
     
 }
 
@@ -1243,7 +1509,7 @@ const ExtendedProxyFileInfo devicemanager_ProxyFileInfo =
     (const PCInterfaceName * ) & _devicemanager_InterfaceNamesList,
     0, // no delegation
     & _devicemanager_IID_Lookup, 
-    6,
+    8,
     2,
     0, /* table of [async_uuid] interfaces */
     0, /* Filler1 */

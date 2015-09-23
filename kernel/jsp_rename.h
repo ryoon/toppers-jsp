@@ -1,48 +1,12 @@
-/*
- *  TOPPERS/JSP Kernel
- *      Toyohashi Open Platform for Embedded Real-Time Systems/
- *      Just Standard Profile Kernel
- * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
- *                              Toyohashi Univ. of Technology, JAPAN
- * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
- *  利用と呼ぶ）することを無償で許諾する．
- *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
- *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
- *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
- *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
- * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
- * 
- *  @(#) $Id: jsp_rename.h,v 1.8 2002/03/26 08:19:38 hiro Exp $
- */
-
-/*
- *	カーネルの内部識別名のリネーム
- */
+/* This file is generated from jsp_rename.def by genrename. */
 
 #ifndef _JSP_RENAME_H_
 #define _JSP_RENAME_H_
 
-#ifndef OMIT_RENAME
+/*
+ *  startup.c
+ */
+#define iniflg			_kernel_iniflg
 
 /*
  *  banner.c
@@ -63,7 +27,14 @@
 /*
  *  task.c
  */
+#define runtsk			_kernel_runtsk
+#define schedtsk		_kernel_schedtsk
+#define reqflg			_kernel_reqflg
+#define enadsp			_kernel_enadsp
+#define ready_queue		_kernel_ready_queue
+#define ready_primap		_kernel_ready_primap
 #define task_initialize		_kernel_task_initialize
+#define search_schedtsk		_kernel_search_schedtsk
 #define make_runnable		_kernel_make_runnable
 #define make_non_runnable	_kernel_make_non_runnable
 #define make_dormant		_kernel_make_dormant
@@ -73,47 +44,105 @@
 #define rotate_ready_queue	_kernel_rotate_ready_queue
 #define call_texrtn		_kernel_call_texrtn
 #define calltex			_kernel_calltex
-#define runtsk			_kernel_runtsk
-#define reqflg			_kernel_reqflg
-#define schedtsk		_kernel_schedtsk
-#define enadsp			_kernel_enadsp
 
 /*
  *  wait.c
  */
+#define make_wait_tmout		_kernel_make_wait_tmout
 #define wait_complete		_kernel_wait_complete
 #define wait_tmout		_kernel_wait_tmout
 #define wait_tmout_ok		_kernel_wait_tmout_ok
+#define wait_cancel		_kernel_wait_cancel
 #define wait_release		_kernel_wait_release
 #define wobj_make_wait		_kernel_wobj_make_wait
 #define wobj_make_wait_tmout	_kernel_wobj_make_wait_tmout
 #define wobj_change_priority	_kernel_wobj_change_priority
-#define make_wait_tmout		_kernel_make_wait_tmout
-#define wait_cancel		_kernel_wait_cancel
 
 /*
  *  time_event.c
  */
-#define tmevt_initialize	_kernel_tmevt_initialize
-#define tmevtb_insert		_kernel_tmevtb_insert
-#define tmevtb_delete		_kernel_tmevtb_delete
 #define systim_offset		_kernel_systim_offset
 #define current_time		_kernel_current_time
 #define next_time		_kernel_next_time
+#define next_subtime		_kernel_next_subtime
+#define last_index		_kernel_last_index
+#define tmevt_initialize	_kernel_tmevt_initialize
+#define tmevt_up		_kernel_tmevt_up
+#define tmevt_down		_kernel_tmevt_down
+#define tmevtb_insert		_kernel_tmevtb_insert
+#define tmevtb_delete		_kernel_tmevtb_delete
 
 /*
  *  syslog.c
  */
+#define syslog_buffer		_kernel_syslog_buffer
+#define syslog_count		_kernel_syslog_count
+#define syslog_head		_kernel_syslog_head
+#define syslog_tail		_kernel_syslog_tail
+#define syslog_lost		_kernel_syslog_lost
+#define syslog_logmask		_kernel_syslog_logmask
+#define syslog_lowmask		_kernel_syslog_lowmask
 #define syslog_initialize	_kernel_syslog_initialize
 #define syslog_terminate	_kernel_syslog_terminate
+
+/*
+ *  semaphore.c
+ */
+#define semaphore_initialize	_kernel_semaphore_initialize
+
+/*
+ *  eventflag.c
+ */
+#define eventflag_initialize	_kernel_eventflag_initialize
+#define eventflag_cond		_kernel_eventflag_cond
+
+/*
+ *  dataqueue.c
+ */
+#define dataqueue_initialize	_kernel_dataqueue_initialize
+#define enqueue_data		_kernel_enqueue_data
+#define force_enqueue_data	_kernel_force_enqueue_data
+#define dequeue_data		_kernel_dequeue_data
+#define send_data_rwait		_kernel_send_data_rwait
+#define receive_data_swait	_kernel_receive_data_swait
+
+/*
+ *  mailbox.c
+ */
+#define mailbox_initialize	_kernel_mailbox_initialize
+
+/*
+ *  mempfix.c
+ */
+#define mempfix_initialize	_kernel_mempfix_initialize
+#define mempfix_get_block	_kernel_mempfix_get_block
+
+/*
+ *  cyclic.c
+ */
+#define cyclic_initialize	_kernel_cyclic_initialize
+#define tmevtb_enqueue_cyc	_kernel_tmevtb_enqueue_cyc
+#define call_cychdr		_kernel_call_cychdr
+
+/*
+ *  interrupt.c
+ */
+#define interrupt_initialize	_kernel_interrupt_initialize
+
+/*
+ *  exception.c
+ */
+#define exception_initialize	_kernel_exception_initialize
 
 /*
  *  kernel_cfg.c
  */
 #define object_initialize	_kernel_object_initialize
 #define call_inirtn		_kernel_call_inirtn
+#define call_terrtn		_kernel_call_terrtn
 #define tmax_tskid		_kernel_tmax_tskid
 #define tinib_table		_kernel_tinib_table
+#define torder_table		_kernel_torder_table
 #define tcb_table		_kernel_tcb_table
 #define tmax_semid		_kernel_tmax_semid
 #define seminib_table		_kernel_seminib_table
@@ -139,24 +168,12 @@
 #define excinib_table		_kernel_excinib_table
 #define tmevt_heap		_kernel_tmevt_heap
 
-/*
- *  semaphore.c, eventflag.c, dataqueue.c, mailbox.c
- *  mempfix.c, cyclic.c, interrupt.c, exception.c
- */
-#define semaphore_initialize	_kernel_semaphore_initialize
-#define eventflag_initialize	_kernel_eventflag_initialize
-#define dataqueue_initialize	_kernel_dataqueue_initialize
-#define mailbox_initialize	_kernel_mailbox_initialize
-#define mempfix_initialize	_kernel_mempfix_initialize
-#define cyclic_initialize	_kernel_cyclic_initialize
-#define interrupt_initialize	_kernel_interrupt_initialize
-#define exception_initialize	_kernel_exception_initialize
-
-/*
- *	カーネルの内部識別名のリネーム（"_" を付けるアセンブラ用）
- */
-
 #ifdef LABEL_ASM
+
+/*
+ *  startup.c
+ */
+#define _iniflg			__kernel_iniflg
 
 /*
  *  banner.c
@@ -177,7 +194,14 @@
 /*
  *  task.c
  */
+#define _runtsk			__kernel_runtsk
+#define _schedtsk		__kernel_schedtsk
+#define _reqflg			__kernel_reqflg
+#define _enadsp			__kernel_enadsp
+#define _ready_queue		__kernel_ready_queue
+#define _ready_primap		__kernel_ready_primap
 #define _task_initialize	__kernel_task_initialize
+#define _search_schedtsk	__kernel_search_schedtsk
 #define _make_runnable		__kernel_make_runnable
 #define _make_non_runnable	__kernel_make_non_runnable
 #define _make_dormant		__kernel_make_dormant
@@ -187,47 +211,105 @@
 #define _rotate_ready_queue	__kernel_rotate_ready_queue
 #define _call_texrtn		__kernel_call_texrtn
 #define _calltex		__kernel_calltex
-#define _runtsk			__kernel_runtsk
-#define _reqflg			__kernel_reqflg
-#define _schedtsk		__kernel_schedtsk
-#define _enadsp			__kernel_enadsp
 
 /*
  *  wait.c
  */
+#define _make_wait_tmout	__kernel_make_wait_tmout
 #define _wait_complete		__kernel_wait_complete
 #define _wait_tmout		__kernel_wait_tmout
 #define _wait_tmout_ok		__kernel_wait_tmout_ok
+#define _wait_cancel		__kernel_wait_cancel
 #define _wait_release		__kernel_wait_release
 #define _wobj_make_wait		__kernel_wobj_make_wait
 #define _wobj_make_wait_tmout	__kernel_wobj_make_wait_tmout
 #define _wobj_change_priority	__kernel_wobj_change_priority
-#define _make_wait_tmout	__kernel_make_wait_tmout
-#define _wait_cancel		__kernel_wait_cancel
 
 /*
  *  time_event.c
  */
-#define _tmevt_initialize	__kernel_tmevt_initialize
-#define _tmevtb_insert		__kernel_tmevtb_insert
-#define _tmevtb_delete		__kernel_tmevtb_delete
 #define _systim_offset		__kernel_systim_offset
 #define _current_time		__kernel_current_time
 #define _next_time		__kernel_next_time
+#define _next_subtime		__kernel_next_subtime
+#define _last_index		__kernel_last_index
+#define _tmevt_initialize	__kernel_tmevt_initialize
+#define _tmevt_up		__kernel_tmevt_up
+#define _tmevt_down		__kernel_tmevt_down
+#define _tmevtb_insert		__kernel_tmevtb_insert
+#define _tmevtb_delete		__kernel_tmevtb_delete
 
 /*
  *  syslog.c
  */
+#define _syslog_buffer		__kernel_syslog_buffer
+#define _syslog_count		__kernel_syslog_count
+#define _syslog_head		__kernel_syslog_head
+#define _syslog_tail		__kernel_syslog_tail
+#define _syslog_lost		__kernel_syslog_lost
+#define _syslog_logmask		__kernel_syslog_logmask
+#define _syslog_lowmask		__kernel_syslog_lowmask
 #define _syslog_initialize	__kernel_syslog_initialize
 #define _syslog_terminate	__kernel_syslog_terminate
+
+/*
+ *  semaphore.c
+ */
+#define _semaphore_initialize	__kernel_semaphore_initialize
+
+/*
+ *  eventflag.c
+ */
+#define _eventflag_initialize	__kernel_eventflag_initialize
+#define _eventflag_cond		__kernel_eventflag_cond
+
+/*
+ *  dataqueue.c
+ */
+#define _dataqueue_initialize	__kernel_dataqueue_initialize
+#define _enqueue_data		__kernel_enqueue_data
+#define _force_enqueue_data	__kernel_force_enqueue_data
+#define _dequeue_data		__kernel_dequeue_data
+#define _send_data_rwait	__kernel_send_data_rwait
+#define _receive_data_swait	__kernel_receive_data_swait
+
+/*
+ *  mailbox.c
+ */
+#define _mailbox_initialize	__kernel_mailbox_initialize
+
+/*
+ *  mempfix.c
+ */
+#define _mempfix_initialize	__kernel_mempfix_initialize
+#define _mempfix_get_block	__kernel_mempfix_get_block
+
+/*
+ *  cyclic.c
+ */
+#define _cyclic_initialize	__kernel_cyclic_initialize
+#define _tmevtb_enqueue_cyc	__kernel_tmevtb_enqueue_cyc
+#define _call_cychdr		__kernel_call_cychdr
+
+/*
+ *  interrupt.c
+ */
+#define _interrupt_initialize	__kernel_interrupt_initialize
+
+/*
+ *  exception.c
+ */
+#define _exception_initialize	__kernel_exception_initialize
 
 /*
  *  kernel_cfg.c
  */
 #define _object_initialize	__kernel_object_initialize
 #define _call_inirtn		__kernel_call_inirtn
+#define _call_terrtn		__kernel_call_terrtn
 #define _tmax_tskid		__kernel_tmax_tskid
 #define _tinib_table		__kernel_tinib_table
+#define _torder_table		__kernel_torder_table
 #define _tcb_table		__kernel_tcb_table
 #define _tmax_semid		__kernel_tmax_semid
 #define _seminib_table		__kernel_seminib_table
@@ -253,19 +335,5 @@
 #define _excinib_table		__kernel_excinib_table
 #define _tmevt_heap		__kernel_tmevt_heap
 
-/*      
- *  semaphore.c, eventflag.c, dataqueue.c, mailbox.c
- *  mempfix.c, cyclic.c, interrupt.c, exception.c
- */
-#define _semaphore_initialize	__kernel_semaphore_initialize
-#define _eventflag_initialize	__kernel_eventflag_initialize
-#define _dataqueue_initialize	__kernel_dataqueue_initialize
-#define _mailbox_initialize	__kernel_mailbox_initialize
-#define _mempfix_initialize	__kernel_mempfix_initialize
-#define _cyclic_initialize	__kernel_cyclic_initialize
-#define _interrupt_initialize	__kernel_interrupt_initialize
-#define _exception_initialize	__kernel_exception_initialize
-
 #endif /* LABEL_ASM */
-#endif /* OMIT_RENAME */
 #endif /* _JSP_RENAME_H_ */

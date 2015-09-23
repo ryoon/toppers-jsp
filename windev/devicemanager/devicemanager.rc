@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// ∆¸À‹∏Ï resources
+// ì˙ñ{åÍ resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
 #ifdef _WIN32
@@ -27,18 +27,18 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "1 TYPELIB ""devicemanager.tlb""\r\n"
     "\0"
@@ -47,7 +47,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -70,15 +69,13 @@ BEGIN
     BEGIN
         BLOCK "041104B0"
         BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "devicemanager Module\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "devicemanager\0"
-            VALUE "LegalCopyright", "Copyright 2000\0"
-            VALUE "OriginalFilename", "devicemanager.EXE\0"
-            VALUE "ProductName", "devicemanager Module\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "OLESelfRegister", "\0"
+            VALUE "FileDescription", "devicemanager Module"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "devicemanager"
+            VALUE "LegalCopyright", "Copyright 2000"
+            VALUE "OriginalFilename", "devicemanager.EXE"
+            VALUE "ProductName", "devicemanager Module"
+            VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
     BLOCK "VarFileInfo"
@@ -87,31 +84,92 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-IDR_devicemanager    REGISTRY MOVEABLE PURE  "devicemanager.rgs"
-IDR_DEVICE              REGISTRY DISCARDABLE    "Device.rgs"
-IDR_INFORMATION         REGISTRY DISCARDABLE    "Information.rgs"
-IDR_INFORMATION1        REGISTRY DISCARDABLE    "informat.bin"
-IDR_KERNEL              REGISTRY DISCARDABLE    "Kernel.rgs"
+IDR_DEVICEMANAGER       REGISTRY                "devicemanager.rgs"
+IDR_DEVICE              REGISTRY                "Device.rgs"
+IDR_INFORMATION         REGISTRY                "Information.rgs"
+IDR_INFORMATION1        REGISTRY                "informat.bin"
+IDR_KERNEL              REGISTRY                "Kernel.rgs"
+IDR_KERNELLOG           REGISTRY                "KernelLog.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "icon1.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DUMMYDIALOG DIALOG  0, 0, 187, 93
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "¿ﬁ≤±€∏ﬁ"
+FONT 9, "ÇlÇr ÇoÉSÉVÉbÉN"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,130,7,50,14
+    PUSHBUTTON      "∑¨›æŸ",IDCANCEL,130,24,50,14
+END
+
+IDD_MAPLISTDIALOG DIALOGEX 0, 0, 309, 212
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "ÉÅÉÇÉäÉ}ÉbÉv"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,252,191,50,14
+    CONTROL         "",IDC_MAPLIST,"SysListView32",LVS_REPORT | 
+                    LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,7,295,182
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DUMMYDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 86
+    END
+
+    IDD_MAPLISTDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 205
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "devicemanager"
 END
 
-#endif    // ∆¸À‹∏Ï resources
+#endif    // ì˙ñ{åÍ resources
 /////////////////////////////////////////////////////////////////////////////
 
 

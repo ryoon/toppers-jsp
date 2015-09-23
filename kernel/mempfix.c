@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: mempfix.c,v 1.7 2002/03/26 08:19:38 hiro Exp $
+ *  @(#) $Id: mempfix.c,v 1.10 2003/06/04 01:46:16 hiro Exp $
  */
 
 /*
@@ -61,10 +62,15 @@ extern const MPFINIB	mpfinib_table[];
 extern MPFCB	mpfcb_table[];
 
 /*
+ *  固定長メモリプールの数
+ */
+#define TNUM_MPF	((UINT)(tmax_mpfid - TMIN_MPFID + 1))
+
+/*
  *  固定長メモリプールIDから固定長メモリプール管理ブロックを取り出すた
  *  めのマクロ
  */
-#define INDEX_MPF(mpfid)	((mpfid) - TMIN_MPFID)
+#define INDEX_MPF(mpfid)	((UINT)((mpfid) - TMIN_MPFID))
 #define get_mpfcb(mpfid)	(&(mpfcb_table[INDEX_MPF(mpfid)]))
 
 /*
@@ -72,20 +78,22 @@ extern MPFCB	mpfcb_table[];
  */
 typedef struct fixed_memorypool_waiting_information {
 	WINFO	winfo;		/* 標準の待ち情報ブロック */
-	WOBJCB	*wobjcb;	/* 待ちオブジェクトのコントロールブロック */
+	WOBJCB	*wobjcb;	/* 待ちオブジェクトの管理ブロック */
 	VP	blk;		/* 獲得したメモリブロック */
 } WINFO_MPF;
 
 /* 
  *  固定長メモリプール機能の初期化
  */
+#ifdef __mpfini
+
 void
 mempfix_initialize()
 {
-	INT	i;
+	UINT	i;
 	MPFCB	*mpfcb;
 
-	for (mpfcb = mpfcb_table, i = 0; i < tmax_mpfid; mpfcb++, i++) {
+	for (mpfcb = mpfcb_table, i = 0; i < TNUM_MPF; mpfcb++, i++) {
 		queue_initialize(&(mpfcb->wait_queue));
 		mpfcb->mpfinib = &(mpfinib_table[i]);
 		mpfcb->unused = mpfcb->mpfinib->mpf;
@@ -93,11 +101,15 @@ mempfix_initialize()
 	}
 }
 
+#endif /* __mpfini */
+
 /*
  *  固定長メモリプールからブロックを獲得
  */
-static BOOL
-get_block(MPFCB *mpfcb, VP *p_blk)
+#ifdef __mpfget
+
+BOOL
+mempfix_get_block(MPFCB *mpfcb, VP *p_blk)
 {
 	FREEL	*free;
 
@@ -109,15 +121,20 @@ get_block(MPFCB *mpfcb, VP *p_blk)
 	}
 	else if (mpfcb->unused < mpfcb->mpfinib->limit) {
 		*p_blk = mpfcb->unused;
-		mpfcb->unused = (VB *)(mpfcb->unused) + mpfcb->mpfinib->blksz;
+		mpfcb->unused = (VP)((SIZE)(mpfcb->unused)
+						+ mpfcb->mpfinib->blksz);
 		return(TRUE);
 	}
 	return(FALSE);
 }
 
+#endif /* __mpfget */
+
 /*
  *  固定長メモリブロックの獲得
  */
+#ifdef __get_mpf
+
 SYSCALL ER
 get_mpf(ID mpfid, VP *p_blk)
 {
@@ -125,12 +142,13 @@ get_mpf(ID mpfid, VP *p_blk)
 	WINFO_MPF winfo;
 	ER	ercd;
 
+	LOG_GET_MPF_ENTER(mpfid, p_blk);
 	CHECK_DISPATCH();
 	CHECK_MPFID(mpfid);
 	mpfcb = get_mpfcb(mpfid);
 
 	t_lock_cpu();
-	if (get_block(mpfcb, p_blk)) {
+	if (mempfix_get_block(mpfcb, p_blk)) {
 		ercd = E_OK;
 	}
 	else {
@@ -142,36 +160,51 @@ get_mpf(ID mpfid, VP *p_blk)
 		}
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_GET_MPF_LEAVE(ercd, *p_blk);
 	return(ercd);
 }
+
+#endif /* __get_mpf */
 
 /*
  *  固定長メモリブロックの獲得（ポーリング）
  */
+#ifdef __pget_mpf
+
 SYSCALL ER
 pget_mpf(ID mpfid, VP *p_blk)
 {
 	MPFCB	*mpfcb;
 	ER	ercd;
 
+	LOG_PGET_MPF_ENTER(mpfid, p_blk);
 	CHECK_TSKCTX_UNL();
 	CHECK_MPFID(mpfid);
 	mpfcb = get_mpfcb(mpfid);
 
 	t_lock_cpu();
-	if (get_block(mpfcb, p_blk)) {
+	if (mempfix_get_block(mpfcb, p_blk)) {
 		ercd = E_OK;
 	}
 	else {
 		ercd = E_TMOUT;
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_PGET_MPF_LEAVE(ercd, *p_blk);
 	return(ercd);
 }
+
+#endif /* __pget_mpf */
 
 /*
  *  固定長メモリブロックの獲得（タイムアウトあり）
  */
+#ifdef __tget_mpf
+
 SYSCALL ER
 tget_mpf(ID mpfid, VP *p_blk, TMO tmout)
 {
@@ -180,13 +213,14 @@ tget_mpf(ID mpfid, VP *p_blk, TMO tmout)
 	TMEVTB	tmevtb;
 	ER	ercd;
 
+	LOG_TGET_MPF_ENTER(mpfid, p_blk, tmout);
 	CHECK_DISPATCH();
 	CHECK_MPFID(mpfid);
 	CHECK_TMOUT(tmout);
 	mpfcb = get_mpfcb(mpfid);
 
 	t_lock_cpu();
-	if (get_block(mpfcb, p_blk)) {
+	if (mempfix_get_block(mpfcb, p_blk)) {
 		ercd = E_OK;
 	}
 	else if (tmout == TMO_POL) {
@@ -202,12 +236,19 @@ tget_mpf(ID mpfid, VP *p_blk, TMO tmout)
 		}
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_TGET_MPF_LEAVE(ercd, *p_blk);
 	return(ercd);
 }
+
+#endif /* __tget_mpf */
 
 /*
  *  固定長メモリブロックの返却
  */
+#ifdef __rel_mpf
+
 SYSCALL ER
 rel_mpf(ID mpfid, VP blk)
 {
@@ -216,12 +257,13 @@ rel_mpf(ID mpfid, VP blk)
 	FREEL	*free;
 	ER	ercd;
     
+	LOG_REL_MPF_ENTER(mpfid, blk);
 	CHECK_TSKCTX_UNL();
 	CHECK_MPFID(mpfid);
 	mpfcb = get_mpfcb(mpfid);
 	CHECK_PAR(mpfcb->mpfinib->mpf <= blk
 			&& blk < mpfcb->mpfinib->limit
-			&& (((VB *) blk) - ((VB *)(mpfcb->mpfinib->mpf)))
+			&& ((SIZE)(blk) - (SIZE)(mpfcb->mpfinib->mpf))
 					% mpfcb->mpfinib->blksz == 0);
 
 	t_lock_cpu();
@@ -240,5 +282,10 @@ rel_mpf(ID mpfid, VP blk)
 		ercd = E_OK;
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_REL_MPF_LEAVE(ercd);
 	return(ercd);
 }
+
+#endif /* __rel_mpf */

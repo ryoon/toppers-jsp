@@ -3,68 +3,62 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.17 2002/04/05 07:43:51 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.22 2003/12/11 00:52:12 honda Exp $
  */
 
 
 /*
- *  プロセッサ依存モジュール（SH3用）
+ *  プロセッサ依存モジュール（SH3/4用）
+ *  このインクルードファイルは，t_config.h のみからインクルードされる．
+ *  他のファイルから直接インクルードしてはならない．
  */
-
 
 #ifndef _CPU_CONFIG_H_
 #define _CPU_CONFIG_H_
 
+
 /*
- *  カーネルの内部識別名のリネーム
+ *  カーネル内部識別名のリネーム
  */
-#ifndef OMIT_RENAME
+#include <cpu_rename.h>
 
-#define activate_r      _kernel_activate_r
-#define ret_int         _kernel_ret_int
-#define ret_exc         _kernel_ret_exc
-#define task_intmask    _kernel_task_intmask
-#define int_intmask     _kernel_int_intmask
 
-#ifdef LABEL_ASM
+#ifdef SH4
+#include <sh4.h>        
+#else  /* SH3 */
+#include <sh3.h>        
+#endif /* SH4 */
 
-#define _activate_r     __kernel_activate_r
-#define _ret_int        __kernel_ret_int
-#define _ret_exc        __kernel_ret_exc
-#define _task_intmask   __kernel_task_intmask
-#define _int_intmask    __kernel_int_intmask
-
-#endif /* LABEL_ASM */
-#endif /* OMIT_RENAME */
 
 /*
  *  設定可能な最高優先度
@@ -80,7 +74,7 @@
  *  プロセッサの特殊命令のインライン関数定義
  */
 #ifndef _MACRO_ONLY
-#include "cpu_insn.h"
+#include <cpu_insn.h>
 #endif /* _MACRO_ONLY */
 
 /*
@@ -130,6 +124,7 @@ current_intmask()
 	return(current_sr() & 0x000000f0);
 }
 
+
 /*
  *  割込みマスクの設定
  */
@@ -138,6 +133,7 @@ set_intmask(UW intmask)
 {
 	set_sr((current_sr() & ~0x000000f0) | intmask);
 }
+
 
 /*
  *  システム状態参照
@@ -152,15 +148,16 @@ sense_context()
 	return(nest > 0);    
 }
 
+
 Inline BOOL
 sense_lock()
 {
 	return(current_intmask() == MAX_IPM << 4);
 }
 
+
 #define t_sense_lock	sense_lock
 #define i_sense_lock	sense_lock
-
 
 
 /*
@@ -175,11 +172,13 @@ sense_lock()
 extern UW	task_intmask;	/* タスクコンテキストでの割込みマスク */
 #endif /* SUPPORT_CHG_IPM */
 
+
 Inline void
 t_lock_cpu()
 {
 	disint();
 }
+
 
 Inline void
 t_unlock_cpu()
@@ -217,11 +216,13 @@ i_lock_cpu()
 	int_intmask = intmask;
 }
 
+
 Inline void
 i_unlock_cpu()
 {
 	set_intmask(int_intmask);
 }
+
 
 /*
  *  タスクディスパッチャ
@@ -234,6 +235,7 @@ i_unlock_cpu()
  *  内で，CPUロック状態で呼び出さなければならない．
  */
 extern void	dispatch(void);
+
 
 /*
  *  現在のコンテキストを捨ててディスパッチ（cpu_support.S）
@@ -250,8 +252,8 @@ extern void	exit_and_dispatch(void);
 /*
  *  ベクタベースの定義
  */
-
 extern void   BASE_VBR(void);
+
 
 /*
  *  例外ベクタテーブルの構造の定義
@@ -271,10 +273,12 @@ typedef struct exc_vector_entry {
 extern FP	int_table[0x50];
 extern VW   int_plevel_table[0x50];
 
+
 /*
  *  CPU例外ハンドラの疑似テーブル
  */
 extern FP	exc_table[(0x1E0 >> 5) + 1];
+
 
 /*
  *
@@ -286,10 +290,9 @@ extern FP	exc_table[(0x1E0 >> 5) + 1];
  *  
  */
 
-
-
 extern FP general_exception();
 extern FP interrupt();
+
 
 Inline void
 define_inh(INHNO inhno, FP inthdr)
@@ -303,11 +306,11 @@ define_inh(INHNO inhno, FP inthdr)
 #endif /* GDB_STUB */
 }
 
+
 /*
  *   CPU例外ハンドラの設定
  *   擬似ベクターテーブルに登録
  */   
-
 Inline void
 define_exc(EXCNO excno, FP exchdr)
 {
@@ -324,7 +327,6 @@ define_exc(EXCNO excno, FP exchdr)
 /*
  *  割り込みレベルの設定
  */
-
 Inline void
 define_int_plevel(UINT dintno, UW plevel)
 {
@@ -336,7 +338,6 @@ define_int_plevel(UINT dintno, UW plevel)
  *  割込みハンドラ／CPU例外ハンドラの出入口処理
  *  
  */
-
 
 /*
  *  割込みハンドラの出入口処理の生成マクロ
@@ -354,6 +355,7 @@ define_int_plevel(UINT dintno, UW plevel)
 
 #define	EXC_ENTRY(exchdr)     exchdr
 
+
 /*
  *  CPU例外の発生した時のシステム状態の参照
  */
@@ -370,6 +372,7 @@ exc_sense_context(VP p_excinf)
 	return(nest > 1);
 }
 
+
 /*
  *  CPU例外の発生した時のCPUロック状態の参照
  */
@@ -379,28 +382,24 @@ exc_sense_lock(VP p_excinf)
 	return((*((UW *)p_excinf + 11) & 0x00000f0) == MAX_IPM << 4);
 }
 
-/*
- *  ラベルの別名を定義するためのマクロ
- */
-#define _LABEL_ALIAS(new_label, defined_label) \
-        asm(".globl _" #new_label "\n_" #new_label " = _" #defined_label);
-#define LABEL_ALIAS(x, y) _LABEL_ALIAS(x, y)
-
 
 /*
  *  プロセッサ依存の初期化
  */
 extern void	cpu_initialize(void);
 
+
 /*
  *  プロセッサ依存の終了時処理
  */
 extern void	cpu_terminate(void);
 
+
 /*
  * プロセッサ依存シリアル出力
  */
 extern void     cpu_putc(char c);
+
 
 /*
  * 未登録の割込み/例外発生時のログ出力
@@ -415,6 +414,19 @@ extern void     no_reg_interrupt(void);
  *  バスステートコントローラのリフレッシュカウンタを使う
  */
 #define WAIT_RFCR_FOR_SCI    200
+
+/*
+ *  gdb stubによる出力
+ */
+Inline int
+stub_putc(int c)
+{
+  Asm("mov #0x00,r0; mov %0,r4; trapa #0x3f"
+               : /* no output */
+               : "r"(c)
+               : "r0","r4");
+  return(c);
+}
 
 
 #endif /* _MACRO_ONLY_ */

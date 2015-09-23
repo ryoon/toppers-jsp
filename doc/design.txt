@@ -1,43 +1,44 @@
 
-		    ＝ JSPカーネル 設計メモ ＝
+                    ＝ JSPカーネル 設計メモ ＝
 
-	     （Release 1.3対応，最終更新: 13-Nov-2001）
+             （Release 1.4対応，最終更新: 04-Jun-2003）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
- 上記著作権者は，Free Software Foundation によって公表されている 
- GNU General Public License の Version 2 に記述されている条件か，以
- 下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ 上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ によって公表されている GNU General Public License の Version 2 に記
+ 述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  利用と呼ぶ）することを無償で許諾する．
  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
      スコード中に含まれていること．
- (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
-     ジェクトファイルやライブラリなど）の形で利用する場合には，利用
-     に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
-     この利用条件および下記の無保証規定を掲載すること．
- (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
-     み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
-   (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
-       権表示，この利用条件および下記の無保証規定を掲載すること．
-   (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
-       こと．
+ (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+     用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+     者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+     の無保証規定を掲載すること．
+ (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+     用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+     と．
+   (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+       作権表示，この利用条件および下記の無保証規定を掲載すること．
+   (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+       報告すること．
  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
-     害からも，上記著作権者を免責すること．
+     害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
 
- 本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- 本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- かなる損害に関しても，その責任を負わない．
+ 本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ 含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ 接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: design.txt,v 1.7 2002/04/14 15:27:12 hiro Exp $
+ @(#) $Id: design.txt,v 1.10 2003/12/19 09:50:35 honda Exp $
 ------------------------------------------------------------------------
 
 
@@ -257,11 +258,11 @@ BOOL型の変数 enatex を導入した．
 する方法が考えられる．
 
  ・最下位ビット … サービスコール実行中
-				→ 1 なら両者保留
+                                → 1 なら両者保留
  ・下から2ビットめ … ディスパッチ禁止状態
-				→ 1 ならタスク切替え保留
+                                → 1 ならタスク切替え保留
  ・残りのビット … CPU例外ハンドラのネスト回数
-				→ 0 以外ならタスク切替え保留
+                                → 0 以外ならタスク切替え保留
 
 
 ４．サービスコールの記述方法
@@ -277,92 +278,92 @@ sns_ctx，sns_loc，sns_dsp，sns_tex は，サービスコール内部でクリティカ
 
 (2-1) タスク切換えを起こさないもの（例: get_pri）
 
-	エラーチェック
-	t_lock_cpu();
-	/*
-	 *  クリティカルセクション実行
-	 */
-	t_unlock_cpu();
+        エラーチェック
+        t_lock_cpu();
+        /*
+         *  クリティカルセクション実行
+         */
+        t_unlock_cpu();
 
 (2-2) タスク切換えを起こす可能性のあるもの（例: act_tsk）
 
-	エラーチェック
-	t_lock_cpu();
-	/*
-	 *  クリティカルセクション実行
-	 */
-	if (タスクディスパッチが必要 && enadsp) {
-		/* 自タスクを待ち状態にするサービスコールでは，
-			上で enadsp をチェックする必要はない．*/
-		dispatch();
-	}
-	t_unlock_cpu();
+        エラーチェック
+        t_lock_cpu();
+        /*
+         *  クリティカルセクション実行
+         */
+        if (タスクディスパッチが必要 && enadsp) {
+                /* 自タスクを待ち状態にするサービスコールでは，
+                        上で enadsp をチェックする必要はない．*/
+                dispatch();
+        }
+        t_unlock_cpu();
 
 (2-3) 自タスクを終了するもの（ext_tsk）
 
-	エラーチェック
-	t_lock_cpu();
-	/*
-	 *  クリティカルセクション実行
-	 */
-	exit_and_dispatch();
+        エラーチェック
+        t_lock_cpu();
+        /*
+         *  クリティカルセクション実行
+         */
+        exit_and_dispatch();
 
 (2-4) ras_tex
 
-	エラーチェック
-	tcb = get_tcb_self(tskid);
-	t_lock_cpu();
+        エラーチェック
+        tcb = get_tcb_self(tskid);
+        t_lock_cpu();
 
-	E_OBJエラーのチェック
+        E_OBJエラーのチェック
 
-	tcb->texptn |= rasptn;
-	if (tcb == runtsk && runtsk->enatex) {
-		texptn = runtsk->texptn;
-		runtsk->enatex = FALSE;
-		runtsk->texptn = 0;
+        tcb->texptn |= rasptn;
+        if (tcb == runtsk && runtsk->enatex) {
+                texptn = runtsk->texptn;
+                runtsk->enatex = FALSE;
+                runtsk->texptn = 0;
 
-		t_unlock_cpu();
-		(*runtsk->tinib->texrtn)(texptn, runtsk->tinib->exinf);
+                t_unlock_cpu();
+                (*runtsk->tinib->texrtn)(texptn, runtsk->tinib->exinf);
 
-		/* CPUロック状態のままリターンした場合を対策 */
-		if (!t_sense_lock()) {
-			t_lock_cpu();
-		}
+                /* CPUロック状態のままリターンした場合を対策 */
+                if (!t_sense_lock()) {
+                        t_lock_cpu();
+                }
 
-		タスク例外処理ルーチンの起動条件を再度チェック＆起動
-		（runtsk->texptn が 0 になるまで上の処理を繰り返す）
+                タスク例外処理ルーチンの起動条件を再度チェック＆起動
+                （runtsk->texptn が 0 になるまで上の処理を繰り返す）
 
-		runtsk->enatex = TRUE;
-	}
-	t_unlock_cpu();
+                runtsk->enatex = TRUE;
+        }
+        t_unlock_cpu();
 
 (2-5) ena_tex
 
-	エラーチェック
-	t_lock_cpu();
+        エラーチェック
+        t_lock_cpu();
 
-	E_OBJエラーのチェック
+        E_OBJエラーのチェック
 
-	runtsk->enatex = TRUE;
-	if (runtsk->texptn != 0) {
-		texptn = runtsk->texptn;
-		runtsk->enatex = FALSE;
-		runtsk->texptn = 0;
+        runtsk->enatex = TRUE;
+        if (runtsk->texptn != 0) {
+                texptn = runtsk->texptn;
+                runtsk->enatex = FALSE;
+                runtsk->texptn = 0;
 
-		t_unlock_cpu();
-		(*runtsk->tinib->texrtn)(texptn, runtsk->tinib->exinf);
+                t_unlock_cpu();
+                (*runtsk->tinib->texrtn)(texptn, runtsk->tinib->exinf);
 
-		/* CPUロック状態のままリターンした場合を対策 */
-		if (!t_sense_lock()) {
-			t_lock_cpu();
-		}
+                /* CPUロック状態のままリターンした場合を対策 */
+                if (!t_sense_lock()) {
+                        t_lock_cpu();
+                }
 
-		タスク例外処理ルーチンの起動条件を再度チェック＆起動
-		（runtsk->texptn が 0 になるまで上の処理を繰り返す）
+                タスク例外処理ルーチンの起動条件を再度チェック＆起動
+                （runtsk->texptn が 0 になるまで上の処理を繰り返す）
 
-		runtsk->enatex = TRUE;
-	}
-	t_unlock_cpu();
+                runtsk->enatex = TRUE;
+        }
+        t_unlock_cpu();
 
 (3) 非タスクコンテキスト専用のサービスコール
 
@@ -370,35 +371,37 @@ sns_ctx，sns_loc，sns_dsp，sns_tex は，サービスコール内部でクリティカ
 
 (3-1) タスク切替えを起こさないもの
 
-	i_lock_cpu();
-	/*
-	 *  クリティカルセクション実行
-	 */
-	i_unlock_cpu();
+        i_lock_cpu();
+        /*
+         *  クリティカルセクション実行
+         */
+        i_unlock_cpu();
 
 (3-2) タスク切替えを起こす可能性のあるもの（例: iact_tsk）
 
-	i_lock_cpu();
-	/*
-	 *  クリティカルセクション実行
-	 *
-	 *  タスクディスパッチが必要な場合には，reqflg を TRUE にする．
-	 *  ただし，enadsp が FALSE の時は，reqflg を TRUE にしない．
-	 */
-	i_unlock_cpu();
+        i_lock_cpu();
+        /*
+         *  クリティカルセクション実行
+         *
+         *  タスクディスパッチが必要な場合には，reqflg を TRUE にする．
+         *  ただし，enadsp が FALSE の時は，reqflg を TRUE にしない．
+         */
+        i_unlock_cpu();
 
 (3-3) iras_tex
 
-	エラーチェック
-	tcb = get_tcb(tskid);
-	i_lock_cpu();
+        エラーチェック
+        tcb = get_tcb(tskid);
+        i_lock_cpu();
 
-	E_OBJエラーのチェック
+        E_OBJエラーのチェック
 
-	tcb->texptn |= rasptn;
-	if (tcb == runtsk && runtsk->enatex) {
-		reqflg = TRUE;
-	}
-	i_unlock_cpu();
+        tcb->texptn |= rasptn;
+        if (tcb == runtsk && runtsk->enatex) {
+                reqflg = TRUE;
+        }
+        i_unlock_cpu();
 
 以上
+
+

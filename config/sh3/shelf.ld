@@ -1,5 +1,5 @@
 /*
- *  @(#) $Id: shelf.ld,v 1.1 2000/11/14 16:29:53 honda Exp $
+ *  @(#) $Id: shelf.ld,v 1.2 2003/07/01 15:59:15 honda Exp $
  */
 
 OUTPUT_FORMAT("elf32-sh","elf32-sh","elf32-sh")
@@ -8,6 +8,7 @@ OUTPUT_ARCH(sh)
 
 PROVIDE(_hardware_init_hook = 0);
 PROVIDE(_software_init_hook = 0);
+PROVIDE(_software_term_hook = 0);
 SECTIONS
 {
     .text :	

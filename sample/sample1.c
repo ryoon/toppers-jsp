@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sample1.c,v 1.9 2002/04/14 15:24:19 hiro Exp $
+ *  @(#) $Id: sample1.c,v 1.17 2003/12/20 08:11:59 hiro Exp $
  */
 
 /* 
@@ -94,14 +95,14 @@
  *  'q' : 発行したシステムコールを表示しない．
  */
 
-#include <jsp_services.h>
+#include <t_services.h>
 #include "kernel_id.h"
 #include "sample1.h"
 
 /*
  *  並行実行されるタスクへのメッセージ領域
  */
-char message[3];
+char	message[3];
 
 /*
  *  ループ回数
@@ -197,8 +198,8 @@ cpuexc_handler(VP p_excinf)
 {
 	ID	tskid;
 
-	syslog(LOG_NOTICE, "CPU exception handler (p_excinf = %08x).",
-							 p_excinf);
+	syslog(LOG_NOTICE, "CPU exception handler (p_excinf = %08p).",
+							p_excinf);
 	if (sns_ctx() != TRUE) {
 		syslog(LOG_WARNING,
 			"sns_ctx() is not TRUE in CPU exception handler.");
@@ -219,7 +220,7 @@ cpuexc_handler(VP p_excinf)
 		syscall(iras_tex(tskid, 0x8000));
 	}
 	else {
-		syslog(LOG_NOTICE, "Sample task ends with exception.");
+		syslog(LOG_NOTICE, "Sample program ends with exception.");
 		kernel_exit();
 	}
 }
@@ -244,7 +245,7 @@ void cyclic_handler(VP_INT exinf)
  */
 void main_task(VP_INT exinf)
 {
-	char	buf[1];
+	char	c;
 	ID	tskid = TASK1;
 	volatile UW	i;
 	INT	tskno = 1;
@@ -255,10 +256,11 @@ void main_task(VP_INT exinf)
 	SYSUTIM	utime1, utime2;
 #endif /* OMIT_VGET_TIM */
 
-	syslog_setmask(LOG_UPTO(LOG_INFO), LOG_UPTO(LOG_EMERG));
-	syslog(LOG_NOTICE, "Sample task starts (exinf = %d).", exinf);
+	vmsk_log(LOG_UPTO(LOG_INFO), LOG_UPTO(LOG_EMERG));
+	syslog(LOG_NOTICE, "Sample program starts (exinf = %d).", exinf);
 
-	serial_ioctl(0, (IOCTL_CRLF | IOCTL_RAW | IOCTL_IXON | IOCTL_IXOFF));
+	syscall(serial_ctl_por(TASK_PORTID,
+			(IOCTL_CRLF | IOCTL_FCSND | IOCTL_FCRCV)));
 
 	/*
  	 *  ループ回数の設定
@@ -281,8 +283,8 @@ void main_task(VP_INT exinf)
  	 *  メインループ
 	 */
 	do {
-		serial_read(0, buf, 1);
-		switch (buf[0]) {
+		syscall(serial_rea_dat(TASK_PORTID, &c, 1));
+		switch (c) {
 		case 'e':
 		case 's':
 		case 'S':
@@ -291,7 +293,7 @@ void main_task(VP_INT exinf)
 		case 'Y':
 		case 'z':
 		case 'Z':
-			message[tskno-1] = buf[0];
+			message[tskno-1] = c;
 			break;
 		case '1':
 			tskno = 1;
@@ -398,18 +400,16 @@ void main_task(VP_INT exinf)
 			break;
 #endif /* OMIT_VGET_TIM */
 		case 'v':
-			syslog_setmask(LOG_UPTO(LOG_INFO),
-					LOG_UPTO(LOG_EMERG));
+			vmsk_log(LOG_UPTO(LOG_INFO), LOG_UPTO(LOG_EMERG));
 			break;
 		case 'q':
-			syslog_setmask(LOG_UPTO(LOG_NOTICE),
-					LOG_UPTO(LOG_EMERG));
+			vmsk_log(LOG_UPTO(LOG_NOTICE), LOG_UPTO(LOG_EMERG));
 			break;
 		default:
 			break;
 		}
-	} while (buf[0] != '\003' && buf[0] != 'Q');
+	} while (c != '\003' && c != 'Q');
 
-	syslog(LOG_NOTICE, "Sample task ends.");
+	syslog(LOG_NOTICE, "Sample program ends.");
 	kernel_exit();
 }

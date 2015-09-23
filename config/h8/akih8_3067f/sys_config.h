@@ -3,47 +3,58 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2003 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
- *  Copyright (C) 2001,2002 by Kunihiko Ohnaka
+ *  Copyright (C) 2001-2003 by Kunihiko Ohnaka
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
+ *
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
- * 
- *  @(#) $Id: sys_config.h,v 1.2 2002/04/11 11:55:11 hiro Exp $
+ *  @(#) $Id: sys_config.h,v 1.7 2003/12/11 07:00:10 honda Exp $
  */
 
 #ifndef _SYS_CONFIG_H_
 #define _SYS_CONFIG_H_
 
-#include "h8_3067f.h"
+/*
+ *  カーネルの内部識別名のリネーム
+ */
+
+#include <sys_rename.h>
+
+/*
+ *  ターゲットシステムのハードウェア資源の定義
+ */
+
+#include <h8_3067f.h>
 
 /*
  *  起動メッセージのターゲット名
@@ -61,7 +72,7 @@
  *   スタック領域の定義
  */
 
-#define STACKTOP    	0x00ffff20		/* タスク独立部用スタックの初期値 */
+#define STACKTOP    	(H8IN_RAM_BASE + H8IN_RAM_SIZE)	/* タスク独立部用スタックの初期値 */
 #define str_STACKTOP	_TO_STRING(STACKTOP)
 
 /*
@@ -109,72 +120,81 @@ sys_putc(char c)
  *  (2) タイマーの設定
  *  (3) 外部アドレス空間制御
  */
- 
-/*
- *  シリアル割り込みが入力/出力で異なるかどうかの定義
- */
-
-#define SEPARATE_SIO_INT
 
 /*
- *  サポートするシリアルディバイスの数
- *  最大 3、ただし、JSP カーネルは 2 ポートまでしか
- *  サポートしていない。
+ *  サポートするシリアルディバイスの数は最大 2
  */
 
-#define NUM_PORT	2
+#define TNUM_PORT	2
+
+#define	CONSOLE_PORTID		SYSTEM_PORTID	/* コンソールに用いるシリアルポート番号     */
+#define	LOGTASK_PORTID		SYSTEM_PORTID	/* システムログを出力するシリアルポート番号 */
+
+#define H8_MIN_BAUD_RATE	9600		/* SCI をクローズする前の待ち時間の計算に使用する。*/
+
+/* エラー割り込みを、入力割り込みと別に操作する場合はコメントをはずす。*/
+/*#define H8_CFG_SCI_ERR_HANDLER*/
+
+/*
+ *  SYSTEM 用 SCI の設定値
+ */
 
 #define SYSTEM_SCI		H8SCI1
 
 #define SYSTEM_SCI_IPR		H8IPRB
 #define SYSTEM_SCI_IP_BIT	H8IPR_SCI1_BIT
 
-#define BAUD_RATE		19200			/* bps */
+#define SYSTEM_SCI_SMR		0
+			/* 送受信フォーマット			*/
+	     		/* 調歩同期式				*/
+	     		/* キャラクタレングス：8ビット		*/
+	     		/* パリティなし				*/
+	     		/* ストップビットレングス：1		*/
+	     		/* クロックセレクト（分周比）:1		*/
 
-#define H8SMR_CKS		(H8SMR_CKS1|H8SMR_CKS0)	/* clock / 8 */
+#define SYSTEM_BAUD_RATE	38400			/* bps	*/
 
-#define H8BRR_RATE		((UB)((CPU_CLOCK/(32*(BAUD_RATE)))-1))
-#define SCI_SETUP_COUNT		((CPU_CLOCK)/(BAUD_RATE)/5)
+#if TNUM_PORT == 1
 
-#define	CONSOLE_PORTID		SYSTEM_PORTID	/* コンソールに用いるシリアルポート番号     */
-#define	LOGTASK_PORTID		SYSTEM_PORTID	/* システムログを出力するシリアルポート番号 */
+#define	SYSTEM_PORTID		1
 
-#if NUM_PORT == 1
-
-#define	SYSTEM_PORTID		PORT_ID1
-
-#define HWPORT1_ADDR		SYSTEM_SCI
-
-#define INHNO_SERIAL_ERROR	IRQ_ERI1
 #define INHNO_SERIAL_IN		IRQ_RXI1
 #define INHNO_SERIAL_OUT	IRQ_TXI1
+#define INHNO_SERIAL_ERR	IRQ_ERI1
 
-#elif NUM_PORT == 2	/* of #if NUM_PORT == 1 */
+#elif TNUM_PORT == 2	/* of #if TNUM_PORT == 1 */
 
 #define USER_SCI		H8SCI0
 
 #define USER_SCI_IPR		H8IPRB
 #define USER_SCI_IP_BIT		H8IPR_SCI0_BIT
 
-#define	USER_PORTID		PORT_ID1
-#define	SYSTEM_PORTID		PORT_ID2
+#define USER_SCI_SMR		0
+			/* 送受信フォーマット			*/
+	     		/* 調歩同期式				*/
+	     		/* キャラクタレングス：8ビット		*/
+	     		/* パリティなし				*/
+	     		/* ストップビットレングス：1		*/
+	     		/* クロックセレクト（分周比）:1		*/
 
-#define HWPORT1_ADDR		USER_SCI
-#define HWPORT2_ADDR		SYSTEM_SCI
+#define USER_BAUD_RATE		38400			/* bps	*/
 
-#define INHNO_SERIAL_ERROR	IRQ_ERI0
+#define	USER_PORTID		1
+#define	SYSTEM_PORTID		2
+
 #define INHNO_SERIAL_IN		IRQ_RXI0
 #define INHNO_SERIAL_OUT	IRQ_TXI0
+#define INHNO_SERIAL_ERR	IRQ_ERI0
 
-#define INHNO_SERIAL_ERROR2	IRQ_ERI1
-#define INHNO_SERIAL_IN2	IRQ_RXI1
-#define INHNO_SERIAL_OUT2	IRQ_TXI1
+#define INHNO_SERIAL2_IN	IRQ_RXI1
+#define INHNO_SERIAL2_OUT	IRQ_TXI1
+#define INHNO_SERIAL2_ERR	IRQ_ERI1
 
-#else	/* of #if NUM_PORT == 1 */
+#else	/* of #if TNUM_PORT == 1 */
 
-#error NUM_PORT <= 2
+#error TNUM_PORT <= 2
 
-#endif	/* of #if NUM_PORT == 1 */
+#endif	/* of #if TNUM_PORT == 1 */
 
 /*
  *  タイマの設定

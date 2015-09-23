@@ -1,25 +1,24 @@
 
-   TOPPERS/JSP Kernel（Release 1.3）
+   TOPPERS/JSP Kernel（Release 1.4）
        Toyohashi Open Platform for Embedded Real-Time Systems/
        Just Standard Profile Kernel
 
-TOPPERS/JSPカーネルは，豊橋技術科学大学 組込みリアルタイムシステム研究
-室を中心とするTOPPERSプロジェクトにおいて開発したμITRON4.0仕様に準拠
-したリアルタイムカーネルです．JSP（Just Standard Profile）の名前が示す
-通り，μITRON4.0仕様のスタンダードプロファイル規定に従って実装されてい
-ます．
+TOPPERS/JSPカーネルは，TOPPERSプロジェクトにおいて開発したμITRON4.0仕
+様に準拠したリアルタイムカーネルです．JSP（Just Standard Profile）の名
+前が示す通り，μITRON4.0仕様のスタンダードプロファイル規定に従って実装
+されています．
 
-ターゲットプロセッサとして，現時点で，M68040，SH3/4，SH1，H8，H8S，
-ARM7TDMI，V850，M32R，MicroBlaze，TMS320C54x，i386をサポートしています．
-カーネルのできる限り多くの部分をC言語で記述する，ターゲット独立部と依
-存部を明確に分離するなど，他のターゲットプロセッサへのポーティングが容
-易な構造になっています．さらに，Linux上とWindows上で動作するシミュレー
-ション環境を用意しています．
+ターゲットプロセッサとして，現時点で，M68040，SH3/4，SH1，H8，ARMv4，
+M32R，MicroBlaze，TMS320C54x，Xstormy16，MIPS3をサポートしています．カー
+ネルのできる限り多くの部分をC言語で記述する，ターゲット独立部と依存部
+を明確に分離するなど，他のターゲットプロセッサへのポーティングが容易な
+構造になっています．さらに，Linux上とWindows上で動作するシミュレーショ
+ン環境を用意しています．
 
 TOPPERS/JSPカーネルは，フリーソフトウェアです．TOPPERS/JSPカーネルの配
 付キットの最新版は，以下のウェブサイトからダウンロードすることができま
 す．
-	http://www.ertl.jp/TOPPERS/
+        http://www.toppers.jp/
 
 このページからダウンロードできる配付キットには，シミュレーション環境を
 含むTOPPERS/JSPカーネルの全ソースファイルとコンフィギュレータのソース
@@ -46,8 +45,8 @@ TOPPERS/JSPカーネルに関する質問やバグレポートは，このメーリングリスト
 TOPPERSユーザズメーリングリストへの登録を希望される方は，
 toppers-users-ctl@ertl.jp 宛てに，本文に
 
-	subscribe あなたの名前
-	例: subscribe Hiroaki Takada
+        subscribe あなたの名前
+        例: subscribe Hiroaki Takada
 
 と書いたメールを送付してください（上記のコマンド中には半角英文字のみを
 使うこと）．折り返し，登録確認のためのメールをお送りしますので，その指

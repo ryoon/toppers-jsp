@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: mailbox.c,v 1.4 2002/03/26 08:19:38 hiro Exp $
+ *  @(#) $Id: mailbox.c,v 1.8 2003/07/01 13:31:08 hiro Exp $
  */
 
 /*
@@ -61,9 +62,14 @@ extern const MBXINIB	mbxinib_table[];
 extern MBXCB	mbxcb_table[];
 
 /*
+ *  メールボックスの数
+ */
+#define TNUM_MBX	((UINT)(tmax_mbxid - TMIN_MBXID + 1))
+
+/*
  *  メールボックスIDからメールボックス管理ブロックを取り出すためのマクロ
  */
-#define INDEX_MBX(mbxid)	((mbxid) - TMIN_MBXID)
+#define INDEX_MBX(mbxid)	((UINT)((mbxid) - TMIN_MBXID))
 #define get_mbxcb(mbxid)	(&(mbxcb_table[INDEX_MBX(mbxid)]))
 
 /*
@@ -71,25 +77,29 @@ extern MBXCB	mbxcb_table[];
  */
 typedef struct mailbox_waiting_information {
 	WINFO	winfo;		/* 標準の待ち情報ブロック */
-	WOBJCB	*wobjcb;	/* 待ちオブジェクトのコントロールブロック */
+	WOBJCB	*wobjcb;	/* 待ちオブジェクトの管理ブロック */
 	T_MSG	*pk_msg;	/* 受信したメッセージ */
 } WINFO_MBX;
 
 /* 
  *  メールボックス機能の初期化
  */
+#ifdef __mbxini
+
 void
 mailbox_initialize()
 {
-	INT	i;
+	UINT	i;
 	MBXCB	*mbxcb;
 
-	for (mbxcb = mbxcb_table, i = 0; i < tmax_mbxid; mbxcb++, i++) {
+	for (mbxcb = mbxcb_table, i = 0; i < TNUM_MBX; mbxcb++, i++) {
 		queue_initialize(&(mbxcb->wait_queue));
 		mbxcb->mbxinib = &(mbxinib_table[i]);
 		mbxcb->head = NULL;
 	}
 }
+
+#endif /* __mbxini */
 
 /*
  *  メッセージ優先度の取出し
@@ -117,6 +127,8 @@ enqueue_msg_pri(T_MSG **p_prevmsg_next, T_MSG *pk_msg)
 /*
  *  メールボックスへの送信
  */
+#ifdef __snd_mbx
+
 SYSCALL ER
 snd_mbx(ID mbxid, T_MSG *pk_msg)
 {
@@ -124,6 +136,7 @@ snd_mbx(ID mbxid, T_MSG *pk_msg)
 	TCB	*tcb;
 	ER	ercd;
     
+	LOG_SND_MBX_ENTER(mbxid, pk_msg);
 	CHECK_TSKCTX_UNL();
 	CHECK_MBXID(mbxid);
 	mbxcb = get_mbxcb(mbxid);
@@ -156,12 +169,19 @@ snd_mbx(ID mbxid, T_MSG *pk_msg)
 		ercd = E_OK;
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_SND_MBX_LEAVE(ercd);
 	return(ercd);
 }
+
+#endif /* __snd_mbx */
 
 /*
  *  メールボックスからの受信
  */
+#ifdef __rcv_mbx
+
 SYSCALL ER
 rcv_mbx(ID mbxid, T_MSG **ppk_msg)
 {
@@ -169,6 +189,7 @@ rcv_mbx(ID mbxid, T_MSG **ppk_msg)
 	WINFO_MBX winfo;
 	ER	ercd;
     
+	LOG_RCV_MBX_ENTER(mbxid, ppk_msg);
 	CHECK_DISPATCH();
 	CHECK_MBXID(mbxid);
 	mbxcb = get_mbxcb(mbxid);
@@ -188,18 +209,26 @@ rcv_mbx(ID mbxid, T_MSG **ppk_msg)
 		}
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_RCV_MBX_LEAVE(ercd, *ppk_msg);
 	return(ercd);
 }
+
+#endif /* __rcv_mbx */
 
 /*
  *  メールボックスからの受信（ポーリング）
  */
+#ifdef __prcv_mbx
+
 SYSCALL ER
 prcv_mbx(ID mbxid, T_MSG **ppk_msg)
 {
 	MBXCB	*mbxcb;
 	ER	ercd;
     
+	LOG_PRCV_MBX_ENTER(mbxid, ppk_msg);
 	CHECK_TSKCTX_UNL();
 	CHECK_MBXID(mbxid);
 	mbxcb = get_mbxcb(mbxid);
@@ -214,12 +243,19 @@ prcv_mbx(ID mbxid, T_MSG **ppk_msg)
 		ercd = E_TMOUT;
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_PRCV_MBX_LEAVE(ercd, *ppk_msg);
 	return(ercd);
 }
+
+#endif /* __prcv_mbx */
 
 /*
  *  メールボックスからの受信（タイムアウトあり）
  */
+#ifdef __trcv_mbx
+
 SYSCALL ER
 trcv_mbx(ID mbxid, T_MSG **ppk_msg, TMO tmout)
 {
@@ -228,6 +264,7 @@ trcv_mbx(ID mbxid, T_MSG **ppk_msg, TMO tmout)
 	TMEVTB	tmevtb;
 	ER	ercd;
     
+	LOG_TRCV_MBX_ENTER(mbxid, ppk_msg, tmout);
 	CHECK_DISPATCH();
 	CHECK_MBXID(mbxid);
 	CHECK_TMOUT(tmout);
@@ -252,5 +289,10 @@ trcv_mbx(ID mbxid, T_MSG **ppk_msg, TMO tmout)
 		}
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_TRCV_MBX_LEAVE(ercd, *ppk_msg);
 	return(ercd);
 }
+
+#endif /* __trcv_mbx */

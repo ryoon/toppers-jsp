@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G6 /W2 /GX /O2 /I ".." /I "../.." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /G6 /W2 /GR /GX /O2 /I ".." /D "NDEBUG" /D "NO_FC_BINUTILS_CPP" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "FILECONTAINER_WINDOWS" /YX /FD /c
 # ADD BASE RSC /l 0x411 /d "NDEBUG"
 # ADD RSC /l 0x411 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -66,7 +66,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I ".." /I "../.." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I ".." /D "_DEBUG" /D "NO_FC_WINDOWS_CPP" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "FILECONTAINER_WINDOWS" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x411 /d "_DEBUG"
 # ADD RSC /l 0x411 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -87,35 +87,51 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\component.cpp
+SOURCE=..\base\collection.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\directorymap.cpp
+SOURCE=..\base\component.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\except.cpp
+SOURCE=..\base\directorymap.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\fc_windows.cpp
+SOURCE=..\base\except.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\filecontainer.cpp
+SOURCE=..\base\fc_binutils.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\garbage.cpp
+SOURCE=..\base\fc_windows.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\manager.cpp
+SOURCE=..\base\filecontainer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\mpstrstream.cpp
+SOURCE=..\base\garbage.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\message.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\option.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\singleton.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -123,39 +139,35 @@ SOURCE=..\mpstrstream.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\component.h
+SOURCE=..\base\component.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\defs.h
+SOURCE=..\base\defs.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\directorymap.h
+SOURCE=..\base\directorymap.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\except.h
+SOURCE=..\base\except.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\filecontainer.h
+SOURCE=..\base\filecontainer.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\garbage.h
+SOURCE=..\base\garbage.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\jsp_defs.h
+SOURCE=..\base\message.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\manager.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\mpstrstream.h
+SOURCE=..\base\singleton.h
 # End Source File
 # End Group
 # Begin Group "Target dependent"

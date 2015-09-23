@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task.c,v 1.6 2002/03/26 08:19:38 hiro Exp $
+ *  @(#) $Id: task.c,v 1.9 2003/06/04 01:46:16 hiro Exp $
  */
 
 /*
@@ -42,6 +43,8 @@
 #include "jsp_kernel.h"
 #include "task.h"
 #include "cpu_context.h"
+
+#ifdef __tskini
 
 /*
  *  実行状態のタスク
@@ -65,26 +68,16 @@ BOOL	enadsp;
 
 /*
  *  レディキュー
- *
- *  レディキューは，実行できる状態のタスクを管理するためのキューで，優
- *  先度ごとのタスクキューで構成されている．タスクのTCBは，該当する優
- *  先度のキューに登録される．
  */
-static QUEUE	ready_queue[TNUM_TPRI];
+QUEUE	ready_queue[TNUM_TPRI];
 
 /*
  *  レディキューサーチのためのビットマップ
  *
- *  レディキューのサーチを効率よく行うために，優先度ごとのタスクキュー
- *  にタスクが入っているかどうかを示すビットマップを用意している．ビッ
- *  トマップを使うことで，メモリアクセスの回数を減らすことができるが，
- *  ビット操作命令が充実していないプロセッサで，優先度の段階数が少ない
- *  場合には，ビットマップ操作のオーバーヘッドのために，逆に効率が落ち
- *  る可能性もある．
  *  ビットマップを UINT で定義しているが，ビットマップサーチ関数で優先
- *  度が16段階以下であることを仮定してしている．
+ *  度が16段階以下であることを仮定している．
  */
-static UINT	ready_primap;
+UINT	ready_primap;
 
 /*
  *  タスク管理モジュールの初期化
@@ -92,7 +85,7 @@ static UINT	ready_primap;
 void
 task_initialize()
 {
-	INT	i;
+	UINT	i, j;
 	TCB	*tcb;
 
 	runtsk = schedtsk = NULL;
@@ -104,8 +97,10 @@ task_initialize()
 	}
 	ready_primap = 0;
 
-	for (tcb = tcb_table, i = 0; i < tmax_tskid; tcb++, i++) {
-		tcb->tinib = &(tinib_table[i]);
+	for (i = 0; i < TNUM_TSK; i++) {
+		j = INDEX_TSK(torder_table[i]);
+		tcb = &(tcb_table[j]);
+		tcb->tinib = &(tinib_table[j]);
 		tcb->actcnt = FALSE;
 		make_dormant(tcb);
 		if ((tcb->tinib->tskatr & TA_ACT) != 0) {
@@ -113,6 +108,8 @@ task_initialize()
 		}
 	}
 }
+
+#endif /* __tskini */
 
 /*
  *  ビットマップサーチ関数
@@ -160,11 +157,10 @@ bitmap_search(UINT bitmap)
 
 /*
  *  最高優先順位タスクのサーチ
- *
- *  レディキュー中の最高優先順位のタスクをサーチし，そのTCBへのポインタ
- *  を返す．レディキューが空の場合には，この関数を呼び出してはならない．
  */
-static TCB *
+#ifdef __tsksched
+
+TCB *
 search_schedtsk()
 {
 	UINT	schedpri;
@@ -173,18 +169,23 @@ search_schedtsk()
 	return((TCB *)(ready_queue[schedpri].next));
 }
 
+#endif /* __tsksched */
+
 /*
  *  実行できる状態への移行
  *
  *  最高優先順位のタスクを更新するのは，実行できるタスクがなかった場合
  *  と，tcb の優先度が最高優先順位のタスクの優先度よりも高い場合である．
  */
+#ifdef __tskrun
+
 BOOL
 make_runnable(TCB *tcb)
 {
 	UINT	pri = tcb->priority;
 
 	tcb->tstat = TS_RUNNABLE;
+	LOG_TSKSTAT(tcb);
 	queue_insert_prev(&(ready_queue[pri]), &(tcb->task_queue));
 	ready_primap |= PRIMAP_BIT(pri);
 
@@ -195,6 +196,8 @@ make_runnable(TCB *tcb)
 	return(FALSE);
 }
 
+#endif /* __tskrun */
+
 /*
  *  実行できる状態から他の状態への移行
  *
@@ -203,6 +206,8 @@ make_runnable(TCB *tcb)
  *  タスクが最高優先順位になる．そうでない場合は，レディキューをサーチ
  *  する必要がある．
  */
+#ifdef __tsknrun
+
 BOOL
 make_non_runnable(TCB *tcb)
 {
@@ -227,9 +232,13 @@ make_non_runnable(TCB *tcb)
 	return(FALSE);
 }
 
+#endif /* __tsknrun */
+
 /*
  *  休止状態への移行
  */
+#ifdef __tskdmt
+
 void
 make_dormant(TCB *tcb)
 {
@@ -239,11 +248,16 @@ make_dormant(TCB *tcb)
 	tcb->enatex = FALSE;
 	tcb->texptn = 0;
 	create_context(tcb);
+	LOG_TSKSTAT(tcb);
 }
+
+#endif /* __tskdmt */
 
 /*
  *  休止状態から実行できる状態への移行
  */
+#ifdef __tskact
+
 BOOL
 make_active(TCB *tcb)
 {
@@ -251,9 +265,13 @@ make_active(TCB *tcb)
 	return(make_runnable(tcb));
 }
 
+#endif /* __tskact */
+
 /*
  *  実行状態のタスクの終了
  */
+#ifdef __tskext
+
 void
 exit_task()
 {
@@ -266,6 +284,8 @@ exit_task()
 	exit_and_dispatch();
 }
 
+#endif /* __tskext */
+
 /*
  *  レディキュー中のタスクの優先度の変更
  *
@@ -274,6 +294,8 @@ exit_task()
  *  はなく，変更後の優先度が最高優先順位のタスクの優先度よりも高い場合
  *  である．(1) の場合には，レディキューをサーチする必要がある．
  */
+#ifdef __tskpri
+
 BOOL
 change_priority(TCB *tcb, UINT newpri)
 {
@@ -302,12 +324,16 @@ change_priority(TCB *tcb, UINT newpri)
 	return(FALSE);
 }
 
+#endif /* __tskpri */
+
 /*
  *  レディキューの回転
  *
  *  最高優先順位のタスクを更新するのは，最高優先順位のタスクがタスクキ
  *  ューの末尾に移動した場合である．
  */
+#ifdef __tskrot
+
 BOOL
 rotate_ready_queue(UINT pri)
 {
@@ -325,9 +351,18 @@ rotate_ready_queue(UINT pri)
 	return(FALSE);
 }
 
+#endif /* __tskrot */
+
+/*
+ *  引数まで定義したタスク例外処理ルーチンの型
+ */
+typedef void	(*TEXRTN)(TEXPTN texptn, VP_INT exinf);
+
 /*
  *  タスク例外処理ルーチンの呼出し
  */
+#ifdef __tsktex
+
 void
 call_texrtn()
 {
@@ -338,7 +373,10 @@ call_texrtn()
 		runtsk->enatex = FALSE;
 		runtsk->texptn = 0;
 		t_unlock_cpu();
-		(*runtsk->tinib->texrtn)(texptn, runtsk->tinib->exinf);
+		LOG_TEX_ENTER(texptn);
+		((TEXRTN)(*runtsk->tinib->texrtn))(texptn,
+						runtsk->tinib->exinf);
+		LOG_TEX_LEAVE(texptn);
 		if (!t_sense_lock()) {
 			t_lock_cpu();
 		}
@@ -360,3 +398,4 @@ calltex()
 }
 
 #endif /* OMIT_CALLTEX */
+#endif /* __tsktex */

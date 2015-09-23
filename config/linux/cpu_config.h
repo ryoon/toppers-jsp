@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: cpu_config.h,v 1.6 2002/04/05 07:43:51 honda Exp $
+ *  @(#) $Id: cpu_config.h,v 1.9 2003/12/24 07:24:40 honda Exp $
  */
 
 /*
@@ -41,15 +42,11 @@
 
 #ifndef _CPU_CONFIG_H_
 #define _CPU_CONFIG_H_
+
 /*
  *  カーネルの内部識別名のリネーム
  */
-#ifndef OMIT_RENAME
-#define activate_r      _kernel_activate_r
-#ifdef LABEL_ASM
-#define _activate_r     __kernel_activate_r
-#endif /* LABEL_ASM */
-#endif /* OMIT_RENAME */
+#include <cpu_rename.h>
 
 #ifndef _MACRO_ONLY
 
@@ -115,17 +112,23 @@ sense_context()
 Inline BOOL
 sense_lock()
 {
-    int  cnt = _SIGSET_NWORDS;
-        
     sigset_t currentSet;
+    
     sigprocmask(SIG_BLOCK, ((void *)0), &currentSet);
 
-    while(--cnt >= 0)
-        if(currentSet.__val[cnt] != 0)
-            return(FALSE);
+#if defined(linux) & (defined(i386) | defined(_i386_) | defined(__i386__))
+    if(currentSet.__val[0] == ~(0 | (1<<(SIGKILL-1)) | (1<<(SIGSTOP-1)))
+       &&  currentSet.__val[1] == ~0 )
+        return(TRUE);
+    else
+        return(FALSE);
+#else
     
-    return(TRUE);
+#error not supported.
+    
+#endif /* linux */    
 }
+
 
 #define t_sense_lock	sense_lock
 #define i_sense_lock	sense_lock
@@ -276,7 +279,7 @@ define_exc(EXCNO excno, FP exchdr)
 #define	INTHDR_ENTRY(inthdr)      \
 void inthdr##_entry(void){        \
      inthdr();                           /* 割り込みハンドラを呼び出す */ \
-     if(reqflg)                          /* regflg がTRUEであれば      */ \
+     if(_kernel_reqflg)                  /* regflg がTRUEであれば      */ \
        raise(SIGUSR1);                   /* ディスパッチャを呼び出す   */ \
 }                                      
 
@@ -294,7 +297,7 @@ void inthdr##_entry(void){        \
 #define	EXCHDR_ENTRY(exchdr)	  \
 void exchdr##_entry(VP sp){        \
      exchdr(sp);                         /* 割り込みハンドラを呼び出す */ \
-     if(reqflg)                          /* regflg がTRUEであれば      */ \
+     if(_kernel_reqflg)                  /* regflg がTRUEであれば      */ \
        raise(SIGUSR1);                   /* ディスパッチャを呼び出す   */ \
 }
 

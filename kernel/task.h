@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task.h,v 1.6 2002/03/26 08:19:38 hiro Exp $
+ *  @(#) $Id: task.h,v 1.9 2003/06/04 01:46:16 hiro Exp $
  */
 
 /*
@@ -59,14 +60,14 @@
  *  TS_WAIT_???? は，待ち状態に伴う付属状態を表し，待ち状態（二重待ち
  *  状態を含む）の場合にのみ設定される．
  */
-#define	TS_DORMANT	0x00	/* 休止状態 */
-#define	TS_RUNNABLE	0x01	/* 実行できる状態 */
-#define	TS_WAITING	0x02	/* 待ち状態 */
-#define	TS_SUSPENDED	0x04	/* 強制待ち状態 */
+#define	TS_DORMANT	0x00u	/* 休止状態 */
+#define	TS_RUNNABLE	0x01u	/* 実行できる状態 */
+#define	TS_WAITING	0x02u	/* 待ち状態 */
+#define	TS_SUSPENDED	0x04u	/* 強制待ち状態 */
 
-#define	TS_WAIT_SLEEP	0x08	/* 起床待ち状態 */
-#define	TS_WAIT_WOBJ	0x10	/* 同期・通信オブジェクトに対する待ち状態 */
-#define	TS_WAIT_WOBJCB	0x20	/* 共通部分の待ちキューにつながっている */
+#define	TS_WAIT_SLEEP	0x08u	/* 起床待ち状態 */
+#define	TS_WAIT_WOBJ	0x10u	/* 同期・通信オブジェクトに対する待ち状態 */
+#define	TS_WAIT_WOBJCB	0x20u	/* 共通部分の待ちキューにつながっている */
 
 /*
  *  タスク状態判別マクロ
@@ -104,11 +105,11 @@
  *
  *  (c) TCB を待ち対象の同期・通信オブジェクトの待ちキューにつなぐ．待
  *  ちキューにつなぐために，task_queue を使う．TCB を同期・通信オブジェ
- *  クトのコントロールブロックの共通部分（WOBJCB）の待ちキューにつない
- *  だ場合には，タスク状態に TS_WAIT_WOBJCB を設定する．
+ *  クトの管理ブロックの共通部分（WOBJCB）の待ちキューにつないだ場合に
+ *  は，タスク状態に TS_WAIT_WOBJCB を設定する．
  *
- *  (d) 待ち対象の同期・通信オブジェクトのコントロールブロックへのポイ
- *  ンタを，WINFO_WOBJ の wobjcb に記憶する．
+ *  (d) 待ち対象の同期・通信オブジェクトの管理ブロックへのポインタを，
+ *  WINFO_WOBJ の wobjcb に記憶する．
  *  JSPカーネルで wobjcb を使うのは，優先度順の待ちキューにつながれて
  *  いるタスクの優先度が変更された場合のみであるが，デバッグ情報を取り
  *  出しやすいように，待ちキューが優先度順でない場合にも wobjcb を設定
@@ -133,11 +134,11 @@ typedef union waiting_information {
  *
  *  タスクに関する情報を，値が変わらないためにROMに置ける部分（タスク
  *  初期化ブロック）と，値が変化するためにRAMに置かなければならない部
- *  分（タスクコントロールブロック，TCB）に分離し，TCB内に対応するタス
- *  ク初期化ブロックを指すポインタを入れる．タスク初期化ブロック内に対
- *  応するTCBを指すポインタを入れる方法の方が，RAMの節約の観点からは望
- *  ましいが，実行効率が悪くなるために採用していない．他のオブジェクト
- *  についても同様に扱う．
+ *  分（タスク管理ブロック，TCB）に分離し，TCB内に対応するタスク初期化
+ *  ブロックを指すポインタを入れる．タスク初期化ブロック内に対応する
+ *  TCBを指すポインタを入れる方法の方が，RAMの節約の観点からは望ましい
+ *  が，実行効率が悪くなるために採用していない．他のオブジェクトについ
+ *  ても同様に扱う．
  *  タスク初期化ブロックには，DEF_TEX で定義されるタスク例外処理ルーチ
  *  ンに関する情報も含む．
  */
@@ -168,7 +169,7 @@ typedef struct task_initialization_block {
 #endif /* TBIT_TCB_PRIORITY */
 
 /*
- *  タスクコントロールブロック（TCB）
+ *  タスク管理ブロック（TCB）
  *
  *  JSPでは，タスクの起動要求キューイング数の最大値（TMAX_ACTCNT）と起
  *  動要求キューイング数の最大値（TMAX_WUPCNT）は 1 に固定されているた
@@ -182,9 +183,9 @@ typedef struct task_control_block {
 
 	UINT	tstat : TBIT_TCB_TSTAT;		/* タスク状態（内部表現）*/
 	UINT	priority : TBIT_TCB_PRIORITY;	/* 現在の優先度（内部表現）*/
-	BOOL	actcnt : 1;			/* 起動要求キューイング */
-	BOOL	wupcnt : 1;			/* 起床要求キューイング */
-	BOOL	enatex : 1;			/* タスク例外処理許可状態 */
+	unsigned int	actcnt : 1;		/* 起動要求キューイング */
+	unsigned int	wupcnt : 1;		/* 起床要求キューイング */
+	unsigned int	enatex : 1;		/* タスク例外処理許可状態 */
 
 	TEXPTN	texptn;		/* 保留例外要因 */
 	WINFO	*winfo;		/* 待ち情報ブロックへのポインタ */
@@ -229,6 +230,27 @@ extern BOOL	reqflg;
 extern BOOL	enadsp;
 
 /*
+ *  レディキュー
+ *
+ *  レディキューは，実行できる状態のタスクを管理するためのキューで，優
+ *  先度ごとのタスクキューで構成されている．タスクのTCBは，該当する優
+ *  先度のキューに登録される．
+ */
+extern QUEUE	ready_queue[TNUM_TPRI];
+
+/*
+ *  レディキューサーチのためのビットマップ
+ *
+ *  レディキューのサーチを効率よく行うために，優先度ごとのタスクキュー
+ *  にタスクが入っているかどうかを示すビットマップを用意している．ビッ
+ *  トマップを使うことで，メモリアクセスの回数を減らすことができるが，
+ *  ビット操作命令が充実していないプロセッサで，優先度の段階数が少ない
+ *  場合には，ビットマップ操作のオーバーヘッドのために，逆に効率が落ち
+ *  る可能性もある．
+ */
+extern UINT	ready_primap;
+
+/*
  *  タスクIDの最大値（kernel_cfg.c）
  */
 extern const ID	tmax_tskid;
@@ -239,26 +261,44 @@ extern const ID	tmax_tskid;
 extern const TINIB	tinib_table[];
 
 /*
+ *  タスク生成順序テーブル（kernel_cfg.c）
+ */
+extern const ID	torder_table[];
+
+/*
  *  TCBのエリア（kernel_cfg.c）
  */
 extern TCB	tcb_table[];
 
 /*
+ *  タスクの数
+ */
+#define TNUM_TSK	((UINT)(tmax_tskid - TMIN_TSKID + 1))
+
+/*
  *  タスクIDからTCBを取り出すためのマクロ
  */
-#define INDEX_TSK(tskid)	((tskid) - TMIN_TSKID)
+#define INDEX_TSK(tskid)	((UINT)((tskid) - TMIN_TSKID))
 #define get_tcb(tskid)		(&(tcb_table[INDEX_TSK(tskid)]))
 #define get_tcb_self(tskid)	((tskid) == TSK_SELF ? runtsk : get_tcb(tskid))
 
 /*
  *  TCBからタスクIDを取り出すためのマクロ
  */
-#define	TSKID(tcb)	(((tcb) - tcb_table) + TMIN_TSKID)
+#define	TSKID(tcb)	((ID)(((tcb) - tcb_table) + TMIN_TSKID))
 
 /*
  *  タスク管理モジュールの初期化
  */
 extern void	task_initialize(void);
+
+/*
+ *  最高優先順位タスクのサーチ
+ *
+ *  レディキュー中の最高優先順位のタスクをサーチし，そのTCBへのポインタ
+ *  を返す．レディキューが空の場合には，この関数を呼び出してはならない．
+ */
+extern TCB	*search_schedtsk(void);
 
 /*
  *  実行できる状態への移行

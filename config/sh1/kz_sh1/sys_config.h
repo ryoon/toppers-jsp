@@ -2,41 +2,50 @@
  *  TOPPERS/JSP Kernel
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
- *
- *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ * 
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001,2002 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2003 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *
- *  上記著作権者は，Free Software Foundation によって公表されている
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ * 
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
- *
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
- *
- *  @(#) $Id: sys_config.h,v 1.4 2002/04/11 11:30:20 imai Exp $
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
+ * 
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
+ * 
+ *  @(#) $Id: sys_config.h,v 1.7 2003/12/18 06:34:40 honda Exp $
  */
 
+/*
+ *	ターゲットシステム依存モジュール（KZ-SH1用）
+ *　　　　　カーネル内部で使用する定義
+ *　　　　　　データ型、マクロ、関数のプロトタイプ宣言
+ *
+ *  このインクルードファイルは，t_config.h のみからインクルードされる．
+ *  他のファイルから直接インクルードしてはならない．
+ */
 
 #ifndef _SYS_CONFIG_H_
 #define _SYS_CONFIG_H_
@@ -44,74 +53,69 @@
 /*
  *  カーネルの内部識別名のリネーム
  */
-#ifndef OMIT_RENAME
-
-#define board_id		_kernel_board_id
-#define board_addr		_kernel_board_addr
-
-#ifdef LABEL_ASM
-
-#define _board_id		__kernel_board_id
-#define _board_addr		__kernel_board_addr
-
-#endif /* LABEL_ASM */
-#endif /* OMIT_RENAME */
+#include <sys_rename.h>
 
 /*
- *  起動メッセージのターゲット名
+ *  ターゲットシステムのハードウェア資源の定義
+ */
+#include <kz_sh1.h>
+
+/*
+ *  起動メッセージのターゲットシステム名
  */
 #define	TARGET_NAME	"KMC KZ-SH1-01"
 
+
 /*
- *  vxget_tim をサポートするかどうかの定義
+ *  数値データ文字列化用マクロ
  */
-#define	SUPPORT_VXGET_TIM
+#define _TO_STRING(arg)	#arg
+#define TO_STRING(arg)	_TO_STRING(arg)
 
 /*
  *  JSPカーネル動作時のメモリマップ
  *      0x0000,0000 - 0x0004,0000  コード領域(256KB)
  *      0x0a00,0000 -              データ領域(256KB)
  *                  - 0x0a03,ffff  タスク独立部用スタック メモリ終了
- *
  */
 
 /*
  *   スタック領域の定義
- *	タスク独立部用スタックの初期値
+ *	非タスクコンテキスト用スタックの初期値
  */
-
-
-#define STACKTOP    	 0x0a03fffc
-#define str_STACKTOP	_TO_STRING(STACKTOP)
-
+#define STACKTOP    	0x0a03fffc
+#define str_STACKTOP	TO_STRING(STACKTOP)
 
 /*
- *  シリアル割り込みが入力/出力で異なるかどうかの定義
- *  	このマクロを定義すると送受信で割込みハンドラが異なる
+ *  シリアルポート数の定義
+ *
+ *  TNUM_PORTはシリアルドライバ（serial.c）、つまり GDICレベルでサポー
+ *  トしているシリアルポートの数であり、機種依存部で定義するよう共通部
+ *  とのインターフェースで規定されている。
+ *  一方、TNUM_SIOPはPDICレベルでサポートしているシリアルポートの数で
+ *  あり、機種依存部の中でのみ用いている。
+ *　
  */
-#define SEPARATE_SIO_INT
+#define TNUM_PORT 1	/* GDICレベルでサポートするシリアルポートの数 */
+#define	TNUM_SIOP 1	/* PDICレベルでサポートするシリアルポートの数 */
 
+#define	LOGTASK_PORTID	1  /* システムログに用いるシリアルポート番号 */
 
 /*
- *  システムタスクに関する定義
+ *  微少時間待ちのための定義
  */
-#define	CONSOLE_PORTID	1	/* コンソール用に用いるシリアルポート番号 */
-#define	LOGTASK_PORTID	1	/* システムログを出力するシリアルポート番号 */
-
-/*
- *  システムタスクが使用するライブラリに関する定義
- */
-#define NEWLIB			/* newlib を用いる */
+#define	SIL_DLY_TIM1	1143
+#define	SIL_DLY_TIM2	 832
 
 #ifndef _MACRO_ONLY
-
 /*
  *  プロセッサ識別のための変数（マルチプロセッサ対応）
+ *　　　SH1では未実装
  */
-extern INT	board_id;	/* ボードID */
-extern INT	board_addr;	/* ローカルメモリの先頭アドレス */
-
-
+#if 0
+extern UINT	board_id;	/* ボードID */
+extern VP	board_addr;	/* ローカルメモリの先頭アドレス */
+#endif
 
 /*
  *  ターゲットシステム依存の初期化
@@ -122,6 +126,7 @@ extern void	sys_initialize(void);
  *  ターゲットシステムの終了
  *
  *  システムを終了する時に使う．
+ *　　ROMモニタ／GDB STUB呼出しは未実装
  */
 extern void	sys_exit(void);
 
@@ -129,94 +134,9 @@ extern void	sys_exit(void);
  *  ターゲットシステムの文字出力
  *
  *  システムの低レベルの文字出力ルーチン．
- *
+ *　　ROMモニタ／GDB STUB呼出しは未実装
  */
-
-extern void sys_putc(char c);
-
-
-
-/*
- *  SCIの設定
- *  	京都マイクロコンピュータKZ-SH1-01のクロック周波数は20MHz
- *  	CQ出版 RISC評価キット SH-1のクロック周波数は19.6608MHz
- */
-
-/*
- *  分周比とビットレートの設定
- *
- *  クロック	　19.6608MHz
- *  ビットレート　9600bps
- *
- *  　N = CLOCK*10^6 / (64*2^(2n-1)*BPS) - 1
- *  より
- *  　n=0(分周しないのでそのまま)
- *  　N=63で誤差0%
- *  よって、
- *  　シリアルモードレジスタSMRのクロックセレクトビットCKS=00
- *  　ビットレートレジスタBRR=63
- */
-#ifdef CONFIG_19MHZ
-#define SMR_CKS 	0x0	/*  分周比  		*/
-#define SCI_BRR 	63	/*  ビットレート  	*/
-#endif
-
-/*
- *  クロック	　20MHzの場合
- *  ビットレート　9600bps
- *
- *  　n=0(分周しないのでそのまま)
- *  　N=64で誤差0.16%
- *  よって、
- *  　シリアルモードレジスタSMRのクロックセレクトビットCKS=00
- *  　ビットレートレジスタBRR=64
- */
-#ifdef CONFIG_20MHZ
-#define SMR_CKS 	0x0	/*  分周比  		*/
-#define SCI_BRR 	64	/*  ビットレート  	*/
-#endif
-
-
-/*
- *  最初の1ビット分の待ち時間の設定
- *  クロック20MHzの場合の値を流用
- *  ループ1回に付き5命令（＝5クロック）
- *  　N = CLOCK*10^6 / (5*BPS)
- *  より
- *  　N=417回
- *  マージンを入れて
- *  　N=450回
- */
-#define WAIT_TIME 	450
-
-
-/*
- *  ITUの設定
- */
-
-/*
- *  タイマ値の内部表現とミリ秒単位との変換
- */
-
-/*
- *   タイマへの入力クロックの分周比設定
- *   	f/8でカウント
- */
-#define TCR_TPSC	0x3
-
-/*
- *   タイマに供給されるクロック周波数[kHz]
- *   	19.6608MHz/8 =2.4576MHz =2457.6kHz
- */
-#ifdef CONFIG_19MHZ
-#define TIMER_CLOCK	2458
-#endif
-
-/*   	20MHz/8 =2.5MHz =2500kHz	*/
-#ifdef CONFIG_20MHZ
-#define TIMER_CLOCK	2500
-#endif
-
+extern void	sys_putc(char c) throw();
 
 #endif /* _MACRO_ONLY */
 #endif /* _SYS_CONFIG_H_ */

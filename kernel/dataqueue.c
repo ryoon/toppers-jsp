@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: dataqueue.c,v 1.6 2002/03/26 08:19:38 hiro Exp $
+ *  @(#) $Id: dataqueue.c,v 1.9 2003/06/04 01:46:16 hiro Exp $
  */
 
 /*
@@ -56,6 +57,11 @@ extern const ID	tmax_dtqid;
 extern const DTQINIB	dtqinib_table[];
 
 /*
+ *  データキューの数
+ */
+#define TNUM_DTQ	((UINT)(tmax_dtqid - TMIN_DTQID + 1))
+
+/*
  *  データキュー管理ブロックのエリア（kernel_cfg.c）
  */
 extern DTQCB	dtqcb_table[];
@@ -63,7 +69,7 @@ extern DTQCB	dtqcb_table[];
 /*
  *  データキューIDからデータキュー管理ブロックを取り出すためのマクロ
  */
-#define INDEX_DTQ(dtqid)	((dtqid) - TMIN_DTQID)
+#define INDEX_DTQ(dtqid)	((UINT)((dtqid) - TMIN_DTQID))
 #define get_dtqcb(dtqid)	(&(dtqcb_table[INDEX_DTQ(dtqid)]))
 
 /*
@@ -74,20 +80,22 @@ extern DTQCB	dtqcb_table[];
  */
 typedef struct dataqueue_waiting_information {
 	WINFO	winfo;		/* 標準の待ち情報ブロック */
-	WOBJCB	*wobjcb;	/* 待ちオブジェクトのコントロールブロック */
+	WOBJCB	*wobjcb;	/* 待ちオブジェクトの管理ブロック */
 	VP_INT	data;		/* 送受信データ  */
 } WINFO_DTQ;
 
 /*
  *  データキュー機能の初期化
  */
+#ifdef __dtqini
+
 void
 dataqueue_initialize(void)
 {
-	INT	i;
+	UINT	i;
 	DTQCB	*dtqcb;
 
-	for (dtqcb = dtqcb_table, i = 0; i < tmax_dtqid; dtqcb++, i++) {
+	for (dtqcb = dtqcb_table, i = 0; i < TNUM_DTQ; dtqcb++, i++) {
 		queue_initialize(&(dtqcb->swait_queue));
 		dtqcb->dtqinib = &(dtqinib_table[i]);
 		queue_initialize(&(dtqcb->rwait_queue));
@@ -97,10 +105,14 @@ dataqueue_initialize(void)
 	}
 }
 
+#endif /* __dtqini */
+
 /*
  *  データキュー領域にデータを格納
  */
-static BOOL
+#ifdef __dtqenq
+
+BOOL
 enqueue_data(DTQCB *dtqcb, VP_INT data)
 {
 	if (dtqcb->count < dtqcb->dtqinib->dtqcnt) {
@@ -115,10 +127,14 @@ enqueue_data(DTQCB *dtqcb, VP_INT data)
 	return(FALSE);
 }
 
+#endif /* __dtqenq */
+
 /*
  *  データキュー領域にデータを強制格納
  */
-static void
+#ifdef __dtqfenq
+
+void
 force_enqueue_data(DTQCB *dtqcb, VP_INT data)
 {
 	*((VP_INT *)(dtqcb->dtqinib->dtq) + dtqcb->tail) = data;
@@ -134,10 +150,14 @@ force_enqueue_data(DTQCB *dtqcb, VP_INT data)
 	}
 }
 
+#endif /* __dtqfenq */
+
 /*
  *  データキュー領域からデータを取出し
  */
-static BOOL
+#ifdef __dtqdeq
+
+BOOL
 dequeue_data(DTQCB *dtqcb, VP_INT *p_data)
 {
 	if (dtqcb->count > 0) {
@@ -152,10 +172,14 @@ dequeue_data(DTQCB *dtqcb, VP_INT *p_data)
 	return(FALSE);
 }
 
+#endif /* __dtqdeq */
+
 /*
  *  受信待ちキューの先頭タスクへのデータ送信
  */
-static TCB *
+#ifdef __dtqsnd
+
+TCB *
 send_data_rwait(DTQCB *dtqcb, VP_INT data)
 {
 	TCB	*tcb;
@@ -168,10 +192,14 @@ send_data_rwait(DTQCB *dtqcb, VP_INT data)
 	return(NULL);
 }
 
+#endif /* __dtqsnd */
+
 /*
  *  送信待ちキューの先頭タスクからのデータ受信
  */
-static TCB *
+#ifdef __dtqrcv
+
+TCB *
 receive_data_swait(DTQCB *dtqcb, VP_INT *p_data)
 {
 	TCB	*tcb;
@@ -184,9 +212,13 @@ receive_data_swait(DTQCB *dtqcb, VP_INT *p_data)
 	return(NULL);
 }
 
+#endif /* __dtqrcv */
+
 /*
  *  データキューへの送信
  */
+#ifdef __snd_dtq
+
 SYSCALL ER
 snd_dtq(ID dtqid, VP_INT data)
 {
@@ -195,6 +227,7 @@ snd_dtq(ID dtqid, VP_INT data)
 	TCB	*tcb;
 	ER	ercd;
 
+	LOG_SND_DTQ_ENTER(dtqid, data);
 	CHECK_DISPATCH();
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
@@ -216,12 +249,19 @@ snd_dtq(ID dtqid, VP_INT data)
 		ercd = winfo.winfo.wercd;
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_SND_DTQ_LEAVE(ercd);
 	return(ercd);
 }
+
+#endif /* __snd_dtq */
 
 /*
  *  データキューへの送信（ポーリング）
  */
+#ifdef __psnd_dtq
+
 SYSCALL ER
 psnd_dtq(ID dtqid, VP_INT data)
 {
@@ -229,6 +269,7 @@ psnd_dtq(ID dtqid, VP_INT data)
 	TCB	*tcb;
 	ER	ercd;
 
+	LOG_PSND_DTQ_ENTER(dtqid, data);
 	CHECK_TSKCTX_UNL();
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
@@ -247,12 +288,19 @@ psnd_dtq(ID dtqid, VP_INT data)
 		ercd = E_TMOUT;
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_PSND_DTQ_LEAVE(ercd);
 	return(ercd);
 }
+
+#endif /* __psnd_dtq */
 
 /*
  *  データキューへの送信（ポーリング，非タスクコンテキスト用）
  */
+#ifdef __ipsnd_dtq
+
 SYSCALL ER
 ipsnd_dtq(ID dtqid, VP_INT data)
 {
@@ -260,6 +308,7 @@ ipsnd_dtq(ID dtqid, VP_INT data)
 	TCB	*tcb;
 	ER	ercd;
 
+	LOG_IPSND_DTQ_ENTER(dtqid, data);
 	CHECK_INTCTX_UNL();
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
@@ -278,12 +327,19 @@ ipsnd_dtq(ID dtqid, VP_INT data)
 		ercd = E_TMOUT;
 	}
 	i_unlock_cpu();
+
+    exit:
+	LOG_IPSND_DTQ_LEAVE(ercd);
 	return(ercd);
 }
+
+#endif /* __ipsnd_dtq */
 
 /*
  *  データキューへの送信（タイムアウトあり）
  */
+#ifdef __tsnd_dtq
+
 SYSCALL ER
 tsnd_dtq(ID dtqid, VP_INT data, TMO tmout)
 {
@@ -293,6 +349,7 @@ tsnd_dtq(ID dtqid, VP_INT data, TMO tmout)
 	TCB	*tcb;
 	ER	ercd;
 
+	LOG_TSND_DTQ_ENTER(dtqid, data, tmout);
 	CHECK_DISPATCH();
 	CHECK_DTQID(dtqid);
 	CHECK_TMOUT(tmout);
@@ -319,18 +376,27 @@ tsnd_dtq(ID dtqid, VP_INT data, TMO tmout)
 		ercd = winfo.winfo.wercd;
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_TSND_DTQ_LEAVE(ercd);
 	return(ercd);
 }
+
+#endif /* __tsnd_dtq */
 
 /*
  *  データキューへの強制送信
  */
+#ifdef __fsnd_dtq
+
 SYSCALL ER
 fsnd_dtq(ID dtqid, VP_INT data)
 {
 	DTQCB	*dtqcb;	
 	TCB	*tcb;
+	ER	ercd;
 
+	LOG_FSND_DTQ_ENTER(dtqid, data);
 	CHECK_TSKCTX_UNL();
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
@@ -345,19 +411,29 @@ fsnd_dtq(ID dtqid, VP_INT data)
 	else {
 		force_enqueue_data(dtqcb, data);
 	}
+	ercd = E_OK;
 	t_unlock_cpu();
-	return(E_OK);
+
+    exit:
+	LOG_FSND_DTQ_LEAVE(ercd);
+	return(ercd);
 }
+
+#endif /* __fsnd_dtq */
 
 /*
  *  データキューへの強制送信（非タスクコンテキスト用）
  */
+#ifdef __ifsnd_dtq
+
 SYSCALL ER
 ifsnd_dtq(ID dtqid, VP_INT data)
 {
 	DTQCB	*dtqcb;
 	TCB	*tcb;
+	ER	ercd;
 
+	LOG_IFSND_DTQ_ENTER(dtqid, data);
 	CHECK_INTCTX_UNL();
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
@@ -372,13 +448,21 @@ ifsnd_dtq(ID dtqid, VP_INT data)
 	else {
 		force_enqueue_data(dtqcb, data);
 	}
+	ercd = E_OK;
 	i_unlock_cpu();
-	return(E_OK);
+
+    exit:
+	LOG_IFSND_DTQ_LEAVE(ercd);
+	return(ercd);
 }
+
+#endif /* __ifsnd_dtq */
 
 /*
  *  データキューからの受信
  */
+#ifdef __rcv_dtq
+
 SYSCALL ER
 rcv_dtq(ID dtqid, VP_INT *p_data)
 {
@@ -388,6 +472,7 @@ rcv_dtq(ID dtqid, VP_INT *p_data)
 	VP_INT	data;
 	ER	ercd;
 
+	LOG_RCV_DTQ_ENTER(dtqid, p_data);
 	CHECK_DISPATCH();
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
@@ -414,6 +499,7 @@ rcv_dtq(ID dtqid, VP_INT *p_data)
 		queue_insert_prev(&(dtqcb->rwait_queue),
 					&(runtsk->task_queue));
 		winfo.wobjcb = (WOBJCB *) dtqcb;
+		LOG_TSKSTAT(runtsk);
 		dispatch();
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
@@ -421,12 +507,19 @@ rcv_dtq(ID dtqid, VP_INT *p_data)
 		}
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_RCV_DTQ_LEAVE(ercd, *p_data);
 	return(ercd);
 }
+
+#endif /* __rcv_dtq */
 
 /*
  *  データキューからの受信（ポーリング）
  */
+#ifdef __prcv_dtq
+
 SYSCALL ER
 prcv_dtq(ID dtqid, VP_INT *p_data)
 {
@@ -435,6 +528,7 @@ prcv_dtq(ID dtqid, VP_INT *p_data)
 	VP_INT	data;
 	ER	ercd;
 
+	LOG_PRCV_DTQ_ENTER(dtqid, p_data);
 	CHECK_TSKCTX_UNL();
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
@@ -459,12 +553,19 @@ prcv_dtq(ID dtqid, VP_INT *p_data)
 		ercd = E_TMOUT;
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_PRCV_DTQ_LEAVE(ercd, *p_data);
 	return(ercd);
 }
+
+#endif /* __prcv_dtq */
 
 /*
  *  データキューからの受信（タイムアウトあり）
  */
+#ifdef __trcv_dtq
+
 SYSCALL ER
 trcv_dtq(ID dtqid, VP_INT *p_data, TMO tmout)
 {
@@ -475,6 +576,7 @@ trcv_dtq(ID dtqid, VP_INT *p_data, TMO tmout)
 	VP_INT	data;
 	ER	ercd;
 
+	LOG_TRCV_DTQ_ENTER(dtqid, p_data, tmout);
 	CHECK_DISPATCH();
 	CHECK_DTQID(dtqid);
 	CHECK_TMOUT(tmout);
@@ -505,6 +607,7 @@ trcv_dtq(ID dtqid, VP_INT *p_data, TMO tmout)
 		queue_insert_prev(&(dtqcb->rwait_queue),
 					&(runtsk->task_queue));
 		winfo.wobjcb = (WOBJCB *) dtqcb;
+		LOG_TSKSTAT(runtsk);
 		dispatch();
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
@@ -512,5 +615,10 @@ trcv_dtq(ID dtqid, VP_INT *p_data, TMO tmout)
 		}
 	}
 	t_unlock_cpu();
+
+    exit:
+	LOG_TRCV_DTQ_LEAVE(ercd, *p_data);
 	return(ercd);
 }
+
+#endif /* __trcv_dtq */

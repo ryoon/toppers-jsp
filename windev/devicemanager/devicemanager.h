@@ -3,43 +3,44 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: devicemanager.h,v 1.4 2002/04/10 11:27:26 takayuki Exp $
+ *  @(#) $Id: devicemanager.h,v 1.6 2003/06/30 15:58:39 takayuki Exp $
  */
 
 
 /* File created by MIDL compiler version 5.01.0164 */
-/* at Fri Feb 23 19:25:36 2001
+/* at Tue Aug 20 16:26:30 2002
  */
-/* Compiler settings for C:\Sources\Program sources\CVS home\windev\devicemanager\devicemanager.idl:
+/* Compiler settings for C:\Documents and Settings\Takayuki\My Documents\Visual Studio Projects\JSP Windows Logging Mechanism\windev\devicemanager\devicemanager.idl:
     Oicf (OptLev=i2), W1, Zp8, env=Win32, ms_ext, c_ext
     error checks: allocation ref bounds_check enum stub_data 
 */
@@ -108,6 +109,18 @@ typedef interface _IInformationEvents _IInformationEvents;
 #endif 	/* ___IInformationEvents_FWD_DEFINED__ */
 
 
+#ifndef __IKernelLog_FWD_DEFINED__
+#define __IKernelLog_FWD_DEFINED__
+typedef interface IKernelLog IKernelLog;
+#endif 	/* __IKernelLog_FWD_DEFINED__ */
+
+
+#ifndef ___IKernelLogEvents_FWD_DEFINED__
+#define ___IKernelLogEvents_FWD_DEFINED__
+typedef interface _IKernelLogEvents _IKernelLogEvents;
+#endif 	/* ___IKernelLogEvents_FWD_DEFINED__ */
+
+
 #ifndef __Device_FWD_DEFINED__
 #define __Device_FWD_DEFINED__
 
@@ -142,6 +155,18 @@ typedef struct Kernel Kernel;
 #endif /* __cplusplus */
 
 #endif 	/* __Kernel_FWD_DEFINED__ */
+
+
+#ifndef __KernelLog_FWD_DEFINED__
+#define __KernelLog_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class KernelLog KernelLog;
+#else
+typedef struct KernelLog KernelLog;
+#endif /* __cplusplus */
+
+#endif 	/* __KernelLog_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -590,6 +615,10 @@ EXTERN_C const IID IID_IKernel;
             /* [in] */ unsigned long sz,
             /* [length_is][size_is][in] */ byte __RPC_FAR data[  ]) = 0;
         
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE OnLogEvent( 
+            /* [in] */ long sz,
+            /* [length_is][size_is][in] */ byte __RPC_FAR data[  ]) = 0;
+        
     };
     
 #else 	/* C style interface */
@@ -625,6 +654,11 @@ EXTERN_C const IID IID_IKernel;
             /* [in] */ unsigned long sz,
             /* [length_is][size_is][in] */ byte __RPC_FAR data[  ]);
         
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *OnLogEvent )( 
+            IKernel __RPC_FAR * This,
+            /* [in] */ long sz,
+            /* [length_is][size_is][in] */ byte __RPC_FAR data[  ]);
+        
         END_INTERFACE
     } IKernelVtbl;
 
@@ -656,6 +690,9 @@ EXTERN_C const IID IID_IKernel;
 
 #define IKernel_Write(This,address,sz,data)	\
     (This)->lpVtbl -> Write(This,address,sz,data)
+
+#define IKernel_OnLogEvent(This,sz,data)	\
+    (This)->lpVtbl -> OnLogEvent(This,sz,data)
 
 #endif /* COBJMACROS */
 
@@ -698,6 +735,19 @@ void __RPC_STUB IKernel_IsValid_Stub(
 
 
 void __RPC_STUB IKernel_Write_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring] */ HRESULT STDMETHODCALLTYPE IKernel_OnLogEvent_Proxy( 
+    IKernel __RPC_FAR * This,
+    /* [in] */ long sz,
+    /* [length_is][size_is][in] */ byte __RPC_FAR data[  ]);
+
+
+void __RPC_STUB IKernel_OnLogEvent_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,
@@ -916,6 +966,205 @@ void __RPC_STUB _IInformationEvents_OnKernelChanged_Stub(
 #endif 	/* ___IInformationEvents_INTERFACE_DEFINED__ */
 
 
+#ifndef __IKernelLog_INTERFACE_DEFINED__
+#define __IKernelLog_INTERFACE_DEFINED__
+
+/* interface IKernelLog */
+/* [unique][helpstring][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IKernelLog;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("395F900A-AC7E-4A78-9BC1-EE5EF76254FF")
+    IKernelLog : public IUnknown
+    {
+    public:
+    };
+    
+#else 	/* C style interface */
+
+    typedef struct IKernelLogVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *QueryInterface )( 
+            IKernelLog __RPC_FAR * This,
+            /* [in] */ REFIID riid,
+            /* [iid_is][out] */ void __RPC_FAR *__RPC_FAR *ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE __RPC_FAR *AddRef )( 
+            IKernelLog __RPC_FAR * This);
+        
+        ULONG ( STDMETHODCALLTYPE __RPC_FAR *Release )( 
+            IKernelLog __RPC_FAR * This);
+        
+        END_INTERFACE
+    } IKernelLogVtbl;
+
+    interface IKernelLog
+    {
+        CONST_VTBL struct IKernelLogVtbl __RPC_FAR *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IKernelLog_QueryInterface(This,riid,ppvObject)	\
+    (This)->lpVtbl -> QueryInterface(This,riid,ppvObject)
+
+#define IKernelLog_AddRef(This)	\
+    (This)->lpVtbl -> AddRef(This)
+
+#define IKernelLog_Release(This)	\
+    (This)->lpVtbl -> Release(This)
+
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IKernelLog_INTERFACE_DEFINED__ */
+
+
+#ifndef ___IKernelLogEvents_INTERFACE_DEFINED__
+#define ___IKernelLogEvents_INTERFACE_DEFINED__
+
+/* interface _IKernelLogEvents */
+/* [object][helpstring][uuid] */ 
+
+
+EXTERN_C const IID IID__IKernelLogEvents;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("35E35399-55ED-45FC-8F0B-4A1BC6CEA3F0")
+    _IKernelLogEvents : public IUnknown
+    {
+    public:
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE OnKernelStart( void) = 0;
+        
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE OnKernelExit( void) = 0;
+        
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE OnLogEvent( 
+            /* [in] */ long sz,
+            /* [length_is][size_is][in] */ byte __RPC_FAR data[  ]) = 0;
+        
+    };
+    
+#else 	/* C style interface */
+
+    typedef struct _IKernelLogEventsVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *QueryInterface )( 
+            _IKernelLogEvents __RPC_FAR * This,
+            /* [in] */ REFIID riid,
+            /* [iid_is][out] */ void __RPC_FAR *__RPC_FAR *ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE __RPC_FAR *AddRef )( 
+            _IKernelLogEvents __RPC_FAR * This);
+        
+        ULONG ( STDMETHODCALLTYPE __RPC_FAR *Release )( 
+            _IKernelLogEvents __RPC_FAR * This);
+        
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *OnKernelStart )( 
+            _IKernelLogEvents __RPC_FAR * This);
+        
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *OnKernelExit )( 
+            _IKernelLogEvents __RPC_FAR * This);
+        
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *OnLogEvent )( 
+            _IKernelLogEvents __RPC_FAR * This,
+            /* [in] */ long sz,
+            /* [length_is][size_is][in] */ byte __RPC_FAR data[  ]);
+        
+        END_INTERFACE
+    } _IKernelLogEventsVtbl;
+
+    interface _IKernelLogEvents
+    {
+        CONST_VTBL struct _IKernelLogEventsVtbl __RPC_FAR *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define _IKernelLogEvents_QueryInterface(This,riid,ppvObject)	\
+    (This)->lpVtbl -> QueryInterface(This,riid,ppvObject)
+
+#define _IKernelLogEvents_AddRef(This)	\
+    (This)->lpVtbl -> AddRef(This)
+
+#define _IKernelLogEvents_Release(This)	\
+    (This)->lpVtbl -> Release(This)
+
+
+#define _IKernelLogEvents_OnKernelStart(This)	\
+    (This)->lpVtbl -> OnKernelStart(This)
+
+#define _IKernelLogEvents_OnKernelExit(This)	\
+    (This)->lpVtbl -> OnKernelExit(This)
+
+#define _IKernelLogEvents_OnLogEvent(This,sz,data)	\
+    (This)->lpVtbl -> OnLogEvent(This,sz,data)
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+/* [helpstring] */ HRESULT STDMETHODCALLTYPE _IKernelLogEvents_OnKernelStart_Proxy( 
+    _IKernelLogEvents __RPC_FAR * This);
+
+
+void __RPC_STUB _IKernelLogEvents_OnKernelStart_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring] */ HRESULT STDMETHODCALLTYPE _IKernelLogEvents_OnKernelExit_Proxy( 
+    _IKernelLogEvents __RPC_FAR * This);
+
+
+void __RPC_STUB _IKernelLogEvents_OnKernelExit_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring] */ HRESULT STDMETHODCALLTYPE _IKernelLogEvents_OnLogEvent_Proxy( 
+    _IKernelLogEvents __RPC_FAR * This,
+    /* [in] */ long sz,
+    /* [length_is][size_is][in] */ byte __RPC_FAR data[  ]);
+
+
+void __RPC_STUB _IKernelLogEvents_OnLogEvent_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+
+#endif 	/* ___IKernelLogEvents_INTERFACE_DEFINED__ */
+
+
 
 #ifndef __ATLDEVICEMANAGERLib_LIBRARY_DEFINED__
 #define __ATLDEVICEMANAGERLib_LIBRARY_DEFINED__
@@ -948,6 +1197,14 @@ EXTERN_C const CLSID CLSID_Kernel;
 
 class DECLSPEC_UUID("51789667-9F20-40AF-AF7F-9856325DFB0B")
 Kernel;
+#endif
+
+EXTERN_C const CLSID CLSID_KernelLog;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("4BD327FC-9E4A-4A5D-9503-27C979A8E802")
+KernelLog;
 #endif
 #endif /* __ATLDEVICEMANAGERLib_LIBRARY_DEFINED__ */
 

@@ -19,9 +19,6 @@ CFG=devicemanager - Win32 Debug
 !MESSAGE 
 !MESSAGE "devicemanager - Win32 Debug" ("Win32 (x86) Application" 梡)
 !MESSAGE "devicemanager - Win32 Unicode Debug" ("Win32 (x86) Application" 梡)
-!MESSAGE "devicemanager - Win32 Release MinSize" ("Win32 (x86) Application" 梡)
-!MESSAGE "devicemanager - Win32 Release MinDependency" ("Win32 (x86) Application" 梡)
-!MESSAGE "devicemanager - Win32 Unicode Release MinSize" ("Win32 (x86) Application" 梡)
 !MESSAGE "devicemanager - Win32 Unicode Release MinDependency" ("Win32 (x86) Application" 梡)
 !MESSAGE 
 
@@ -44,9 +41,10 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE RSC /l 0x411 /d "_DEBUG"
 # ADD RSC /l 0x411 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -89,6 +87,7 @@ BuildCmds= \
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "DebugU"
 # PROP Intermediate_Dir "DebugU"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /Yu"stdafx.h" /FD /GZ /c
 # ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_UNICODE" /Yu"stdafx.h" /FD /GZ /c
@@ -106,128 +105,21 @@ TargetPath=.\DebugU\devicemanager.exe
 InputPath=.\DebugU\devicemanager.exe
 SOURCE="$(InputPath)"
 
-"$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if "%OS%"=="" goto NOTNT 
-	if not "%OS%"=="Windows_NT" goto NOTNT 
-	"$(TargetPath)" /RegServer 
-	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
-	echo 话兽皳o榐偑姰椆偟傑偟偨! 
-	goto end 
-	:NOTNT 
-	echo 寈崘 : Windows 95 偵 Unicode EXE 傪搊榐偡傞偙偲偼偱偒傑偣傫 
-	:end 
+BuildCmds= \
+	"$(TargetPath)" /RegServer \
+	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" \
+	echo 话兽皳o榐偑姰椆偟傑偟偨! \
+	echo 僾儘僉僔/僗僞僽傪惗惉偟偰偄傑偡 \
+	nmake devicemanagerps.mk \
+	regsvr32 /s devicemanagerps.dll \
+	echo 廔椆偟傑偟偨 \
 	
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "devicemanager - Win32 Release MinSize"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ReleaseMinSize"
-# PROP BASE Intermediate_Dir "ReleaseMinSize"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "ReleaseMinSize"
-# PROP Intermediate_Dir "ReleaseMinSize"
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD BASE RSC /l 0x411 /d "NDEBUG"
-# ADD RSC /l 0x411 /d "NDEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# Begin Custom Build - 搊榐傪峴偭偰偄傑偡
-OutDir=.\ReleaseMinSize
-TargetPath=.\ReleaseMinSize\devicemanager.exe
-InputPath=.\ReleaseMinSize\devicemanager.exe
-SOURCE="$(InputPath)"
 
 "$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	"$(TargetPath)" /RegServer 
-	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
-	echo 话兽皳o榐偑姰椆偟傑偟偨! 
-	
-# End Custom Build
+   $(BuildCmds)
 
-!ELSEIF  "$(CFG)" == "devicemanager - Win32 Release MinDependency"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ReleaseMinDependency"
-# PROP BASE Intermediate_Dir "ReleaseMinDependency"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "ReleaseMinDependency"
-# PROP Intermediate_Dir "ReleaseMinDependency"
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD BASE RSC /l 0x411 /d "NDEBUG"
-# ADD RSC /l 0x411 /d "NDEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# Begin Custom Build - 搊榐傪峴偭偰偄傑偡
-OutDir=.\ReleaseMinDependency
-TargetPath=.\ReleaseMinDependency\devicemanager.exe
-InputPath=.\ReleaseMinDependency\devicemanager.exe
-SOURCE="$(InputPath)"
-
-"$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	"$(TargetPath)" /RegServer 
-	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
-	echo 话兽皳o榐偑姰椆偟傑偟偨! 
-	
-# End Custom Build
-
-!ELSEIF  "$(CFG)" == "devicemanager - Win32 Unicode Release MinSize"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ReleaseUMinSize"
-# PROP BASE Intermediate_Dir "ReleaseUMinSize"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "ReleaseUMinSize"
-# PROP Intermediate_Dir "ReleaseUMinSize"
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD BASE RSC /l 0x411 /d "NDEBUG"
-# ADD RSC /l 0x411 /d "NDEBUG"
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# Begin Custom Build - 搊榐傪峴偭偰偄傑偡
-OutDir=.\ReleaseUMinSize
-TargetPath=.\ReleaseUMinSize\devicemanager.exe
-InputPath=.\ReleaseUMinSize\devicemanager.exe
-SOURCE="$(InputPath)"
-
-"$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if "%OS%"=="" goto NOTNT 
-	if not "%OS%"=="Windows_NT" goto NOTNT 
-	"$(TargetPath)" /RegServer 
-	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
-	echo 话兽皳o榐偑姰椆偟傑偟偨! 
-	goto end 
-	:NOTNT 
-	echo 寈崘 : Windows 95 偵 Unicode EXE 傪搊榐偡傞偙偲偼偱偒傑偣傫 
-	:end 
-	
+"devicemanagerps.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
 # End Custom Build
 
 !ELSEIF  "$(CFG)" == "devicemanager - Win32 Unicode Release MinDependency"
@@ -241,9 +133,10 @@ SOURCE="$(InputPath)"
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "ReleaseUMinDependency"
 # PROP Intermediate_Dir "ReleaseUMinDependency"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /GR /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /W3 /GR /GX /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_UNICODE" /D "_ATL_STATIC_REGISTRY" /Yu"stdafx.h" /FD /c
 # ADD BASE RSC /l 0x411 /d "NDEBUG"
 # ADD RSC /l 0x411 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -258,17 +151,21 @@ TargetPath=.\ReleaseUMinDependency\devicemanager.exe
 InputPath=.\ReleaseUMinDependency\devicemanager.exe
 SOURCE="$(InputPath)"
 
-"$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	if "%OS%"=="" goto NOTNT 
-	if not "%OS%"=="Windows_NT" goto NOTNT 
-	"$(TargetPath)" /RegServer 
-	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" 
-	echo 话兽皳o榐偑姰椆偟傑偟偨! 
-	goto end 
-	:NOTNT 
-	echo 寈崘 : Windows 95 偵 Unicode EXE 傪搊榐偡傞偙偲偼偱偒傑偣傫 
-	:end 
+BuildCmds= \
+	"$(TargetPath)" /RegServer \
+	echo regsvr32 exec. time > "$(OutDir)\regsvr32.trg" \
+	echo 话兽皳o榐偑姰椆偟傑偟偨! \
+	echo 僾儘僉僔/僗僞僽傪惗惉偟偰偄傑偡 \
+	nmake devicemanagerps.mk \
+	regsvr32 /s devicemanagerps.dll \
+	echo 廔椆偟傑偟偨 \
 	
+
+"$(OutDir)\regsvr32.trg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"devicemanagerps.dll" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
 # End Custom Build
 
 !ENDIF 
@@ -277,9 +174,6 @@ SOURCE="$(InputPath)"
 
 # Name "devicemanager - Win32 Debug"
 # Name "devicemanager - Win32 Unicode Debug"
-# Name "devicemanager - Win32 Release MinSize"
-# Name "devicemanager - Win32 Release MinDependency"
-# Name "devicemanager - Win32 Unicode Release MinSize"
 # Name "devicemanager - Win32 Unicode Release MinDependency"
 # Begin Group "Source Files"
 
@@ -311,6 +205,10 @@ SOURCE=.\kernel.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\KernelLog.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\stdafx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
@@ -333,6 +231,10 @@ SOURCE=.\information.h
 # Begin Source File
 
 SOURCE=.\kernel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\KernelLog.h
 # End Source File
 # Begin Source File
 
@@ -369,6 +271,14 @@ SOURCE=.\informat.bin
 # Begin Source File
 
 SOURCE=.\information.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\kernel.rgs
+# End Source File
+# Begin Source File
+
+SOURCE=.\KernelLog.rgs
 # End Source File
 # End Group
 # End Target

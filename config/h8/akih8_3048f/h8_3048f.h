@@ -3,40 +3,41 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2003 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
+ *
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
- * 
- *  @(#) $Id: h8_3048f.h,v 1.2 2002/04/10 10:40:53 honda Exp $
+ *  @(#) $Id: h8_3048f.h,v 1.6 2003/11/11 10:07:15 honda Exp $
  */
 
 #ifndef _H8_3048F_H_
@@ -45,43 +46,6 @@
 /*
  *  H8/3048F 用定義
  */
-
-/*
- *  数値データ文字列化用マクロ
- */
-
-#define TO_STRING(arg)	#arg
-#define _TO_STRING(arg)	TO_STRING(arg)
-
-/* Condition Code Register (CCR) */
-
-#define H8CCR_I_BIT		7
-#define H8CCR_UI_BIT		6
-#define H8CCR_H_BIT		5
-#define H8CCR_U_BIT		4
-#define H8CCR_N_BIT		3
-#define H8CCR_Z_BIT		2
-#define H8CCR_V_BIT		1
-#define H8CCR_C_BIT		0
-
-#define H8CCR_I			(1<<H8CCR_I_BIT)
-#define H8CCR_UI		(1<<H8CCR_UI_BIT)
-#define H8CCR_H			(1<<H8CCR_H_BIT)
-#define H8CCR_U			(1<<H8CCR_U_BIT)
-#define H8CCR_N			(1<<H8CCR_N_BIT)
-#define H8CCR_Z			(1<<H8CCR_Z_BIT)
-#define H8CCR_V			(1<<H8CCR_V_BIT)
-#define H8CCR_C			(1<<H8CCR_C_BIT)
-
-/* CCR の UI ビットを割り込みマスクビットとして使用する。*/
-
-#define H8INT_MASK_ALL		H8CCR_UI
-
-#define H8INT_DIS_ALL		H8INT_MASK_ALL
-#define H8INT_ENA_ALL		(~(H8INT_MASK_ALL))
-
-#define str_H8INT_DIS_ALL	_TO_STRING(H8INT_DIS_ALL)
-#define str_H8INT_ENA_ALL	_TO_STRING(H8INT_ENA_ALL)
 
 /* Interrupt numbers */
 
@@ -442,6 +406,22 @@
 #define H8IPR_SCI1		(1<<(H8IPR_SCI1_BIT))
 #define H8IPR_AD		(1<<(H8IPR_AD_BIT))
 
+/*	Bus Release Control Regisger	*/
+
+#define H8BRCR			0xfffff3
+
+/*	Control bit in BRCR		*/
+
+#define H8BRCR_A23E_BIT		7
+#define H8BRCR_A22E_BIT		6
+#define H8BRCR_A21E_BIT		5
+#define H8BRCR_BRLE_BIT		1
+
+#define H8BRCR_A23E		(1<<(H8BRCR_A23E_BIT))
+#define H8BRCR_A22E		(1<<(H8BRCR_A22E_BIT))
+#define H8BRCR_A21E		(1<<(H8BRCR_A21E_BIT))
+#define H8BRCR_BRLE		(1<<(H8BRCR_BRLE_BIT))
+
 /* Integrated Timer Unit (ITU) */
 
 #define H8ITU_TSTR		0xffff60
@@ -626,11 +606,13 @@
 #define H8SSR_MPB		(1<<H8SSR_MPB_BIT)
 #define H8SSR_MPBT		(1<<H8SSR_MPBT_BIT)
 
-/* port access */
+/*
+ *  内蔵メモリの定義
+ */
 
-#define inb(p)			(*(volatile UB*)(p))
-#define inw(p)			(*(volatile UH*)(p))
-#define outb(p,d)		(*(volatile UB*)(p)=(d))
-#define outw(p,d)		(*(volatile UH*)(p)=(d))
+#define H8IN_ROM_BASE		0x000000
+#define H8IN_ROM_SIZE		0x020000
+#define H8IN_RAM_BASE		0xffef10
+#define H8IN_RAM_SIZE		0x001000
 
 #endif /* _H8_3048F_H_ */

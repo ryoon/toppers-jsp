@@ -2,41 +2,42 @@
  *  TOPPERS/JSP Kernel
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
- *
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ * 
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2003 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
- * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  *
- *  @(#) $Id: hw_serial.h,v 1.4 2002/04/14 11:36:50 hiro Exp $
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
+ *
+ *  @(#) $Id: hw_serial.h,v 1.9 2003/12/11 07:00:10 honda Exp $
  */
 
 #ifndef _HW_SERIAL_H_
@@ -52,258 +53,95 @@
  *      れているので、信号線はTxDとRxDの2本でよい
  */
 
-#include "sys_config.h"
-#include "cpu_config.h"
+#include <s_services.h>
 
 #ifndef _MACRO_ONLY
 
 /*
- *  シリアルポートのハードウェア依存情報の定義
+ *  シリアルポートの初期化ブロック
  */
 
-typedef struct hardware_serial_port_descripter {
-	UW	base;	/* SCI のベースアドレス		*/
-} HWPORT;
-
-#endif	/* of #ifndef _MACRO_ONLY */
+typedef struct sio_port_initialization_block {
+	UW	base;		/* SCI のベースアドレス	*/
+	UW	baudrate;	/* ボーレイト		*/	
+	UB	smr_init;	/* SMR の設定値		*/
+} SIOPINIB;
 
 /*
- *  低レベルポート情報管理ブロックの初期値
+ *  シリアルポートの制御ブロック
  */
 
-#define PORT_ID1	1
-#define PORT_ID2	2
+typedef struct sio_port_control_block {
+	const SIOPINIB	*inib;		/* 初期化ブロック	*/
+	VP_INT		exinf;		/* 拡張情報		*/
+	BOOL		openflag;	/* オープン済みフラグ	*/
+} SIOPCB;
 
-#define HWPORT1	{ HWPORT1_ADDR	}
-#define HWPORT2	{ HWPORT2_ADDR	}
-
-#ifndef _MACRO_ONLY
+extern SIOPCB siopcb_table[TNUM_PORT];
 
 /*
- *  シリアルポートの初期化
+ *  SIO ID から管理ブロックへの変換マクロ
+ */
+
+#define INDEX_SIO(sioid)	((UINT)((sioid) - 1))
+#define get_siopcb(sioid)	(&(siopcb_table[INDEX_SIO(sioid)]))
+
+/*
+ *  コールバックルーチンの識別番号
+ */
+
+#define SIO_ERDY_SND		1u			/* 送信可能コールバック			*/
+#define SIO_ERDY_RCV		2u			/* 受信通知コールバック			*/
+
+/*
+ *  SCI 関数の参照
+ */
+
+extern void	SCI_initialize (ID sioid);		/* SCI の初期化				*/
+extern void	SCI_cls_por(UW base);			/* SCI のクローズ			*/
+extern void	SCI_in_handler(ID sioid);		/* SCI 入力割り込みハンドラ		*/
+extern void	SCI_out_handler(ID sioid);		/* SCI 出力割り込みハンドラ		*/
+extern void	SCI_err_handler(ID sioid);		/* SCI 入力エラー割り込みハンドラ		*/
+extern void	SCI_ierdy_snd(VP_INT exinf);		/* シリアル I/O からの送信可能コールバック	*/
+extern void	SCI_ierdy_rcv(VP_INT exinf);		/* シリアル I/O からの受信通知コールバック	*/
+
+/*
+ *  SCI レベルの関数
+ */
+
+/*
+ *  SCI のオープン
+ */
+
+Inline SIOPCB *
+SCI_opn_por (ID sioid)
+{
+	SCI_initialize(sioid);
+	return get_siopcb(sioid);
+	}
+
+/*
+ *  SCI_putchar -- 送信する文字の書き込み
  */
 
 Inline void
-SCI_initialize(UW base)
+SCI_putchar(SIOPCB *p, UB c)
 {
-    int i;
-					/* 送受信停止		*/
-    outb(base + H8SCR, inb(base + H8SCR) & ~(H8SCR_TE | H8SCR_RE));
+	UW addr = p->inib->base + H8SSR;
 
-    					/* 送受信フォーマット	*/
-         		/* 調歩同期式				*/
-         		/* キャラクタレングス：8ビット		*/
-         		/* パリティなし				*/
-         		/* ストップビットレングス：1		*/
-         		/* クロックセレクト（分周比）		*/
-    outb(base + H8SMR, 0);
-
-    outb(base + H8BRR, H8BRR_RATE);	/*  ボーレート設定  	*/
-
-    			/* 割込み禁止とクロックソースの選択	*/
-    outb(base + H8SCR,
-     inb(base + H8SCR) & ~(H8SCR_TIE  | H8SCR_RIE  |
-                           H8SCR_MPIE | H8SCR_TEIE |
-                           H8SCR_CKE1 | H8SCR_CKE0 ));
-
-    /* ボーレートの設定後、1ビット分待たなければならない。*/
-
-    for(i = SCI_SETUP_COUNT; i -- > 0; )
-    	;
-
-    				/* エラーフラグをクリア		*/
-    outb(base + H8SSR,
-     inb(base + H8SSR) & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
-
-    /* 受信割り込み許可, 送信割込みの許可は送信制御関数で行う	*/
-    /* 送受信許可 */
-
-    outb(base + H8SCR,
-     inb(base + H8SCR) | (H8SCR_RIE | H8SCR_TE | H8SCR_RE));
-}
-
-/*
- * serial_open、serial_close [systask/serial.c] から呼ばれる
- * 関数では何もしない。
- * sys_initialize [config/h8/akih8_3048f/sys_config.c] で行う。
- */
-
-Inline BOOL
-hw_port_initialize(HWPORT *p)
-{
-	return (FALSE);
-}
-
-Inline void
-hw_port_terminate(HWPORT *p)
-{
-}
-
-/*
- *  シリアルポート割込みサービスルーチン（前方参照）
- */
-
-extern void	serial_handler_in(int portid);
-extern void	serial_handler_out(int portid);
-
-/*
- *  シリアルI/Oポートの割込みハンドラ
- */
-
-#if NUM_PORT == 1
-
-Inline void
-hw_serial_handler_in()
-{
-	unsigned char status;
-
-	status = inb(SYSTEM_SCI + H8SSR);
-	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
-
-		/* エラー処理		*/
-
-	    	/* エラーフラグをクリア	*/
-		outb(SYSTEM_SCI + H8SSR, status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
-		}
-
-	if (status & H8SSR_RDRF)
-		serial_handler_in(SYSTEM_PORTID);
-
-}
-
-Inline void
-hw_serial_handler_out()
-{
-	serial_handler_out(SYSTEM_PORTID);
-}
-
-#elif NUM_PORT == 2	/* of #if NUM_PORT == 1 */
-
-Inline void
-hw_serial_handler_in()
-{
-	unsigned char status;
-
-	/* USER_SCI の処理 */
-
-	status = inb(USER_SCI + H8SSR);
-	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
-
-		/* エラー処理		*/
-
-	    	/* エラーフラグをクリア	*/
-		outb(USER_SCI + H8SSR, status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
-		}
-
-	if (status & H8SSR_RDRF)
-		serial_handler_in(USER_PORTID);
-
-	/* SYSTEM_SCI の処理 */
-
-	status = inb(SYSTEM_SCI + H8SSR);
-	if (status & (H8SSR_ORER | H8SSR_FER | H8SSR_PER)) {
-
-		/* エラー処理		*/
-
-	    	/* エラーフラグをクリア	*/
-		outb(SYSTEM_SCI + H8SSR, status & ~(H8SSR_ORER | H8SSR_FER | H8SSR_PER));
-		}
-
-	if (status & H8SSR_RDRF)
-		serial_handler_in(SYSTEM_PORTID);
-
-}
-
-Inline void
-hw_serial_handler_out()
-{
-	unsigned char status;
-
-	/* USER SCI の処理 */
-
-	status = inb(USER_SCI + H8SSR);
-	if (status & H8SSR_TDRE)
-		serial_handler_out(USER_PORTID);
-
-	/* SYSTEM SCI の処理 */
-
-	status = inb(SYSTEM_SCI + H8SSR);
-	if (status & H8SSR_TDRE)
-		serial_handler_out(SYSTEM_PORTID);
-}
-
-#else	/* of #if NUM_PORT == 1 */
-
-#error NUM_PORT <= 2
-
-#endif	/* of #if NUM_PORT == 1 */
-
-/*
- *  文字を受信したか？
- */
-
-Inline BOOL
-hw_port_getready(HWPORT *p)
-{
-	/*  レシーブデータレジスタフル・フラグのチェック  */
-	return(inb(p->base + H8SSR) & H8SSR_RDRF);
-}
-
-/*
- *  文字を送信できるか？
- */
-
-Inline BOOL
-hw_port_putready(HWPORT *p)
-{
-	/*  トランスミットデータレジスタエンプティ・フラグのチェック*/
-
-	return(inb(p->base + H8SSR) & H8SSR_TDRE);
-}
-
-/*
- *  受信した文字の取り出し
- */
-
-Inline UB
-hw_port_getchar(HWPORT *p)
-{
-	UB data;
-	UW addr = p->base + H8SSR;
-
-	data = inb(p->base + H8RDR);
-
- 	/*  レシーブデータレジスタフル・フラグのクリア  */
-
-#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
-	BITCLR(_TO_STRING(H8SSR_RDRF_BIT));
-#undef  BITCLR
-
-	return data;
-}
-
-/*
- *  送信する文字の書き込み
- */
-
-Inline void
-hw_port_putchar(HWPORT *p, UB c)
-{
-	UW addr = p->base + H8SSR;
-
-	outb(p->base + H8TDR, c);
+	outb(p->inib->base + H8TDR, c);
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
 	BITCLR(_TO_STRING(H8SSR_TDRE_BIT));
 #undef  BITCLR
-}
+	}
 
 /*
- * 直接出力 (待ちあり)
+ *  SCI_wait_putchar -- 直接出力 (待ちあり)
  */
 
 Inline void
-SCI_putchar (int base, int c)
+SCI_wait_putchar (int base, int c)
 {
 	UW addr = base + H8SSR;
 
@@ -315,32 +153,169 @@ SCI_putchar (int base, int c)
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
 	BITCLR(_TO_STRING(H8SSR_TDRE_BIT));
 #undef  BITCLR
-
 	}
 
 /*
- *  送信制御関数
+ *  SCI_getchar -- 受信した文字の読み出し
+ */
+
+Inline INT
+SCI_getchar(SIOPCB *p)
+{
+	INT	ch;
+	UW	addr = p->inib->base + H8SSR;
+
+	ch = inb(p->inib->base + H8RDR);
+
+#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
+	BITCLR(_TO_STRING(H8SSR_RDRF_BIT));
+#undef  BITCLR
+
+	return ch;
+	}
+
+/*
+ *  SCI_putready -- 送信可能か
+ */
+
+Inline BOOL
+SCI_putready(SIOPCB *pcb)
+{
+	return (inb(pcb->inib->base + H8SSR) & H8SSR_TDRE) != 0;
+	}
+
+/*
+ *  SCI_getready -- 受信可能か
+ */
+
+Inline BOOL
+SCI_getready(SIOPCB *pcb)
+{
+	return (inb(pcb->inib->base + H8SSR) & H8SSR_RDRF) != 0;
+	}
+
+/*
+ *  送信割り込み制御関数
  */
 
 Inline void
-hw_port_sendstart(HWPORT *p)
+SCI_enable_send(SIOPCB *p)
 {
-	UW addr = p->base + H8SCR;
+	UW addr = p->inib->base + H8SCR;
 
 #define BITSET(bit)	Asm("bset #" bit ", @%0" : : "r"(addr))
 	BITSET(_TO_STRING(H8SCR_TIE_BIT));
 #undef  BITSET
-}
+	}
 
 Inline void
-hw_port_sendstop(HWPORT *p)
+SCI_disable_send(SIOPCB *p)
 {
-	UW addr = p->base + H8SCR;
+	UW addr = p->inib->base + H8SCR;
 
 #define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
 	BITCLR(_TO_STRING(H8SCR_TIE_BIT));
 #undef  BITCLR
-}
+	}
+
+/*
+ *  受信割り込み制御関数
+ */
+
+Inline void
+SCI_enable_recv(SIOPCB *p)
+{
+	UW addr = p->inib->base + H8SCR;
+
+#define BITSET(bit)	Asm("bset #" bit ", @%0" : : "r"(addr))
+	BITSET(_TO_STRING(H8SCR_RIE_BIT));
+#undef  BITSET
+	}
+
+Inline void
+SCI_disable_recv(SIOPCB *p)
+{
+	UW addr = p->inib->base + H8SCR;
+
+#define BITCLR(bit)	Asm("bclr #" bit ", @%0" : : "r"(addr))
+	BITCLR(_TO_STRING(H8SCR_RIE_BIT));
+#undef  BITCLR
+	}
+
+/*
+ *  SIO 関数の参照
+ */
+
+extern void	sio_initialize(void);			/* SCI の初期化				*/
+extern void	sio_ena_cbr(SIOPCB *pcb, UINT cbrtn);	/* シリアル I/O からのコールバック許可	*/
+extern void	sio_dis_cbr(SIOPCB *pcb, UINT cbrtn);	/* シリアル I/O からのコールバック禁止	*/
+
+/*
+ *  関数シミュレーションマクロ
+ */
+
+#define sio_snd_chr(p,c)	SCI_snd_chr(p,c)	/* SCI からの文字受信			*/
+#define sio_rcv_chr(p)		SCI_rcv_chr(p)		/* SCI からの文字受信			*/
+#define sio_ierdy_snd(e)	SCI_ierdy_snd(e)	/* シリアル I/O からの送信可能コールバック	*/
+#define sio_ierdy_rcv(e)	SCI_ierdy_rcv(e)	/* シリアル I/O からの受信通知コールバック	*/
+
+/*
+ *  SIO レベルの関数
+ */
+
+/*
+ *  sio_opn_por -- ポートのオープン
+ */
+
+Inline SIOPCB *
+sio_opn_por(ID sioid, VP_INT exinf)
+{
+	SIOPCB	*pcb;
+
+	pcb = SCI_opn_por(sioid);
+	pcb->exinf    = exinf;
+	pcb->openflag = TRUE;
+	return pcb;
+	}
+
+/*
+ *  sio_cls_por -- ポートのクローズ
+ */
+
+Inline void
+sio_cls_por(SIOPCB *pcb)
+{
+	SCI_cls_por(pcb->inib->base);
+	pcb->openflag = FALSE;
+	}
+
+/*
+ *  sio_snd_chr -- 文字送信
+ */
+
+Inline BOOL
+sio_snd_chr(SIOPCB *pcb, INT chr)
+{
+	if (SCI_putready(pcb)) {
+		SCI_putchar(pcb, (UB)chr);
+		return TRUE;
+		}
+	else
+		return FALSE;
+	}
+
+/*
+ *  sio_rcv_chr -- 文字受信
+ */
+
+Inline INT
+sio_rcv_chr(SIOPCB *pcb)
+{
+	if (SCI_getready(pcb))
+		return SCI_getchar(pcb);
+	else
+		return -1;
+	}
 
 #endif	/* of #ifndef _MACRO_ONLY */
 

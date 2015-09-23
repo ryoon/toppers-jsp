@@ -7,16 +7,14 @@ MEMORY {
 	/* for mode 5: 0x00000 -> 0xfffff */
         vectors		: o = 0xff000, l = 0x00100	/* for debug */
 
-	/* use 128k as the main ram size.  */
-	ram		: o = 0x20000, l = 0x20000
-
-	/* use 128k as the main ram size.  */
-	ram4		: o = 0x40000, l = 0x20000
+	/* use 384k as the main ram size.  */
+	ram		: o = 0x20000, l = 0x60000
 
 	}
 
 PROVIDE(_hardware_init_hook = 0);
 PROVIDE(_software_init_hook = 0);
+PROVIDE(_software_term_hook = 0);
 SECTIONS {
 
 	.vectors : {
@@ -41,7 +39,7 @@ SECTIONS {
 	{
 		__data_start = . ;
 		*(.data)
-	} >ram4
+	} >ram
 	__idata_end = __idata_start + SIZEOF(.data);
 	_edata  =  . ;
 	PROVIDE (edata = .);
@@ -52,7 +50,7 @@ SECTIONS {
 	{
 	  *(.bss)
 	  *(COMMON)
-	} >ram4
+	} >ram
 	_end = .		;
 	PROVIDE (end = .)	;
 

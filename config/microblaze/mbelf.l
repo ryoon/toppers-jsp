@@ -1,10 +1,10 @@
 /*
- *  @(#) $Id: mbelf.l,v 1.1 2002/04/05 08:47:14 honda Exp $
+ *  @(#) $Id: mbelf.l,v 1.3 2003/07/01 15:59:15 honda Exp $
  */
 
 PROVIDE(_hardware_init_hook = 0);
 PROVIDE(_software_init_hook = 0);
-
+PROVIDE(software_term_hook = 0);
 /*
  * Specify the default entry point to the program
  */
@@ -33,6 +33,12 @@ SECTIONS
      *(.rodata)
     } 
 
+
+    . = ALIGN(4);
+    .data : {
+       *(.data)
+    } 
+
  /*
   * Alignments by 8 to ensure that _SDA2_BASE_ on a word boundary
   */
@@ -46,10 +52,6 @@ SECTIONS
     _ssrw_size = _essrw - _ssrw;
     _SDA2_BASE_ = _ssrw + (_ssrw_size / 2 );
 
-    . = ALIGN(4);
-    .data : {
-       *(.data)
-    } 
 
  /*
   * Alignments by 8 to ensure that _SDA_BASE_ on a word boundary 

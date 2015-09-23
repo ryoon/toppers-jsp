@@ -2,51 +2,52 @@
  *  TOPPERS/JSP Kernel
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
- *
- *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ * 
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001,2002 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2003 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *
- *  上記著作権者は，Free Software Foundation によって公表されている
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ * 
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
- *
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
- *
- *  @(#) $Id: cpu_config.c,v 1.5 2002/04/11 11:30:20 imai Exp $
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
+ * 
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
+ * 
+ *  @(#) $Id: cpu_config.c,v 1.8 2003/12/18 06:34:40 honda Exp $
  */
 
+/*
+ *	プロセッサ依存モジュール（SH1用）
+ *　　　　　カーネル内部で使用する定義
+ *　　　　　　C言語関数の実体
+ */
 
 #include "jsp_kernel.h"
 #include "check.h"
 #include "task.h"
-
-#include "sh1.h"
-
-/*
- *  プロセッサ依存モジュール（SH1用）
- */
+#include <sil.h>
 
 /*
  *  タスクコンテキストでの割込みマスク
@@ -64,7 +65,6 @@ UW	int_intmask;
  *  割込み／CPU例外ネストカウンタ
  */
 UW	intnest;
-
 
 /*
  *  例外ベクタテーブル
@@ -84,26 +84,26 @@ cpu_initialize()
 	 *  タスクコンテキストでの割込みマスクの初期化
 	 */
 #ifdef SUPPORT_CHG_IPM
-	task_intmask = 0x0000;
+	task_intmask = 0x0000u;
 #endif /* SUPPORT_CHG_IPM */
 
 	/*
 	 *  割込み／CPU例外ネストカウンタの初期化
 	 */
-	intnest = 1;
+	intnest = 1u;
 
-#ifndef WITH_STUB
+#ifndef GDB_STUB
 
 	/*
 	 * 割り込みコントローラの初期化
 	 */
-	*IPRA = 0x0000;
-	*IPRB = 0x0000;
-	*IPRC = 0x0000;
-	*IPRD = 0x0000;
-	*IPRE = 0x0000;
+	sil_wrh_mem(IPRA, 0x0000);
+	sil_wrh_mem(IPRB, 0x0000);
+	sil_wrh_mem(IPRC, 0x0000);
+	sil_wrh_mem(IPRD, 0x0000);
+	sil_wrh_mem(IPRE, 0x0000);
 
-#endif	/*  WITH_STUB  */
+#endif	/*  GDB_STUB  */
 
 #ifndef CQ_SH1_DEB
 #ifdef EXCVT_KERNEL
@@ -118,10 +118,7 @@ cpu_initialize()
 	set_vbr(EXCVT_KERNEL);
 #endif /* EXCVT_KERNEL */
 #endif /* CQ_SH1_DEB */
-
 }
-
-
 
 /*
  *  プロセッサ依存の終了処理
@@ -139,28 +136,34 @@ cpu_terminate()
 /*
  *  割込みマスクの変更
  *
- *  chg_ipm を使って IPM を MAX_IPM （NMI スタブリモートブレーク 以外
- *  のすべての割込みを禁止）以上に変更することはできない．NMI スタブリ
- *  モートブレーク以外のすべての割込みを禁止したい場合には、loc_cpu に
- *  よりCPUロック状態にすればよい．IPM が 0 以外の時にも，タスクディス
- *  パッチは保留されない．IPM は，タスクディスパッチによって，新しく実
- *  行状態になったタスクへ引き継がれる．そのため，タスクが実行中に，別
- *  のタスクによって IPM が変更される場合がある．JSPカーネルでは，IPM
- *  の変更はタスク例外処理ルーチンによっても起こるので，これによって扱
- *  いが難しくなる状況は少ないと思われる．IPM の値によってタスクディス
- *  パッチを禁止したい場合には，dis_dsp を併用すればよい．
+ *  chg_ipm を使って IPM を0xf（NMI 以外のすべての割込みを禁止）に変更
+ *  することはできない．NMI 以外のすべての割込みを禁止したい場合には，
+ *  loc_cpu によりCPUロック状態にすればよい．
+ *  IPM が 0 以外の時にも，タスクディスパッチは保留されない．IPM は，
+ *  タスクディスパッチによって，新しく実行状態になったタスクへ引き継が
+ *  れる．そのため，タスクが実行中に，別のタスクによって IPM が変更さ
+ *  れる場合がある．JSPカーネルでは，IPM の変更はタスク例外処理ルーチ
+ *  ンによっても起こるが，これによって扱いが難しくなる状況は少ないと
+ *  思われる．IPM の値によってタスクディスパッチを禁止したい場合には，
+ *  dis_dsp を併用すればよい．
  */
-
 SYSCALL ER
 chg_ipm(IPM ipm)
 {
+	ER	ercd;
+
+	LOG_CHG_IPM_ENTER(ipm);
 	CHECK_TSKCTX_UNL();
 	CHECK_PAR(0 <= ipm && ipm <= MAX_IPM - 1);
 
 	t_lock_cpu();
 	task_intmask = (ipm << 4);
+	ercd = E_OK;
 	t_unlock_cpu();
-	return(E_OK);
+
+    exit:
+	LOG_CHG_IPM_LEAVE(ercd);
+	return(ercd);
 }
 
 /*
@@ -169,17 +172,22 @@ chg_ipm(IPM ipm)
 SYSCALL ER
 get_ipm(IPM *p_ipm)
 {
+	ER	ercd;
+
+	LOG_GET_IPM_ENTER(p_ipm);
 	CHECK_TSKCTX_UNL();
 
 	t_lock_cpu();
 	*p_ipm = (task_intmask >> 4);
+	ercd = E_OK;
 	t_unlock_cpu();
-	return(E_OK);
+
+    exit:
+	LOG_GET_IPM_LEAVE(ercd, *p_ipm);
+	return(ercd);
 }
 
-
 #endif /* SUPPORT_CHG_IPM */
-
 
 /*
  * 登録されていない例外が発生すると呼び出される
@@ -188,21 +196,21 @@ void cpu_experr(EXCSTACK *sp)
 {
     syslog(LOG_EMERG, "Exception error occurs.");
 
-    syslog(LOG_EMERG, "PC = %08x SR = %08x PR = %08x",
+    syslog(LOG_EMERG, "PC = 0x%08x SR = 0x%08x PR = 0x%08x",
     			sp->pc, sp->sr, sp->pr);
 
-    syslog(LOG_EMERG, "r0 = %08x r1 = %08x r2 = %08x",
+    syslog(LOG_EMERG, "r0 = 0x%08x r1 = 0x%08x r2 = 0x%08x",
     			sp->r0, sp->r1, sp->r2);
-    syslog(LOG_EMERG, "r3 = %08x r4 = %08x r5 = %08x",
+    syslog(LOG_EMERG, "r3 = 0x%08x r4 = 0x%08x r5 = 0x%08x",
     			sp->r3, sp->r4, sp->r5);
-    syslog(LOG_EMERG, "r6 = %08x r7 = %08x r8 = %08x",
+    syslog(LOG_EMERG, "r6 = 0x%08x r7 = 0x%08x r8 = 0x%08x",
     			sp->r6, sp->r7, sp->r8);
-    syslog(LOG_EMERG, "r9 = %08x r10 = %08x r11 = %08x",
+    syslog(LOG_EMERG, "r9 = 0x%08x r10 = 0x%08x r11 = 0x%08x",
     			sp->r9, sp->r10, sp->r11);
-    syslog(LOG_EMERG, "r12 = %08x r13 = %08x r14 = %08x",
+    syslog(LOG_EMERG, "r12 = 0x%08x r13 = 0x%08x r14 = 0x%08x",
     			sp->r12, sp->r13, sp->r14);
     			/*  例外発生直前のスタックポインタの値  */
-    syslog(LOG_EMERG, "r15 = %08x", (sp->r15)+19*4);
+    syslog(LOG_EMERG, "r15 = 0x%08x", (sp->r15)+19*4);
 
     while(1);
 }
@@ -219,11 +227,12 @@ void cpu_experr(EXCSTACK *sp)
 VP
 _dummy_memcpy(VP dest, VP src, UINT len)
 {
-	VB	*d = dest;
-	VB	*s = src;
+	VB	*d = (VB *)dest;
+	VB	*s = (VB *)src;
 
 	while (len-- > 0) {
 		*d++ = *s++;
 	}
 	return(dest);
 }
+

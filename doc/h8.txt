@@ -1,72 +1,83 @@
                ＝ TOPPERS/JSPカーネル ユーザズマニュアル ＝
                             （H8 ターゲット依存部）
    
-               （Release 1.3対応，最終更新: 10-Apl-2002）
+               （Release 1.4対応，最終更新: 8-Dec-2003）
    
    ------------------------------------------------------------------------ 
     TOPPERS/JSP Kernel
+
         Toyohashi Open Platform for Embedded Real-Time Systems/
         Just Standard Profile Kernel
    
-    Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+    Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                                 Toyohashi Univ. of Technology, JAPAN
-    Copyright (C) 2001 by Industrial Technology Institute,
+    Copyright (C) 2001-2003 by Industrial Technology Institute,
                                 Miyagi Prefectural Government, JAPAN
-    Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+    Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
                      Tomakomai National College of Technology, JAPAN
+    Copyright (C) 2001-2003 by Kunihiko Ohnaka
+    Copyright (C) 2003 by Katsuhiro Amano
    
-    上記著作権者は，Free Software Foundation によって公表されている 
-    GNU General Public License の Version 2 に記述されている条件か，以
-    下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
-    アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+    上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+    によって公表されている GNU General Public License の Version 2 に記
+    述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+    を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
     利用と呼ぶ）することを無償で許諾する．
     (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
         権表示，この利用条件および下記の無保証規定が，そのままの形でソー
         スコード中に含まれていること．
-    (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
-        ジェクトファイルやライブラリなど）の形で利用する場合には，利用
-        に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
-        この利用条件および下記の無保証規定を掲載すること．
-    (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
-        み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
-      (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
-          権表示，この利用条件および下記の無保証規定を掲載すること．
-      (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
-          こと．
+    (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+        用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+        者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+        の無保証規定を掲載すること．
+    (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+        用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+        と．
+      (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+          作権表示，この利用条件および下記の無保証規定を掲載すること．
+      (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+          報告すること．
     (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
-        害からも，上記著作権者を免責すること．
+        害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
    
-    本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
-    本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
-    ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
-    かなる損害に関しても，その責任を負わない．
+    本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+    よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+    含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+    接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
    
-    @(#) $Id: h8.txt,v 1.3 2002/04/10 10:40:53 honda Exp $
+    @(#) $Id: h8.txt,v 1.8 2003/12/20 09:28:17 honda Exp $
+
    ------------------------------------------------------------------------
 
 1.  H8 ターゲット依存部の概要
 
 1. 1  ターゲットシステムと開発環境
 
-  H8 プロセッサのターゲットシステムは、H8/3048F と H8/3067F を搭載した
-以下のボードである。
+  H8 プロセッサのターゲットシステムは、H8/3048F、H8/3052F、 H8/3067F、
+H8/3068F、H8/3069F を搭載した以下のボードである。
 
    ・(株) 秋月電子通商製の AKI-H8/3048F
+   ・(株) 秋月電子通商製の AKI-H8/3052F (AKI-H8-USB ボートに装着)
    ・(株) 秋月電子通商製の AKI-H8/3067F
+   ・(株) 秋月電子通商製の AKI-H8/3068F
+   ・(株) 秋月電子通商製の AKI-H8/3069F
 
 なお、何もしないタスク 1 個の最小構成でも、必要な RAM 容量は H8 の内蔵
-RAM 容量の 4[Kbyte] を超える。このため外部 RAM の増設が必要で、 外部ア
-ドレス空間を有効にする必要がある。 現在の構成では、H8/3048F がモード 5
-の内蔵 ROM 有効拡張 1M バイトモード、H8/3067F もモード 5 の内蔵 ROM 有
-効拡張 16M バイトモードを想定している。
-  開発環境は、Windows 2000 上の cygwin の開発環境を用いた。また、 デバッ
-グモードとリリースモードでモジュールの実行方法が異なっている。デバッグ
-モードでは (株) 秋月電子通商製のモニターデバッカを H8 の内蔵フラッシュ
-ROM に書き込み、 デバッグするモジュールを外部 RAM にロードしてデバッグ
-を行う。リリースモードでは、デバッグの終了したモジュールを内蔵フラッシュ
-ROM に書き込むことを想定している。デバッグモードとリリースモードの切り
-替えは、 ディレクトリ $(CPU)/$(SYS) にある Makefile.config の
-AKI_MONITOR の定義による。
+RAM 容量のを超える。 このため外部 RAM の増設が必要で、外部アドレス空間
+を有効にする必要がある。現在の構成では、H8/3048F がモード 5 の内蔵 ROM
+有効拡張 1M バイトモード、 H8/3052F がモード 6 の内蔵 ROM 有効拡張 16M
+バイトモード、 H8/3067F、H8/3068F、H8/3069F がモード 5 の内蔵 ROM 有効
+拡張 16M バイトモードを想定している。
+  開発環境は、 Windows 2000 と Windows XP 上の cygwin の開発環境を用い
+た。また、デバッグモードとリリースモードでモジュールの実行方法が異なっ
+ている。デバッグモードでは (株) 秋月電気通商製モニタデバッカ (以下、秋
+月モニタ)、eCos/RedBoot プロジェクト製デバッカ (以下、RedBoot)、または
+苫小牧高専情報学科製簡易モニタ (以下、 簡易モニタ)、を H8 の内蔵フラッ
+シュ ROM に書き込み、デバッグするモジュールを外部 RAM にロードしてデバッ
+グを行う。リリースモードでは、デバッグの終了したモジュールを内蔵フラッ
+シュ ROM に書き込むことを想定している。 デバッグモードとリリースモード
+の切り替えは、 ディレクトリ $(CPU)/$(SYS) にある Makefile.config の
+DBGENV の定義による。
 
 1. 2  サポートする機能の概要
 
@@ -82,16 +93,16 @@ H8S シリーズを統合する予定である。
 
 1. 4  シリアルポート (SCI)
 
-  H8/3048F には SCI0 と SCI1 の 2 本、 H8/3067F には SCI0 から SCI2 の
-3 本のシリアルポートがあり、 sys_config.h に定義している NUM_PORT によ
-り何本使用するか指定できる。 現在の実装では 2 本まで使用できる。JSP カー
-ネルのログ出力用には SCI1 を使用している。シリアルポートの設定を以下に
-示す。
+  H8/3048F と H8/3052F には SCI0 と SCI1 の 2 本、H8/3067F、H8/3068F、
+H8/3069F には SCI0 から SCI2 の 3 本のシリアルポートがあり、
+sys_config.h に定義している TNUM_PORT により何本使用するか指定できる。
+現在の実装では 2 本まで使用できる。 JSP カーネルのログ出力用には SCI1
+を使用している。 シリアルポートの設定を以下に示す。 
 
-   ・ボーレイト、H8/3048F は 9600[bps]、H8/3067F は 19200[bps]
-   ・データ長、8 ビット
-   ・ストップビット、1 ビット
-   ・パリティなし
+   ・ボーレイト、38400[bps]。
+   ・データ長、8 ビット。
+   ・ストップビット、1 ビット。
+   ・パリティなし。
 
 2.  H8 プロセッサ依存部の機能
 
@@ -99,12 +110,14 @@ H8S シリーズを統合する予定である。
 
 2. 1  データ型
 
-  int 型と unsigned int 型のサイズは 32 ビットである。
+  int 型と unsigned int 型のサイズは 32 ビットである。また、_int64_ を
+long long に定義しているが、 コンパイラ (gcc-2.95.3) の制約から、32 ビッ
+ト型として取り扱われる。
 
 2. 2  割込み管理機能と割込みハンドラ
 
   NMI はカーネル管理外の割り込みである。 CCR レジスタの I ビットと UI
-ビットをセットすることによって、CPU ロック時や初期化ルーチン内で、 NMI
+ビットをセットすることによって、 CPU ロック時や初期化ルーチン内で、NMI
 以外の割り込みは全て禁止可能である。 
   H8 の割込みマスクは、CCR レジスタの I ビットと UI ビットであるが、本
 実装では SYSCR レジスタの UE ビットをクリアし、I ビットを 1 に固定して、
@@ -117,15 +130,15 @@ UI ビットで全体の割り込みを制御している。
 2. 3  CPU 例外管理機能と CPU 例外ハンドラ
 
   割込みハンドラ番号のデータ型 (EXCNO) は unsigned int 型に定義されて
-いる。 H8 の割込みと CPU 例外ベクタは ROM 領域にあり、動的に内容を変更
+いる。H8 の割込みと CPU 例外ベクタは ROM 領域にあり、 動的に内容を変更
 するためには特別の方法が必要であるため、動的なハンドラの登録機能はない。
-従って、割込みハンドラの設定関数 define_inh、 CPU 例外ハンドラの設定関
+従って、 割込みハンドラの設定関数 define_inh、CPU 例外ハンドラの設定関
 数 define_exc は、何もしない関数である。
 
 2. 4  スタートアップモジュール
 
   H8 依存のスタートアップモジュール (start.S) は次に示す初期化を実行し
-た後、 カーネル (kernel_start) を起動する。ただし、kernel_start から戻っ
+た後、カーネル (kernel_start) を起動する。ただし、 kernel_start から戻っ
 てくることは想定していない。
 
    (1)   スタックポインタの設定
@@ -134,7 +147,7 @@ UI ビットで全体の割り込みを制御している。
            hardware_init_hook が 0 でなければ、hardware_init_hook を呼
          出す。hardware_init_hook はカーネルを起動する前に、ターゲット
          依存のハードウェア的な初期化を行うために用意されている。 本実
-         装では、 SYSCR レジスタの UE ビットのクリア、割込み優先レジス
+         装では、SYSCR レジスタの UE ビットのクリア、 割込み優先レジス
          タ (IPRA と IPRB) の個別割り込みの優先度の設定、 外部メモリ空
          間の有効化を行っている。hardware_init_hook が未定義の場合、リ
          ンカスクリプトの記述によりこのシンボルが 0 に定義される。 
@@ -155,13 +168,14 @@ UI ビットで全体の割り込みを制御している。
 
 2. 5  割込み発生時のスタック使用量について
 
-  割込みネストレベルが 0 で割込みが発生すると、 タスク独立部用スタック
-にレジスタを保存した後、割込み用スタックに切り替えるため、タスク独立部
-用スタック使用量は PC+CCR と ER0 から ER6 の 32 バイトである。 SP(ER7)
-は割込み用のスタックに保存される。 
-  割込みネストレベル 0 では、 タスク独立部用スタックにレジスタを保存す
-るため、割込み用のスタック使用量は PC+CCR と ER0 から ER6 の 32 バイト
-×(最大ネスト数-1) と、割込みネストレベル 0 で保存される SP(ER7) の
+  割込みネストレベルが 0 で割込みが発生すると、 非タスクコンテキスト用
+スタックにレジスタを保存した後、割込み用スタックに切り替えるため、非タ
+スクコンテキスト用スタック使用量は PC+CCR と ER0 から ER6 の 32 バイト
+である。SP(ER7) は割込み用のスタックに保存される。
+  割込みネストレベル 0 では、 非タスクコンテキスト用スタックにレジスタ
+を保存するため、 割込み用のスタック使用量は PC+CCR と ER0 から ER6 の
+32 バイト×(最大ネスト数-1) と、 割込みネストレベル 0 で保存される
+SP(ER7) の
 
    32バイト×(最大ネスト数 - 1) + 4バイト
 
@@ -178,25 +192,29 @@ UI ビットで全体の割り込みを制御している。
 
   システムクロックドライバが isig_tim を呼出す周期は、 sys_defs.h 内の
 TIC_NUME と TIC_DENO で定義されており、ディフォルトは 1[ms] 周期である。
-この定義を変更することで、 isig_tim を呼出す周期を変更できる。ただし、
-H8/3048F のクロックが 16[MHz]、 H8/3067F のクロックが 20[MHz] の場合、
-タイマの精度が 0.5[us] のため、 0.5[us] 単位で端数になる値を設定すると、
-|isig_tim の呼出し周期に誤差が発生する。
-  ディフォルトのクロックディバイスは H8/3048F が ITU0、 H8/3067F が 16
-ビットタイマユニット 0 を使用している。
+この定義を変更することで、isig_tim を呼出す周期を変更できる。 ただし、
+H8/3048F のクロックが 16[MHz] で、 タイマの精度が 0.5[us]、H8/3052F の
+クロックが 25[MHz] で、タイマの精度が 0.32[us]、 H8/3067F、 H8/3068F、
+H8/3069F のクロックが 20[MHz] で、 タイマの精度が 0.4[us] のため、これ
+ら単位で端数になる値を設定すると、 isig_tim の呼出し周期に誤差が発生す
+る。
+  ディフォルトのクロックディバイスは H8/3048F と H8/3052F が ITU0、
+H8/3067F、H8/3068F、H8/3069F が 16 ビットタイマユニット 0 を使用してい
+る。
 
 3. 2  性能評価用システム時刻参照機能
 
   H8 では、性能評価用システム時刻参照機能 (vxget_tim) をサポートしてい
-る。精度は 0.5[us] で、SYSUTIM 型は UD 型 (64 ビット符号なし整数型) で
+る。精度は 0.5[us] で、SYSUTIM 型は UD 型 (32 ビット符号なし整数型) で
 ある。
 
 3. 3  シリアルインタフェースドライバ
 
-  H8/3048F には SCI0 と SCI1 の 2 本、 H8/3067F には SCI0 から SCI2 の
-3 本のシリアルポートがあり、 sys_config.h に定義している NUM_PORT によ
-り何本使用するか指定できる。 現在の実装では 2 本まで使用できる。JSP カー
-ネルのログ出力用には SCI1 を使用している。
+  H8/3048F と H8/3052F には SCI0 と SCI1 の 2 本、H8/3067F、H8/3068F、
+H8/3069F には SCI0 から SCI2 の 3 本のシリアルポートがあり、
+sys_config.h に定義している TNUM_PORT により何本使用するか指定できる。
+現在の実装では 2 本まで使用できる。 JSP カーネルのログ出力用には SCI1
+を使用している。
 
 3. 4  メモリマップ
 
@@ -207,36 +225,56 @@ H8/3048F のクロックが 16[MHz]、 H8/3067F のクロックが 20[MHz] の場合、
 
    (1)   デバッグ時
 
-         0x00000 - 0x1ffff  内蔵 ROM、(株) 秋月電子通商製のモニターデバッカ
-         0x20000 - 0x3ffff  外部 RAM、.text、.rodata
-         0x40000 - 0xfef0f  外部 RAM、.data、.bss
-         0xfef10 - 0xfefff  内蔵 RAM、(株) 秋月電子通商製のモニターデバッカ使用
+         0x00000 - 0x1ffff  内蔵 ROM、秋月モニタ
+         0x20000 - 0x3ffff  外部 RAM、.text、.rodata、.data、.bss
+         0xfef10 - 0xfefff  内蔵 RAM、秋月モニタ
          0xff000 - 0xff0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
-         0xff100 - 0xfff0f  内蔵 RAM、タスク独立部用スタック
-         0xfff10 - 0xfff1b  外部 RAM、空き
+         0xff100 - 0xfff0f  内蔵 RAM、非タスクコンテキスト用スタック
          0xfff1c - 0xfffff  内蔵 I/O レジスタ
 
    (2)   リリース時
 
          0x00000 - 0x1ffff  内蔵 ROM、.vectors、.text、.rodata
          0x20000 - 0xfef0f  外部 RAM、.data、.bss
-         0xfef10 - 0xfff0f  内蔵 RAM、タスク独立部用スタック
-         0xfff10 - 0xfff1b  外部 RAM、空き
+         0xfef10 - 0xfff0f  内蔵 RAM、非タスクコンテキスト用スタック
          0xfff1c - 0xfffff  内蔵 I/O レジスタ
 
-3. 4. 2  H8/3067F のメモリマップ
+3. 4. 2  H8/3052F のメモリマップ
+
+  内蔵メモリだけでは不足するため、 AKI-H8-USB ボードに装着し、
+AKI-H8-USB ボードにある 128K バイトの RAM を利用している。このため、外
+部アドレス空間を有効にする必要があり、モード 6 の内蔵 ROM 有効拡張 16M
+バイトモードを想定している。
+
+   (1)   デバッグ時
+
+         0x000000 - 0x07ffff  内蔵 ROM、簡易モニタ
+         0x220000 - 0x23ffff  外部 RAM、.text、.rodata、.data、.bss
+         0xffdf10 - 0xffdfff  外部 RAM、簡易モニタ
+         0xffe000 - 0xffe0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
+         0xffe100 - 0xffff0f  内蔵 RAM、非タスクコンテキスト用スタック
+         0xffff1c - 0xffffff  内蔵 I/O レジスタ
+
+   (2)   リリース時
+
+         0x000000 - 0x05ffff  内蔵 ROM、.vectors、.text、.rodata
+         0x220000 - 0x23ffff  外部 RAM、.data、.bss
+         0xffef10 - 0xffff0f  内蔵 RAM、非タスクコンテキスト用スタック
+         0xffff1c - 0xffffff  内蔵 I/O レジスタ
+
+3. 4. 3  H8/3067F のメモリマップ
 
   外部アドレス空間を有効にする必要があるため、モード 5 の内蔵 ROM 有効
 拡張 16M バイトモードを想定している。
 
    (1)   デバッグ時
 
-         0x000000 - 0x1fffff  内蔵 ROM、(株) 秋月電子通商製のモニターデバッカ
+         0x000000 - 0x01ffff  内蔵 ROM、秋月モニタ
          0x200000 - 0x2000ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
          0x200100 - 0x207f23  外部 RAM、.text、.rodata、.data、.bss
-         0x207f24 - 0x207fff  外部 RAM、(株) 秋月電子通商製のモニターデバッカ使用
+         0x207f24 - 0x207fff  外部 RAM、秋月モニタ
          0xee0000 - 0xee0081  内蔵 I/O レジスタ
-         0xffef20 - 0xffff1f  内蔵 RAM、タスク独立部用スタック
+         0xffef20 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
          0xffff20 - 0xffffe9  内蔵 I/O レジスタ
 
    (2)   リリース時
@@ -244,15 +282,76 @@ H8/3048F のクロックが 16[MHz]、 H8/3067F のクロックが 20[MHz] の場合、
          0x000000 - 0x01ffff  内蔵 ROM、.vectors、.text、.rodata
          0x200000 - 0x207fff  外部 RAM、.data、.bss
          0xee0000 - 0xee0081  内蔵 I/O レジスタ
-         0xffef20 - 0xffff1f  内蔵 RAM、タスク独立部用スタック
+         0xffef20 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内蔵 I/O レジスタ
+
+3. 4. 4  H8/3068F のメモリマップ
+
+  外部アドレス空間を有効にする必要があるため、モード 5 の内蔵 ROM 有効
+拡張 16M バイトモードを想定している。
+
+   (1)   デバッグ時
+
+         0x000000 - 0x05ffff  内蔵 ROM、簡易モニタ
+         0x400000 - 0x4fffff  外部 RAM、.text、.rodata
+         0x500000 - 0x5fffff  外部 RAM、.data、.bss
+         0xee0000 - 0xee0081  内蔵 I/O レジスタ
+         0xffbf20 - 0xffbfff  外部 RAM、簡易モニタ
+         0xffc000 - 0xffc0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
+         0xffc100 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内蔵 I/O レジスタ
+
+   (2)   リリース時
+
+         0x000000 - 0x05ffff  内蔵 ROM、.vectors、.text、.rodata
+         0x400000 - 0x5fffff  外部 RAM、.data、.bss
+         0xee0000 - 0xee0081  内蔵 I/O レジスタ
+         0xffbf20 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内蔵 I/O レジスタ
+
+3. 4. 5  H8/3069F のメモリマップ
+
+  外部アドレス空間を有効にする必要があるため、モード 5 の内蔵 ROM 有効
+拡張 16M バイトモードを想定している。
+
+   (1)   デバッグ時 (簡易モニタ使用時)
+
+         0x000000 - 0x07ffff  内蔵 ROM、簡易モニタ
+         0x400000 - 0x4fffff  外部 RAM、.text、.rodata
+         0x500000 - 0x5fffff  外部 RAM、.data、.bss
+         0xee0000 - 0xee0081  内蔵 I/O レジスタ
+         0xffbf20 - 0xffbfff  外部 RAM、簡易モニタ
+         0xffc000 - 0xffc0ff  内蔵 RAM、仮想割込みベクタ領域 (.vectors)
+         0xffc100 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
+         0xffff20 - 0xffffe9  内蔵 I/O レジスタ
+
+   (2)   デバッグ時 (RedBoot 使用時)
+
+         0x000000 - 0x07ffff  内蔵 ROM、RedBootモニター
+         0x400000 - 0x44ffff  外部 RAM、.text、.rodata
+         0x450000 - 0x4ffeff  外部 RAM、.data、.bss
+         0x4fff00 - 0x4fffff  外部 RAM、割り込みベクタ領域 (.vectors)
+         0x500000 - 0x510000  外部 RAM、非タスクコンテキスト用スタック
+         0xee0000 - 0xee0081  内蔵 I/O レジスタ
+         0xffbf20 - 0xfffd1f  内蔵 RAM、RedBootモニター
+         0xfffd20 - 0xfffe1f  内蔵 RAM、仮想割込みベクタ領域
+                              (cpu_config.cで.vectorsからコピー)
+         0xffff20 - 0xffffe9  内蔵 I/O レジスタ
+
+   (3)   リリース時
+
+         0x000000 - 0x07ffff  内蔵 ROM、.vectors、.text、.rodata
+         0x400000 - 0x5fffff  外部 RAM、.data、.bss
+         0xee0000 - 0xee0081  内蔵 I/O レジスタ
+         0xffbf20 - 0xffff1f  内蔵 RAM、非タスクコンテキスト用スタック
          0xffff20 - 0xffffe9  内蔵 I/O レジスタ
 
 4.  開発
 
 4. 1  開発環境の構築
 
-  開発環境は、Windows 2000 上の cygwin の開発環境を用いた。 本実装に用
-いたバージョンを以下に示す。
+  開発環境は、 Windows 2000 と Windows XP 上の cygwin の開発環境を用い
+た。本実装に用いたバージョンを以下に示す。 
 
    binutils-2.11.2
    gcc-2.95.3
@@ -260,33 +359,30 @@ H8/3048F のクロックが 16[MHz]、 H8/3067F のクロックが 20[MHz] の場合、
 
 configure のオプションは --target=h8300-hms である。 また、binutils の
 configure のオプションには --disable-nls も指定すること。
-  また、デバッグのため、 (株) 秋月電子通商製のモニタデバッカを使用して
-いる。
+  また、デバッグのため、秋月モニタ、RedBoot、 簡易モニタを使用すること
+ができる。
 
-4. 2  Makefile の設定
+4. 2  sample1.h の設定
 
-  Makefile で注意すべき設定を以下に示す。
-
-   (1)   CYGWIN
-           Cygwin 上でコンパイルする場合は CYGWIN = true を有効にする。
-
-   (2)   all: jsp.S
-           最終ターゲットは S レコードファイルのため、 all: $(JSPOBJ)
-         をコメントアウトし、all: jsp.S を有効にする。
+  sample1.h で「ターゲット依存の定義（CPU 例外ハンドラの起動方法など）」
+の H8 依存部で、TASK_PORTID を 2、つまり SCI1 を設定してる。もし、他の
+ポートを使用する場合は、 この値を変更すること。
 
 4. 3  ターゲットへのダウンロードと実行
 
-  ターゲットへのダウンロードと実行には、 (株) 秋月電子通商製のモニタデ
-バッカを使用する方法と直接 H8/3048F のフラッシュ ROM に書き込んで実行
-する方法がある。
+  ターゲットへのダウンロードと実行には、秋月モニタ、RedBoot、 または簡
+易モニタを使用する方法と直接 H8 のフラッシュ ROM に書き込んで実行する
+方法がある。
 
-   (1)   H8/3048F で (株) 秋月電子通商製のモニタデバッカを使用する方法
-         (デバッグモード)
-           ディレクトリ $(CPU)/$(SYS) にある Makefile の AKI_MONITOR =
-         true を有効にして make する。次に、H8/3048F の外部 RAM へのア
-         クセスを有効にしなければならない。 RAM の構成により異なるが、
-         アドレスバス A0 から A19 とデータバス D8 から D15 を有効にす
-         るには、以下に示すポートに 0xff を書き込む。
+   (1)   H8/3048F で秋月モニタを使用する方法 (デバッグモード)
+           ディレクトリ $(CPU)/$(SYS) にある
+
+            MakefileのDBGENV := AKI_MONITOR
+
+         を有効にして make する。 次に、H8/3048F の外部 RAM へのアクセ
+         スを有効にしなければならない。RAM の構成により異なるが、 アド
+         レスバス A0 から A19 とデータバス D8 から D15 を有効にするに
+         は、以下に示すポートに 0xff を書き込む。
 
             Port   Address
             P1DDR  0xfffc0
@@ -294,21 +390,95 @@ configure のオプションには --disable-nls も指定すること。
             P3DDR  0xfffc4
             P5DDR  0xfffc8
 
-         最後に端末ソフトを使用して jsp.S を H8/3048F に転送し、実行す
-         る。
+         最後に端末ソフトを使用して jsp.srec を H8/3048F に転送し、 実
+         行する。
 
-   (2)   H8/3067F で (株) 秋月電子通商製のモニタデバッカを使用する方法
-         (デバッグモード)
-           ディレクトリ $(CPU)/$(SYS) にある Makefile の AKI_MONITOR =
-         true を有効にして make する。H8/3067F では外部 RAM へのアクセ
-         スが、すでに有効になっているため、特に何もせずに、 端末ソフト
-         を使用して jsp.S を H8/3067F に転送し、実行することができる。
+   (2)   H8/3067F で秋月モニタを使用する方法 (デバッグモード)
+           H8/3067F では、外部 RAM 容量が不足しているため、 増設が必要
+         である。ディレクトリ $(CPU)/$(SYS) にある
 
-   (3)   内臓フラッシュ ROM に書き込んで実行する方法 (リリースモード)
+            MakefileのDBGENV := AKI_MONITOR
+
+         を有効にして make する。 H8/3067F では外部 RAM へのアクセスが、
+         すでに有効になっているため、特に何もせずに、 端末ソフトを使用
+         して jsp.srec を H8/3067F に転送し、実行することができる。
+
+   (3)   H8/3052F、 H8/3068F、8/3069F で簡易モニタを使用する方法 (デバッ
+         グモード)
+           宮城県産業技術総合センター様で配布していただている苫小牧高
+         専情報学科製簡易モニタ mon3052.mot (H8/3052F 用)、mon3068.mot
+         (H8/3068F、H8/3069F 用) を、 H8 の内蔵フラッシュ ROM に書き込
+         む。以下に、使用方法を示す。
+
+         [1]   ディレクトリ $(CPU)/$(SYS) にある
+
+                  MakefileのDBGENV := AKI_MONITOR
+
+               を有効にして make する。
+         [2]   端末ソフトからモニタコマンド ld を入力する。
+         [3]   端末ソフトから jsp.srec を送信する。
+         [4]   端末ソフトからモニタコマンド go を入力すると実行が開始
+               される。
+
+   (4)   H8/3069F で RedBoot を使用する方法
+           ディレクトリ $(CPU)/$(SYS) にある
+
+            MakefileのDBGENV := REDBOOT
+
+         を有効にして make する。
+           以下は、 天野氏提供による設定方法である。
+
+         RedBoot対応　
+         http://sourceforge.jp/projects/ecos-h8/
+         リリース版を"h8write -3069 -f20 redboot.mot" で焼く。
+
+         下記ツールをダウンロードしてインストール(Winユーザー)
+         TFTPサーバーforWin32
+         http://www.vector.co.jp/soft/win95/net/se174412.html
+         Tera Term Pro
+         http://www.sakurachan.org/soft/teraterm-j/
+         
+         TFTPサーバーのフォルダ指定をjsp.Sが生成される場所に指定
+         Tera Term Proをインストールした場所にマクロファイル（下記）を作成
+         ttpmacro.exe へのショートカットを作成して
+         右クリのプロパティ-リンク先でakiboot.ttlを追加
+         "C:\Program Files\TTERMPRO	tpmacro.exe" akiboot.ttl
+         
+         下記はakiboot.ttlのサンプル
+         ; Sample macro for Tera Term
+         ;環境設定ファイルをロードする場合
+         ;connect '/F=redboot.ini'
+         ;デフォルト設定でロードする場合
+         connect ''
+         ;改行コードを送ってプロンプトがでるのを待つ
+         sendln
+         UsernamePrompt = 'RedBoot>'
+         ;IPアドレスは環境によって変更してください。
+         ;-l akiボードのIP -h TFTPサーバーのIP
+         ipset = 'ip_address -l 192.168.0.12 -h 192.168.0.10'
+         load = 'load -b 0x400000 jsp.S'
+         go = 'go 0x400000'
+         ; ip設定
+         wait   UsernamePrompt
+         sendln ipset
+         ; load
+         wait   UsernamePrompt
+         sendln load
+         ; go
+         wait   UsernamePrompt
+         sendln go
+         ; OK, boot complete.
+
+   (5)   内蔵フラッシュ ROM に書き込んで実行する方法 (リリースモード)
            ディレクトリ $(CPU)/$(SYS) にある Makefile.config のディレ
-         クトリ $(CPU)/$(SYS) にある Makefile の AKI_MONITOR = true を
-         コメントアウトして make する。次に、(株) 秋月電子通商製等のフ
-         ラッシュ ROM 書き込みプログラムで、フラッシュ ROM に書き込む。
+         クトリ $(CPU)/$(SYS) にある Makefile の
+
+            DBGENV := AKI_MONITOR
+            DBGENV := REDBOOT
+
+         を共にコメントアウトして make する。次に、(株) 秋月電子通商製
+         等のフラッシュ ROM 書き込みプログラムで、 フラッシュ ROM に書
+         き込む。
 
 4. 4  H8/3048F の外部 RAM の有効化
 
@@ -320,20 +490,14 @@ sys_config.h の以下の部分を適当に編集する。
    /*
     *  外部アドレス空間制御
     */
-   
-   #if 0
-   
-   #define ENABLE_LOWER_DATA
-   
-   #define ENABLE_P8_CS    (H8P8DDR_CS0|H8P8DDR_CS1|\
-                            H8P8DDR_CS2|H8P8DDR_CS3)
-   #define ENABLE_PA_CS    (H8PADDR_CS4|H8PADDR_CS5|\
-                            H8PADDR_CS6)
-   #define ENABLE_PB_CS     H8PBDDR_CS7
-   
-   #endif      /* of #if 0 */
+   /*#define ENABLE_LOWER_DATA*/
+   #define ENABLE_P8_CS        (H8P8DDR_CS0|H8P8DDR_CS1|\
+                                H8P8DDR_CS2|H8P8DDR_CS3)
+   /*#define ENABLE_PA_CS      (H8PADDR_CS4|H8PADDR_CS5|H8PADDR_CS6)*/
+   /*#define ENABLE_PB_CS       H8PBDDR_CS7*/
+   #define ENABLE_PA_A21_A23   (H8BRCR_A23E|H8BRCR_A22E|H8BRCR_A21E)
 
-4. 5  H8/3067F の外部 RAM の有効化
+4. 5  H8/3052F の外部 RAM の有効化
 
   リリースモードでは、 sys_support.S の _hardware_init_hook で、アドレ
 スバス A0 から A23、 データバス D8 から D15、 チップセレクト CS0 から
@@ -343,16 +507,29 @@ CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
    /*
     *  外部アドレス空間制御
     */
-   
-   #define ENABLE_P8_CS    (H8P8DDR_CS0|H8P8DDR_CS1|\
-                            H8P8DDR_CS2|H8P8DDR_CS3)
-   
+   /*#define ENABLE_LOWER_DATA*/
+   #define ENABLE_P8_CS        (H8P8DDR_CS0|H8P8DDR_CS1|\
+                                H8P8DDR_CS2|H8P8DDR_CS3)
+   /*#define ENABLE_PA_CS      (H8PADDR_CS4|H8PADDR_CS5|H8PADDR_CS6)*/
+   /*#define ENABLE_PB_CS       H8PBDDR_CS7*/
+   #define ENABLE_PA_A21_A23   (H8BRCR_A23E|H8BRCR_A22E|H8BRCR_A21E)
+
+4. 6  H8/3067F、H8/3068F、H8/3069F の外部 RAM の有効化
+
+  リリースモードでは、 sys_support.S の _hardware_init_hook で、アドレ
+スバス A0 から A23、 データバス D8 から D15、 チップセレクト CS0 から
+CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
+バスを有効にする場合は、sys_config.h の以下の部分を適当に編集する。
+
+   /*
+    *  外部アドレス空間制御
+    */
+   #define     ENABLE_P8_CS    (H8P8DDR_CS0|H8P8DDR_CS1|\
+                                H8P8DDR_CS2|H8P8DDR_CS3)
    #if 0
-   
-   #define ENABLE_LOWER_DATA
-   #define ENABLE_PB_CS    (H8PADDR_CS4|H8PADDR_CS5|\
-                            H8PADDR_CS6|H8PBDDR_CS7)
-   
+   #define     ENABLE_LOWER_DATA
+   #define     ENABLE_PB_CS    (H8PADDR_CS4|H8PADDR_CS5|\
+                                H8PADDR_CS6|H8PBDDR_CS7)
    #endif      /* of #if 0 */
 
 5.  ファイル構成
@@ -368,10 +545,18 @@ CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
             cpu_defs.h       H8 プロセッサ依存部のアプリケーション用定義
             cpu_insn.h       H8 プロセッサのアセンブリ inline 関数
             cpu_support.S    H8 プロセッサのアセンブリ関数
+            cpu_rename.def   カーネルの内部識別名のリネームとその解除の定義リスト
+            cpu_rename.h     カーネルの内部識別名のリネームの定義
+            cpu_unrename.h   カーネルの内部識別名のリネーム解除の定義
+            h8.h             H8/300H プロセッサの共通定義
+            hw_serial.c      SCI の変数と関数
+            hw_serial.cfg    SCI のコンフィギュレーションファイル
             hw_serial.h      SCI の定義
             hw_timer.h       ITU の定義
             makeoffset.c     offset.h 生成サポート関数
             start.S          スタートアップモジュール
+            tool_config.h    H8 プロセッサの開発環境依存モジュール定義
+            tool_defs.h      H8 プロセッサの開発環境依存定義
 
    (2)   config/h8/akih8_3048f/
            (株) 秋月電子通商製の AKI-H8/3048F ボードの依存部分
@@ -384,8 +569,26 @@ CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
             sys_config.h     AKI-H8/3048F ボード依存部の構成定義
             sys_defs.h       AKI-H8/3048F ボード依存部のアプリケーション用定義
             sys_support.S    AKI-H8/3048F ボード依存部のアセンブリ関数
+            sys_rename.def   カーネルの内部識別名のリネームとその解除の定義リスト
+            sys_rename.h     カーネルの内部識別名のリネームの定義
+            sys_unrename.h   カーネルの内部識別名のリネーム解除の定義
 
-   (3)   config/h8/akih8_3067f/
+   (3)   config/h8/akih8_3052f/
+           (株) 秋月電子通商製の AKI-H8/3052F ボードの依存部分
+
+            Makefile.config  Makefile の AKI-H8/3052F ボード依存定義
+            h8_3052f.h       H8/3052F プロセッサの定義
+            debug.ld         デバッグ用リンカスクリプト
+            release.ld       リリース用リンカスクリプト
+            sys_config.c     AKI-H8/3052F ボード依存部の C 関数
+            sys_config.h     AKI-H8/3052F ボード依存部の構成定義
+            sys_defs.h       AKI-H8/3052F ボード依存部のアプリケーション用定義
+            sys_support.S    AKI-H8/3052F ボード依存部のアセンブリ関数
+            sys_rename.def   カーネルの内部識別名のリネームとその解除の定義リスト
+            sys_rename.h     カーネルの内部識別名のリネームの定義
+            sys_unrename.h   カーネルの内部識別名のリネーム解除の定義
+
+   (4)   config/h8/akih8_3067f/
            (株) 秋月電子通商製の AKI-H8/3067F ボードの依存部分
 
             Makefile.config  Makefile の AKI-H8/3067F ボード依存定義
@@ -396,3 +599,37 @@ CS3 を有効にした後、カーネルを実行する。これ以外にアドレスバスとデータ
             sys_config.h     AKI-H8/3067F ボード依存部の構成定義
             sys_defs.h       AKI-H8/3067F ボード依存部のアプリケーション用定義
             sys_support.S    AKI-H8/3067F ボード依存部のアセンブリ関数
+            sys_rename.def   カーネルの内部識別名のリネームとその解除の定義リスト
+            sys_rename.h     カーネルの内部識別名のリネームの定義
+            sys_unrename.h   カーネルの内部識別名のリネーム解除の定義
+
+   (5)   config/h8/akih8_3068f/
+           (株) 秋月電子通商製の AKI-H8/3068F ボードの依存部分
+
+            Makefile.config  Makefile の AKI-H8/3068F ボード依存定義
+            h8_3068f.h       H8/3048F プロセッサの定義
+            debug.ld         デバッグ用リンカスクリプト
+            release.ld       リリース用リンカスクリプト
+            sys_config.c     AKI-H8/3068F ボード依存部の C 関数
+            sys_config.h     AKI-H8/3068F ボード依存部の構成定義
+            sys_defs.h       AKI-H8/3068F ボード依存部のアプリケーション用定義
+            sys_support.S    AKI-H8/3068F ボード依存部のアセンブリ関数
+            sys_rename.def   カーネルの内部識別名のリネームとその解除の定義リスト
+            sys_rename.h     カーネルの内部識別名のリネームの定義
+            sys_unrename.h   カーネルの内部識別名のリネーム解除の定義
+
+   (6)   config/h8/akih8_3069f/
+           (株) 秋月電子通商製の AKI-H8/3069F ボードの依存部分
+
+            Makefile.config  Makefile の AKI-H8/3069F ボード依存定義
+            h8_3069f.h       H8/3048F プロセッサの定義
+            debug.ld         デバッグ (簡易モニタ対応) 用リンカスクリプト
+            debug_redboot.ld デバッグ (RedBoot対応) 用リンカスクリプト
+            release.ld       リリース用リンカスクリプト
+            sys_config.c     AKI-H8/3069F ボード依存部の C 関数
+            sys_config.h     AKI-H8/3069F ボード依存部の構成定義
+            sys_defs.h       AKI-H8/3069F ボード依存部のアプリケーション用定義
+            sys_support.S    AKI-H8/3069F ボード依存部のアセンブリ関数
+            sys_rename.def   カーネルの内部識別名のリネームとその解除の定義リスト
+            sys_rename.h     カーネルの内部識別名のリネームの定義
+            sys_unrename.h   カーネルの内部識別名のリネーム解除の定義

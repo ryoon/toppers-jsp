@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: time_event.c,v 1.4 2002/03/26 08:19:38 hiro Exp $
+ *  @(#) $Id: time_event.c,v 1.7 2003/06/04 01:46:16 hiro Exp $
  */
 
 /*
@@ -42,6 +43,25 @@
 #include "jsp_kernel.h"
 #include "check.h"
 #include "time_event.h"
+
+/*
+ *  タイムイベントヒープ操作マクロ
+ */
+#define	PARENT(index)	((index) >> 1)		/* 親ノードを求める */
+#define	LCHILD(index)	((index) << 1)		/* 右の子ノードを求める */
+#define	TMEVT_NODE(index)	(tmevt_heap[(index) - 1])
+
+/*
+ *  イベント発生時刻比較マクロ
+ *
+ *  イベント発生時刻は，current_time からの相対値で比較する．すなわち，
+ *  current_time を最小値（最も近い時刻），current_time - 1 が最大値
+ *  （最も遠い時刻）とみなして比較する．
+ */
+#define	EVTTIM_LT(t1, t2) (((t1) - current_time) < ((t2) - current_time))
+#define	EVTTIM_LE(t1, t2) (((t1) - current_time) <= ((t2) - current_time))
+
+#ifdef __tmeini
 
 /*
  *  システム時刻のオフセット
@@ -68,35 +88,9 @@ UINT	next_subtime;
 #endif /* TIC_DENO != 1 */
 
 /*
- *  相対時間のベース時刻（単位: 1ミリ秒）
- */
-#if TIC_DENO != 1
-EVTTIM	base_time;
-#endif /* TIC_DENO != 1 */
-
-/*
  *  タイムイベントヒープの最後の使用領域のインデックス
- *
- *  タイムイベントヒープに登録されているタイムイベントの数に一致する．
  */
-static UINT	last_index;
-
-/*
- *  タイムイベントヒープ操作マクロ
- */
-#define	PARENT(index)	((index) >> 1)		/* 親ノードを求める */
-#define	LCHILD(index)	((index) << 1)		/* 右の子ノードを求める */
-#define	TMEVT_NODE(index)	(tmevt_heap[(index) - 1])
-
-/*
- *  イベント発生時刻比較マクロ
- *
- *  イベント発生時刻は，current_time からの相対値で比較する．すなわち，
- *  current_time を最小値（最も近い時刻），current_time - 1 が最大値
- *  （最も遠い時刻）とみなして比較する．
- */
-#define	EVTTIM_LT(t1, t2) (((t1) - current_time) < ((t2) - current_time))
-#define	EVTTIM_LE(t1, t2) (((t1) - current_time) <= ((t2) - current_time))
+UINT	last_index;
 
 /*
  *  タイマモジュールの初期化
@@ -112,10 +106,11 @@ tmevt_initialize()
 	next_subtime += TIC_NUME;
 	next_time = current_time + next_subtime / TIC_DENO;
 	next_subtime %= TIC_DENO;
-	base_time = (EVTTIM)(next_time + (next_subtime > 0 ? 1 : 0));
 #endif /* TIC_DENO == 1 */
 	last_index = 0;
 }
+
+#endif /* __tmeini */
 
 /*
  *  タイムイベントの挿入位置を上向きに探索
@@ -124,7 +119,9 @@ tmevt_initialize()
  *  ヒープの上に向かって空ノードを移動させる．移動前の空ノードの位置を 
  *  index に渡すと，移動後の空ノードの位置（すなわち挿入位置）を返す．
  */
-static UINT
+#ifdef __tmeup
+
+UINT
 tmevt_up(UINT index, EVTTIM time)
 {
 	UINT	parent;
@@ -153,6 +150,8 @@ tmevt_up(UINT index, EVTTIM time)
 	return(index);
 }
 
+#endif /* __tmeup */
+
 /*
  *  タイムイベントの挿入位置を下向きに探索
  *
@@ -160,7 +159,9 @@ tmevt_up(UINT index, EVTTIM time)
  *  ヒープの下に向かって空ノードを移動させる．移動前の空ノードの位置を 
  *  index に渡すと，移動後の空ノードの位置（すなわち挿入位置）を返す．
  */
-static UINT
+#ifdef __tmedown
+
+UINT
 tmevt_down(UINT index, EVTTIM time)
 {
 	UINT	child;
@@ -199,12 +200,16 @@ tmevt_down(UINT index, EVTTIM time)
 	return(index);
 }
 
+#endif /* __tmedown */
+
 /*
  * タイムイベントヒープへの登録
  *
  *  タイムイベントブロック tmevtb を，time で指定した時間が経過後にイ
  *  ベントが発生するように，タイムイベントヒープに登録する．
  */
+#ifdef __tmeins
+
 void
 tmevtb_insert(TMEVTB *tmevtb, EVTTIM time)
 {
@@ -223,9 +228,13 @@ tmevtb_insert(TMEVTB *tmevtb, EVTTIM time)
 	tmevtb->index = index;
 }
 
+#endif /* __tmeins */
+
 /*
  *  タイムイベントヒープからの削除
  */
+#ifdef __tmedel
+
 void
 tmevtb_delete(TMEVTB *tmevtb)
 {
@@ -278,6 +287,8 @@ tmevtb_delete(TMEVTB *tmevtb)
 	TMEVT_NODE(index).tmevtb->index = index;
 }
 
+#endif /* __tmedel */
+
 /*
  *  タイムイベントヒープの先頭のノードの削除
  */
@@ -316,11 +327,15 @@ tmevtb_delete_top()
  *  TIC_NUME < TIC_DENO の時は，除算を使わずに時刻の更新ができるが，ソー
  *  スコードを読みやすくにするために #if の多用を避けている．
  */
+#ifdef __isig_tim
+
 SYSCALL ER
 isig_tim()
 {
 	TMEVTB	*tmevtb;
+	ER	ercd;
 
+	LOG_ISIG_TIM_ENTER();
 	CHECK_INTCTX_UNL();
 	i_lock_cpu();
 
@@ -347,7 +362,7 @@ isig_tim()
 	current_time = next_time;
 
 	/*
-	 *  next_time，next_subtime，base_time を更新する．
+	 *  next_time，next_subtime を更新する．
 	 */
 #if TIC_DENO == 1
 	next_time = current_time + TIC_NUME;
@@ -355,9 +370,14 @@ isig_tim()
 	next_subtime += TIC_NUME;
 	next_time = current_time + next_subtime / TIC_DENO;
 	next_subtime %= TIC_DENO;
-	base_time = (EVTTIM)(next_time + (next_subtime > 0 ? 1 : 0));
 #endif /* TIC_DENO == 1 */
 
+	ercd = E_OK;
 	i_unlock_cpu();
-	return(E_OK);
+
+    exit:
+	LOG_ISIG_TIM_LEAVE(ercd);
+	return(ercd);
 }
+
+#endif /* __isig_tim */

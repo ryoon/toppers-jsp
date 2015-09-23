@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: itron.h,v 1.8 2002/04/10 11:57:59 hiro Exp $
+ *  @(#) $Id: itron.h,v 1.14 2003/06/18 12:46:54 hiro Exp $
  */
 
 /*
@@ -41,65 +42,75 @@
  *  このファイルには，スタンダードプロファイルには必要ない定義も含んで
  *  いる．データ型の定義は，スタンダードプロファイルを満たすちょうどの
  *  長さにはしていない．
+ *
  *  アセンブリ言語のソースファイルやシステムコンフィギュレーションファ
  *  イルからこのファイルをインクルードする時は，_MACRO_ONLY を定義して
  *  おくことで，マクロ定義以外の記述を除くことができる．
  *
- *  このファイル中のデータ型の定義は，コンパイラに応じて変更する必要が
- *  ある．また，ターゲットに応じて変更したいかもしれない．今後，一部を
- *  ターゲット依存部に移動するなどの変更を行う可能性がある．
+ *  このインクルードファイルは，kernel.h と sil.h でインクルードされる．
+ *  また，ITRON仕様共通規定に準拠するソフトウェア部品のインクルードファ
+ *  イルは，このファイルを直接インクルードしてもよい．この例外を除いて，
+ *  他のファイルから直接インクルードされることはない．
+ *
+ *  このファイルをインクルードする前に，t_stddef.h をインクルードして
+ *  おくことが必要である．
  */
 
 #ifndef _ITRON_H_
 #define _ITRON_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+ *  開発環境に依存する定義
+ */
+#include <tool_defs.h>
+
+/*
+ *  開発環境の標準インクルードファイル（NULL と size_t の定義が必要）
+ *
+ *  C++/EC++ では，標準仕様上は stddef.h がサポートされているとは限らな
+ *  いが，ほとんどの処理系でサポートされている．
+ */
+#ifndef _MACRO_ONLY
+#include <stddef.h>
+#endif /* _MACRO_ONLY */
+
+/*
+ *  コンパイラ依存のデータ型のデフォルト定義
+ */
+#ifndef _bool_
+#define	_bool_		int		/* ブール型 */
+#endif /* _bool_ */
 
 /*
  *  ITRON仕様共通データ型
  */
 #ifndef _MACRO_ONLY
 
-#ifdef _16BIT_INT_			/* intが16ビットで，64ビットの */
-					/*      整数型がないコンパイラ */
-#define	__bool	int			/* ブール型 */
-#define	__int8	char			/* 8ビットの整数型 */
-#define	__int16	int			/* 16ビットの整数型 */
-#define	__int32	long			/* 32ビットの整数型 */
+#ifdef _int8_
+typedef	signed _int8_		B;	/* 符号付き8ビット整数 */
+typedef	unsigned _int8_		UB;	/* 符号無し8ビット整数 */
+typedef	_int8_			VB;	/* 型が定まらない8ビットの値 */
+#endif /* _int8_ */
 
-#elif defined(_MSC_VER)
+#ifdef _int16_
+typedef	signed _int16_		H;	/* 符号付き16ビット整数 */
+typedef	unsigned _int16_ 	UH;	/* 符号無し16ビット整数 */
+typedef	_int16_			VH;	/* 型が定まらない16ビットの値 */
+#endif /* _int16_ */
 
-#define	__int64	__int64
-#define	__bool	int			/* ブール型 */
+typedef	signed _int32_		W;	/* 符号付き32ビット整数 */
+typedef	unsigned _int32_	UW;	/* 符号無し32ビット整数 */
+typedef	_int32_			VW;	/* 型が定まらない32ビットの値 */
 
-#else /* その他のコンパイラ */
-
-#define	__bool	int			/* ブール型 */
-#define	__int8	char			/* 8ビットの整数型 */
-#define	__int16	short			/* 16ビットの整数型 */
-#define	__int32	int			/* 32ビットの整数型 */
-#define __int64	long long		/* 64ビットの整数型 */
-
-#endif /* その他のコンパイラ */
-
-typedef	signed __int8	B;		/* 符号付き8ビット整数 */
-typedef	signed __int16	H;		/* 符号付き16ビット整数 */
-typedef	signed __int32	W;		/* 符号付き32ビット整数 */
-#ifdef __int64
-typedef	signed __int64	D;		/* 符号付き64ビット整数 */
-#endif /* __int64 */
-
-typedef	unsigned __int8		UB;	/* 符号無し8ビット整数 */
-typedef	unsigned __int16 	UH;	/* 符号無し16ビット整数 */
-typedef	unsigned __int32	UW;	/* 符号無し32ビット整数 */
-#ifdef __int64
-typedef	unsigned __int64	UD;	/* 符号無し64ビット整数 */
-#endif /* __int64 */
-
-typedef	__int8		VB;		/* 型が定まらない8ビットの値 */
-typedef	__int16		VH;		/* 型が定まらない16ビットの値 */
-typedef	__int32		VW;		/* 型が定まらない32ビットの値 */
-#ifdef __int64
-typedef	__int64		VD;		/* 型が定まらない64ビットの値 */
-#endif /* __int64 */
+#ifdef _int64_
+typedef	signed _int64_		D;	/* 符号付き64ビット整数 */
+typedef	unsigned _int64_	UD;	/* 符号無し64ビット整数 */
+typedef	_int64_			VD;	/* 型が定まらない64ビットの値 */
+#endif /* _int64_ */
 
 typedef	void		*VP;		/* 型が定まらないものへのポインタ */
 typedef	void		(*FP)();	/* プログラムの起動番地（ポインタ） */
@@ -107,7 +118,7 @@ typedef	void		(*FP)();	/* プログラムの起動番地（ポインタ） */
 typedef signed int	INT;		/* 自然なサイズの符号付き整数 */
 typedef unsigned int	UINT;		/* 自然なサイズの符号無し整数 */
 
-typedef __bool		BOOL;		/* 真偽値 */
+typedef _bool_		BOOL;		/* 真偽値 */
 
 typedef INT		FN;		/* 機能コード */
 typedef	INT		ER;		/* エラーコード */
@@ -116,7 +127,7 @@ typedef	UINT		ATR;		/* オブジェクトの属性 */
 typedef	UINT		STAT;		/* オブジェクトの状態 */
 typedef	UINT		MODE;		/* サービスコールの動作モード */
 typedef	INT		PRI;		/* 優先度 */
-typedef	UINT		SIZE;		/* メモリ領域のサイズ */
+typedef	size_t		SIZE;		/* メモリ領域のサイズ */
 
 typedef	INT		TMO;		/* タイムアウト指定 */
 typedef	UINT		RELTIM;		/* 相対時間 */
@@ -136,8 +147,19 @@ typedef	INT		ER_UINT;	/* ER または UINT */
 
 /*
  *  一般
+ *
+ *  _MACRO_ONLY の時には，NULL を定義しない．これは，_MACRO_ONLY の時
+ *  はstddef.h をインクルードしないため，そうでない時と NULL の定義が
+ *  食い違う可能性があるためである．また，システムコンフィギュレーショ
+ *  ンファイルを処理する場合には NULL を定義してはならないため，その点
+ *  からも定義しない方が都合がよい．
  */
+#ifndef _MACRO_ONLY
+#ifndef NULL				/* stddef.h に含まれているはず */
 #define	NULL		0		/* 無効ポインタ */
+#endif /* NULL */
+#endif /* _MACRO_ONLY */
+
 #define	TRUE		1		/* 真 */
 #define	FALSE		0		/* 偽 */
 #define	E_OK		0		/* 正常終了 */
@@ -170,7 +192,7 @@ typedef	INT		ER_UINT;	/* ER または UINT */
 /*
  *  オブジェクト属性
  */
-#define	TA_NULL		0		/* オブジェクト属性を指定しない */
+#define	TA_NULL		0u		/* オブジェクト属性を指定しない */
 
 /*
  *  タイムアウト指定
@@ -185,9 +207,25 @@ typedef	INT		ER_UINT;	/* ER または UINT */
 
 /*
  *  エラーコード生成・分解マクロ
+ *
+ *  ANSI C言語の規格では，右シフト演算子（>>）が符号拡張されることを保
+ *  証していないため，SERCDマクロの定義を単に ((ercd) >> 8) とすると，
+ *  右シフト演算子を符号拡張しないコンパイラでは，SERCD の返値が正の値
+ *  になってしまう．
  */
 #define	ERCD(mercd,sercd)	(((sercd) << 8) | ((mercd) & 0xff))
+
+#ifdef _int8_
 #define	MERCD(ercd)		((ER)((B)(ercd)))
-#define	SERCD(ercd)		((ercd) >> 8)
+#define	SERCD(ercd)		((ER)((B)((ercd) >> 8)))
+#else /* _int8_ */
+#define	MERCD(ercd)		(((ercd) & 0x80) == 0 ? ((ercd) & 0xff) \
+							: ((ercd) | ~0xff))
+#define	SERCD(ercd)		((~(-1 >> 8)) | ((ercd) >> 8))
+#endif /* _int8_ */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _ITRON_H_ */

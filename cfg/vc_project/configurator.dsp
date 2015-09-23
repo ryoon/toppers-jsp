@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G6 /W2 /GX /O2 /I "." /I ".." /I "../jsp" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /G6 /W2 /GR /GX /O2 /I ".." /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
 # ADD BASE RSC /l 0x411 /d "NDEBUG"
 # ADD RSC /l 0x411 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -66,7 +66,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "." /I ".." /I "../jsp" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /I ".." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x411 /d "_DEBUG"
 # ADD RSC /l 0x411 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -87,75 +87,123 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\component.cpp
+SOURCE=..\base\collection.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\directorymap.cpp
+SOURCE=..\base\component.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\except.cpp
+SOURCE=..\base\coverage.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\garbage.cpp
+SOURCE=..\base\directorymap.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\manager.cpp
+SOURCE=..\base\event.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\mpstrstream.cpp
+SOURCE=..\base\except.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\parser.cpp
+SOURCE=..\base\garbage.cpp
 # End Source File
-# End Group
-# Begin Group "Resource Files"
+# Begin Source File
 
-# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-# End Group
-# Begin Group "Target depended"
+SOURCE=..\base\manager.cpp
+# End Source File
+# Begin Source File
 
-# PROP Default_Filter ""
+SOURCE=..\base\message.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\mpstrstream.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\option.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\parser.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\singleton.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\testsuite.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\component.h
+SOURCE=..\base\collection.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\defs.h
+SOURCE=..\base\component.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\directorymap.h
+SOURCE=..\base\coverage_defs.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\except.h
+SOURCE=..\base\coverage_undefs.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\garbage.h
+SOURCE=..\base\defs.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\manager.h
+SOURCE=..\base\directorymap.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\mpstrstream.h
+SOURCE=..\base\event.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\parser.h
+SOURCE=..\base\except.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\garbage.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\message.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\mpstrstream.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\option.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\parser.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\singleton.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\base\testsuite.h
 # End Source File
 # End Group
 # Begin Group "Target dependent"
@@ -171,23 +219,19 @@ SOURCE=..\jsp\jsp_classes.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\jsp\jsp_common.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\jsp\jsp_common.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\jsp\jsp_defs.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\jsp\jsp_instanciate.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\jsp\jsp_orti.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\jsp\jsp_parser.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\jsp\jsp_parser.h
 # End Source File
 # Begin Source File
 

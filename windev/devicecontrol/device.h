@@ -1,54 +1,27 @@
-/*
- *  TOPPERS/JSP Kernel
- *      Toyohashi Open Platform for Embedded Real-Time Systems/
- *      Just Standard Profile Kernel
- * 
- *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
- *                              Toyohashi Univ. of Technology, JAPAN
- * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
- *  利用と呼ぶ）することを無償で許諾する．
- *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
- *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
- *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
- *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
- * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
- * 
- *  @(#) $Id: device.h,v 1.2 2002/04/10 11:26:20 takayuki Exp $
- */
 
 
-/* File created by MIDL compiler version 5.01.0164 */
-/* at Fri Feb 23 21:05:37 2001
+/* this ALWAYS GENERATED file contains the definitions for the interfaces */
+
+
+ /* File created by MIDL compiler version 6.00.0361 */
+/* at Tue Oct 21 19:55:03 2003
  */
-/* Compiler settings for C:\Sources\Program sources\CVS home\windev\devicecontrol\device.idl:
-    Oicf (OptLev=i2), W1, Zp8, env=Win32, ms_ext, c_ext
+/* Compiler settings for .\device.idl:
+    Oicf, W1, Zp8, env=Win32 (32b run)
+    protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
+    VC __declspec() decoration level: 
+         __declspec(uuid()), __declspec(selectany), __declspec(novtable)
+         DECLSPEC_UUID(), MIDL_INTERFACE()
 */
 //@@MIDL_FILE_HEADING(  )
+
+#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 
 /* verify that the <rpcndr.h> version is high enough to compile this file*/
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
-#define __REQUIRED_RPCNDR_H_VERSION__ 440
+#define __REQUIRED_RPCNDR_H_VERSION__ 475
 #endif
 
 #include "rpc.h"
@@ -66,9 +39,9 @@
 #ifndef __device_h__
 #define __device_h__
 
-#ifdef __cplusplus
-extern "C"{
-#endif 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif
 
 /* Forward Declarations */ 
 
@@ -100,8 +73,12 @@ typedef struct DeviceControl DeviceControl;
 #include "oaidl.h"
 #include "ocidl.h"
 
-void __RPC_FAR * __RPC_USER MIDL_user_allocate(size_t);
-void __RPC_USER MIDL_user_free( void __RPC_FAR * ); 
+#ifdef __cplusplus
+extern "C"{
+#endif 
+
+void * __RPC_USER MIDL_user_allocate(size_t);
+void __RPC_USER MIDL_user_free( void * ); 
 
 #ifndef __IDeviceControl_INTERFACE_DEFINED__
 #define __IDeviceControl_INTERFACE_DEFINED__
@@ -123,7 +100,7 @@ EXTERN_C const IID IID_IDeviceControl;
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE Close( void) = 0;
         
         virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Valid( 
-            /* [retval][out] */ BOOL __RPC_FAR *pVal) = 0;
+            /* [retval][out] */ BOOL *pVal) = 0;
         
         virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE RaiseInterrupt( 
             /* [in] */ long inhno) = 0;
@@ -136,25 +113,31 @@ EXTERN_C const IID IID_IDeviceControl;
             /* [in] */ long address) = 0;
         
         virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_IsKernelStarted( 
-            /* [retval][out] */ BOOL __RPC_FAR *pVal) = 0;
+            /* [retval][out] */ BOOL *pVal) = 0;
         
         virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Offset( 
-            /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+            /* [retval][out] */ long *pVal) = 0;
         
         virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_Offset( 
             /* [in] */ long newVal) = 0;
         
         virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_AccessSize( 
-            /* [retval][out] */ short __RPC_FAR *pVal) = 0;
+            /* [retval][out] */ short *pVal) = 0;
         
         virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_AccessSize( 
             /* [in] */ short newVal) = 0;
         
         virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Value( 
-            /* [retval][out] */ long __RPC_FAR *pVal) = 0;
+            /* [retval][out] */ long *pVal) = 0;
         
         virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_Value( 
             /* [in] */ long newVal) = 0;
+        
+        virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_DeviceName( 
+            /* [retval][out] */ BSTR *pVal) = 0;
+        
+        virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_DeviceName( 
+            /* [in] */ BSTR newVal) = 0;
         
     };
     
@@ -164,103 +147,111 @@ EXTERN_C const IID IID_IDeviceControl;
     {
         BEGIN_INTERFACE
         
-        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *QueryInterface )( 
-            IDeviceControl __RPC_FAR * This,
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IDeviceControl * This,
             /* [in] */ REFIID riid,
-            /* [iid_is][out] */ void __RPC_FAR *__RPC_FAR *ppvObject);
+            /* [iid_is][out] */ void **ppvObject);
         
-        ULONG ( STDMETHODCALLTYPE __RPC_FAR *AddRef )( 
-            IDeviceControl __RPC_FAR * This);
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IDeviceControl * This);
         
-        ULONG ( STDMETHODCALLTYPE __RPC_FAR *Release )( 
-            IDeviceControl __RPC_FAR * This);
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IDeviceControl * This);
         
-        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *GetTypeInfoCount )( 
-            IDeviceControl __RPC_FAR * This,
-            /* [out] */ UINT __RPC_FAR *pctinfo);
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            IDeviceControl * This,
+            /* [out] */ UINT *pctinfo);
         
-        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *GetTypeInfo )( 
-            IDeviceControl __RPC_FAR * This,
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            IDeviceControl * This,
             /* [in] */ UINT iTInfo,
             /* [in] */ LCID lcid,
-            /* [out] */ ITypeInfo __RPC_FAR *__RPC_FAR *ppTInfo);
+            /* [out] */ ITypeInfo **ppTInfo);
         
-        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *GetIDsOfNames )( 
-            IDeviceControl __RPC_FAR * This,
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            IDeviceControl * This,
             /* [in] */ REFIID riid,
-            /* [size_is][in] */ LPOLESTR __RPC_FAR *rgszNames,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
             /* [in] */ UINT cNames,
             /* [in] */ LCID lcid,
-            /* [size_is][out] */ DISPID __RPC_FAR *rgDispId);
+            /* [size_is][out] */ DISPID *rgDispId);
         
-        /* [local] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *Invoke )( 
-            IDeviceControl __RPC_FAR * This,
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            IDeviceControl * This,
             /* [in] */ DISPID dispIdMember,
             /* [in] */ REFIID riid,
             /* [in] */ LCID lcid,
             /* [in] */ WORD wFlags,
-            /* [out][in] */ DISPPARAMS __RPC_FAR *pDispParams,
-            /* [out] */ VARIANT __RPC_FAR *pVarResult,
-            /* [out] */ EXCEPINFO __RPC_FAR *pExcepInfo,
-            /* [out] */ UINT __RPC_FAR *puArgErr);
+            /* [out][in] */ DISPPARAMS *pDispParams,
+            /* [out] */ VARIANT *pVarResult,
+            /* [out] */ EXCEPINFO *pExcepInfo,
+            /* [out] */ UINT *puArgErr);
         
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *Connect )( 
-            IDeviceControl __RPC_FAR * This);
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *Connect )( 
+            IDeviceControl * This);
         
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *Close )( 
-            IDeviceControl __RPC_FAR * This);
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *Close )( 
+            IDeviceControl * This);
         
-        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *get_Valid )( 
-            IDeviceControl __RPC_FAR * This,
-            /* [retval][out] */ BOOL __RPC_FAR *pVal);
+        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Valid )( 
+            IDeviceControl * This,
+            /* [retval][out] */ BOOL *pVal);
         
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *RaiseInterrupt )( 
-            IDeviceControl __RPC_FAR * This,
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *RaiseInterrupt )( 
+            IDeviceControl * This,
             /* [in] */ long inhno);
         
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *Map )( 
-            IDeviceControl __RPC_FAR * This,
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *Map )( 
+            IDeviceControl * This,
             /* [in] */ long address,
             /* [in] */ long size);
         
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *Unmap )( 
-            IDeviceControl __RPC_FAR * This,
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *Unmap )( 
+            IDeviceControl * This,
             /* [in] */ long address);
         
-        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *get_IsKernelStarted )( 
-            IDeviceControl __RPC_FAR * This,
-            /* [retval][out] */ BOOL __RPC_FAR *pVal);
+        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsKernelStarted )( 
+            IDeviceControl * This,
+            /* [retval][out] */ BOOL *pVal);
         
-        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *get_Offset )( 
-            IDeviceControl __RPC_FAR * This,
-            /* [retval][out] */ long __RPC_FAR *pVal);
+        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Offset )( 
+            IDeviceControl * This,
+            /* [retval][out] */ long *pVal);
         
-        /* [helpstring][id][propput] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *put_Offset )( 
-            IDeviceControl __RPC_FAR * This,
+        /* [helpstring][id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Offset )( 
+            IDeviceControl * This,
             /* [in] */ long newVal);
         
-        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *get_AccessSize )( 
-            IDeviceControl __RPC_FAR * This,
-            /* [retval][out] */ short __RPC_FAR *pVal);
+        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_AccessSize )( 
+            IDeviceControl * This,
+            /* [retval][out] */ short *pVal);
         
-        /* [helpstring][id][propput] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *put_AccessSize )( 
-            IDeviceControl __RPC_FAR * This,
+        /* [helpstring][id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_AccessSize )( 
+            IDeviceControl * This,
             /* [in] */ short newVal);
         
-        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *get_Value )( 
-            IDeviceControl __RPC_FAR * This,
-            /* [retval][out] */ long __RPC_FAR *pVal);
+        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
+            IDeviceControl * This,
+            /* [retval][out] */ long *pVal);
         
-        /* [helpstring][id][propput] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *put_Value )( 
-            IDeviceControl __RPC_FAR * This,
+        /* [helpstring][id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Value )( 
+            IDeviceControl * This,
             /* [in] */ long newVal);
+        
+        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_DeviceName )( 
+            IDeviceControl * This,
+            /* [retval][out] */ BSTR *pVal);
+        
+        /* [helpstring][id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_DeviceName )( 
+            IDeviceControl * This,
+            /* [in] */ BSTR newVal);
         
         END_INTERFACE
     } IDeviceControlVtbl;
 
     interface IDeviceControl
     {
-        CONST_VTBL struct IDeviceControlVtbl __RPC_FAR *lpVtbl;
+        CONST_VTBL struct IDeviceControlVtbl *lpVtbl;
     };
 
     
@@ -330,6 +321,12 @@ EXTERN_C const IID IID_IDeviceControl;
 #define IDeviceControl_put_Value(This,newVal)	\
     (This)->lpVtbl -> put_Value(This,newVal)
 
+#define IDeviceControl_get_DeviceName(This,pVal)	\
+    (This)->lpVtbl -> get_DeviceName(This,pVal)
+
+#define IDeviceControl_put_DeviceName(This,newVal)	\
+    (This)->lpVtbl -> put_DeviceName(This,newVal)
+
 #endif /* COBJMACROS */
 
 
@@ -338,7 +335,7 @@ EXTERN_C const IID IID_IDeviceControl;
 
 
 /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE IDeviceControl_Connect_Proxy( 
-    IDeviceControl __RPC_FAR * This);
+    IDeviceControl * This);
 
 
 void __RPC_STUB IDeviceControl_Connect_Stub(
@@ -349,7 +346,7 @@ void __RPC_STUB IDeviceControl_Connect_Stub(
 
 
 /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE IDeviceControl_Close_Proxy( 
-    IDeviceControl __RPC_FAR * This);
+    IDeviceControl * This);
 
 
 void __RPC_STUB IDeviceControl_Close_Stub(
@@ -360,8 +357,8 @@ void __RPC_STUB IDeviceControl_Close_Stub(
 
 
 /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE IDeviceControl_get_Valid_Proxy( 
-    IDeviceControl __RPC_FAR * This,
-    /* [retval][out] */ BOOL __RPC_FAR *pVal);
+    IDeviceControl * This,
+    /* [retval][out] */ BOOL *pVal);
 
 
 void __RPC_STUB IDeviceControl_get_Valid_Stub(
@@ -372,7 +369,7 @@ void __RPC_STUB IDeviceControl_get_Valid_Stub(
 
 
 /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE IDeviceControl_RaiseInterrupt_Proxy( 
-    IDeviceControl __RPC_FAR * This,
+    IDeviceControl * This,
     /* [in] */ long inhno);
 
 
@@ -384,7 +381,7 @@ void __RPC_STUB IDeviceControl_RaiseInterrupt_Stub(
 
 
 /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE IDeviceControl_Map_Proxy( 
-    IDeviceControl __RPC_FAR * This,
+    IDeviceControl * This,
     /* [in] */ long address,
     /* [in] */ long size);
 
@@ -397,7 +394,7 @@ void __RPC_STUB IDeviceControl_Map_Stub(
 
 
 /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE IDeviceControl_Unmap_Proxy( 
-    IDeviceControl __RPC_FAR * This,
+    IDeviceControl * This,
     /* [in] */ long address);
 
 
@@ -409,8 +406,8 @@ void __RPC_STUB IDeviceControl_Unmap_Stub(
 
 
 /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE IDeviceControl_get_IsKernelStarted_Proxy( 
-    IDeviceControl __RPC_FAR * This,
-    /* [retval][out] */ BOOL __RPC_FAR *pVal);
+    IDeviceControl * This,
+    /* [retval][out] */ BOOL *pVal);
 
 
 void __RPC_STUB IDeviceControl_get_IsKernelStarted_Stub(
@@ -421,8 +418,8 @@ void __RPC_STUB IDeviceControl_get_IsKernelStarted_Stub(
 
 
 /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE IDeviceControl_get_Offset_Proxy( 
-    IDeviceControl __RPC_FAR * This,
-    /* [retval][out] */ long __RPC_FAR *pVal);
+    IDeviceControl * This,
+    /* [retval][out] */ long *pVal);
 
 
 void __RPC_STUB IDeviceControl_get_Offset_Stub(
@@ -433,7 +430,7 @@ void __RPC_STUB IDeviceControl_get_Offset_Stub(
 
 
 /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE IDeviceControl_put_Offset_Proxy( 
-    IDeviceControl __RPC_FAR * This,
+    IDeviceControl * This,
     /* [in] */ long newVal);
 
 
@@ -445,8 +442,8 @@ void __RPC_STUB IDeviceControl_put_Offset_Stub(
 
 
 /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE IDeviceControl_get_AccessSize_Proxy( 
-    IDeviceControl __RPC_FAR * This,
-    /* [retval][out] */ short __RPC_FAR *pVal);
+    IDeviceControl * This,
+    /* [retval][out] */ short *pVal);
 
 
 void __RPC_STUB IDeviceControl_get_AccessSize_Stub(
@@ -457,7 +454,7 @@ void __RPC_STUB IDeviceControl_get_AccessSize_Stub(
 
 
 /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE IDeviceControl_put_AccessSize_Proxy( 
-    IDeviceControl __RPC_FAR * This,
+    IDeviceControl * This,
     /* [in] */ short newVal);
 
 
@@ -469,8 +466,8 @@ void __RPC_STUB IDeviceControl_put_AccessSize_Stub(
 
 
 /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE IDeviceControl_get_Value_Proxy( 
-    IDeviceControl __RPC_FAR * This,
-    /* [retval][out] */ long __RPC_FAR *pVal);
+    IDeviceControl * This,
+    /* [retval][out] */ long *pVal);
 
 
 void __RPC_STUB IDeviceControl_get_Value_Stub(
@@ -481,11 +478,35 @@ void __RPC_STUB IDeviceControl_get_Value_Stub(
 
 
 /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE IDeviceControl_put_Value_Proxy( 
-    IDeviceControl __RPC_FAR * This,
+    IDeviceControl * This,
     /* [in] */ long newVal);
 
 
 void __RPC_STUB IDeviceControl_put_Value_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE IDeviceControl_get_DeviceName_Proxy( 
+    IDeviceControl * This,
+    /* [retval][out] */ BSTR *pVal);
+
+
+void __RPC_STUB IDeviceControl_get_DeviceName_Stub(
+    IRpcStubBuffer *This,
+    IRpcChannelBuffer *_pRpcChannelBuffer,
+    PRPC_MESSAGE _pRpcMessage,
+    DWORD *_pdwStubPhase);
+
+
+/* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE IDeviceControl_put_DeviceName_Proxy( 
+    IDeviceControl * This,
+    /* [in] */ BSTR newVal);
+
+
+void __RPC_STUB IDeviceControl_put_DeviceName_Stub(
     IRpcStubBuffer *This,
     IRpcChannelBuffer *_pRpcChannelBuffer,
     PRPC_MESSAGE _pRpcMessage,
@@ -528,52 +549,52 @@ EXTERN_C const IID DIID__IDeviceControlEvents;
     {
         BEGIN_INTERFACE
         
-        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *QueryInterface )( 
-            _IDeviceControlEvents __RPC_FAR * This,
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            _IDeviceControlEvents * This,
             /* [in] */ REFIID riid,
-            /* [iid_is][out] */ void __RPC_FAR *__RPC_FAR *ppvObject);
+            /* [iid_is][out] */ void **ppvObject);
         
-        ULONG ( STDMETHODCALLTYPE __RPC_FAR *AddRef )( 
-            _IDeviceControlEvents __RPC_FAR * This);
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            _IDeviceControlEvents * This);
         
-        ULONG ( STDMETHODCALLTYPE __RPC_FAR *Release )( 
-            _IDeviceControlEvents __RPC_FAR * This);
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            _IDeviceControlEvents * This);
         
-        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *GetTypeInfoCount )( 
-            _IDeviceControlEvents __RPC_FAR * This,
-            /* [out] */ UINT __RPC_FAR *pctinfo);
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            _IDeviceControlEvents * This,
+            /* [out] */ UINT *pctinfo);
         
-        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *GetTypeInfo )( 
-            _IDeviceControlEvents __RPC_FAR * This,
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            _IDeviceControlEvents * This,
             /* [in] */ UINT iTInfo,
             /* [in] */ LCID lcid,
-            /* [out] */ ITypeInfo __RPC_FAR *__RPC_FAR *ppTInfo);
+            /* [out] */ ITypeInfo **ppTInfo);
         
-        HRESULT ( STDMETHODCALLTYPE __RPC_FAR *GetIDsOfNames )( 
-            _IDeviceControlEvents __RPC_FAR * This,
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            _IDeviceControlEvents * This,
             /* [in] */ REFIID riid,
-            /* [size_is][in] */ LPOLESTR __RPC_FAR *rgszNames,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
             /* [in] */ UINT cNames,
             /* [in] */ LCID lcid,
-            /* [size_is][out] */ DISPID __RPC_FAR *rgDispId);
+            /* [size_is][out] */ DISPID *rgDispId);
         
-        /* [local] */ HRESULT ( STDMETHODCALLTYPE __RPC_FAR *Invoke )( 
-            _IDeviceControlEvents __RPC_FAR * This,
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            _IDeviceControlEvents * This,
             /* [in] */ DISPID dispIdMember,
             /* [in] */ REFIID riid,
             /* [in] */ LCID lcid,
             /* [in] */ WORD wFlags,
-            /* [out][in] */ DISPPARAMS __RPC_FAR *pDispParams,
-            /* [out] */ VARIANT __RPC_FAR *pVarResult,
-            /* [out] */ EXCEPINFO __RPC_FAR *pExcepInfo,
-            /* [out] */ UINT __RPC_FAR *puArgErr);
+            /* [out][in] */ DISPPARAMS *pDispParams,
+            /* [out] */ VARIANT *pVarResult,
+            /* [out] */ EXCEPINFO *pExcepInfo,
+            /* [out] */ UINT *puArgErr);
         
         END_INTERFACE
     } _IDeviceControlEventsVtbl;
 
     interface _IDeviceControlEvents
     {
-        CONST_VTBL struct _IDeviceControlEventsVtbl __RPC_FAR *lpVtbl;
+        CONST_VTBL struct _IDeviceControlEventsVtbl *lpVtbl;
     };
 
     
@@ -623,6 +644,11 @@ DeviceControl;
 
 /* Additional Prototypes for ALL interfaces */
 
+unsigned long             __RPC_USER  BSTR_UserSize(     unsigned long *, unsigned long            , BSTR * ); 
+unsigned char * __RPC_USER  BSTR_UserMarshal(  unsigned long *, unsigned char *, BSTR * ); 
+unsigned char * __RPC_USER  BSTR_UserUnmarshal(unsigned long *, unsigned char *, BSTR * ); 
+void                      __RPC_USER  BSTR_UserFree(     unsigned long *, BSTR * ); 
+
 /* end of Additional Prototypes */
 
 #ifdef __cplusplus
@@ -630,3 +656,5 @@ DeviceControl;
 #endif
 
 #endif
+
+

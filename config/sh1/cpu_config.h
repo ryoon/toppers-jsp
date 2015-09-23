@@ -2,98 +2,85 @@
  *  TOPPERS/JSP Kernel
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
- *
- *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ * 
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001,2002 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2003 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *
- *  上記著作権者は，Free Software Foundation によって公表されている
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ * 
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
- *
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
- *
- *  @(#) $Id: cpu_config.h,v 1.5 2002/04/11 11:30:20 imai Exp $
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
+ * 
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
+ * 
+ *  @(#) $Id: cpu_config.h,v 1.9 2003/12/19 10:13:47 honda Exp $
  */
-
 
 /*
- *  プロセッサ依存モジュール（SH1用）
+ *	プロセッサ依存モジュール（SH1用）
+ *　　　　　カーネル内部で使用する定義
+ *　　　　　　データ型、マクロ、関数のプロトタイプ宣言
+ *
+ *  このインクルードファイルは，t_config.h のみからインクルードされる．
+ *  他のファイルから直接インクルードしてはならない．
  */
-
 
 #ifndef _CPU_CONFIG_H_
 #define _CPU_CONFIG_H_
 
-#include "sh1.h"	/*  内部レジスタの型が必要  */
-
 /*
  *  カーネルの内部識別名のリネーム
  */
-#ifndef OMIT_RENAME
+#include <cpu_rename.h>
 
-#define activate_r		_kernel_activate_r
-#define ret_int			_kernel_ret_int
-#define ret_exc			_kernel_ret_exc
-#define task_intmask		_kernel_task_intmask
-#define int_intmask		_kernel_int_intmask
-#define intnest			_kernel_intnest
-
-#ifdef LABEL_ASM
-
-#define _activate_r		__kernel_activate_r
-#define _ret_int		__kernel_ret_int
-#define _ret_exc		__kernel_ret_exc
-#define _task_intmask		__kernel_task_intmask
-#define _int_intmask		__kernel_int_intmask
-#define _intnest		__kernel_intnest
-
-
-#endif /* LABEL_ASM */
-#endif /* OMIT_RENAME */
+/*
+ *  SH1プロセッサの内部レジスタの定義
+ */
+#include <sh1.h>
 
 /*
  *  設定可能な最高優先度
  */
-#ifdef WITH_STUB
+#ifdef GDB_STUB
 #define MAX_IPM  0xe	/* スタブありの場合は優先度14でCPUロック   */
 #else
 #define MAX_IPM  0xf	/* スタブなしの場合は最高優先度でCPUロック */
-#endif /*  WITH_STUB  */
+#endif /*  GDB_STUB  */
 
-#define str_MAX_IPM  	_TO_STRING(MAX_IPM)
-#define str_intnest  	_TO_STRING(_intnest)
-#define str_reqflg  	_TO_STRING(_reqflg)
-#define str_ret_int  	_TO_STRING(_ret_int)
-
+#define str_MAX_IPM  	TO_STRING(MAX_IPM)
+#define str_intnest  	TO_STRING(_intnest)
+#define str_reqflg  	TO_STRING(_reqflg)
+#define str_ret_int  	TO_STRING(_ret_int)
 
 /*
  *  プロセッサの特殊命令のインライン関数定義
  */
 #ifndef _MACRO_ONLY
-#include "cpu_insn.h"
+#include <cpu_insn.h>
 #endif /* _MACRO_ONLY */
+
 
 /*
  *  chg_ipm/get_ipm をサポートするかどうかの定義
@@ -101,17 +88,18 @@
 #define	SUPPORT_CHG_IPM
 
 /*
- *  TCB 関連の定義
+ *  vxget_tim をサポートするかどうかの定義
+ */
+#define	SUPPORT_VXGET_TIM
+
+/*
+ *  TCB 中のフィールドのビット幅の定義
  *
  *  cpu_context.h に入れる方がエレガントだが，参照の依存性の関係で，
  *  cpu_context.h には入れられない．
  */
-
-/*
- *  TCB 中のフィールドのビット幅の定義
- */
-#define	TBIT_TCB_PRIORITY	8	/* priority フィールドのビット幅 */
 #define	TBIT_TCB_TSTAT		8	/* tstat フィールドのビット幅 */
+#define	TBIT_TCB_PRIORITY	8	/* priority フィールドのビット幅 */
 
 #ifndef _MACRO_ONLY
 /*
@@ -129,14 +117,13 @@ typedef struct task_context_block {
  *  左にシフトしたものである．
  */
 
-
 /*
  *  現在の割込みマスクの読出し
  */
 Inline UW
 current_intmask()
 {
-	return(current_sr() & 0x000000f0);
+	return(current_sr() & 0x000000f0u);
 }
 
 /*
@@ -145,8 +132,9 @@ current_intmask()
 Inline void
 set_intmask(UW intmask)
 {
-	set_sr((current_sr() & ~0x000000f0) | intmask);
+	set_sr((current_sr() & ~0x000000f0u) | intmask);
 }
+
 
 /*
  *  割込み／CPU例外ネストカウンタ
@@ -157,11 +145,12 @@ extern UW	intnest;
  *  システム状態参照
  */
 
+
 /*
  *  コンテキスト参照
  *
- *  割込みネストカウンタを読み出した直後に割込みが発生しても、戻ったと
- *  きにはコンテキストも元に戻っている
+ *  割込みネストカウンタを読み出した直後に割込みが発生しても、
+ *  戻ったときにはコンテキストも元に戻っている
  */
 Inline BOOL
 sense_context()
@@ -178,14 +167,11 @@ sense_lock()
 #define t_sense_lock	sense_lock
 #define i_sense_lock	sense_lock
 
-
-
 /*
  *  CPUロックとその解除（タスクコンテキスト用）
  *
  *  task_intmask は，chg_ipm をサポートするための変数．chg_ipm をサポー
- *  トしない場合には，t_unlock_cpu 中の task_intmask は 0 に置き換えて
- *  よい．
+ *  トしない場合には，task_intmask が常に 0 になっていると考えればよい．
  */
 
 #ifdef SUPPORT_CHG_IPM
@@ -212,7 +198,6 @@ t_unlock_cpu()
 #endif /* SUPPORT_CHG_IPM */
 }
 
-
 /*
  *  CPUロックとその解除（非タスクコンテキスト用）
  */
@@ -225,8 +210,8 @@ i_lock_cpu()
 	UW	intmask;
 
 	/*
-	 *  一時変数 intmask を使っているのは，current_intmask()を呼ん
-	 *  だ直後に割込みが発生し，起動された割込みハンドラ内で
+	 *  一時変数 intmask を使っているのは，current_intmask() を呼
+	 *  んだ直後に割込みが発生し，起動された割込みハンドラ内で
 	 *  int_intmask が変更される可能性があるためである．
 	 */
 	intmask = current_intmask();
@@ -259,11 +244,9 @@ extern void	dispatch(void);
  */
 extern void	exit_and_dispatch(void);
 
-
 /*
  *  割込みハンドラ／CPU例外ハンドラの設定
  */
-
 
 /*
  *  例外ベクタテーブルの構造の定義
@@ -272,17 +255,7 @@ typedef struct exc_vector_entry {
 	FP	exchdr;			/* 例外ハンドラの起動番地 */
 } EXCVE;
 
-#endif /* #ifndef _MACRO_ONLY_ */
-
-/*
- *  ベクタベースの定義
- */
-
-
 #define EXCVT_SIZE	256
-
-
-#ifndef _MACRO_ONLY
 
 #ifndef CQ_SH1_DEB
 
@@ -294,17 +267,10 @@ extern EXCVE BASE_VBR[EXCVT_SIZE];
 #endif /* CQ_SH1_DEB */
 
 /*
- *
  *  割込みハンドラの設定
  *
  *  ベクトル番号 inhno の割込みハンドラの起動番地を inthdr に設定する．
- *  stubを使う場合はstub呼び出しによりstubに登録する
- *
  */
-
-extern FP general_exception();
-extern FP interrupt();
-
 Inline void
 define_inh(INHNO inhno, FP inthdr)
 {
@@ -330,67 +296,54 @@ define_inh(INHNO inhno, FP inthdr)
 
 
 
-#ifdef WITH_STUB	/*  注意：スタブ呼び出し  */
-        Asm("mov #0x8,r0;  mov %0,r4; mov %1,r5; trapa #0x3f"
-	    : /* no output */
-	    : "r"(inhno),"r"(interrupt)
-	    : "r0", "r4", "r5");
-#endif
+#ifdef GDB_STUB	/*  スタブ呼び出し  */
+
+
+#endif	/*  GDB_STUB  */
 }
 
 /*
- *   CPU例外ハンドラの設定
+ *  CPU例外ハンドラの設定
+ *
+ *  ベクトル番号 excno のCPU例外ハンドラの起動番地を exchdr に設定する．
  */
-
 Inline void
 define_exc(EXCNO excno, FP exchdr)
 {
 	/*  SH1は割込みもCPU例外も同じ形式  */
-	define_inh(excno, exchdr);
+	define_inh((INHNO)excno, exchdr);
 }
-
-
-/*
- *  割り込みレベルの設定
- *	（共通部からは呼び出されない）
- */
-
-Inline void
-define_int_plevel(HIOREG *reg, UW level, UINT shift)
-{
-    *reg = (HIOREG)((*reg & ~(0xf << shift)) | (level << shift));
-}
-
-
 
 /*
  *  割込みハンドラ／CPU例外ハンドラの出入口処理
- *
  */
 
+/*  C言語ルーチンの関数名から入口処理のラベルを生成  
+ *     kernel_cfg.cで使用
+ */
+#define	INT_ENTRY(inthdr)	_kernel_##inthdr##_entry
+#define	EXC_ENTRY(exchdr)	_kernel_##exchdr##_entry
 
 /*
- *  割込みハンドラの出入口処理の生成マクロ
- *		（主に入口処理）
+ *  CPU例外ハンドラの出入口処理の生成マクロ
  *
+ *  CPU例外ハンドラは，非タスクコンテキストで実行する．そのため，CPU例
+ *  外ハンドラを呼び出す前に割込みモードに移行し，リターンしてきた後に
+ *  元のモードに戻す．元のモードに戻すために，割込みモードに移行する前
+ *  の SR を割込みスタック上に保存する．CPU例外がタスクコンテキストで
+ *  発生し，reqflg が TRUE になった時に，ret_exc へ分岐する．
  *  reqflg をチェックする前に割込みを禁止しないと，reqflg をチェック後
  *  に起動された割込みハンドラ内でディスパッチが要求された場合に，ディ
  *  スパッチされない．
- *
- *
  */
-
-/*  C言語ルーチンの関数名から入口処理のラベルを生成  */
-#define	INT_ENTRY(inthdr)	inthdr##_entry
-#define	EXC_ENTRY(exchdr)	exchdr##_entry
-
 
 /*
  *  割込みハンドラ／CPU例外ハンドラの入口処理
  *
  *	SH1では、割込みとCPU例外の扱いがほとんど同じなので、
  *	入口処理のマクロも共通に定義している
- *	相違点
+ *
+ *	割込みとCPU例外の相違点
  *	　　・CPU例外ハンドラに引数を与える
  *	　　・CPU例外では、例外発生時のIPMと同じ値で割込みを許可する
  *		（CPU例外により、IPMを変化させない）
@@ -540,17 +493,18 @@ asm(".text								\n"\
 "_stacktop_k_"#inthdr":     \n"	/* タスク独立部のスタックの初期値  	*/ \
 "	.long  "str_STACKTOP" \n"					   \
 "_intnest_k_"#inthdr":	    \n"	/*  割込み／CPU例外ネストカウンタ  	*/ \
-"	.long  "str_intnest"	    \n"				  	   \
+"	.long  __kernel_intnest	    \n"				  	   \
 "_reqflg_k_"#inthdr":	    \n"						   \
-"	.long  "str_reqflg" \n"						   \
+"	.long  __kernel_reqflg \n"					   \
 "_mask_ipm_"#inthdr":	    \n"	/*  割込み禁止用マスク  		*/ \
 "	.long  "str_MAX_IPM" << 4 \n"	/*  ipm以外のビットはゼロで良い	*/ \
 "_c_routine_"#inthdr":	    \n"						   \
 "	.long  _"#inthdr"   \n" /*  C言語ルーチンの先頭アドレス  	*/ \
 "ret_int_"#inthdr":	    \n"	/*  出口処理ret_intのアドレス  		*/ \
-"	.long  "str_ret_int"\n"				  		   \
+"	.long  __kernel_ret_int \n"			  		   \
 )
 /*  _INTHDR_ENTRY()マクロ　ここまで  */
+
 
 
 
@@ -558,9 +512,9 @@ asm(".text								\n"\
  *  割込みハンドラの出入口処理の生成マクロ
  *
  */
-#define INTHDR_ENTRY(inthdr)				\
-	extern void inthdr##_entry(void);		\
-	_INTHDR_ENTRY(inthdr##_entry, inthdr, "", "")
+#define INTHDR_ENTRY(inthdr)					\
+	extern void _kernel_##inthdr##_entry(void);		\
+	_INTHDR_ENTRY(_kernel_##inthdr##_entry, inthdr, "", "")
 
 
 /*
@@ -576,21 +530,23 @@ asm(".text								\n"\
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
- *  　注意
+ *  　
  *  	一般不当命令の場合は戻り番地を2バイト進める必要があるが
  *	対応していない
+ *	（GDB stubがブレークポイントとして使用する。）
  */
-#define	EXCHDR_ENTRY(exchdr)  					\
-	extern void exchdr##_entry(VP sp);			\
-	_INTHDR_ENTRY(exchdr##_entry, exchdr,			\
+#define	EXCHDR_ENTRY(exchdr)  						\
+	extern void _kernel_##exchdr##_entry(VP sp);			\
+	_INTHDR_ENTRY(_kernel_##exchdr##_entry, exchdr,			\
 			SET_EXCHDR_ARG(r2), SET_EXCHDR_ARG(r15))
+
 
 /*
  *  CPU例外の発生した時のシステム状態の参照
  */
 
 /*
- *  CPU例外の発生した時のコンテキスト判別
+ *  CPU例外の発生した時のコンテキストの参照
  */
 Inline BOOL
 exc_sense_context(VP p_excinf)
@@ -606,15 +562,9 @@ exc_sense_context(VP p_excinf)
 Inline BOOL
 exc_sense_lock(VP p_excinf)
 {
-	return(((*(UW *)p_excinf) & 0x00000f0) == MAX_IPM << 4);
+	UW sr = *(UW *)p_excinf; 
+	return((sr& 0x00000f0u) == MAX_IPM << 4);
 }
-
-/*
- *  ラベルの別名を定義するためのマクロ
- */
-#define	_LABEL_ALIAS(new_label, defined_label) \
-	asm(".globl _" #new_label "\n_" #new_label " = _" #defined_label);
-#define LABEL_ALIAS(x, y) _LABEL_ALIAS(x, y)
 
 /*
  *  プロセッサ依存の初期化
@@ -663,6 +613,5 @@ typedef struct exc_stack {
  */
 extern void     cpu_experr(EXCSTACK *);
 
-
-#endif /* _MACRO_ONLY_ */
+#endif /* _MACRO_ONLY */
 #endif /* _CPU_CONFIG_H_ */

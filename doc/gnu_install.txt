@@ -1,43 +1,44 @@
 
                   ＝ GNU開発環境構築マニュアル ＝
 
-            （Release 1.2対応，最終更新: 14-Nov-2001）
+            （Release 1.4対応，最終更新: 20-Dec-2003）
 
 ------------------------------------------------------------------------ 
  TOPPERS/JSP Kernel
      Toyohashi Open Platform for Embedded Real-Time Systems/
      Just Standard Profile Kernel
 
- Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
                              Toyohashi Univ. of Technology, JAPAN
 
- 上記著作権者は，Free Software Foundation によって公表されている 
- GNU General Public License の Version 2 に記述されている条件か，以
- 下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ 上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ によって公表されている GNU General Public License の Version 2 に記
+ 述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  利用と呼ぶ）することを無償で許諾する．
  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
      スコード中に含まれていること．
- (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
-     ジェクトファイルやライブラリなど）の形で利用する場合には，利用
-     に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
-     この利用条件および下記の無保証規定を掲載すること．
- (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
-     み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
-   (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
-       権表示，この利用条件および下記の無保証規定を掲載すること．
-   (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
-       こと．
+ (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+     用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+     者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+     の無保証規定を掲載すること．
+ (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+     用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+     と．
+   (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+       作権表示，この利用条件および下記の無保証規定を掲載すること．
+   (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+       報告すること．
  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
-     害からも，上記著作権者を免責すること．
+     害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
 
- 本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- 本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- かなる損害に関しても，その責任を負わない．
+ 本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ 含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ 接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: gnu_install.txt,v 1.15 2002/04/14 10:01:18 honda Exp $
+ @(#) $Id: gnu_install.txt,v 1.26 2003/12/20 09:13:20 honda Exp $
 ------------------------------------------------------------------------
 
 
@@ -77,7 +78,7 @@ perl または make のバージョンを知りたい場合には，-v オプションをつけて
 
 また，これらの開発環境を Windows上に構築するためには Cygwin を用いる．
 
-    Cygwin（動作確認は 1.3.4）
+    Cygwin（動作確認は 1.5.5）
 
 Cygwinのインストールについては後述する．また，ツールのソースコードを修
 正する必要があるが，これも後述する．
@@ -154,6 +155,8 @@ make install は，<PREFIX> 以下に書き込み権限があるユーザで行う必要があ
     ARM             arm-elf
     M32R            m32r-elf
     Microblaze      mb
+    mips3           mipsel-nec-elf
+    Xstormy16       xstormy16-elf
 
 以下，ターゲット環境を表す文字列を <TARGET> と表記する．
 
@@ -172,16 +175,6 @@ BINUTILS は，GCC-CORE のインストールに必要なため，GCC-CORE に先だって
       --disable-nls
     % make
     % make install
-
-また，コンフィギュレータでbfdの幾つかのファイルが必要となるので以下の
-手順でファイルをコピーする．
-
-    % mkdir <PREFIX>/<TARGET>/bfd
-    % cp <BINUTILS-SRCDIR>/include/ansidecl.h <PREFIX>/<TARGET>/bfd/
-    % cp <BINUTILS-SRCDIR>/include/libiberty.h <PREFIX>/<TARGET>/bfd/
-    % cp <BINUTILS-OBJDIR>/bfd/bfd.h <PREFIX>/<TARGET>/bfd/
-    % cp <BINUTILS-OBJDIR>/bfd/libbfd.a <PREFIX>/<TARGET>/bfd/
-    % cp <BINUTILS-OBJDIR>/libiberty/libiberty.a <PREFIX>/<TARGET>/bfd/
 
 (6) GCC-CORE のインストール
 
@@ -299,7 +292,9 @@ gdb が起動したら，次のコマンドを実行して，ターゲットシステムと接続する．
 
 ３．Cygwinのインストール
 
-本インストールマニュアルは，cygwinの1.3.3バージョンを対象にしている．
+本インストールマニュアルは，cygwinの1.5.5バージョンを対象にしている．
+また，以下のサイトではCygwinに関する情報やドキュメントがまとめられている．
+http://www.sixnine.net/cygwin/cygwin-doc/
 
 3.1必要なファイル
 Cygwinのインストールに必要なファイルは次のサイトから入手することができる．
@@ -342,14 +337,15 @@ setup.exe を実行すると，
 3.3.開発環境のインストール
 
 3.3.1 バイナリからのインストール
+
 特に最新版のコンパイラが必要でなければ，TOPPERS/JSP のホームページ
-（http://www.ertl.ics.tut.ac.jp/TOPPERS/）の"Development Tools"のペー
-ジから SH 用の BINUTILS,GCC-CORE,GDB のバイナリ（gnu_cygwin_sh.tar.gz）
-をc:\Cygwin\usr\localにダウンロードして以下の手順で展開する．なお，こ
-のファイルにはNEWLIBは含まれていないが，GDB-Stub，TOPPERS/JSP の 
-sample1 のコンパイルには支障はない．ユーザーアプリケーションを作成する
-さい，必要なら別途ソースからコンパイル，インストールする．
-バイナリ（gnu_cygwin_sh.tar.gz）は，Cygwin の /usr/local で展開する．
+（http://www.toppers.jp/）から SH 用の BINUTILS,GCC-CORE,GDB のバイナ
+リ（gnu_cygwin_sh.tar.gz）をc:\Cygwin\usr\localにダウンロードして以下
+の手順で展開する．なお，このファイルにはNEWLIBは含まれていないが，
+GDB-Stub，TOPPERS/JSP の sample1 のコンパイルには支障はない．ユーザー
+アプリケーションを作成するさい，必要なら別途ソースからコンパイル，イン
+ストールする．バイナリ（gnu_cygwin_sh.tar.gz）は，Cygwin の /usr/local 
+で展開する．
 
     $ cd /usr/local
     $ tar xvfz gnu_cygwin_sh.tar.gz
@@ -364,33 +360,16 @@ export PATH=/usr/local/sh/bin:${PATH}
 後は，JSPの各ターゲットのMakefile先頭にある"CYGWIN = ture"の部分のコメ
 ントアウトを外せばCygwin上でJSPのコンパイルが可能である．
 
-3.3.2 ソースからのインストール
-ソースからインストールする場合，各ツールのソースコードを修正する必要が
-ある．修正個所は，BINUTILS,GCC-CORE,GDB それぞれのソースコードを展開し
-たディレクトリ以下の ./libiberty/strerror.c の461行目
- static int sys_nerr;
- static const char **sys_errlist;
-を
- int sys_nerr;
- const char * const sys_errlist[]
-とする．また，
-544行目あたりの
-  if ((sys_errlist = (const char **) malloc (nbytes)) != NULL)
-を
-  if ((*(long *)&sys_errlist = (long) malloc (nbytes)) != NULL)
-とする．
-
-なお，この修正は，Cygwinのバージョンが 1.3.4 の場合に有効であり，将来
-のバージョンでは，不必要になる可能性もある．
-
-以上の修正後，前述のインストール方法に従ってインストールする．
-
 
 3.4.gdbによるデバッグ
 GDBのコマンドラインからCOM1経由でターゲットに接続する場合は，
-(gdb)target remote \\.\com1
+
+(gdb)target remote /dev/ttyS0
+
 COM2経由の場合は
-(gdb)target remote \\.\com2
+
+(gdb)target remote /dev/ttyS1
+
 とする．
 
 

@@ -3,36 +3,37 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: wait.c,v 1.3 2002/03/26 08:19:38 hiro Exp $
+ *  @(#) $Id: wait.c,v 1.6 2003/06/04 01:46:16 hiro Exp $
  */
 
 /*
@@ -46,7 +47,9 @@
  *  待ち状態への移行（タイムアウト指定）
  *
  */
-inline void
+#ifdef __waimake
+
+void
 make_wait_tmout(WINFO *winfo, TMEVTB *tmevtb, TMO tmout)
 {
 	make_non_runnable(runtsk);
@@ -61,6 +64,8 @@ make_wait_tmout(WINFO *winfo, TMEVTB *tmevtb, TMO tmout)
 		winfo->tmevtb = NULL;
 	}
 }
+
+#endif /* __waimake */
 
 /*
  *  待ち解除のためのタスク状態の更新
@@ -85,6 +90,7 @@ make_non_wait(TCB *tcb)
 		 *  二重待ち状態から強制待ち状態への遷移
 		 */
 		tcb->tstat = TS_SUSPENDED;
+		LOG_TSKSTAT(tcb);
 		return(FALSE);
 	}
 }
@@ -92,6 +98,8 @@ make_non_wait(TCB *tcb)
 /*
  *  待ち解除
  */
+#ifdef __waicmp
+
 BOOL
 wait_complete(TCB *tcb)
 {
@@ -102,9 +110,13 @@ wait_complete(TCB *tcb)
 	return(make_non_wait(tcb));
 }
 
+#endif /* __waicmp */
+
 /*
  *  タイムアウトに伴う待ち解除
  */
+#ifdef __waitmo
+
 void
 wait_tmout(TCB *tcb)
 {
@@ -117,6 +129,9 @@ wait_tmout(TCB *tcb)
 	}
 }
 
+#endif /* __waitmo */
+#ifdef __waitmook
+
 void
 wait_tmout_ok(TCB *tcb)
 {
@@ -126,10 +141,14 @@ wait_tmout_ok(TCB *tcb)
 	}
 }
 
+#endif /* __waitmook */
+
 /*
  *  待ち状態の強制解除
  */
-inline void
+#ifdef __waican
+
+void
 wait_cancel(TCB *tcb)
 {
 	if (tcb->winfo->tmevtb != NULL) {
@@ -140,6 +159,9 @@ wait_cancel(TCB *tcb)
 	}
 }
 
+#endif /* __waican */
+#ifdef __wairel
+
 BOOL
 wait_release(TCB *tcb)
 {
@@ -147,6 +169,8 @@ wait_release(TCB *tcb)
 	tcb->winfo->wercd = E_RLWAI;
 	return(make_non_wait(tcb));
 }
+
+#endif /* __wairel */
 
 /*
  *  タスクの優先度順の待ちキューへの挿入
@@ -183,6 +207,8 @@ wobj_queue_insert(WOBJCB *wobjcb)
 /*
  *  同期・通信オブジェクトに対する待ち状態への移行
  */
+#ifdef __wobjwai
+
 void
 wobj_make_wait(WOBJCB *wobjcb, WINFO_WOBJ *winfo)
 {
@@ -190,7 +216,11 @@ wobj_make_wait(WOBJCB *wobjcb, WINFO_WOBJ *winfo)
 	make_wait(&(winfo->winfo));
 	wobj_queue_insert(wobjcb);
 	winfo->wobjcb = wobjcb;
+	LOG_TSKSTAT(runtsk);
 }
+
+#endif /* __wobjwai */
+#ifdef __wobjwaitmo
 
 void
 wobj_make_wait_tmout(WOBJCB *wobjcb, WINFO_WOBJ *winfo,
@@ -200,11 +230,15 @@ wobj_make_wait_tmout(WOBJCB *wobjcb, WINFO_WOBJ *winfo,
 	make_wait_tmout(&(winfo->winfo), tmevtb, tmout);
 	wobj_queue_insert(wobjcb);
 	winfo->wobjcb = wobjcb;
+	LOG_TSKSTAT(runtsk);
 }
 
+#endif /* __wobjwaitmo */
 /*
  *  タスクの優先度変更時の処理
  */
+#ifdef __wobjpri
+
 void
 wobj_change_priority(WOBJCB *wobjcb, TCB *tcb)
 {
@@ -213,3 +247,5 @@ wobj_change_priority(WOBJCB *wobjcb, TCB *tcb)
 		queue_insert_tpri(tcb, &(wobjcb->wait_queue));
 	}
 }
+
+#endif /* __wobjpri */

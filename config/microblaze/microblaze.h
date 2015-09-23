@@ -3,50 +3,51 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: microblaze.h,v 1.1 2002/04/05 08:47:14 honda Exp $
+ *  @(#) $Id: microblaze.h,v 1.5 2003/07/29 08:27:03 honda Exp $
  */
 
 #ifndef _MICROBLAZE_H_
 #define _MICROBLAZE_H_
 
-#include "sys_config.h"
+
 
 #ifndef _MACRO_ONLY
-typedef unsigned char   byte;
-typedef volatile byte   IOREG;          
-typedef unsigned short  word;
-typedef volatile word   HIOREG;
-typedef volatile int    LIOREG;
+#include <itron.h>
+#include <sil.h>
 #endif /* _MACRO_ONLY */
+
+
+
 
 /*
  *  MSRのビット
@@ -74,45 +75,46 @@ typedef volatile int    LIOREG;
 #define INTC_ME_MASK  0x1
 
 
-#ifndef _MACRO_ONLY
-#define INTC_ISR ((LIOREG *)(INTC_BASE + INTC_INT_STATUS_REG))
-#define INTC_IPR ((LIOREG *)(INTC_BASE + INTC_INT_PENDING_REG))
-#define INTC_IER ((LIOREG *)(INTC_BASE + INTC_INT_ENABLE_REG))
-#define INTC_IAR ((LIOREG *)(INTC_BASE + INTC_INT_ACK_REG))
-#define INTC_SIE ((LIOREG *)(INTC_BASE + INTC_SET_INT_ENABLE))
-#define INTC_CIE ((LIOREG *)(INTC_BASE + INTC_CLEAR_INT_ENABLE))
-#define INTC_IVR ((LIOREG *)(INTC_BASE + INTC_INT_VECTOR_REG))
-#define INTC_MER ((LIOREG *)(INTC_BASE + INTC_MASTER_ENABLE_REG))
 
+#define INTC_ISR (INTC_BASE + INTC_INT_STATUS_REG)
+#define INTC_IPR (INTC_BASE + INTC_INT_PENDING_REG)
+#define INTC_IER (INTC_BASE + INTC_INT_ENABLE_REG)
+#define INTC_IAR (INTC_BASE + INTC_INT_ACK_REG)
+#define INTC_SIE (INTC_BASE + INTC_SET_INT_ENABLE)
+#define INTC_CIE (INTC_BASE + INTC_CLEAR_INT_ENABLE)
+#define INTC_IVR (INTC_BASE + INTC_INT_VECTOR_REG)
+#define INTC_MER (INTC_BASE + INTC_MASTER_ENABLE_REG)
+
+#ifndef _MACRO_ONLY
 /*
  *  INTC操作関数
  */
 Inline void
 intc_start(void){
-  *INTC_MER = INTC_HIE_MASK | INTC_ME_MASK;
+  sil_wrw_mem((VP)INTC_MER, INTC_HIE_MASK | INTC_ME_MASK);
 }
 
 Inline void
 intc_disable_allinterrupt(){
-  *INTC_MER = 0;
+  sil_wrw_mem((VP)INTC_MER, 0);
 }
 
 Inline void
 intc_enable_interrupt(UW mask)
 {
-  *INTC_SIE = mask;
+  sil_wrw_mem((VP)INTC_SIE, mask);
 }
 
 Inline void
 intc_disable_interrupt(UW mask)
 {
-  *INTC_CIE = mask;
+  sil_wrw_mem((VP)INTC_CIE, mask);
 }
 
 Inline void
 intc_ack_interrupt(UW mask)
 {
-  *INTC_IAR = mask;
+  sil_wrw_mem((VP)INTC_IAR, mask);
 }
 
 #endif /* _MACRO_ONLY */
@@ -147,21 +149,17 @@ intc_ack_interrupt(UW mask)
 #define TIMER_COUNTER_1         0x18
 
 
-#ifndef _MACRO_ONLY
-#define TIMER_TCSR0 ((LIOREG *)(TIMER_BASE + TIMER_CONTROL_STATUS_0))
-#define TIMER_TCCR0 ((LIOREG *)(TIMER_BASE + TIMER_COMPARE_CAPTURE_0))
-#define TIMER_TCR0  ((LIOREG *)(TIMER_BASE + TIMER_COUNTER_0))
-#define TIMER_TCSR1 ((LIOREG *)(TIMER_BASE + TIMER_CONTROL_STATUS_1))
-#define TIMER_TCCR1 ((LIOREG *)(TIMER_BASE + TIMER_COMPARE_CAPTURE_1))
-#define TIMER_TCR1  ((LIOREG *)(TIMER_BASE + TIMER_COUNTER_1))
-#endif  /* _MACRO_ONLY */
-
+#define TIMER_TCSR0 (TIMER_BASE + TIMER_CONTROL_STATUS_0)
+#define TIMER_TCCR0 (TIMER_BASE + TIMER_COMPARE_CAPTURE_0)
+#define TIMER_TCR0  (TIMER_BASE + TIMER_COUNTER_0)
+#define TIMER_TCSR1 (TIMER_BASE + TIMER_CONTROL_STATUS_1)
+#define TIMER_TCCR1 (TIMER_BASE + TIMER_COMPARE_CAPTURE_1)
+#define TIMER_TCR1  (TIMER_BASE + TIMER_COUNTER_1)
 
 
 /*
  *  UARTドライバ用のマクロ定義
  */
-
 
 /*
  * Error condition masks 
@@ -196,35 +194,120 @@ intc_ack_interrupt(UW mask)
 #define UARTLITE_CONTROL_REG  0xc
 
 
+#define UARTLITE_RXREG (UART_BASE + UARTLITE_RECEIVE_REG)
+#define UARTLITE_TXREG (UART_BASE + UARTLITE_TRANSMIT_REG)
+#define UARTLITE_SRREG (UART_BASE + UARTLITE_STATUS_REG)
+#define UARTLITE_CTREG (UART_BASE + UARTLITE_CONTROL_REG)
+
+
 
 #ifndef _MACRO_ONLY
-#define UARTLITE_RXREG ((LIOREG *)(UART_BASE + UARTLITE_RECEIVE_REG))
-#define UARTLITE_TXREG ((LIOREG *)(UART_BASE + UARTLITE_TRANSMIT_REG))
-#define UARTLITE_SRREG ((LIOREG *)(UART_BASE + UARTLITE_STATUS_REG))
-#define UARTLITE_CTREG ((LIOREG *)(UART_BASE + UARTLITE_CONTROL_REG))
+/*                                                                          
+ * 内蔵UART用 簡易SIOドライバ                                                 
+ */
 
+/*                                                                            
+ *  シリアルI/Oポート初期化ブロック                                         
+ */
+typedef struct sio_port_initialization_block {
+
+} SIOPINIB;
+
+/*                                                                            
+ *  シリアルI/Oポート管理ブロック                                            
+ */
+typedef struct sio_port_control_block {
+    const SIOPINIB  *siopinib;  /* シリアルI/Oポート初期化ブロック */
+    VP_INT          exinf;      /* 拡張情報 */
+    BOOL    openflag;           /* オープン済みフラグ */
+    BOOL    sendflag;           /* 送信割込みイネーブルフラグ */
+    BOOL    getready;           /* 文字を受信した状態 */
+    BOOL    putready;           /* 文字を送信できる状態 */
+} SIOPCB;
+
+extern SIOPCB   siopcb_table[];
+
+#define uart_openflag   (siopcb_table[0].openflag)
 
 Inline void
 uart_putc(unsigned char c){
-  while(*UARTLITE_SRREG & UARTLITE_TX_FIFO_FULL);
-  *UARTLITE_TXREG = c;
+  while(sil_rew_mem((VP)UARTLITE_SRREG) & UARTLITE_TX_FIFO_FULL);
+  sil_wrw_mem((VP)UARTLITE_TXREG, c);
 }
 
 Inline unsigned char
 uart_getc(void){
-  while(!(*UARTLITE_SRREG & UARTLITE_RX_FIFO_VALID_DATA));
-  return (char)(*UARTLITE_RXREG);
+  while(!(sil_rew_mem((VP)UARTLITE_SRREG) & UARTLITE_RX_FIFO_VALID_DATA));
+  return (char)(sil_rew_mem((VP)UARTLITE_RXREG));
 }
 
-Inline void
-uart_ena_int(void){
-  *UARTLITE_CTREG |= UARTLITE_ENABLE_INTR;
-}
+/*
+ *  コールバックルーチンの識別番号
+ *  OPB_UARTLITE は，送受信割込みが分かれていないため，意味はない．
+ */
+#define SIO_ERDY_SND    1u              /* 送信可能コールバック */
+#define SIO_ERDY_RCV    2u              /* 受信通知コールバック */
 
-Inline void
-uart_dis_int(void){
-  *UARTLITE_CTREG &= ~(UARTLITE_ENABLE_INTR);
-}
+
+/*                                                                           
+ *  SIOドライバの初期化ルーチン                                                
+ */
+extern void uart_initialize(void);
+
+
+/*                                                                           
+ *  シリアルI/Oポートのオープン                                              
+ */
+extern SIOPCB   *uart_opn_por(ID siopid, VP_INT exinf);
+
+/*                                                                         
+ *  シリアルI/Oポートのクローズ                                             
+ */
+extern void uart_cls_por(SIOPCB *siopcb);
+
+/*                                                                            
+ *  シリアルI/Oポートへの文字送信                                            
+ */
+extern BOOL uart_snd_chr(SIOPCB *siopcb, INT chr);
+
+/*
+ *  シリアルI/Oポートからの文字受信
+ */
+extern INT  uart_rcv_chr(SIOPCB *siopcb);
+
+
+/*
+ *  シリアルI/Oポートからのコールバックの許可
+ */
+extern void uart_ena_cbr(SIOPCB *siopcb, UINT cbrtn);
+
+
+/*
+ *  シリアルI/Oポートからのコールバックの禁止
+ */
+extern void uart_dis_cbr(SIOPCB *siopcb, UINT cbrtn);
+
+
+/*                                                                            
+ *  SIOの割込みサービスルーチン                                              
+ */
+extern void uart_isr(void);
+
+
+/*
+ *  シリアルI/Oポートからの送信可能コールバック
+ */
+extern void uart_ierdy_snd(VP_INT exinf);
+
+
+/*
+ *  シリアルI/Oポートからの受信通知コールバック
+ */
+extern void uart_ierdy_rcv(VP_INT exinf);
+
+
+
+
 #endif  /* _MACRO_ONLY */
 
 #endif /* _MICROBLAZE_H_*/

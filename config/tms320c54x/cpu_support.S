@@ -3,36 +3,37 @@
 ; *      Toyohashi Open Platform for Embedded Real-Time Systems/
 ; *      Just Standard Profile Kernel
 ; * 
-; *  Copyright (C) 2000-2002 by Embedded and Real-Time Systems Laboratory
+; *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
 ; *                              Toyohashi Univ. of Technology, JAPAN
 ; * 
-; *  上記著作権者は，Free Software Foundation によって公表されている 
-; *  GNU General Public License の Version 2 に記述されている条件か，以
-; *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
-; *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+; *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+; *  によって公表されている GNU General Public License の Version 2 に記
+; *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+; *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
 ; *  利用と呼ぶ）することを無償で許諾する．
 ; *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
 ; *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
 ; *      スコード中に含まれていること．
-; *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
-; *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
-; *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
-; *      この利用条件および下記の無保証規定を掲載すること．
-; *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
-; *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
-; *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
-; *        権表示，この利用条件および下記の無保証規定を掲載すること．
-; *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
-; *        こと．
+; *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+; *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+; *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+; *      の無保証規定を掲載すること．
+; *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+; *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+; *      と．
+; *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+; *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+; *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+; *        報告すること．
 ; *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
-; *      害からも，上記著作権者を免責すること．
+; *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
 ; * 
-; *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
-; *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
-; *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
-; *  かなる損害に関しても，その責任を負わない．
+; *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+; *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+; *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+; *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 ; * 
-; *  @(#) $Id: cpu_support.S,v 1.2 2002/04/14 10:37:55 reiji Exp $
+; *  @(#) $Id: cpu_support.S,v 1.5 2003/12/04 08:25:44 honda Exp $
 ; *
 
         .c_mode
@@ -61,7 +62,7 @@ dispatch_r:
         .global __kernel_exit_and_dispatch
 __kernel_exit_and_dispatch:
         SSBX   INTM                      ;割り込み禁止
-        ST     #0,*(_nest)               ;カーネルの初期化処理時のため
+        ST     #0,*(__kernel_nest)               ;カーネルの初期化処理時のため
 dispatcher_1:
         LD     *(__kernel_schedtsk),A    ;schedtskがあるか？
         BC     dispatcher_2,AEQ          ;無ければジャンプ
@@ -74,11 +75,11 @@ dispatcher_1:
         
 dispatcher_2:
         STM    #STACKTOP,SP
-        ST     #0x01,*(_nest)
+        ST     #0x01,*(__kernel_nest)
         RSBX   INTM                      ;割り込み許可
         IDLE   1                         ;リセットかマスクされていない割込み待ち
         SSBX   INTM                      ;割り込み禁止
-        ST     #0x0,*(_nest)
+        ST     #0x0,*(__kernel_nest)
         B      dispatcher_1
 
 
@@ -86,10 +87,10 @@ dispatcher_2:
 ;  タスクの起動処理
 ;
 
-;        .global __kernel_activate_r
-         .global _activate_r
-;__kernel_activate_r:
-_activate_r:
+        .global __kernel_activate_r
+;         .global _activate_r
+__kernel_activate_r:
+;_activate_r:
         RSBX   INTM                      ;割り込み許可
         POPM   AR2
         POPM   AR3
@@ -121,8 +122,8 @@ _interrupt:
         PSHM   RSA
         PSHM   REA
         PSHM   PMST
-        LD     *(_nest),A
-        ADDM   #1,*(_nest)               ;割り込みのネスト回数をインクリメント
+        LD     *(__kernel_nest),A
+        ADDM   #1,*(__kernel_nest)               ;割り込みのネスト回数をインクリメント
         BC     _interrupt_from_int,ANEQ
         LDM    SP,A                      ;スタック入れ替えと
         STM    #STACKTOP,SP              ;元のスタックポインタの
@@ -130,14 +131,14 @@ _interrupt:
         PSHM   IMR
         MVDM   *(_INT_VECNO),AR2         ;オフセット値をAR2にセット
         STM    #IMR,AR3                  ;同じ割り込みが何度もかからないように
-        LD     *AR2(_int_mask_table),A   ;            ｜
+        LD     *AR2(__kernel_int_mask_table),A   ;            ｜
         AND    *AR3,A                    ;            ↓
         STL    A,*AR3                    ;現在の割り込みをマスクする 
-        LD     *AR2(_int_table),A        ;割り込みハンドラのアドレスを取得
+        LD     *AR2(__kernel_int_table),A        ;割り込みハンドラのアドレスを取得
         RSBX   INTM                      ;これ以降割り込みを受け受け付ける
         CALA   A                         ;割り込みハンドラへ
         SSBX   INTM                      ;割り込みを禁止
-        ADDM   #-1,*(_nest)              ;デクリメント
+        ADDM   #-1,*(__kernel_nest)              ;デクリメント
         POPM   IMR
         POPM   SP                        ;戻り先がタスクなのでスタックを戻す
         LD     *(__kernel_reqflg),A
@@ -154,16 +155,16 @@ _interrupt_from_int:
         PSHM   IMR
         MVDM   *(_INT_VECNO),AR2         ;オフセット値をAR2にセット
         STM    #IMR,AR3                  ;同じ割り込みが何度もかからないように
-        LD     *AR2(_int_mask_table),A   ;            ｜
+        LD     *AR2(__kernel_int_mask_table),A   ;            ｜
         AND    *AR3,A                    ;            ↓
         STL    A,*AR3                    ;現在の割り込みをマスクする 
-        LD     *AR2(_int_table),A        ;割り込みハンドラのアドレスを取得
+        LD     *AR2(__kernel_int_table),A        ;割り込みハンドラのアドレスを取得
         RSBX   INTM                      ;これ以降割り込みを受け付ける
         CALA   A                         ;割り込みハンドラヘ
         SSBX   INTM                      ;割り込み禁止
         POPM   IMR
         POPM   SP
-        ADDM   #-1,*(_nest)              ;割り込みのネスト回数をデクリメント
+        ADDM   #-1,*(__kernel_nest)              ;割り込みのネスト回数をデクリメント
 _ret_to_task_int:                        ;レジスタを復帰し割り込み元へ戻る。
         POPM   PMST
         POPM   REA
@@ -241,5 +242,19 @@ ret_int_1:
         POPM   ST0
         RETE
 
+;
+;   微少時間待ち
+;
+        .global	_sil_dly_nse
+_sil_dly_nse:
+        SSBX      SXM
+        NOP
+        LD	*(AL), A
+        SUB	#SIL_DLY_TIM1, A, A
+        BC	_sil_dly_nse1, AGT
+        RET
+_sil_dly_nse1:
+        SUB	#SIL_DLY_TIM2, A, A
+        BC	_sil_dly_nse1, AGT
+        RET
 
-        

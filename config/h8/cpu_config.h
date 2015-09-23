@@ -3,40 +3,41 @@
  *      Toyohashi Open Platform for Embedded Real-Time Systems/
  *      Just Standard Profile Kernel
  * 
- *  Copyright (C) 2000,2001 by Embedded and Real-Time Systems Laboratory
+ *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2001 by Industrial Technology Institute,
+ *  Copyright (C) 2001-2003 by Industrial Technology Institute,
  *                              Miyagi Prefectural Government, JAPAN
- *  Copyright (C) 2001,2002 by Dep. of Computer Science and Engineering
+ *  Copyright (C) 2001-2003 by Dep. of Computer Science and Engineering
  *                   Tomakomai National College of Technology, JAPAN
  * 
- *  上記著作権者は，Free Software Foundation によって公表されている 
- *  GNU General Public License の Version 2 に記述されている条件か，以
- *  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
- *  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+ *  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+ *  によって公表されている GNU General Public License の Version 2 に記
+ *  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+ *  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
  *  利用と呼ぶ）することを無償で許諾する．
  *  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
  *      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
  *      スコード中に含まれていること．
- *  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
- *      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
- *      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
- *      この利用条件および下記の無保証規定を掲載すること．
- *  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
- *      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
- *    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
- *        権表示，この利用条件および下記の無保証規定を掲載すること．
- *    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
- *        こと．
+ *  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+ *      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+ *      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+ *      の無保証規定を掲載すること．
+ *  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+ *      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+ *      と．
+ *    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+ *        作権表示，この利用条件および下記の無保証規定を掲載すること．
+ *    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+ *        報告すること．
  *  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
- *      害からも，上記著作権者を免責すること．
+ *      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
+ *
+ *  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+ *  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+ *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+ *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
- *  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
- *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
- *  かなる損害に関しても，その責任を負わない．
- * 
- *  @(#) $Id: cpu_config.h,v 1.4 2002/04/14 11:36:50 hiro Exp $
+ *  @(#) $Id: cpu_config.h,v 1.10 2003/12/25 07:39:39 honda Exp $
  */
 
 /*
@@ -46,34 +47,20 @@
 #ifndef _CPU_CONFIG_H_
 #define _CPU_CONFIG_H_
 
+#include <h8.h>
+
 /*
  *  カーネルの内部識別名のリネーム
  */
-#ifndef OMIT_RENAME
 
-#define activate_r		_kernel_activate_r
-#define ret_int			_kernel_ret_int
-#define ret_exc			_kernel_ret_exc
-#define task_intmask		_kernel_task_intmask
-#define int_intmask		_kernel_int_intmask
-
-#ifdef LABEL_ASM
-
-#define _activate_r		__kernel_activate_r
-#define _ret_int		__kernel_ret_int
-#define _ret_exc		__kernel_ret_exc
-#define _task_intmask		__kernel_task_intmask
-#define _int_intmask		__kernel_int_intmask
-
-#endif /* LABEL_ASM */
-#endif /* OMIT_RENAME */
+#include <cpu_rename.h>
 
 /*
  *  プロセッサの特殊命令のインライン関数定義
  */
 
 #ifndef _MACRO_ONLY
-#include "cpu_insn.h"
+#include <cpu_insn.h>
 #endif /* _MACRO_ONLY */
 
 #ifndef _MACRO_ONLY
@@ -219,7 +206,7 @@ extern void	exit_and_dispatch(void);
 Inline void
 define_inh(INHNO inhno, FP inthdr)
 {
-}
+	}
 
 /*
  *   CPU例外ハンドラの設定
@@ -228,7 +215,7 @@ define_inh(INHNO inhno, FP inthdr)
 Inline void
 define_exc(EXCNO excno, FP exchdr)
 {
-}
+	}
 
 /*
  *  割込みハンドラの出入口処理
@@ -271,11 +258,11 @@ asm(".text								\n"\
 "	push.l	er0							\n"\
 "	push.l	er1							\n"\
 			/*  割込みネストカウンタのチェック 		*/ \
-"	mov.l	@_intnest, er0						\n"\
+"	mov.l	@__kernel_intnest, er0					\n"\
 "	mov.l	er0, er1   						\n"\
 				/*  割込みネストカウンタを +1 */	   \
 "	inc.l	#1, er0							\n"\
-"	mov.l	er0, @_intnest						\n"\
+"	mov.l	er0, @__kernel_intnest					\n"\
 				/* 割込み発生時のコンテキストを判定  	*/ \
 "	or.l	er1, er1   						\n"\
 				/* 多重割込みならジャンプ   		*/ \
@@ -302,9 +289,9 @@ asm(".text								\n"\
 				/*  個別ハードウェア割り込み許可 */	   \
 "	jsr	@_"#inthdr"_enable_int					\n"\
 				/* 割込みネストカウンタを-1 */		   \
-"	mov.l	@_intnest, er0					  	\n"\
+"	mov.l	@__kernel_intnest, er0				  	\n"\
 "	dec.l	#1, er0							\n"\
-"	mov.l	er0, @_intnest						\n"\
+"	mov.l	er0, @__kernel_intnest					\n"\
 				/* スタック切替え  			*/ \
 "	mov.l	@sp, sp							\n"\
 				/* reqflgのチェック                    	*/ \
@@ -341,9 +328,9 @@ asm(".text								\n"\
 				/*  個別ハードウェア割り込み許可 */	   \
 "	jsr	@_"#inthdr"_enable_int					\n"\
 				/* 割込みネストカウンタを -1 */		   \
-"	mov.l	@_intnest, er0					  	\n"\
+"	mov.l	@__kernel_intnest, er0				  	\n"\
 "	dec.l	#1, er0							\n"\
-"	mov.l	er0, @_intnest						\n"\
+"	mov.l	er0, @__kernel_intnest					\n"\
 									   \
 									   \
 /*   reqflgがFALSEの場合の処理 						*/ \
@@ -399,7 +386,7 @@ exc_sense_context(VP p_excinf)
 Inline BOOL
 exc_sense_lock(VP p_excinf)
 {
-	return(*((UW *)p_excinf) & (H8INT_MASK_ALL << 24));
+	return(*((UW *)p_excinf) & (((UW)H8INT_MASK_ALL) << 24));
 }
 
 /*

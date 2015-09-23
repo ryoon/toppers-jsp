@@ -4,85 +4,98 @@
 #      Toyohashi Open Platform for Embedded Real-Time Systems/
 #      Just Standard Profile Kernel
 # 
-#  Copyright (C) 2000 by Embedded and Real-Time Systems Laboratory
+#  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
 #                              Toyohashi Univ. of Technology, JAPAN
 # 
-#  上記著作権者は，Free Software Foundation によって公表されている 
-#  GNU General Public License の Version 2 に記述されている条件か，以
-#  下の(1)〜(4)の条件を満たす場合に限り，本ソフトウェア（本ソフトウェ
-#  アを改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
+#  上記著作権者は，以下の (1)〜(4) の条件か，Free Software Foundation 
+#  によって公表されている GNU General Public License の Version 2 に記
+#  述されている条件を満たす場合に限り，本ソフトウェア（本ソフトウェア
+#  を改変したものを含む．以下同じ）を使用・複製・改変・再配布（以下，
 #  利用と呼ぶ）することを無償で許諾する．
 #  (1) 本ソフトウェアをソースコードの形で利用する場合には，上記の著作
 #      権表示，この利用条件および下記の無保証規定が，そのままの形でソー
 #      スコード中に含まれていること．
-#  (2) 本ソフトウェアを再利用可能なバイナリコード（リロケータブルオブ
-#      ジェクトファイルやライブラリなど）の形で利用する場合には，利用
-#      に伴うドキュメント（利用者マニュアルなど）に，上記の著作権表示，
-#      この利用条件および下記の無保証規定を掲載すること．
-#  (3) 本ソフトウェアを再利用不可能なバイナリコードの形または機器に組
-#      み込んだ形で利用する場合には，次のいずれかの条件を満たすこと．
-#    (a) 利用に伴うドキュメント（利用者マニュアルなど）に，上記の著作
-#        権表示，この利用条件および下記の無保証規定を掲載すること．
-#    (b) 利用の形態を，別に定める方法によって，上記著作権者に報告する
-#        こと．
+#  (2) 本ソフトウェアを，ライブラリ形式など，他のソフトウェア開発に使
+#      用できる形で再配布する場合には，再配布に伴うドキュメント（利用
+#      者マニュアルなど）に，上記の著作権表示，この利用条件および下記
+#      の無保証規定を掲載すること．
+#  (3) 本ソフトウェアを，機器に組み込むなど，他のソフトウェア開発に使
+#      用できない形で再配布する場合には，次のいずれかの条件を満たすこ
+#      と．
+#    (a) 再配布に伴うドキュメント（利用者マニュアルなど）に，上記の著
+#        作権表示，この利用条件および下記の無保証規定を掲載すること．
+#    (b) 再配布の形態を，別に定める方法によって，TOPPERSプロジェクトに
+#        報告すること．
 #  (4) 本ソフトウェアの利用により直接的または間接的に生じるいかなる損
-#      害からも，上記著作権者を免責すること．
+#      害からも，上記著作権者およびTOPPERSプロジェクトを免責すること．
 # 
-#  本ソフトウェアは，無保証で提供されているものである．上記著作権者は，
-#  本ソフトウェアに関して，その適用可能性も含めて，いかなる保証も行わ
-#  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
-#  かなる損害に関しても，その責任を負わない．
+#  本ソフトウェアは，無保証で提供されているものである．上記著作権者お
+#  よびTOPPERSプロジェクトは，本ソフトウェアに関して，その適用可能性も
+#  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
+#  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 # 
-#  @(#) $Id: makedep,v 1.4 2002/04/08 05:28:34 hiro Exp $
+#  @(#) $Id: makedep,v 1.9 2003/12/24 07:44:30 honda Exp $
 # 
 
 require "getopt.pl";
 
 #  オプションの定義
 #
-#  -C <cc_path>	 Cコンパイラのコマンド名
-#  -O <cc_opts>	 Cコンパイラ/CPPに渡すオプション
-#  -S <paths>	 ソースファイルをサーチするパス（":" で区切る）
+#  -C <cc_path>	Cコンパイラのコマンド名
+#  -O <cc_opts>	Cコンパイラ/CPPに渡すオプション
 #
-#  -P <cpp_path> CPPのコマンド名
-#  -T <target>   ターゲットのファイル名
-#  -s		 ターゲットのサフィックスを ".s" にする（デフォルトは ".o"）
+#  -X		ソースファイルを強制的にCヘッダファイルと見なす
+#
+#  -T <target>	ターゲットのファイル名
+#  -D <t_dir>	ターゲットのディレクトリ名を指定する
+#  -d		ターゲットのディレクトリ部を保持する
+#  -s		ターゲットのサフィックスを ".s" にする（デフォルトは ".o"）
 
 #
 #  オプションの処理
 #
-do Getopt("PCOST");
+do Getopt("COTD");
 
 $cc_path = $opt_C;
 $cc_opts = $opt_O;
-@src_paths = split(/:/, $opt_S);
 
 $suffix = $opt_s ? "s" : "o";
-$cpp_path = $opt_P;
-$target_file = $opt_T;
+if ($opt_T) {
+	$target_file = $opt_T;
+}
+elsif ($opt_D) {
+	$target_dir = $opt_D;
+}
+elsif (!$opt_d) {
+	$target_dir = "";
+}
 
 #
-#  $dependlist に作られた依存関係を出力する
+#  %dependlist に作られた依存関係を出力する
 #
 sub output_dependlist {
 	local($file) = @_;
-	local($column, $len);
+	local($target, $column, $len);
 
 	if ($target_file) {
-		print $target_file;
-		$column = length($target_file);
+		$target = $target_file;
 	}
 	else {
-		$file =~ s/(.*)\.(.)/$1.$suffix/;
-		print $file;
-		$column = length($file);
+		$target = $file;
+		$target =~ s/(.*)\.(.)/$1.$suffix/;
 	}	
-	print ": ";
-	$column += 2;
+	if (defined($target_dir)) {
+		$target =~ s/^.*\/([^\/]+)$/$1/;
+		if ($target_dir) {
+			$target = $target_dir."/".$target;
+		}
+	}
+	print $target, ": ";
+	$column = length($target) + 2;
     
 	foreach $file (keys(%dependlist)) {
 		$len = length($file) + 1;
-		if ($column + $len >= 70) {
+		if ($column > 8 && $column + $len >= 70) {
 			print "\\\n\t";
 			$column = 8;
 		}
@@ -97,32 +110,22 @@ sub output_dependlist {
 #
 sub makedepend_one {
 	local($file) = @_;
-	local($command, $input, $dir, $fullpath);
+	local($command, $input, $dir, $filename);
 
-	foreach $dir (".", @src_paths) {
-		if (-e $dir."/".$file) {
-			$fullpath = $dir."/".$file;
-			last;
-		}
+	$command = "$cc_path -E $cc_opts";
+	if ($opt_X) {
+		$command .= " -x c-header";
 	}
-	unless ($fullpath) {
-		print STDERR "makedep: can't find $file\n";
-		exit(1);
-	}
-
-	if ($cpp_path) {
-		$command = "$cpp_path $cc_opts";
-	}
-	else {
-		$command = "$cc_path -E $cc_opts";
-	}
-	unless (open(INPUT, "$command $fullpath |")) {
-		print STDERR "makedep: can't open $fullpath\n";
+	unless (open(INPUT, "$command $file |")) {
+		print STDERR "makedep: can't open $file\n";
 		exit(1);
 	}
 	while ($line = <INPUT>) {
 		if ($line =~ /^\#\s*([0-9]+)\s*\"([^\"]+)\"/) {
-			$dependlist{$2} = 1;
+			$filename = $2;
+			if ($filename !~ /^\<.*\>$/) {
+				$dependlist{$filename} = 1;
+			}
 		}
 	}
 	unless (close(INPUT)) {
