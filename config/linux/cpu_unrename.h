@@ -4,11 +4,13 @@
 #undef _CPU_UNRENAME_H_
 
 #undef activate_r
+#undef activate_context
 
 
 #ifdef LABEL_ASM
 
 #undef _activate_r
+#undef _activate_context
 
 
 #endif /* LABEL_ASM */

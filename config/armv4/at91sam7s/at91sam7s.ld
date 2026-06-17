@@ -4,7 +4,6 @@
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm","elf32-littlearm") 
 OUTPUT_ARCH(arm)
-STARTUP(start.o)
 
 PROVIDE(hardware_init_hook = 0);
 PROVIDE(software_init_hook = 0);
@@ -12,16 +11,26 @@ PROVIDE(software_term_hook = 0);
 
 SECTIONS
 {
-	.vector :
-	{
+    . = 0x00 ;
+    .vector :
+    {
         *(.vector)
-	}
+    }
+    
     .text :
     {
-        __text = . ; 	
+        __text = . ;
         *(.text)
         *(.glue_7t)
         *(.glue_7)
+    }
+    .init :
+    {
+        KEEP (*(.init))
+    }
+    .fini :
+    {
+        KEEP (*(.fini))
     }
     _etext = .	;
     PROVIDE (etext = .)	;
@@ -40,7 +49,7 @@ SECTIONS
     _edata  =  . ;
     PROVIDE (edata = .);
     . = ALIGN(4);
-    __bss_start = .	;		
+    __bss_start = .	;
     .bss       :
     {
       *(.bss)

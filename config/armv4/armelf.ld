@@ -4,23 +4,31 @@
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm","elf32-littlearm") 
 OUTPUT_ARCH(arm)
-	
+
 PROVIDE(hardware_init_hook = 0);
 PROVIDE(software_init_hook = 0);
 PROVIDE(software_term_hook = 0);
 
 SECTIONS
 {
-    . = 0x00 ;    
+    . = 0x00 ;
     .vector :
     {
     *(.vector)
     }
     
-    .text :	
+    .init :
     {
-        __text = . ; 	
+        KEEP (*(.init))
+    }
+    .text :
+    {
+        __text = . ;
         *(.text)
+    }
+    .fini :
+    {
+        KEEP (*(.fini))
     }
     _etext = .	;
     PROVIDE (etext = .)	;

@@ -1,0 +1,11 @@
+activate_r
+ret_int
+ret_exc
+handle_trap
+trap_entry
+trap_nest
+m_interrupt_handlers
+x_config_int
+lock_flag
+inest_lvl
+kernel_mie
