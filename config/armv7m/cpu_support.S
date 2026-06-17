@@ -538,12 +538,11 @@ dispatch_r_0:
 	/*
 	 * タスク例外処理ルーチンの起動
 	 */
-	ldr r1, [r0]
-	ldrb r0, [r1,#TCB_enatex]
-	tst r0,#TCB_enatex_mask
+	ldrb r1, [r0,#TCB_enatex]
+	tst r1,#TCB_enatex_mask
 	beq dispatch_r_1			/* enatex が false ならリターン */
-	ldr r0, [r1,#TCB_texptn]	/* texptn が 0 ならリターン     */
-	tst r0, r0
+	ldr r1, [r0,#TCB_texptn]	/* texptn が 0 ならリターン     */
+	tst r1, r1
 	beq dispatch_r_1
 	ldr r0, =call_texrtn		/* タスク例外ルーチンの呼び出し */
 	bx r0

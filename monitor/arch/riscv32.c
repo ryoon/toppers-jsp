@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2003-2016 by Ryosuke Takeuchi
  *                     GJ Business Division RICOH COMPANY,LTD. JAPAN
- *  Copyright (C) 2017-2025 by TOPPERS PROJECT Educational Working Group.
+ *  Copyright (C) 2017-2026 by TOPPERS PROJECT Educational Working Group.
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
@@ -33,7 +33,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: riscv32.c,v 1.1 2025/11/05 09:47:21 roi Exp $
+ *  @(#) $Id: riscv32.c,v 1.2 2026/02/27 17:18:28 roi Exp $
  */
 
 /* 
@@ -55,14 +55,14 @@ extern void _kernel_break_wait();
  * レジスタの構造体
  */
 typedef struct t_reg{
-	uint32_t gp;
-	uint32_t tp;
-	uint32_t s0;
-	uint32_t s1;
-	uint32_t s2;
-	uint32_t s3;
-	uint32_t s4;
-	uint32_t s5;
+	UW	gp;
+	UW	tp;
+	UW	s0;
+	UW	s1;
+	UW	s2;
+	UW	s3;
+	UW	s4;
+	UW	s5;
 }T_REG;
 
 /*
@@ -70,10 +70,10 @@ typedef struct t_reg{
  */
 
 typedef struct t_memdef{
-	uint32_t mstart;
-	uint32_t mend;
-	uint8_t  mtype;
-	uint8_t  mstate;
+	UW	mstart;
+	UW	mend;
+	UB	mtype;
+	UB	mstate;
 }T_MEMDEF;
 
 /*
@@ -154,11 +154,11 @@ MemoryRead(ULONG address, VP_INT p, INT type)
 		}
 		else if(type == 4){
 			len = 4;
-			*((uint32_t *)p) = sil_rew_mem((uint32_t *)address);
+			*((UW *)p) = sil_rew_mem((UW *)address);
 		}
 		else{
 			len = 1;
-			*((uint8_t *)p) = sil_reb_mem((uint8_t *)address);
+			*((UB *)p) = sil_reb_mem((UB *)address);
 		}
 		break;
 	case MEMORY_AREA:
@@ -168,11 +168,11 @@ MemoryRead(ULONG address, VP_INT p, INT type)
 		}
 		else if(type == 4){
 			len = 4;
-			*((uint32_t *)p) = *((uint32_t *)set_align(address, len));
+			*((UW *)p) = *((UW *)set_align(address, len));
 		}
 		else{
 			len = 1;
-			*((uint8_t *)p) = *((uint8_t *)address);
+			*((UB *)p) = *((UB *)address);
 		}
 		break;
 	default:
@@ -201,11 +201,11 @@ MemoryWrite(ULONG address, VP_INT p, INT type)
 		else if(type == 4){
 			len = 4;
 			address = set_align(address, len);
-			sil_wrw_mem((uint32_t *)address, *((uint32_t *)p));
+			sil_wrw_mem((UW *)address, *((UW *)p));
 		}
 		else{
 			len = 1;
-			sil_wrb_mem((uint8_t *)address, *((uint8_t *)p));
+			sil_wrb_mem((UB *)address, *((UB *)p));
 		}
 		break;
 	case MEMORY_AREA:
@@ -218,11 +218,11 @@ MemoryWrite(ULONG address, VP_INT p, INT type)
 		}
 		else if(type == 4){
 			len = 4;
-			*((uint32_t *)address) = *((uint32_t *)set_align(p, len));
+			*((UW *)address) = *((UW *)set_align(p, len));
 		}
 		else{
 			len = 1;
-			*((uint8_t *)address) = *((uint8_t *)p);
+			*((UB *)address) = *((UB *)p);
 		}
 		break;
 	default:
@@ -252,7 +252,7 @@ display_registers(ID tskid)
 			printf(" GP  =%08lx TP =%08lx S0 =%08lx S1 =%08lx\n", (long)sreg.gp, (long)sreg.tp, (long)sreg.s0, (long)sreg.s1);
 			printf(" S2  =%08lx S3 =%08lx S4 =%08lx S5 =%08lx\n", (long)sreg.s2, (long)sreg.s3, (long)sreg.s4, (long)sreg.s5);
 			if(rtst.tskpc != NULL)
-				printf("     %08lx    %04x\n", (long)rtst.tskpc, *((uint16_t *)((uint32_t)rtst.tskpc & ~1)));
+				printf("     %08lx    %04x\n", (long)rtst.tskpc, *((uint16_t *)((UW)rtst.tskpc & ~1)));
 			return;
 		}
 		else if(rtst.tskstat == TTS_DMT){

@@ -33,7 +33,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: armv6m.c,v 1.1 2025/11/01 09:11:30 roi Exp $
+ *  @(#) $Id: armv6m.c,v 1.2 2026/02/27 17:03:45 roi Exp $
  */
 
 /* 
@@ -55,14 +55,14 @@ extern void _kernel_break_wait();
  * レジスタの構造体
  */
 typedef struct t_reg{
-	uint32_t r4;
-	uint32_t r5;
-	uint32_t r6;
-	uint32_t r7;
-	uint32_t r8;
-	uint32_t r9;
-	uint32_t r10;
-	uint32_t r11;
+	UW	r4;
+	UW	r5;
+	UW	r6;
+	UW	r7;
+	UW	r8;
+	UW	r9;
+	UW	r10;
+	UW	r11;
 }T_REG;
 
 /*
@@ -70,10 +70,10 @@ typedef struct t_reg{
  */
 
 typedef struct t_memdef{
-	uint32_t mstart;
-	uint32_t mend;
-	uint8_t  mtype;
-	uint8_t  mstate;
+	UW	mstart;
+	UW	mend;
+	UB	mtype;
+	UB	mstate;
 }T_MEMDEF;
 
 /*
@@ -168,11 +168,11 @@ MemoryRead(ULONG address, VP_INT p, INT type)
 		}
 		else if(type == 4){
 			len = 4;
-			*((uint32_t *)p) = sil_rew_mem((UW *)address);
+			*((UW *)p) = sil_rew_mem((UW *)address);
 		}
 		else{
 			len = 1;
-			*((uint8_t *)p) = sil_reb_mem((uint8_t *)address);
+			*((UB *)p) = sil_reb_mem((UB *)address);
 		}
 		break;
 	case MEMORY_AREA:
@@ -186,7 +186,7 @@ MemoryRead(ULONG address, VP_INT p, INT type)
 		}
 		else{
 			len = 1;
-			*((uint8_t *)p) = *((uint8_t *)address);
+			*((UB *)p) = *((UB *)address);
 		}
 		break;
 	default:
@@ -219,7 +219,7 @@ MemoryWrite(ULONG address, VP_INT p, INT type)
 		}
 		else{
 			len = 1;
-			sil_wrb_mem((uint8_t *)address, *((uint8_t *)p));
+			sil_wrb_mem((UB *)address, *((UB *)p));
 		}
 		break;
 	case MEMORY_AREA:
@@ -236,7 +236,7 @@ MemoryWrite(ULONG address, VP_INT p, INT type)
 		}
 		else{
 			len = 1;
-			*((uint8_t *)address) = *((uint8_t *)p);
+			*((UB *)address) = *((UB *)p);
 		}
 		break;
 	default:
