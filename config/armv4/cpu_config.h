@@ -92,6 +92,21 @@ extern UW interrupt_count;
 
 
 /*
+ *  マルチプロセッサ処理モデルの実現
+ *
+ *  コア番号は標準実装．
+ *  その他はシングルコアの場合、実装は不要．
+ */
+
+/*
+ *  コア番号を取り出す
+ */
+#define	x_prc_index()	(0)
+
+#define t_prc_index()	x_prc_index()
+#define i_prc_index()	x_prc_index()
+
+/*
  *  システム状態参照
  */
 Inline UB
@@ -137,6 +152,16 @@ Inline void
 x_unlock_cpu()
 {
     enaint();
+}
+
+#define TMAX_INTNO	MAX_INT_NUM
+
+/*
+ *  割込み設定（仮）
+ */
+Inline void
+x_config_int(INTNO intno, BOOL intreq, PRI intpri)
+{
 }
 
 /*
@@ -210,6 +235,7 @@ arm_install_handler(EXCNO excno, FP exchdr)
 
 /*
  *  CPU例外ハンドラの出入口処理の生成マクロ
+ *  注意：TPCB_reqflgの値を8に固定している
  *
  */
 #define __EXCHDR_ENTRY(exchdr, stacktop)    \
@@ -274,7 +300,7 @@ asm(".text                             \n"  \
 ".int_stack_"#exchdr":                 \n"\
 "       .long _kernel_int_stack + 6 * 4 \n"\
 "reqflg_"#exchdr":                     \n"\
-"       .long     _kernel_reqflg       \n"\
+"       .long     _kernel_tprc_tpcb + 8  \n"\
 "stack_"#exchdr":                      \n"\
 "       .long   " #stacktop "          \n"\
 ".interrupt_count_"#exchdr":            \n"\

@@ -210,6 +210,14 @@ extern ER	tget_mpf(ID mpfid, VP *p_blk, TMO tmout) throw();
 extern ER	rel_mpf(ID mpfid, VP blk) throw();
 
 /*
+ *  スピンロック管理機能
+ */
+extern ER	loc_spn(ID spnid) throw();
+extern ER	iloc_spn(ID spnid) throw();
+extern ER	unl_spn(ID spnid) throw();
+extern ER	iunl_spn(ID spnid) throw();
+
+/*
  *  時間管理機能
  */
 extern ER	set_tim(const SYSTIM *p_systim) throw();
@@ -226,6 +234,9 @@ extern ER	rot_rdq(PRI tskpri) throw();
 extern ER	irot_rdq(PRI tskpri) throw();
 extern ER	get_tid(ID *p_tskid) throw();
 extern ER	iget_tid(ID *p_tskid) throw();
+extern ER	chg_pid(ID tskid, ID prcid) throw();
+extern ER	get_pid(ID tskid, ID *p_prcid) throw();
+extern ER	iget_pid(ID *p_prcid) throw();
 extern ER	loc_cpu(void) throw();
 extern ER	iloc_cpu(void) throw();
 extern ER	unl_cpu(void) throw();
@@ -246,11 +257,6 @@ extern BOOL	vxsns_dsp(VP p_excinf) throw();
 extern BOOL	vxsns_dpn(VP p_excinf) throw();
 extern BOOL	vxsns_tex(VP p_excinf) throw();
 extern BOOL	vsns_ini(void) throw();
-
-/*
- *  その他の拡張
- */
-extern void ini_usrmode(ID prcid) throw();
 
 #endif /* _MACRO_ONLY */
 
@@ -273,6 +279,14 @@ extern void ini_usrmode(ID prcid) throw();
 
 #define	TA_STA		0x02u		/* 周期ハンドラを動作状態で生成 */
 
+#define	TA_ENAINT	0x01u		/* 割込み要求禁止フラグをクリア */
+#define	TA_PRCALL	0x10u		/* 全てのプロセッサで使用 */
+
+#define TA_PRC1		0x10000u	/* プロセッサ１ */
+#define TA_PRC2		0x20000u	/* プロセッサ２ */
+#define TA_PRC3		0x30000u	/* プロセッサ３ */
+#define TA_PRC4		0x40000u	/* プロセッサ４ */
+
 /*
  *  サービスコールの動作モードの定義
  */
@@ -286,6 +300,7 @@ extern void ini_usrmode(ID prcid) throw();
 #define	TSK_NONE	0		/* 該当するタスクがない */
 #define	TPRI_SELF	0		/* 自タスクのベース優先度の指定 */
 #define	TPRI_INI	0		/* タスクの起動時優先度の指定 */
+#define TPRC_INI	0		/* 初期割付けプロセッサ指定 */
 
 #define MASTER_PRCID	1	/* マスタプロセッサ(1) */
 #define SUB1_PRCID	2		/* サブプロセッサ(2) */
@@ -310,7 +325,7 @@ extern void ini_usrmode(ID prcid) throw();
 #define	TKERNEL_MAKER	0x0118u		/* カーネルのメーカーコード */
 #define	TKERNEL_PRID	0x0001u		/* カーネルの識別番号 */
 #define	TKERNEL_SPVER	0x5402u		/* ITRON仕様のバージョン番号 */
-#define	TKERNEL_PRVER	0x1045u		/* カーネルのバージョン番号 */
+#define	TKERNEL_PRVER	0x1050u		/* カーネルのバージョン番号 */
 
 /*
  *  キューイング／ネスト回数の最大値

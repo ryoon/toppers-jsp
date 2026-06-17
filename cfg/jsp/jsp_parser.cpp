@@ -165,6 +165,7 @@ void CoreParser::assignID(Directory & container) throw()
     sorter.insert(pair<int, const char *>(container[OBJECTTREE "/" MAILBOX].size(), MAILBOX));
     sorter.insert(pair<int, const char *>(container[OBJECTTREE "/" FIXEDSIZEMEMORYPOOL].size(), FIXEDSIZEMEMORYPOOL));
     sorter.insert(pair<int, const char *>(container[OBJECTTREE "/" CYCLICHANDLER].size(), CYCLICHANDLER));
+    sorter.insert(pair<int, const char *>(container[OBJECTTREE "/" SPINLOCK].size(), SPINLOCK));
 
     order = Common::parseOrder(getOption("ao", "assign-order"));
     scope = sorter.begin();
@@ -177,6 +178,7 @@ void CoreParser::assignID(Directory & container) throw()
 
     displayHandler(container, INTERRUPTHANDLER, "  $@ : $(inthdr)\n");
     displayHandler(container, EXCEPTIONHANDLER, "  $@ : $(exchdr)\n");
+    displayHandler(container, CONFIGINT, "  $@ : $(intpri)\n");
     displayHandler(container, INITIALIZER, "  $@ : $(inirtn)($(exinf))\n");
     displayHandler(container, TERMINATOR, "  $@ : $(terrtn)($(exinf))\n");
 }
@@ -353,10 +355,13 @@ namespace {
             .createPart(MAILBOX)
             .createPart(FIXEDSIZEMEMORYPOOL)
             .createPart(CYCLICHANDLER)
+            .createPart(SPINLOCK)
             .createPart(INTERRUPTHANDLER)
             .createPart(EXCEPTIONHANDLER)
+            .createPart(CONFIGINT)
             .createPart(INITIALIZER)
             .createPart(OBJECT_INITIALIZER)
+            .createPart(SYSLOG)
             .createPart("others");
 
             //カーネル構成ファイル生成イベントの実行
@@ -967,12 +972,17 @@ void ConfigurationFileGenerator::body(Directory & container)
         /* CYCLICHANDLER */
     createObjectDefinition(out, container[OBJECTTREE "/" CYCLICHANDLER], HEADER|TNUM|DEFINITION|CONTROLBLOCK|INIT|PROTOTYPE,"cyc","void $(cychdr)(VP_INT exinf);","$(cycatr),$(exinf),(FP)($(cychdr)),$(cyctim),$(cycphs)");
 
+        /* SPNLOCK */
+    createObjectDefinition(out, container[OBJECTTREE "/" SPINLOCK], HEADER|TNUM|DEFINITION|CONTROLBLOCK|INIT,"spn","$(spnatr)");
+
         /* INTERRUPTHANDLER */
     createObjectDefinition(out, container[OBJECTTREE "/" INTERRUPTHANDLER], HEADER|BUFFER|TNUMNO|DEFINITION|INIT|PROTOTYPE,"inh","void $(inthdr)(void);","CFG_INTHDR_ENTRY($(inthdr));","$@,$(inhatr),(FP)CFG_INT_ENTRY($(inthdr))");
 
         /* EXCEPTIONHANDLER */
     createObjectDefinition(out, container[OBJECTTREE "/" EXCEPTIONHANDLER], HEADER|BUFFER|TNUMNO|DEFINITION|INIT|PROTOTYPE,"exc","void $(exchdr)(VP p_excinf);","CFG_EXCHDR_ENTRY($(exchdr));","$@,$(excatr),(FP)CFG_EXC_ENTRY($(exchdr))");
 
+        /* CONFIGINT */
+    createObjectDefinition(out, container[OBJECTTREE "/" CONFIGINT], HEADER|TNUMNO|DEFINITION|INIT|PROTOTYPE,"cfgint", "void $(intpri)(VP p_excinf);","$@,$(intatr),$(intpri)");
 
         /* オブジェクト初期化ルーチン */
     out->movePart(OBJECT_INITIALIZER);
@@ -999,6 +1009,18 @@ void ConfigurationFileGenerator::body(Directory & container)
     }
     (*out) << "}\n\n";
 
+        /* システムログ用データ */
+    out->movePart(SYSLOG);
+    (*out) << "\t/* " << Message("Object syslog data","システムログ用データ") << " */\n\n";
+    (*out) << "const UINT _kernel_tnum_prcid = TNUM_PRCID;\n\n";
+    (*out) << "const UINT _kernel_tnum_port  = TNUM_PORT;\n\n";
+    (*out) << "#if TNUM_PRCID > TNUM_PORT\n";
+    (*out) << "#define TNUM_SYSLOG	TNUM_PORT\n";
+    (*out) << "#else\n";
+    (*out) << "#define TNUM_SYSLOG	TNUM_PRCID\n";
+    (*out) << "#endif\n\n";
+    (*out) << "SYSLOGCB _kernel_syslogcb[TNUM_SYSLOG];\n\n";
+
         /* 終了ハンドラ */
     scope = container[OBJECTTREE "/"  TERMINATOR].getLastChild();
     if(!backward_compatible) {
@@ -1018,7 +1040,7 @@ void ConfigurationFileGenerator::body(Directory & container)
 
 #ifndef JSP_FREERTOS
     out->movePart("others");
-    (*out) << "TMEVTN   " << conv_kernelobject("tmevt_heap") << "[TNUM_TSKID + TNUM_CYCID];\n\n";
+    (*out) << "TMEVTN   " << conv_kernelobject("tmevt_heap") << "[(TNUM_TSKID + TNUM_CYCID) * TNUM_TEVTCB];\n\n";
 #endif	/* JSP_FREERTOS */
 
     container["/object_initializer"].erase();

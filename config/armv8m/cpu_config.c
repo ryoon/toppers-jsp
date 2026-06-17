@@ -45,9 +45,20 @@
 #include "task.h"
 
 /*
+ *  STPCBへのポインタテーブル
+ */
+STPCB *p_tspcb_table[TNUM_PRCID];
+
+/*
  *  割込みハンドラテーブル
  */
-FP int_handler_table[NUM_INTNO + NUM_EXCNO];
+static FP int_handler_table[TNUM_PRCID][NUM_INTNO + NUM_EXCNO];
+FP* const p_int_table[TNUM_PRCID] = {
+	int_handler_table[0],
+#if TNUM_PRCID >= 2
+	int_handler_table[1]
+#endif
+};
 
 
 #ifndef OMIT_DEFAULT_INT_HANDLER
@@ -66,10 +77,20 @@ default_int_handler(void *p_excinf)
 	syslog(LOG_EMERG, "Excno = 0x%08X, PC = 0x%08X, XPSR = 0x%08X, iipm = 0x%08X, p_excinf = 0x%08X",
 		   excno, pc, xpsr, basepri, p_excinf);	
 
-
 	while(1);
 }
 #endif /* OMIT_DEFAULT_INT_HANDLER */
+
+static void
+init_intmodel(STPCB *stpcb, UINT idx)
+{
+	assert(stpcb != NULL);
+	assert(idx < TNUM_PRCID);
+
+	p_tspcb_table[idx] = stpcb;
+	stpcb->interrupt_map = 0;
+	stpcb->stacktop  = (VP*)(STACKTOP - (PSTACKSIZE * idx));
+}
 
 /*
  *  プロセッサ依存の初期化
@@ -77,12 +98,14 @@ default_int_handler(void *p_excinf)
 void
 cpu_initialize(void)
 {
+	STPCB	*my_stpcb = get_my_stpcb();
+	UINT	idx = x_prc_index();
 	UINT	i;
 
 	/*
 	 *  ベクタテーブルを設定
 	 */
-	sil_wrw_mem((void*)NVIC_VECTTBL, (UW)vector_table);
+	sil_wrw_mem((void*)NVIC_VECTTBL, (UW)vector_table[idx]);
 
 	/*
 	 *  各例外の優先度を設定
@@ -98,13 +121,25 @@ cpu_initialize(void)
 	set_exc_priority(EXCNO_PENDSV, 0);
 
 	/*
+	 *  割込み処理モデル関連の初期化
+	 */
+	init_intmodel(my_stpcb, idx);
+
+	/*
 	 *  例外ベクタテーブルの初期化
 	 */
 #ifndef OMIT_DEFAULT_INT_HANDLER
 	for(i = 0 ; i < (NUM_INTNO + NUM_EXCNO) ; i++){
-		int_handler_table[i] = (FP)default_int_handler;
+		int_handler_table[idx][i] = (FP)default_int_handler;
 	}
 #endif
+
+#ifndef TOPPERS_SYSTIM_GLOBAL
+	if (idx != 0) {
+		hw_timer_initialize();
+	}
+#endif /* TOPPERS_SYSTIM_GLOBAL */
+
 	/*
 	 *  システムタイマの割込み設定
 	 */
@@ -121,6 +156,24 @@ cpu_terminate(void)
 	 *  システムタイマの割込み禁止
 	 */
 	x_config_int(INTNO_TIMER, FALSE, INTPRI_TIMER);
+}
+
+/*
+ *  スピンロックエラーが発生した場合のハンドラ
+ */
+void
+spin_lock_error_handler(void *p_excinf)
+{
+	UW basepri = *(((UW *)p_excinf) + P_EXCINF_OFFSET_IIPM);
+	UW pc      = *(((UW *)p_excinf) + P_EXCINF_OFFSET_PC);
+	UW xpsr    = *(((UW *)p_excinf) + P_EXCINF_OFFSET_XPSR);
+	UW excno   = get_ipsr() & IPSR_ISR_NUMBER;
+
+	syslog(LOG_EMERG, "\nSpin Lock error Interrupt occurs.");
+	syslog(LOG_EMERG, "Excno = 0x%08X, PC = 0x%08X, XPSR = 0x%08X, iipm = 0x%08X, p_excinf = 0x%08X",
+		   excno, pc, xpsr, basepri, p_excinf);	
+
+	while(1);
 }
 
 /*

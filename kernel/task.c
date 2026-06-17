@@ -43,43 +43,72 @@
  */
 
 #include "jsp_kernel.h"
+#include "check.h"
 #include "task.h"
+#include "spinlock.h"
 #include <cpu_context.h>
+
+/*
+ *  カーネル・ビルドの条件判定
+ */
+#if TNUM_PRCID > 4
+#error	"Illegal number of prossores (TNUM_PRCID should be under equal 4)";
+#elif TNUM_PRCID < 1
+#error	"Illegal number of prossores (TNUM_PRCID should be over 0)";
+#endif
+
 
 #ifdef __tskini
 
 /*
- *  実行状態のタスク
+ *  タスク用プロセッサ制御ブロック
  */
-TCB	*runtsk;
+TPCB tprc_tpcb[TNUM_PRCID];
+
+#if TNUM_PRCID > 1
+
+TPCB* const p_pcb_table[TNUM_PRCID] = {
+	&tprc_tpcb[0],
+	&tprc_tpcb[1],
+#if TNUM_PRCID > 2
+	&tprc_tpcb[2],
+#endif
+#if TNUM_PRCID > 3
+	&tprc_tpcb[3]
+#endif
+};
 
 /*
- *  最高優先順位のタスク
+ *  ジャイアントロック
  */
-TCB	*schedtsk;
+LOCK giant_lock;
 
 /*
- *  タスクディスパッチ／タスク例外処理ルーチン起動要求フラグ
+ *  プロセッサ間割込みハンドラ
  */
-BOOL	reqflg;
+void
+kernel_ipi_handler(ID prcid, UH event)
+{
+	TPCB *my_tpcb = get_my_tpcb();
 
-/*
- *  タスクディスパッチ許可状態
- */
-BOOL	enadsp;
+	if ((event & IPI_EVENT_DISPATCH) != 0) {
+		my_tpcb->reqflg = TRUE;
+	}
+	if ((event & IPI_EVENT_EXTKERNEL) != 0) {
+		if (!iniflg) {
+			kernel_exit();
+		}
+	}
+}
 
-/*
- *  レディキュー
- */
-QUEUE	ready_queue[TNUM_TPRI];
+#else	/* TNUM_PRCID > 1 */
 
-/*
- *  レディキューサーチのためのビットマップ
- *
- *  ビットマップを UINT で定義しているが，ビットマップサーチ関数で優先
- *  度が16段階以下であることを仮定している．
- */
-UINT	ready_primap;
+TPCB* const p_pcb_table[TNUM_PRCID] = {
+	&tprc_tpcb[0]
+};
+
+#endif	/* TNUM_PRCID > 1 */
+
 
 /*
  *  タスク管理モジュールの初期化
@@ -87,26 +116,37 @@ UINT	ready_primap;
 void
 task_initialize()
 {
-	UINT	i, j;
+	ID	prcid;
+	ID	my_prcid = ID_PRC(get_prc_index());
+	UINT	i, tsk_idx;
+	TPCB	*my_tpcb;
 	TCB	*tcb;
+	const TINIB	*tinib;
 
-	runtsk = schedtsk = NULL;
-	reqflg = FALSE;
-	enadsp = TRUE;
+	my_tpcb = get_my_tpcb();
+	my_tpcb->prcid  = my_prcid;
+	my_tpcb->runtsk = my_tpcb->schedtsk = NULL;
+	my_tpcb->reqflg = FALSE;
+	my_tpcb->ready_primap = 0;
+	my_tpcb->enadsp = TRUE;
 
 	for (i = 0; i < TNUM_TPRI; i++) {
-		queue_initialize(&(ready_queue[i]));
+		queue_initialize(&(my_tpcb->ready_queue[i]));
 	}
-	ready_primap = 0;
 
 	for (i = 0; i < TNUM_TSK; i++) {
-		j = INDEX_TSK(torder_table[i]);
-		tcb = &(tcb_table[j]);
-		tcb->tinib = &(tinib_table[j]);
-		tcb->actcnt = FALSE;
-		make_dormant(tcb);
-		if ((tcb->tinib->tskatr & TA_ACT) != 0) {
-			make_active(tcb);
+		tsk_idx = INDEX_TSK(torder_table[i]);
+		tcb = &(tcb_table[tsk_idx]);
+		tinib = &(tinib_table[tsk_idx]);
+		if (my_prcid == GET_INI_PRCID(tinib->tskatr)) {
+			tcb->tinib = tinib;
+			tcb->actcnt = FALSE;
+			tcb->tpcb = my_tpcb;
+			tcb->locspnid = 0;
+			make_dormant(tcb);
+			if ((tcb->tinib->tskatr & TA_ACT) != 0) {
+				make_active(tcb);
+			}
 		}
 	}
 }
@@ -163,12 +203,12 @@ bitmap_search(UINT bitmap)
 #ifdef __tsksched
 
 TCB *
-search_schedtsk()
+search_schedtsk(TPCB *tpcb)
 {
 	UINT	schedpri;
 
-	schedpri = bitmap_search(ready_primap);
-	return((TCB *)(ready_queue[schedpri].next));
+	schedpri = bitmap_search(tpcb->ready_primap);
+	return((TCB *)(tpcb->ready_queue[schedpri].next));
 }
 
 #endif /* __tsksched */
@@ -185,15 +225,16 @@ BOOL
 make_runnable(TCB *tcb)
 {
 	UINT	pri = tcb->priority;
+	TPCB	*tpcb = tcb->tpcb;;
 
 	tcb->tstat = TS_RUNNABLE;
 	LOG_TSKSTAT(tcb);
-	queue_insert_prev(&(ready_queue[pri]), &(tcb->task_queue));
-	ready_primap |= PRIMAP_BIT(pri);
+	queue_insert_prev(&(tpcb->ready_queue[pri]), &(tcb->task_queue));
+	tpcb->ready_primap |= PRIMAP_BIT(pri);
 
-	if (schedtsk == (TCB *) NULL || pri < schedtsk->priority) {
-		schedtsk = tcb;
-		return(enadsp);
+	if (tpcb->schedtsk == (TCB *) NULL || pri < tpcb->schedtsk->priority) {
+		tpcb->schedtsk = tcb;
+		return(tpcb->enadsp);
 	}
 	return(FALSE);
 }
@@ -214,21 +255,22 @@ BOOL
 make_non_runnable(TCB *tcb)
 {
 	UINT	pri = tcb->priority;
-	QUEUE	*queue = &(ready_queue[pri]);
+	TPCB	*tpcb = tcb->tpcb;
+	QUEUE	*queue = &(tpcb->ready_queue[pri]);
 
 	queue_delete(&(tcb->task_queue));
 	if (queue_empty(queue)) {
-		ready_primap &= ~PRIMAP_BIT(pri);
-		if (schedtsk == tcb) {
-			schedtsk = (ready_primap == 0) ? (TCB * ) NULL
-						: search_schedtsk();
-			return(enadsp);
+		tpcb->ready_primap &= ~PRIMAP_BIT(pri);
+		if (tpcb->schedtsk == tcb) {
+			tpcb->schedtsk = (tpcb->ready_primap == 0) ? (TCB * ) NULL
+						: search_schedtsk(tpcb);
+			return(tpcb->enadsp);
 		}
 	}
 	else {
-		if (schedtsk == tcb) {
-			schedtsk = (TCB *)(queue->next);
-			return(enadsp);
+		if (tpcb->schedtsk == tcb) {
+			tpcb->schedtsk = (TCB *)(queue->next);
+			return(tpcb->enadsp);
 		}
 	}
 	return(FALSE);
@@ -275,8 +317,15 @@ make_active(TCB *tcb)
 #ifdef __tskext
 
 void
-exit_task()
+exit_task(TPCB *tpcb)
 {
+	TCB	*runtsk = tpcb->runtsk;
+
+	/*
+	 *  次の実行タスクがないのに、
+	 *  自分は発行したスピンロックを取得している場合は，スピンロックを解除する
+	 */
+	force_unlockspin(runtsk);
 	make_non_runnable(runtsk);
 	make_dormant(runtsk);
 	if (runtsk->actcnt) {
@@ -302,25 +351,26 @@ BOOL
 change_priority(TCB *tcb, UINT newpri)
 {
 	UINT	oldpri = tcb->priority;
+	TPCB	*tpcb = tcb->tpcb;
 
 	tcb->priority = newpri;
 	queue_delete(&(tcb->task_queue));
-	if (queue_empty(&(ready_queue[oldpri]))) {
-		ready_primap &= ~PRIMAP_BIT(oldpri);
+	if (queue_empty(&(tpcb->ready_queue[oldpri]))) {
+		tpcb->ready_primap &= ~PRIMAP_BIT(oldpri);
 	}
-	queue_insert_prev(&(ready_queue[newpri]), &(tcb->task_queue));
-	ready_primap |= PRIMAP_BIT(newpri);
+	queue_insert_prev(&(tpcb->ready_queue[newpri]), &(tcb->task_queue));
+	tpcb->ready_primap |= PRIMAP_BIT(newpri);
 
-	if (schedtsk == tcb) {
+	if (tpcb->schedtsk == tcb) {
 		if (newpri >= oldpri) {
-			schedtsk = search_schedtsk();
-			return(schedtsk != tcb && enadsp);
+			tpcb->schedtsk = search_schedtsk(tpcb);
+			return(tpcb->schedtsk != tcb && tpcb->enadsp);
 		}
 	}
 	else {
-		if (newpri < schedtsk->priority) {
-			schedtsk = tcb;
-			return(enadsp);
+		if (newpri < tpcb->schedtsk->priority) {
+			tpcb->schedtsk = tcb;
+			return(tpcb->enadsp);
 		}
 	}
 	return(FALSE);
@@ -337,17 +387,17 @@ change_priority(TCB *tcb, UINT newpri)
 #ifdef __tskrot
 
 BOOL
-rotate_ready_queue(UINT pri)
+rotate_ready_queue(UINT pri, TPCB *tpcb)
 {
-	QUEUE	*queue = &(ready_queue[pri]);
+	QUEUE	*queue = &(tpcb->ready_queue[pri]);
 	QUEUE	*entry;
 
 	if (!(queue_empty(queue)) && queue->next->next != queue) {
 		entry = queue_delete_next(queue);
 		queue_insert_prev(queue, entry);
-		if (schedtsk == (TCB *) entry) {
-			schedtsk = (TCB *)(queue->next);
-			return(enadsp);
+		if (tpcb->schedtsk == (TCB *) entry) {
+			tpcb->schedtsk = (TCB *)(queue->next);
+			return(tpcb->enadsp);
 		}
 	}
 	return(FALSE);
@@ -369,21 +419,26 @@ void
 call_texrtn()
 {
 	TEXPTN	texptn;
+	TPCB	*tpcb= get_my_tpcb();
 
 	do {
-		texptn = runtsk->texptn;
-		runtsk->enatex = FALSE;
-		runtsk->texptn = 0;
+		texptn = tpcb->runtsk->texptn;
+		tpcb->runtsk->enatex = FALSE;
+		tpcb->runtsk->texptn = 0;
 		t_unlock_cpu();
 		LOG_TEX_ENTER(texptn);
-		(*((TEXRTN)(runtsk->tinib->texrtn)))(texptn,
-						runtsk->tinib->exinf);
+		(*((TEXRTN)(tpcb->runtsk->tinib->texrtn)))(texptn,
+						tpcb->runtsk->tinib->exinf);
 		LOG_TEX_LEAVE(texptn);
+		/*
+		 *  スピンロックが設定されていないことを確認
+		 */
+		assert(tpcb->locspnid == 0);
 		if (!t_sense_lock()) {
 			t_lock_cpu();
 		}
-	} while (runtsk->texptn != 0);
-	runtsk->enatex = TRUE;
+	} while (tpcb->runtsk->texptn != 0);
+	tpcb->runtsk->enatex = TRUE;
 }
 
 /*
@@ -394,7 +449,9 @@ call_texrtn()
 void
 calltex()
 {
-	if (runtsk->enatex && runtsk->texptn != 0) {
+	TPCB *my_tpcb= get_my_tpcb();
+
+	if (my_tpcb->runtsk->enatex && my_tpcb->runtsk->texptn != 0) {
 		call_texrtn();
 	}
 }

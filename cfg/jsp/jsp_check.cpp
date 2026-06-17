@@ -78,8 +78,10 @@ protected:
     bool check_mailboxblock(Directory &, FileContainer *);
     bool check_fixed_memorypoolblock(Directory &, FileContainer *);
     bool check_cyclic_handlerblock(Directory &, FileContainer *);
+	bool check_spinlockblock(Directory &, FileContainer *);
     bool check_interrupt_handlerblock(Directory &, FileContainer *);
     bool check_exception_handlerblock(Directory &, FileContainer *);
+	bool check_configintblock(Directory &, FileContainer *);
 
     virtual void parseOption(Directory &);
     virtual void body(Directory &);
@@ -174,6 +176,7 @@ bool ConfigurationChecker::check_taskblock(Directory & parameter, FileContainer 
     unsigned int id;
     unsigned int maxpri;
     unsigned int minpri;
+	unsigned int tnum_prcid;
     unsigned int old_error_count = error_count;
 
     TargetVariable<unsigned int> _kernel_tmax_tskid("_kernel_tmax_tskid");
@@ -200,6 +203,7 @@ bool ConfigurationChecker::check_taskblock(Directory & parameter, FileContainer 
 
     maxpri = container->getVariableInfo("TMAX_TPRI").value;
     minpri = container->getVariableInfo("TMIN_TPRI").value;
+    tnum_prcid = container->getVariableInfo("TNUM_PRCID").value;
 
     VerboseMessage("% object : % items\n","%オブジェクト : % 個\n") << object << *_kernel_tmax_tskid;
     for(id = 1; id <= *_kernel_tmax_tskid; id++)
@@ -210,8 +214,9 @@ bool ConfigurationChecker::check_taskblock(Directory & parameter, FileContainer 
              *  属性チェック
              */
 
-            // 属性値が TA_HLNG|TA_ASM|TA_ACT 以外の値をとっている
-        if((*tskatr & ~(0x3 | TA_ID_MASK)) != 0)
+            // 属性値に TA_ASM が含まれている
+            // 属性値が TA_HLNG|TA_ASM|TA_ACT|TA_USERDEPEND 以外の値をとっている
+        if((*tskatr & ~(0x33 | TA_ID_MASK)) != 0)
             notify( STANDARD,
                 Message("Illegal task attribute (It should be ((TA_HLNG||TA_ASM)|TA_ACT))",
                         "不正なタスク属性 ((TA_HLNG||TA_ASM)|TA_ACT)以外"));
@@ -221,6 +226,12 @@ bool ConfigurationChecker::check_taskblock(Directory & parameter, FileContainer 
             notify( RESTRICTED,
                 Message("TA_ASM specified as task attribute takes no effect.",
                         "タスク属性にTA_ASMが指定されている"));
+
+            // 属性値のプロセッサの指定が正しくない
+        if(((*tskatr & TA_ID_MASK) >> TA_ID_SHIFT) > tnum_prcid)
+            notify( STANDARD,
+                Message("Illegal prossor ID (It should be under equal (TNUM_PRCID))",
+                        "不正なプロセッサ指定 (TNUM_PRCID以下の値"));
 
             /* 起動番地が0 */
         if(*task == 0)
@@ -509,6 +520,7 @@ bool ConfigurationChecker::check_fixed_memorypoolblock(Directory & parameter, Fi
 bool ConfigurationChecker::check_cyclic_handlerblock(Directory & parameter, FileContainer * container)
 {
     unsigned int id;
+	unsigned int tnum_prcid;
     unsigned int old_error_count = error_count;
 
     Message object("Cyclic handler","周期ハンドラ");
@@ -523,6 +535,8 @@ bool ConfigurationChecker::check_cyclic_handlerblock(Directory & parameter, File
     TargetVariable<DT_UINT> cycatr("_kernel_cycinib_table", "cyclic_handler_initialization_block::cycatr");
     TargetVariable<DT_RELTIM> cyctim("_kernel_cycinib_table", "cyclic_handler_initialization_block::cyctim");
     TargetVariable<DT_RELTIM> cycphs("_kernel_cycinib_table", "cyclic_handler_initialization_block::cycphs");
+
+    tnum_prcid = container->getVariableInfo("TNUM_PRCID").value;
 
     VerboseMessage("% object : % items\n","%オブジェクト : % 個\n") << object << *_kernel_tmax_cycid;
     for(id = 1; id <= *_kernel_tmax_cycid; id++)
@@ -543,6 +557,12 @@ bool ConfigurationChecker::check_cyclic_handlerblock(Directory & parameter, File
             notify( RESTRICTED,
                 Message("TOPPERS/JSP Kernel never minds the flag 'TA_ASM'.",
                         "TOPPERS/JSPカーネルの全ての機種依存部でTA_ASMをサポートするとは限らない"));
+
+            // 属性値のプロセッサの指定が正しくない
+        if(((*cycatr & TA_ID_MASK) >> TA_ID_SHIFT) > tnum_prcid)
+            notify( STANDARD,
+                Message("Illegal prossor ID (It should be under equal (TNUM_PRCID))",
+                        "不正なプロセッサ指定 (TNUM_PRCID以下の値"));
 
 #ifndef JSP_FREERTOS
             //RELTIMでの表現範囲内にあるかどうかのチェック
@@ -571,8 +591,39 @@ bool ConfigurationChecker::check_cyclic_handlerblock(Directory & parameter, File
     return old_error_count == error_count;
 }
 
+bool ConfigurationChecker::check_spinlockblock(Directory & parameter, FileContainer * container)
+{
+
+    unsigned int id;
+    unsigned int old_error_count = error_count;
+
+    Message object("Spin Lock","スピンロック");
+
+    TargetVariable<DT_UINT> _kernel_tmax_spnid("_kernel_tmax_spnid");
+    if(*_kernel_tmax_spnid < 1)
+        return true;
+
+    TargetVariable<DT_UINT> spnatr("_kernel_spninib_table", "spinlock_initialization_block::spnatr");
+
+    VerboseMessage("% object : % items\n","%オブジェクト : % 個\n") << object << *_kernel_tmax_spnid;
+    for(id = 1; id <= *_kernel_tmax_spnid; id++)
+    {
+        set_banner(parameter, object, SPINLOCK, id);
+
+            //attribute validation check
+        if((*spnatr & ~0x1) != 0)
+            notify(STANDARD,
+                Message("Illegal attribute value [0x%]","おかしな属性値 [0x%]") << (*spnatr & ~0x1));
+
+        ++ spnatr;
+    }
+
+    return old_error_count == error_count;
+}
+
 bool ConfigurationChecker::check_interrupt_handlerblock(Directory & parameter, FileContainer * container)
 {
+	unsigned int tnum_prcid;
     unsigned int id;
     unsigned int old_error_count = error_count;
 
@@ -584,6 +635,7 @@ bool ConfigurationChecker::check_interrupt_handlerblock(Directory & parameter, F
 
     TargetVariable<DT_UINT> inhatr("_kernel_inhinib_table", "interrupt_handler_initialization_block::inhatr");
     TargetVariable<DT_FP>   inthdr("_kernel_inhinib_table", "interrupt_handler_initialization_block::inthdr");
+    tnum_prcid = container->getVariableInfo("TNUM_PRCID").value;
 
     VerboseMessage("% object : % items\n","%オブジェクト : % 個\n") << object << *_kernel_tnum_inhno;
     for(id = 0; id < *_kernel_tnum_inhno; id++)
@@ -591,16 +643,22 @@ bool ConfigurationChecker::check_interrupt_handlerblock(Directory & parameter, F
         set_banner(parameter, object, INTERRUPTHANDLER, id);
 
             //attribute validation check
-        if((*inhatr & 0x1) != 0)
+        if((*inhatr & ~(TA_ID_MASK | 0x11)) != 0)
             notify(STANDARD,
                 Message("The attribute can take only TA_HLNG|TA_ASM",
                         "TA_HLNG|TA_ASM以外の属性は設定できません"));
 
             // 属性値に TA_ASM が含まれている
-        if((*inhatr & 0x1) != 0)
+        if(((*inhatr & ~TA_ID_MASK) & 0x1) != 0)
             notify(RESTRICTED,
                 Message("TOPPERS/JSP Kernel never minds the flag 'TA_ASM'.",
                         "TA_ASMが使用されている"));
+
+            // 属性値のプロセッサの指定が正しくない
+        if(((*inhatr & TA_ID_MASK) >> TA_ID_SHIFT) > tnum_prcid)
+            notify( STANDARD,
+                Message("Illegal prossor ID (It should be under equal (TNUM_PRCID))",
+                        "不正なプロセッサ指定 (TNUM_PRCID以下の値"));
 
             // 起動番地チェック
         if(*inthdr == 0)
@@ -616,6 +674,7 @@ bool ConfigurationChecker::check_interrupt_handlerblock(Directory & parameter, F
 
 bool ConfigurationChecker::check_exception_handlerblock(Directory & parameter, FileContainer * container)
 {
+	unsigned int tnum_prcid;
     unsigned int id;
     unsigned int old_error_count = error_count;
 
@@ -627,6 +686,7 @@ bool ConfigurationChecker::check_exception_handlerblock(Directory & parameter, F
 
     TargetVariable<DT_UINT> excatr("_kernel_excinib_table", "cpu_exception_handler_initialization_block::excatr");
     TargetVariable<DT_FP>   exchdr("_kernel_excinib_table", "cpu_exception_handler_initialization_block::exchdr");
+    tnum_prcid = container->getVariableInfo("TNUM_PRCID").value;
 
     VerboseMessage("% object : % items\n","%オブジェクト : % 個\n") << object << *_kernel_tnum_excno;
     for(id = 0; id < *_kernel_tnum_excno; id++)
@@ -634,16 +694,22 @@ bool ConfigurationChecker::check_exception_handlerblock(Directory & parameter, F
         set_banner(parameter, object, EXCEPTIONHANDLER, id);
 
             //attribute validation check
-        if((*excatr & 0x1) != 0)
+        if((*excatr & ~(TA_ID_MASK | 0x11)) != 0)
             notify(STANDARD,
                 Message("The attribute can take only TA_HLNG|TA_ASM",
                         "TA_HLNG|TA_ASM以外の属性は設定できません"));
 
             // 属性値に TA_ASM が含まれている
-        if((*excatr & 0x1) != 0)
+        if(((*excatr & ~TA_ID_MASK) & 0x1) != 0)
             notify(RESTRICTED,
                 Message("TOPPERS/JSP Kernel never minds the flag 'TA_ASM'.",
                         "TOPPERS/JSPカーネルの全ての機種依存部でTA_ASMをサポートするとは限らない"));
+
+            // 属性値のプロセッサの指定が正しくない
+        if(((*excatr & TA_ID_MASK) >> TA_ID_SHIFT) > tnum_prcid)
+            notify( STANDARD,
+                Message("Illegal prossor ID (It should be under equal (TNUM_PRCID))",
+                        "不正なプロセッサ指定 (TNUM_PRCID以下の値"));
 
             // 起動番地チェック
         if(*exchdr == 0)
@@ -655,6 +721,51 @@ bool ConfigurationChecker::check_exception_handlerblock(Directory & parameter, F
     }
 
     return old_error_count == error_count;
+}
+
+bool ConfigurationChecker::check_configintblock(Directory & parameter, FileContainer * container)
+{
+
+	unsigned int tnum_prcid;
+    unsigned int id;
+    unsigned int old_error_count = error_count;
+
+    Message object("Config Interrupt","割込み設定");
+
+
+    TargetVariable<DT_UINT> _kernel_tnum_cfgintno("_kernel_tnum_cfgintno");
+    if(*_kernel_tnum_cfgintno < 1)
+        return true;
+
+    TargetVariable<DT_UINT> intatr("_kernel_cfgintinib_table", "configint_initialization_block::intatr");
+    TargetVariable<DT_UINT> intpri("_kernel_cfgintinib_table", "configint_initialization_block::intpri");
+    tnum_prcid = container->getVariableInfo("TNUM_PRCID").value;
+
+    VerboseMessage("% object : % items\n","%オブジェクト : % 個\n") << object << *_kernel_tnum_cfgintno;
+
+#if 1
+    for(id = 1; id <= *_kernel_tnum_cfgintno; id++)
+    {
+        set_banner(parameter, object, CONFIGINT, id);
+
+            //attribute validation check
+        if((*intatr & ~(TA_ID_MASK | 0x11)) != 0)
+            notify(STANDARD,
+                Message("Illegal attribute value [0x%]","おかしな属性値 [0x%]") << (*intatr & ~(TA_ID_MASK | 0x01)));
+
+            // 属性値のプロセッサの指定が正しくない
+        if(((*intatr & TA_ID_MASK) >> TA_ID_SHIFT) > tnum_prcid)
+            notify( STANDARD,
+                Message("Illegal prossor ID (It should be under equal (TNUM_PRCID))",
+                        "不正なプロセッサ指定 (TNUM_PRCID以下の値"));
+
+        ++ intatr, ++ intpri;
+    }
+
+    return old_error_count == error_count;
+#else
+	return true;
+#endif
 }
 
 //------------------------------------------------------
@@ -766,8 +877,10 @@ void ConfigurationChecker::body(Directory & parameter)
     result &= check_mailboxblock(parameter,container);
     result &= check_fixed_memorypoolblock(parameter,container);
     result &= check_cyclic_handlerblock(parameter,container);
+    result &= check_spinlockblock(parameter,container);
     result &= check_interrupt_handlerblock(parameter,container);
     result &= check_exception_handlerblock(parameter,container);
+	result &=check_configintblock(parameter,container);
 
     if(!result)
         ExceptionMessage("Total % errors found in current configuration.\n","全部で%個のエラーが検出されました\n") << error_count << throwException;

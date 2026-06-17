@@ -8,4 +8,4 @@ start
 enable_exc
 disable_exc
 x_config_int
-int_handler_table
+p_int_table

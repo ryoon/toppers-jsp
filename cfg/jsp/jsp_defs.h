@@ -50,12 +50,15 @@
 #define MAILBOX             "mailbox"
 #define FIXEDSIZEMEMORYPOOL "mempfix"
 #define CYCLICHANDLER       "cyclic"
+#define SPINLOCK            "spinlock"
 #define INTERRUPTHANDLER    "interrupt"
 #define EXCEPTIONHANDLER    "exception"
+#define CONFIGINT           "configint"
 #define INITIALIZER         "initializer"
 #define TERMINATOR          "terminator"
 #define INCLUDEFILE         "include"
 #define OBJECT_INITIALIZER  "object_initializer"
+#define SYSLOG              "syslog"
 #define IDENTIFIER_VARIABLE "identifier"
 
 #define KERNEL_CFG          "/file/kernel_cfg"
@@ -67,6 +70,7 @@
  *  属性のIDを設定するマスク値を定義
  */
 #define TA_ID_MASK			0x000F0000
+#define	TA_ID_SHIFT			(16)
 
 #endif
 

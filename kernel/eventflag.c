@@ -97,6 +97,9 @@ eventflag_initialize(void)
 	UINT	i;
 	FLGCB	*flgcb;
 
+	if (!is_master_proc()) {
+		return;
+	}
 	for (flgcb = flgcb_table, i = 0; i < TNUM_FLG; flgcb++, i++) {
 		queue_initialize(&(flgcb->wait_queue));
 		flgcb->flginib = &(flginib_table[i]);
@@ -145,7 +148,7 @@ set_flg(ID flgid, FLGPTN setptn)
 	CHECK_FLGID(flgid);
 	flgcb = get_flgcb(flgid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	flgcb->flgptn |= setptn;
 	if (!(queue_empty(&(flgcb->wait_queue)))) {
 		tcb = (TCB *)(flgcb->wait_queue.next);
@@ -154,12 +157,12 @@ set_flg(ID flgid, FLGPTN setptn)
 					winfo->wfmode, &(winfo->flgptn))) {
 			queue_delete(&(tcb->task_queue));
 			if (wait_complete(tcb)) {
-				dispatch();
+				multi_core_dispatch(tcb->tpcb);
 			}
 		}
 	}
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_SET_FLG_LEAVE(ercd);
@@ -178,6 +181,7 @@ iset_flg(ID flgid, FLGPTN setptn)
 {
 	FLGCB	*flgcb;
 	TCB	*tcb;
+	TPCB	*tpcb;
 	WINFO_FLG *winfo;
 	ER	ercd;
 
@@ -186,21 +190,23 @@ iset_flg(ID flgid, FLGPTN setptn)
 	CHECK_FLGID(flgid);
 	flgcb = get_flgcb(flgid);
 
-	i_lock_cpu();
+	i_acquire_glock();
 	flgcb->flgptn |= setptn;
 	if (!(queue_empty(&(flgcb->wait_queue)))) {
+
 		tcb = (TCB *)(flgcb->wait_queue.next);
+		tpcb = tcb->tpcb;
 		winfo = (WINFO_FLG *)(tcb->winfo);
 		if (eventflag_cond(flgcb, winfo->waiptn,
 					winfo->wfmode, &(winfo->flgptn))) {
 			queue_delete(&(tcb->task_queue));
 			if (wait_complete(tcb)) {
-				reqflg = TRUE;
+				reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 			}
 		}
 	}
 	ercd = E_OK;
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_ISET_FLG_LEAVE(ercd);
@@ -225,10 +231,10 @@ clr_flg(ID flgid, FLGPTN clrptn)
 	CHECK_FLGID(flgid);
 	flgcb = get_flgcb(flgid);
 
-	t_lock_cpu();
-	flgcb->flgptn &= clrptn; 
+	t_acquire_glock();
+	flgcb->flgptn &= clrptn;
 	ercd = E_OK;
-	t_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_CLR_FLG_LEAVE(ercd);
@@ -246,6 +252,7 @@ SYSCALL ER
 wai_flg(ID flgid, FLGPTN waiptn, MODE wfmode, FLGPTN *p_flgptn)
 {
 	FLGCB	*flgcb;
+	TPCB	*my_tpcb;
 	WINFO_FLG winfo;
 	ER	ercd;
 
@@ -256,7 +263,8 @@ wai_flg(ID flgid, FLGPTN waiptn, MODE wfmode, FLGPTN *p_flgptn)
 	CHECK_PAR((wfmode & ~TWF_ORW) == 0);
 	flgcb = get_flgcb(flgid);
 
-	t_lock_cpu();
+	t_acquire_glock();
+	my_tpcb = get_my_tpcb();
 	if (!(queue_empty(&(flgcb->wait_queue)))) {
 		ercd = E_ILUSE;
 	}
@@ -266,14 +274,14 @@ wai_flg(ID flgid, FLGPTN waiptn, MODE wfmode, FLGPTN *p_flgptn)
 	else {
 		winfo.waiptn = waiptn;
 		winfo.wfmode = wfmode;
-		wobj_make_wait((WOBJCB *) flgcb, (WINFO_WOBJ *) &winfo);
-		dispatch();
+		wobj_make_wait(my_tpcb, (WOBJCB *) flgcb, (WINFO_WOBJ *) &winfo);
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
 			*p_flgptn = winfo.flgptn;
 		}
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_WAI_FLG_LEAVE(ercd, *p_flgptn);
@@ -300,7 +308,7 @@ pol_flg(ID flgid, FLGPTN waiptn, MODE wfmode, FLGPTN *p_flgptn)
 	CHECK_PAR((wfmode & ~TWF_ORW) == 0);
 	flgcb = get_flgcb(flgid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (!(queue_empty(&(flgcb->wait_queue)))) {
 		ercd = E_ILUSE;
 	}
@@ -310,7 +318,7 @@ pol_flg(ID flgid, FLGPTN waiptn, MODE wfmode, FLGPTN *p_flgptn)
 	else {
 		ercd = E_TMOUT;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_POL_FLG_LEAVE(ercd, *p_flgptn);
@@ -328,6 +336,7 @@ SYSCALL ER
 twai_flg(ID flgid, FLGPTN waiptn, MODE wfmode, FLGPTN *p_flgptn, TMO tmout)
 {
 	FLGCB	*flgcb;
+	TPCB	*my_tpcb;
 	WINFO_FLG winfo;
 	TMEVTB	tmevtb;
 	ER	ercd;
@@ -340,7 +349,8 @@ twai_flg(ID flgid, FLGPTN waiptn, MODE wfmode, FLGPTN *p_flgptn, TMO tmout)
 	CHECK_TMOUT(tmout);
 	flgcb = get_flgcb(flgid);
 
-	t_lock_cpu();
+	t_acquire_glock();
+	my_tpcb = get_my_tpcb();
 	if (!(queue_empty(&(flgcb->wait_queue)))) {
 		ercd = E_ILUSE;
 	}
@@ -353,15 +363,15 @@ twai_flg(ID flgid, FLGPTN waiptn, MODE wfmode, FLGPTN *p_flgptn, TMO tmout)
 	else {
 		winfo.waiptn = waiptn;
 		winfo.wfmode = wfmode;
-		wobj_make_wait_tmout((WOBJCB *) flgcb, (WINFO_WOBJ *) &winfo,
+		wobj_make_wait_tmout(my_tpcb, (WOBJCB *) flgcb, (WINFO_WOBJ *) &winfo,
 						&tmevtb, tmout);
-		dispatch();
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
 			*p_flgptn = winfo.flgptn;
 		}
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_TWAI_FLG_LEAVE(ercd, *p_flgptn);

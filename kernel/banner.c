@@ -43,6 +43,7 @@
  */
 
 #include "jsp_kernel.h"
+#include "task.h"
 
 #ifndef COPYRIGHT_CPU
 #define COPYRIGHT_CPU
@@ -61,11 +62,40 @@ static const char banner[] = "\n"
 "            Graduate School of Information Science, Nagoya Univ., JAPAN\n"
 COPYRIGHT_CPU COPYRIGHT_SYS;
 
+#if TNUM_PRCID > 1
+
+static const char prc_banner[] = "Processor %d start.";
+
+static void
+print_banner_start()
+{
+	syslog_1(LOG_NOTICE, prc_banner, get_prc_index()+1);
+}
+
+#else	/* TNUM_PRCID > 1 */
+
+#define print_banner_start()
+
+#endif	/* TNUM_PRCID > 1 */
+
+static void
+print_banner_copyright()
+{
+#if TNUM_PRCID > 1
+	if (get_prc_index() >= tnum_port){
+		return;
+	}
+#endif	/* TNUM_PRCID > 1 */
+	syslog_3(LOG_NOTICE, banner,
+			 (TKERNEL_PRVER >> 12) & 0x0fU,
+			 (TKERNEL_PRVER >> 4) & 0xffU,
+			 TKERNEL_PRVER & 0x0fU
+			 );
+}
+
 void
 print_banner()
 {
-	syslog_3(LOG_NOTICE, banner,
-		(TKERNEL_PRVER >> 12) & 0x0f,
-		(TKERNEL_PRVER >> 4) & 0xff,
-		TKERNEL_PRVER & 0x0f);
+	print_banner_copyright();
+	print_banner_start();
 }

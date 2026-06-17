@@ -44,6 +44,24 @@
 #define _EXCEPTION_H_
 
 /*
+ *  設定のエクスセプション属性からプロセッサIDを取り出す
+ */
+#if TNUM_PRCID > 1
+
+#define	EXCNO_PRCID(a)	((((a) >> 16) == 0) ? MASTER_PRCID : ((a) >> 16))
+
+#else /* TNUM_PRCID > 1 */
+
+#define	EXCNO_PRCID(a)	ID_PRC(get_prc_index())
+
+#endif /* TNUM_PRCID > 1 */
+
+/*
+ *  設定の割込み属性から対応プロセッサIDを取り出す
+ */
+#define	EXCREQ_PRCID(a)	((((a) & TA_PRCALL) != 0) ? ID_PRC(get_prc_index()) : EXCNO_PRCID((a)))
+
+/*
  *  CPU例外ハンドラ初期化ブロック
  */
 typedef struct cpu_exception_handler_initialization_block {

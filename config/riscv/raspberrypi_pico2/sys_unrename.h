@@ -10,6 +10,7 @@
 #undef sys_putc
 #undef compare_time
 #undef molecule
+#undef interrupt_map
 
 #ifdef LABEL_ASM
 
@@ -19,6 +20,7 @@
 #undef _sys_putc
 #undef _compare_time
 #undef _molecule
+#undef _interrupt_map
 
 #endif /* LABEL_ASM */
 

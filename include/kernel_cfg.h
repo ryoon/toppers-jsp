@@ -58,9 +58,11 @@
 #include <../kernel/mailbox.h>
 #include <../kernel/mempfix.h>
 #include <../kernel/cyclic.h>
+#include <../kernel/spinlock.h>
 #include <../kernel/interrupt.h>
 #include <../kernel/exception.h>
 #include <../kernel/time_event.h>
+#include <../kernel/syslog.h>
 
 /*
  *  カーネルのワークエリアを定義するためのデータ型

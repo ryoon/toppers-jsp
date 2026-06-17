@@ -105,6 +105,9 @@ static INT   task_suspend(int argc, char **argv);
 static INT   task_resume(int argc, char **argv);
 static INT   task_release(int argc, char **argv);
 static INT   task_wakeup(int argc, char **argv);
+#if TNUM_PRCID > 1
+static INT   task_prcid(int argc, char **argv);
+#endif /* TNUM_PRCID > 1 */
 static INT   task_priority(int argc, char **argv);
 static INT   log_mode(int argc, char **argv);
 #ifdef	LOG_ANALYSIS
@@ -152,6 +155,9 @@ static char const task_help[] =
 "          RESUME            (rsm_tsk)\n"
 "          RELEASE           (rel_tsk)\n"
 "          WAKEUP            (wup_tsk)\n"
+#if TNUM_PRCID > 1
+"          PRCID [pri]       (chg_pid)\n"
+#endif /* TNUM_PRCID > 1 */
 "          PRIORITY [pri]    (chg_pri)\n";
 
 static char const log_help[] =
@@ -180,6 +186,9 @@ static const COMMAND_INFO task_command_info[] = {
 	{"RESUME",		task_resume},
 	{"RELEASE",		task_release},
 	{"WAKEUP",		task_wakeup},
+#if TNUM_PRCID > 1
+	{"PRCID",       task_prcid},
+#endif /* TNUM_PRCID > 1 */
 	{"PRIORITY",	task_priority}
 };
 
@@ -530,7 +539,7 @@ display_command(int argc, char **argv)
 		mon_address = value1;
 		break;
 	case MONDISPLAY_TASK:			/* タスク状態表示 */
-		printf("cur id  pri state      pc       stack    inistack inisize\n");
+		printf("cur id    pri state      pc       stack    inistack inisize\n");
 		for(no = 0 ; no < tmax_tskid ; no++){
 			ref_tst(no+TMIN_TSKID, &rtst);
 			if(current_tskid == (no+TMIN_TSKID))
@@ -538,9 +547,9 @@ display_command(int argc, char **argv)
 			else
 				printf("   ");
 			if(MONTASK == (no+TMIN_TSKID))
-				printf(" mon");
+				printf(" mon  ");
 			else
-				printf(" %03d", no+TMIN_TSKID);
+				printf(" %03d-%d", no+TMIN_TSKID, rtst.prcid);
 			printf(" %3d ", rtst.tskpri);
 			value1 = get_taskstate(rtst.tskstat);
 			for(count = 0 ; count < TSTATE_LEN-1 ; count++){
@@ -843,6 +852,32 @@ task_wakeup(int argc, char **argv)
 	tslp_tsk(TO_SYSSEC(100));			/* スイッチング */
 	return 0;
 }
+
+#if TNUM_PRCID > 1
+
+/*
+ *  タスクコマンド、優先度変更(chg_pri)
+ */
+static INT
+task_prcid(int argc, char **argv)
+{
+	ER      ercd = E_OK;
+	ULONG w;
+
+	if(current_tskid == MONTASK){	/* モニタ自体の制御はできない */
+		printf(" Can't control the monitor!!\n");
+		return 0;
+	}
+	if(argc > 1 && get_value(argv[1], &w, DEC_VALUE)){
+		ercd = chg_pid(current_tskid, w);
+		printf("  execute chg_pri(%d, %d) :: result = %s !\n", current_tskid, (int)w, itron_strerror(ercd));
+		tslp_tsk(TO_SYSSEC(100));		/* スイッチング */
+		return 0;
+	}
+	return -1;
+}
+
+#endif /* TNUM_PRCID > 1 */
 
 /*
  *  タスクコマンド、優先度変更(chg_pri)

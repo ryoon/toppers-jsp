@@ -41,6 +41,7 @@
  */
 
 #include "jsp_kernel.h"
+#include "task.h"
 #include "time_event.h"
 #include "syslog.h"
 
@@ -49,11 +50,56 @@
  */
 BOOL	iniflg;
 
+
+#if TNUM_PRCID > 1
+
 /*
- *  カーネル初期化終了時のユーザ設定関数
+ *  バリア同期用変数
+ */
+static volatile UB prc_init[TNUM_PRCID];
+static volatile UB sys_start;
+
+/*
+ *  バリア同期
+ */
+static void
+barrier_sync(UB phase)
+{
+	volatile UINT i, j;
+	volatile UINT flag;
+
+	prc_init[get_prc_index()] = phase;
+
+	if (is_master_proc()) {
+		do{
+			flag = 0;
+			for(i = 0; i < TNUM_PRCID; i++){
+				if(prc_init[i] == phase){
+					flag++;
+				}
+			}
+			for(j = 0; j < 100; j++);
+		}while (flag < TNUM_PRCID);
+		sys_start = phase;
+	}
+	else {
+		while(sys_start != phase) {
+			for(j = 0; j < 100; j++);
+		}
+	}
+}
+
+#else	/* TNUM_PRCID > 1 */
+
+#define	barrier_sync(p)
+
+#endif	/* TNUM_PRCID > 1 */
+
+/*
+ *  カーネル初期化終了時のシステム設定関数
  */
 Weak void
-ini_usrmode(ID prcid)
+system_start(ID prcid)
 {
 }
 
@@ -71,9 +117,46 @@ kernel_start()
 	tool_initialize();
 
 	/*
+	 *  ジャイアントロックの初期化
+	 */
+	x_initialize_glock();
+
+	/*
 	 *  システムログ機能の初期化
 	 */
 	syslog_initialize();
+
+	/*
+	 *  カーネル・ライブラリィをチェック
+	 */
+	if (tnum_prcid != TNUM_PRCID) {
+		if (is_master_proc()) {
+			syslog(LOG_EMERG, "Illegal number of prossores for the kernel.");
+		}
+		kernel_abort();
+	}
+
+	/*
+	 *  初期化ルーチンの実行
+	 *
+	 *  マスタプロセッサによるの実行が終了してから，スレーブプロセッサは実
+	 *  行する．
+	 */
+	barrier_sync(1);
+	t_acquire_pure_glock();
+
+	/*
+	 *  タイムイベント管理モジュールの初期化
+	 *
+	 *  タイムイベント管理モジュールは他のモジュールより先に初期化
+	 *  する必要がある．初期化終了までsyslogの使用は不可．
+	 */
+	tmevt_initialize();
+
+	/*
+	 *  他のモジュールの初期化
+	 */
+	object_initialize();
 
 	/*
 	 *  起動メッセージの表示
@@ -81,24 +164,23 @@ kernel_start()
 	print_banner();
 
 	/*
-	 *  各モジュールの初期化
-	 *
-	 *  タイムイベント管理モジュールは他のモジュールより先に初期化
-	 *  する必要がある．
-	 */
-	tmevt_initialize();
-	object_initialize();
-
-	/*
 	 *  初期化ルーチンの実行
-	 */ 
-	call_inirtn();
+	 */
+	if (is_master_proc()) {
+		call_inirtn();
+	}
 
 	/*
-	 *  ユーザ設定関数の呼び出し
+	 *  オブジェクトの初期化待ちのバリア同期
 	 */
+	x_release_pure_glock();
+	barrier_sync(2);
+
+	/*
+	 *  最終システム設定関数の呼び出し
+	 */
+	system_start(get_prc_index());
 	iniflg = TRUE;
-	ini_usrmode(MASTER_PRCID);
 
 	/*
 	 *  カーネル動作の開始
@@ -123,17 +205,26 @@ kernel_exit()
 			t_lock_cpu();
 		}
 	}
-	iniflg = FALSE;
+	if (iniflg) {
+		iniflg = FALSE;
+		multi_kernel_exit();
+	}
 
-	/*
-	 *  終了処理ルーチンの実行
-	 */
-	call_terrtn();
+	barrier_sync(3);
+	t_acquire_pure_glock();
 
-	/*
-	 *  atexit の処理とデストラクタの実行
-	 */
-	call_atexit();
+	if (is_master_proc()) {
+
+		/*
+		 *  終了処理ルーチンの実行
+		 */
+		call_terrtn();
+
+		/*
+		 *  atexit の処理とデストラクタの実行
+		 */
+		call_atexit();
+	}
 
 	/*
 	 *  システムログ機能の終了処理
@@ -144,5 +235,6 @@ kernel_exit()
 	 *  ターゲット依存の終了処理
 	 */
 	cpu_terminate();
+	x_release_pure_glock();
 	sys_exit();
 }

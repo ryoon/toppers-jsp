@@ -46,6 +46,7 @@
 #define _MACRO_ONLY
 #include "jsp_kernel.h"
 #include "offset.h"
+#include "sys_asm.inc"
 
 /*
  *  CPU例外エントリ
@@ -99,8 +100,8 @@ cpu_exc_entry:
 	 *  発生したCPU例外を，カーネル管理外のCPU例外と呼ぶ
 	 *  全割込みロック状態はPRIMASKが'1'の状態で判断する．
 	 */
-	ldr r3, =iipm				/* 後で使用するため読み込む */
-	ldrb r0, [r3]
+	my_tpcb r3, r0				/* r3 = get_my_pcb */
+	ldrb r0, [r3, #TPCB_iipm]	/* 後で使用するため読み込む */
 	mrs r2, primask				/* CPUロック状態ならカーネル管理外例外処理へ */
 
 	/*
@@ -139,7 +140,7 @@ cpu_exc_entry_2:
 	push {r1,r2}
 
 	mrs r3, ipsr				/* ハンドラアドレスを取得 */
-	ldr r1, =int_handler_table
+	my_int_tbl r1, r2
 	lsls r0, r3, #2
 	ldr r2, [r1, r0]
 
@@ -162,8 +163,8 @@ cpu_systic_entry:
 	/*
 	 *  割込み発生時の割込み優先度マスクをスタックに保存するため取得
 	 */
-	ldr r3, =iipm				/* 後で使用するため読み込む */
-	ldrb r0, [r3]
+	my_tpcb r3, r0				/* r3 = get_my_pcb */
+	ldrb r0, [r3, #TPCB_iipm]	/* 後で使用するため読み込む */
 
 	/*
 	 * 多重割込みかチェック
@@ -222,8 +223,8 @@ cpu_int_entry:
 	/*
 	 *  割込み発生時の割込み優先度マスクをスタックに保存するため取得
 	 */
-	ldr r3, =iipm				/* 後で使用するため読み込む */
-	ldrb r0, [r3]
+	my_tpcb r3, r0				/* r3 = get_my_pcb */
+	ldrb r0, [r3, #TPCB_iipm]	/* 後で使用するため読み込む */
 
 	/*
 	 * 多重割込みかチェック
@@ -278,10 +279,10 @@ cpu_int_entry_2:
 	lsrs r2, r0					/* r2:発生した割込みに対応した優先度 */
 
 cpu_int_entry_3:
-	ldr   r0, =iipm				/* iipmに優先度を保存 */
-	strb  r2, [r0]
+	my_tpcb r1, r0				/* r1 = get_my_pcb */
+	strb r2, [r1, #TPCB_iipm]	/* iipmに優先度を保存 */
 
-	ldr r1, =int_handler_table	/* ハンドラアドレスを取得 */
+	my_int_tbl r1, r2			/* ハンドラアドレスを取得 */
 	lsls r0, r3, #2
 	ldr r2, [r1, r0]
 
@@ -290,6 +291,20 @@ cpu_int_entry_3:
 	 */
 	mov r0, lr
 	blx r2
+
+	my_tpcb r0, r2			/* スピンロック設定の検証 */
+	ldr r2, [r0, #TPCB_locspnid]
+	cmp r2, #0				/* スピンロックが設定されていなければスキップ */
+	beq ret_int
+	mov r0, sp				/* スタックポインタを復帰 */
+	ldr r1, [sp, #4]
+	movs r2, #EXC_RETURN_PSP /* 割込み元がMSPなら多重割込み */
+	tst r1, r2
+	beq cpu_int_entry_4		/* 多重割込みならcore_int_entry_1へ */
+	mrs r0, psp
+
+cpu_int_entry_4:			/* スピンロックエラーを表示 */
+	bl spin_lock_error_handler
 
 /*
  *  割込み/例外出口
@@ -322,8 +337,8 @@ ret_int:
 	orrs r0, r1
 	str r0, [r3]
 	pop {r0}					/* iipmを発生前に戻す */
-	ldr r1, =iipm
-	strb r0, [r1]
+	my_tpcb r1, r3				/* r1 = get_my_pcb */
+	strb r0, [r1, #TPCB_iipm]	/* iipmに優先度を保存 */
 
 	/*
 	 *  戻り先のコンテキストの判定
@@ -357,8 +372,8 @@ ret_int:
 	 *  された場合に，すぐにディスパッチされないという問題が生じるため
 	 *  である．
 	 */
-	ldr r0, =reqflg				/* reqflgがfalseならそのまま戻る */
-	ldr r2, [r0]
+    my_tpcb r0, r1
+    ldr r2, [r0, #TPCB_reqflg]	 /* reqflgがfalseならそのまま戻る */
 	cmp r2, #1					/* trueならret_int_2へ           */
 	beq ret_int_2
 
@@ -379,7 +394,7 @@ ret_int_2:
 	 *  また，r0には，reqflgのアドレス値が保持されている．
 	 */
 	movs r1, #0					/* reqflgをfalseに */
-	str r1, [r0]
+	str r1, [r0, #TPCB_reqflg]
 
 	/*
 	 *  Threadモードへ移行する．
@@ -408,14 +423,12 @@ ret_int_3:
 	 *  理ルーチンの呼出しが必要な場合に，ディスパッチが必要なくても，
 	 *  reqflgをtrueにするためである．
 	 */
-	ldr r0, =runtsk				/* ディスパッチを行わない場合でも，r1にruntsk の値(TCB) */
-	ldr r1, [r0]				/* が入っている必要があるので，先に読み込む */
-	ldr r0, =enadsp
-	ldr r2, [r0]
-	cmp r2, #0x00				/* enadspがfalseならret_int_r_1へ */
+	my_tpcb r0, r1				/* ディスパッチを行わない場合でも，r1にruntsk の値(TCB) */
+	ldr r1, [r0, #TPCB_runtsk]	/* が入っている必要があるので，先に読み込む */
+	ldr r3, [r0, #TPCB_enadsp]
+	cmp r3, #0x00				/* enadspがfalseならret_int_r_1へ */
 	beq ret_int_r_1
-	ldr r0, =schedtsk
-	ldr r2, [r0]
+	ldr r2, [r0, #TPCB_schedtsk]
 	cmp r1, r2					/* runtskとschedtskが同じなら */
 	beq ret_int_r_1				/*              ret_int_r_1へ */
 	mov r0, r8
@@ -423,8 +436,8 @@ ret_int_3:
 	mov r2, r10
 	mov r3, r11
 	push {r0-r7}
-	ldr r2, =runtsk
-	ldr r1, [r2]
+	my_tpcb r0, r1
+	ldr r1, [r0, #TPCB_runtsk]
 	mov r0, sp
 	str r0, [r1,#TCB_sp]		/* タスクスタックを保存 */
 	ldr r2, =ret_int_r			/* 実行再開番地を保存   */
@@ -459,8 +472,8 @@ ret_int_r_1:
 	 *  呼び出す．
 	 *  dispatcherから呼び出されるため，TCBのアドレスはr1に入っている
 	 */
-	ldr r2, =runtsk
-	ldr r1, [r2]
+	my_tpcb r2, r1
+	ldr r1, [r2, #TPCB_runtsk]
 	ldrb r0, [r1,#TCB_enatex]
 	movs r2, #TCB_enatex_mask
 	tst r0, r2
@@ -520,8 +533,8 @@ dispatch:
 	mov r3, r11
 	push {r0-r7,lr}
 
-	ldr r0, =runtsk			/* runtskを読み込む */
-	ldr r1, [r0]
+    my_tpcb r0, r1			/* runtskを読み込む */
+    ldr r1, [r0,#TPCB_runtsk]
 	mov r2, sp
 	str r2, [r1,#TCB_sp]	/* タスクスタックを保存 */
 	ldr r3, =dispatch_r		/* 実行再開番地を保存 */
@@ -529,7 +542,8 @@ dispatch:
 
 /* 現在実行中のコンテキストを捨てて、タスクディスパッチャを呼び出す時 */
 exit_and_dispatch:
-	ldr r0,=STACKTOP		/* MSPを初期化   */
+	my_tpcb r1, r0			/* MSPを初期化   */
+	ldr r0, [r1,#TPCB_stacktop]
 	msr msp, r0				/* 使用しているため初期化する  */
 	msr psp, r0				/* pspも初期化 */
 	movs r0, #CONTROL_PSP	/* 安全のためPSPを初期化  */
@@ -541,10 +555,9 @@ exit_and_dispatch:
  */
 dispatcher:
 	/* ここには CPUロック（割り込み禁止）で来ること */
-	ldr r1, =schedtsk		/* schedtskをruntskに */
-	ldr r0, [r1]
-	ldr r2, =runtsk			/* schedtskをruntskにセット */
-	str r0, [r2]			/* (タスクスイッチの実行) */
+	my_tpcb r2, r1			/* schedtskをruntskに */
+	ldr r0, [r2, #TPCB_schedtsk]
+	str r0, [r2, #TPCB_runtsk]	/* schedtskをruntskにセット */
 #ifdef	LOG_ANALYSIS
 	push {r0-r3}
 	bl iana_tsk				/* タスク実行情報の設定 */
@@ -562,9 +575,8 @@ dispatcher_1:
 	 * CPUロック状態の解除と，非タスクコンテキスト実行状態への
 	 * 準備をする
 	 */
-	ldr r2, =runtsk
 	movs r0, #0				/* r0 <- '0' */
-	str r0, [r2]			/* runtsk = NULL */
+	str r0, [r2, #TPCB_runtsk]	/* runtsk = NULL */
 	movs  r0, #CONTROL_MSP  /* MSPを有効に  */
 	msr   control, r0       
 	isb                     /* control の操作後に必要 */
@@ -576,12 +588,11 @@ dispatcher_2:
 	nop
 	cpsid i					/* PRIMASK をセット */
 
-	ldr r3, =reqflg
-	ldr r0, [r3]			/* reqflgがfalseならdispatcher_2へ */
+	ldr r0, [r2, #TPCB_reqflg]	/* reqflgがfalseならdispatcher_2へ */
 	cmp r0, #0
 	beq dispatcher_2
 	movs r0, #0				/* r0 <- '0' */
-	str r0, [r3]			/* reqflgをfalseに */
+	str r0, [r2, #TPCB_reqflg]	/* reqflgをfalseに */
 	/*
 	 *  CPUロック状態に戻す．iipmの復帰処理はおこなわない．
 	 */
@@ -643,6 +654,40 @@ activate_r:
 	ldr r1, [r2, #TINIB_task]	/* タスク起動番地にジャンプ */
 	bx r1
 
+#if TNUM_PRCID > 1
+
+/*
+ * 自タスクのマイグレーション
+ * 引数
+ * r0 : prcid
+ */
+
+	.global dispatch_and_migrate
+	.syntax unified
+	.thumb
+	.thumb_func
+	.type dispatch_and_migrate, %function
+dispatch_and_migrate:
+	push  {r4-r7,lr}
+	mov   r4, r8
+	mov   r5, r9
+	mov   r6, r10
+	mov   r7, r11
+	push  {r4-r7}
+
+    my_tpcb r2, r1                      /* runtskを読み込む */
+    ldr   r1, [r2,#TPCB_runtsk]
+	ldr   r3, =dispatch_r         /* 実行再開番地を保存 */
+	str   r3, [r1, #TCB_pc]             /* 実行再開番地を保存 */
+	mov   r3, sp
+	str   r3, [r1, #TCB_sp]				/* タスクスタックを保存 */
+	/* アイドル処理用スタックへ切り換え */
+	ldr   r3, [r2, #TPCB_stacktop]
+	mov   sp, r3
+	ldr   r3, =migrate_self
+	bx    r3
+
+#endif	/* TNUM_PRCID > 1 */
 
 /*
  *  微少時間待ち

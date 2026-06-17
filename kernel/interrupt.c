@@ -42,6 +42,7 @@
 
 #include "jsp_kernel.h"
 #include "check.h"
+#include "task.h"
 #include "interrupt.h"
 
 /*
@@ -54,20 +55,56 @@ extern const UINT	tnum_inhno;
  */
 extern const INHINIB	inhinib_table[];
 
+/*
+ *  割込み設定番号の数（kernel_cfg.c）
+ */
+extern const UINT	tnum_cfgintno;
+
+/*
+ *  割込み設定初期化ブロックのエリア（kernel_cfg.c）
+ */
+extern const CFGINTINIB	cfgintinib_table[];
+
 /* 
- *  割込み管理機能の初期化
+ *  割込みハンドラ機能の初期化
  */
 #ifdef __inhini
 
 void
 interrupt_initialize()
 {
-	UINT		i;
+	UINT	i;
+	UINT	prcid = ID_PRC(get_prc_index());
 	const INHINIB	*inhinib;
 
 	for (inhinib = inhinib_table, i = 0; i < tnum_inhno; inhinib++, i++) {
-		define_inh(inhinib->inhno, inhinib->inthdr);
+		if (INTREQ_PRCID(inhinib->inhatr) == prcid) {
+			define_inh(inhinib->inhno, inhinib->inthdr);
+		}
 	}
 }
 
 #endif /* __inhini */
+
+/* 
+ *  割込み設定機能の初期化
+ */
+#ifdef __cinini
+
+void
+configint_initialize()
+{
+	UINT	i;
+	UINT	prcid = ID_PRC(get_prc_index());
+	BOOL	req;
+	const CFGINTINIB	*cfgintinib;
+
+	for (cfgintinib = cfgintinib_table, i = 0; i < tnum_cfgintno; cfgintinib++, i++) {
+		req = (cfgintinib->intatr & TA_ENAINT) != 0;
+		if (INTREQ_PRCID(cfgintinib->intatr) == prcid) {
+			x_config_int(cfgintinib->intno, req, cfgintinib->intpri);
+		}
+	}
+}
+
+#endif /* __cinhini */

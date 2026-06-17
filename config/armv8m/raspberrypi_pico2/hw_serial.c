@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_serial.c 2246 2025-12-09 11:30:29Z roi $
+ *  @(#) $Id: hw_serial.c 2246 2025-12-09 11:07:49Z roi $
  */
 
 /*
@@ -564,9 +564,16 @@ sio_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
  */
 void sio_snd_chr_pol(char c)
 {
-	const SIOPINIB  *siopinib = &siopinib_table[INDEX_SIOP(DEFAULT_PORT)];
-	UW base = siopinib->base;
+	ID	my_port_id = x_prc_index() + 1;
+	const SIOPINIB  *siopinib;
+	UW	base;
 
+	if (my_port_id > TNUM_PORT) {
+		my_port_id = DEFAULT_PORT;
+	}
+
+	siopinib = &siopinib_table[INDEX_SIOP(my_port_id)];
+	base = siopinib->base;
 	sil_wrw_mem((UW *)(base+TOFF_UART_UARTDR), (UW)c);
 	while ((sil_rew_mem((UW *)(base+TOFF_UART_UARTFR)) & UART_UARTFR_TXFF) != 0);
 
@@ -582,10 +589,16 @@ void sio_snd_chr_pol(char c)
  */
 void sio_init(void)
 {
-	const SIOPINIB  *siopinib = &siopinib_table[INDEX_SIOP(DEFAULT_PORT)];
-	UW base, reset, clock, mask;
-	UW baud_rate_div, baud_ibrd, baud_fbrd;
+	ID	my_port_id = x_prc_index() + 1;
+	const SIOPINIB  *siopinib;
+	UW	base, reset, clock, mask;
+	UW	baud_rate_div, baud_ibrd, baud_fbrd;
 
+	if (my_port_id > TNUM_PORT) {
+		return;
+	}
+
+	siopinib = &siopinib_table[INDEX_SIOP(my_port_id)];
 	base = siopinib->base;
 	reset = siopinib->reset;
 

@@ -13,7 +13,7 @@
 #define enable_exc					_kernel_enable_exc
 #define disable_exc					_kernel_disable_exc
 #define x_config_int				_kernel_x_config_int
-#define int_handler_table			_kernel_int_handler_table
+#define p_int_table					_kernel_p_int_table
 
 #ifdef LABEL_ASM
 
@@ -27,7 +27,7 @@
 #define _enable_exc					__kernel_enable_exc
 #define _disable_exc				__kernel_disable_exc
 #define _x_config_int				__kernel_x_config_int
-#define _int_handler_table			__kernel_int_handler_table
+#define _p_int_table				__kernel_p_int_table
 
 #endif /* LABEL_ASM */
 

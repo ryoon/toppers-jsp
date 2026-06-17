@@ -57,7 +57,8 @@
 	.globl exit_and_dispatch
 dispatch:
 	movem.l %d2-%d7/%a2-%a6, -(%sp)	/* レジスタを保存 */
-	move.l runtsk, %a0		/* A0 を runtsk に */
+	move.l p_pcb_table, %a1	/* A1 ← pcb_table */
+	move.l TPCB_runtsk(a1), %a0	/* A0 を runtsk に */
 	move.l %sp, TCB_msp(%a0)	/* タスクスタックを保存 */
 	move.l #dispatch_r, TCB_pc(%a0)	/* 実行再開番地を保存 */
 	jbra dispatcher
@@ -77,8 +78,9 @@ dispatcher:
 	/*
 	 *  ここではマスタモード・割込み禁止状態でなければならない．
 	 */
-	move.l schedtsk, %a0
-	move.l %a0, runtsk		/* schedtsk を runtsk に */
+	move.l p_pcb_table, %a1	/* A1 ← pcb_table */
+	move.l TPCB_schedtsk(a1), %a0
+	move.l %a0, TPCB_runtsk(a1)	/* schedtsk を runtsk に */
 	jbeq dispatcher_1		/* runtsk があるか？ */
 	move.l TCB_msp(%a0), %sp	/* タスクスタックを復帰 */
 	move.l TCB_pc(%a0), %a1		/* 実行再開番地を復帰 */
@@ -108,9 +110,10 @@ dispatcher_1:
 	 *  を呼び出した際の動作が仕様に合致しなくなる．
 	 */
 	or.w #0x1700, %sr		/* マスタモード・割込み禁止 */
-	tst.l reqflg			/* reqflg が FALSE なら */
+	move.l p_pcb_table, %a0	/* A0 ← pcb_table */
+	tst.l TPCB_reqflg(a0)	/* reqflg が FALSE なら */
 	jbeq dispatcher_1		/*      dispatcher_1 へ */
-	clr.l reqflg			/* reqflg を FALSE に */
+	clr.l TPCB_reqflg(a0)	/* reqflg を FALSE に */
 	jbra dispatcher
 	
 /*
@@ -149,11 +152,12 @@ ret_int:
 	or.w #0x1000, %sr		/* マスタモード */
 	movem.l %d0-%d1/%a0-%a1, -(%sp)	/* スクラッチレジスタを保存 */
 ret_exc:
-	clr.l reqflg			/* reqflg を FALSE に */
-	move.l runtsk, %a0		/* A0 ← runtsk */
-	tst.l enadsp			/* enadsp が FALSE なら */
+	move.l p_pcb_table, %a1	/* A1 ← pcb_table */
+	clr.l TPCB_reqflg(a1)	/* reqflg を FALSE に */
+	move.l TPCB_runtsk(a1), %a0	/* A0 ← runtsk */
+	tst.l TPCB_enadsp(a1)	/* enadsp が FALSE なら */
 	jbeq ret_int_1			/*         ret_int_1 へ */
-	cmp.l schedtsk, %a0		/* runtsk と schedtsk が同じなら */
+	cmp.l TPCB_schedtsk(a1), %a0 /* runtsk と schedtsk が同じなら */
 	jbeq ret_int_1			/*                  ret_int_1 へ */
 	movem.l %d2-%d7/%a2-%a6, -(%sp)	/* 残りのレジスタを保存 */
 	move.l %sp, TCB_msp(%a0)	/* タスクスタックを保存 */

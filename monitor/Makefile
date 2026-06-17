@@ -102,7 +102,7 @@ endif
 #  共通コンパイルオプションの定義
 #
 COPTS := $(COPTS)
-CDEFS := $(CDEFS)
+CDEFS := $(CDEFS) @(CDEFINE)
 INCLUDES := -I. -I$(SRCDIR)/include $(INCLUDES)
 LDFLAGS := -nostdlib $(LDFLAGS)
 LIBS := $(LIBS) $(CXXLIBS) -lgcc -lc 

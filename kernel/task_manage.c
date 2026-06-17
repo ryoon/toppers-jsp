@@ -44,11 +44,13 @@
 #include "check.h"
 #include "task.h"
 #include "wait.h"
+#include "spinlock.h"
 
 /*
  *  待ち状態のマスク値
  */
 #define	TS_WAIT_MASK	(TS_WAIT_SLEEP | TS_WAIT_WOBJ | TS_WAIT_WOBJCB)
+
 
 /*
  *  タスクの起動
@@ -64,12 +66,12 @@ act_tsk(ID tskid)
 	LOG_ACT_TSK_ENTER(tskid);
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
-	tcb = get_tcb_self(tskid);
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (TSTAT_DORMANT(tcb->tstat)) {
 		if (make_active(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -80,7 +82,7 @@ act_tsk(ID tskid)
 	else {
 		ercd = E_QOVR;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_ACT_TSK_LEAVE(ercd);
@@ -98,6 +100,7 @@ SYSCALL ER
 iact_tsk(ID tskid)
 {
 	TCB	*tcb;
+	TPCB	*tpcb;
 	ER	ercd;
 
 	LOG_IACT_TSK_ENTER(tskid);
@@ -105,10 +108,11 @@ iact_tsk(ID tskid)
 	CHECK_TSKID(tskid);
 	tcb = get_tcb(tskid);
 
-	i_lock_cpu();
+	i_acquire_glock();
+	tpcb = tcb->tpcb;
 	if (TSTAT_DORMANT(tcb->tstat)) {
 		if (make_active(tcb)) {
-			reqflg = TRUE;
+			reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 		}
 		ercd = E_OK;
 	}
@@ -119,7 +123,7 @@ iact_tsk(ID tskid)
 	else {
 		ercd = E_QOVR;
 	}
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_IACT_TSK_LEAVE(ercd);
@@ -142,12 +146,12 @@ can_act(ID tskid)
 	LOG_CAN_ACT_ENTER(tskid);
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
-	tcb = get_tcb_self(tskid);
 
-	t_lock_cpu();
+	t_acquire_glock();
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 	ercd = tcb->actcnt ? 1 : 0;
 	tcb->actcnt = FALSE;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_CAN_ACT_LEAVE(ercd);
@@ -164,6 +168,7 @@ can_act(ID tskid)
 SYSCALL void
 ext_tsk(void)
 {
+	TPCB *my_tpcb;
 	LOG_EXT_TSK_ENTER();
 
 #ifdef ACTIVATED_STACK_SIZE
@@ -189,27 +194,35 @@ ext_tsk(void)
 		 *  を解除してからタスクを終了する．実装上は，サービス
 		 *  コール内でのCPUロックを省略すればよいだけ．
 		 */
+		if (sense_context()) {
+			i_acquire_pure_glock();
+		}
+		else  {
+			t_acquire_pure_glock();
+		}
 		syslog_0(LOG_WARNING,
 			"ext_tsk is called from CPU locked state.");
 	}
 	else {
 		if (sense_context()) {
-			i_lock_cpu();
+			i_acquire_glock();
 		}
 		else  {
-			t_lock_cpu();
+			t_acquire_glock();
 		}
 	}
-	if (!(enadsp)) {
+	my_tpcb = get_my_tpcb();
+	if (!(my_tpcb->enadsp)) {
 		/*
 		 *  ディスパッチ禁止状態で ext_tsk が呼ばれた場合は，
 		 *  ディスパッチ許可状態にしてからタスクを終了する．
 		 */
 		syslog_0(LOG_WARNING,
 			"ext_tsk is called from dispatch disabled state.");
-		enadsp = TRUE;
+		my_tpcb->enadsp = TRUE;
 	}
-	exit_task();
+	x_release_pure_glock();	/* スピンロックを解除 */
+	exit_task(my_tpcb);
 }
 
 #endif /* __ext_tsk */
@@ -223,6 +236,7 @@ SYSCALL ER
 ter_tsk(ID tskid)
 {
 	TCB	*tcb;
+	TPCB	*my_tpcb, *tpcb;
 	UINT	tstat;
 	ER	ercd;
 
@@ -230,13 +244,24 @@ ter_tsk(ID tskid)
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID(tskid);
 	tcb = get_tcb(tskid);
-	CHECK_NONSELF(tcb);
 
-	t_lock_cpu();
-	if (TSTAT_DORMANT(tstat = tcb->tstat)) {
+	t_acquire_glock();
+	tpcb = tcb->tpcb;
+	my_tpcb = get_my_tpcb();
+	if (my_tpcb->runtsk == tcb) {
+		ercd = E_ILUSE;
+	}
+	/*
+	 *  異なるプロセッサに割り付けられているタスクで停止中でないならエラーとする
+	 */
+	else if (tpcb != my_tpcb && (tpcb->runtsk == tcb || tpcb->schedtsk == tcb)) {
+		ercd = E_OBJ;
+	}
+	else if (TSTAT_DORMANT(tstat = tcb->tstat)) {
 		ercd = E_OBJ;
 	}
 	else {
+		force_unlockspin(tcb);
 		if (TSTAT_RUNNABLE(tstat)) {
 			make_non_runnable(tcb);
 		}
@@ -247,12 +272,12 @@ ter_tsk(ID tskid)
 		if (tcb->actcnt) {
 			tcb->actcnt = FALSE;
 			if (make_active(tcb)) {
-				dispatch();
+				multi_core_dispatch(tcb->tpcb);
 			}
 		}
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_TER_TSK_LEAVE(ercd);
@@ -278,29 +303,29 @@ chg_pri(ID tskid, PRI tskpri)
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
 	CHECK_TPRI_INI(tskpri);
-	tcb = get_tcb_self(tskid);
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 	newpri = (tskpri == TPRI_INI) ? tcb->tinib->ipriority
 					: INT_PRIORITY(tskpri);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (TSTAT_DORMANT(tstat = tcb->tstat)) {
 		ercd = E_OBJ;
 	}
 	else if (TSTAT_RUNNABLE(tstat)) {
 		if (change_priority(tcb, newpri)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
 	else {
 		tcb->priority = newpri;
 		if ((tstat & TS_WAIT_WOBJCB) != 0) {
-			wobj_change_priority(((WINFO_WOBJ *)(tcb->winfo))
-							->wobjcb, tcb);
+			wobj_change_priority(tcb, 
+				((WINFO_WOBJ *)(tcb->winfo))->wobjcb);
 		}
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_CHG_PRI_LEAVE(ercd);
@@ -323,9 +348,9 @@ get_pri(ID tskid, PRI *p_tskpri)
 	LOG_GET_PRI_ENTER(tskid, p_tskpri);
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
-	tcb = get_tcb_self(tskid);
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (TSTAT_DORMANT(tcb->tstat)) {
 		ercd = E_OBJ;
 	}
@@ -333,7 +358,7 @@ get_pri(ID tskid, PRI *p_tskpri)
 		*p_tskpri = EXT_TSKPRI(tcb->priority);
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_GET_PRI_LEAVE(ercd, *p_tskpri);
@@ -351,22 +376,25 @@ get_pri(ID tskid, PRI *p_tskpri)
 SYSCALL ER
 ref_tst(ID tskid, T_RTST *pk_rtst)
 {
-	TCB	*tcb;
+	TCB	*tcb, *runtsk;
+	TPCB	*tpcb;
 	UB	tstat;
 	ER	ercd;
 
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
-	tcb = get_tcb_self(tskid);
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 
-	t_lock_cpu();
-	pk_rtst->prcid    = 1;
+	t_acquire_glock();
+	tpcb = tcb->tpcb;
+	pk_rtst->prcid    = tpcb->prcid;
 	pk_rtst->tskwait  = 0;
 	pk_rtst->tskpri   = EXT_TSKPRI(tcb->priority);
 	pk_rtst->inistk   = (VP)tcb->tinib->stk;
 	pk_rtst->inistksz = tcb->tinib->stksz;
 
 	tstat = tcb->tstat;
+	runtsk = tpcb->runtsk;
 	if (TSTAT_RUNNABLE(tstat)) {
 		if (tcb == runtsk) {
 			pk_rtst->tskstat = TTS_RUN;
@@ -409,7 +437,7 @@ ref_tst(ID tskid, T_RTST *pk_rtst)
 	}
 	pk_rtst->tsksp   = (VP)tcb->tskctxb.sp;
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	return(ercd);

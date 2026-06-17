@@ -53,25 +53,29 @@
 SYSCALL ER
 slp_tsk()
 {
+	TCB	*runtsk;
+	TPCB	*my_tpcb;
 	WINFO	winfo;
 	ER	ercd;
 
 	LOG_SLP_TSK_ENTER();
 	CHECK_DISPATCH();
 
-	t_lock_cpu();
+	t_acquire_migrate_glock();
+	my_tpcb = get_my_tpcb();
+	runtsk = my_tpcb->runtsk;
 	if (runtsk->wupcnt) {
 		runtsk->wupcnt = FALSE;
 		ercd = E_OK;
 	}
 	else {
 		runtsk->tstat = (TS_WAITING | TS_WAIT_SLEEP);
-		make_wait(&winfo);
+		make_wait(my_tpcb, &winfo);
 		LOG_TSKSTAT(runtsk);
-		dispatch();
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.wercd;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_SLP_TSK_LEAVE(ercd);
@@ -88,6 +92,8 @@ slp_tsk()
 SYSCALL ER
 tslp_tsk(TMO tmout)
 {
+	TCB	*runtsk;
+	TPCB	*my_tpcb;
 	WINFO	winfo;
 	TMEVTB	tmevtb;
 	ER	ercd;
@@ -96,7 +102,9 @@ tslp_tsk(TMO tmout)
 	CHECK_DISPATCH();
 	CHECK_TMOUT(tmout);
 
-	t_lock_cpu();
+	t_acquire_migrate_glock();
+	my_tpcb = get_my_tpcb();
+	runtsk = my_tpcb->runtsk;
 	if (runtsk->wupcnt) {
 		runtsk->wupcnt = FALSE;
 		ercd = E_OK;
@@ -106,12 +114,12 @@ tslp_tsk(TMO tmout)
 	}
 	else {
 		runtsk->tstat = (TS_WAITING | TS_WAIT_SLEEP);
-		make_wait_tmout(&winfo, &tmevtb, tmout);
+		make_wait_tmout(my_tpcb, &winfo, &tmevtb, tmout);
 		LOG_TSKSTAT(runtsk);
-		dispatch();
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.wercd;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_TSLP_TSK_LEAVE(ercd);
@@ -135,15 +143,15 @@ wup_tsk(ID tskid)
 	LOG_WUP_TSK_ENTER(tskid);
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
-	tcb = get_tcb_self(tskid);
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (TSTAT_DORMANT(tstat = tcb->tstat)) {
 		ercd = E_OBJ;
 	}
 	else if ((tstat & TS_WAIT_SLEEP) != 0) {
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -154,7 +162,7 @@ wup_tsk(ID tskid)
 	else {
 		ercd = E_QOVR;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_WUP_TSK_LEAVE(ercd);
@@ -172,6 +180,7 @@ SYSCALL ER
 iwup_tsk(ID tskid)
 {
 	TCB	*tcb;
+	TPCB	*tpcb;
 	UINT	tstat;
 	ER	ercd;
 
@@ -180,13 +189,14 @@ iwup_tsk(ID tskid)
 	CHECK_TSKID(tskid);
 	tcb = get_tcb(tskid);
 
-	i_lock_cpu();
+	i_acquire_glock();
+	tpcb = tcb->tpcb;
 	if (TSTAT_DORMANT(tstat = tcb->tstat)) {
 		ercd = E_OBJ;
 	}
 	else if ((tstat & TS_WAIT_SLEEP) != 0) {
 		if (wait_complete(tcb)) {
-			reqflg = TRUE;
+			reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 		}
 		ercd = E_OK;
 	}
@@ -197,7 +207,7 @@ iwup_tsk(ID tskid)
 	else {
 		ercd = E_QOVR;
 	}
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_IWUP_TSK_LEAVE(ercd);
@@ -220,9 +230,9 @@ can_wup(ID tskid)
 	LOG_CAN_WUP_ENTER(tskid);
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
-	tcb = get_tcb_self(tskid);
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (TSTAT_DORMANT(tcb->tstat)) {
 		ercd = E_OBJ;
 	}
@@ -230,7 +240,7 @@ can_wup(ID tskid)
 		ercd = tcb->wupcnt ? 1 : 0;
 		tcb->wupcnt = FALSE;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_CAN_WUP_LEAVE(ercd);
@@ -255,17 +265,17 @@ rel_wai(ID tskid)
 	CHECK_TSKID(tskid);
 	tcb = get_tcb(tskid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (!(TSTAT_WAITING(tcb->tstat))) {
 		ercd = E_OBJ;
 	}
 	else {
 		if (wait_release(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_REL_WAI_LEAVE(ercd);
@@ -283,6 +293,7 @@ SYSCALL ER
 irel_wai(ID tskid)
 {
 	TCB	*tcb;
+	TPCB	*tpcb;
 	ER	ercd;
 
 	LOG_IREL_WAI_ENTER(tskid);
@@ -290,17 +301,18 @@ irel_wai(ID tskid)
 	CHECK_TSKID(tskid);
 	tcb = get_tcb(tskid);
 
-	i_lock_cpu();
+	i_acquire_glock();
+	tpcb = tcb->tpcb;
 	if (!(TSTAT_WAITING(tcb->tstat))) {
 		ercd = E_OBJ;
 	}
 	else {
 		if (wait_release(tcb)) {
-			reqflg = TRUE;
+			reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 		}
 		ercd = E_OK;
 	}
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_IREL_WAI_LEAVE(ercd);
@@ -318,16 +330,18 @@ SYSCALL ER
 sus_tsk(ID tskid)
 {
 	TCB	*tcb;
+	TPCB	*tpcb;
 	UINT	tstat;
 	ER	ercd;
 
 	LOG_SUS_TSK_ENTER(tskid);
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
-	tcb = get_tcb_self(tskid);
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 
-	t_lock_cpu();
-	if (tcb == runtsk && !(enadsp)) {
+	t_acquire_glock();
+	tpcb = tcb->tpcb;
+	if (tcb == tpcb->runtsk && !(tpcb->enadsp)) {
 		ercd = E_CTX;
 	}
 	else if (TSTAT_DORMANT(tstat = tcb->tstat)) {
@@ -340,7 +354,7 @@ sus_tsk(ID tskid)
 		tcb->tstat = TS_SUSPENDED;
 		LOG_TSKSTAT(tcb);
 		if (make_non_runnable(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -355,7 +369,7 @@ sus_tsk(ID tskid)
 		LOG_TSKSTAT(tcb);
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_SUS_TSK_LEAVE(ercd);
@@ -381,7 +395,7 @@ rsm_tsk(ID tskid)
 	CHECK_TSKID(tskid);
 	tcb = get_tcb(tskid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (!(TSTAT_SUSPENDED(tstat = tcb->tstat))) {
 		ercd = E_OBJ;
 	}
@@ -390,7 +404,7 @@ rsm_tsk(ID tskid)
 		 *  強制待ち状態から実行できる状態への遷移
 		 */
 		if (make_runnable(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -402,7 +416,7 @@ rsm_tsk(ID tskid)
 		LOG_TSKSTAT(tcb);
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_RSM_TSK_LEAVE(ercd);
@@ -444,6 +458,7 @@ frsm_tsk(ID tskid)
 SYSCALL ER
 dly_tsk(RELTIM dlytim)
 {
+	TPCB	*my_tpcb;
 	WINFO	winfo;
 	TMEVTB	tmevtb;
 	ER	ercd;
@@ -452,16 +467,17 @@ dly_tsk(RELTIM dlytim)
 	CHECK_DISPATCH();
 	CHECK_PAR(dlytim <= TMAX_RELTIM);
 
-	t_lock_cpu();
-	runtsk->tstat = TS_WAITING;
-	make_non_runnable(runtsk);
-	runtsk->winfo = &winfo;
+	t_acquire_migrate_glock();
+	my_tpcb = get_my_tpcb();
+	my_tpcb->runtsk->tstat = TS_WAITING;
+	make_non_runnable(my_tpcb->runtsk);
+	my_tpcb->runtsk->winfo = &winfo;
 	winfo.tmevtb = &tmevtb;
-	tmevtb_enqueue(&tmevtb, dlytim, (CBACK) wait_tmout_ok, (VP) runtsk);
-	LOG_TSKSTAT(runtsk);
-	dispatch();
+	tmevtb_enqueue(my_tpcb->tevtcb, &tmevtb, dlytim, (CBACK) wait_tmout_ok, (VP) my_tpcb->runtsk);
+	LOG_TSKSTAT(my_tpcb->runtsk);
+	multi_core_dispatch(my_tpcb);
 	ercd = winfo.wercd;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_DLY_TSK_LEAVE(ercd);

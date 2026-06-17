@@ -63,10 +63,14 @@ void
 exception_initialize()
 {
 	UINT		i;
+	UINT		prcid = ID_PRC(get_prc_index());
+	ID			reqexcno;
 	const EXCINIB	*excinib;
 
 	for (excinib = excinib_table, i = 0; i < tnum_excno; excinib++, i++) {
-		define_exc(excinib->excno, excinib->exchdr);
+		if (EXCREQ_PRCID(excinib->excatr) == prcid) {
+			define_exc(excinib->excno, excinib->exchdr);
+		}
 	}
 }
 
@@ -121,7 +125,7 @@ vxsns_dsp(VP p_excinf)
 	BOOL	state;
 
 	LOG_VXSNS_DSP_ENTER(p_excinf);
-	state = !(enadsp) ? TRUE : FALSE;
+	state = !(get_enadsp()) ? TRUE : FALSE;
 	LOG_VXSNS_DSP_LEAVE(state);
 	return(state);
 }
@@ -140,7 +144,7 @@ vxsns_dpn(VP p_excinf)
 
 	LOG_VXSNS_DPN_ENTER(p_excinf);
 	state = (exc_sense_context(p_excinf) || exc_sense_lock(p_excinf)
-					|| !(enadsp)) ? TRUE : FALSE;
+					|| !(get_enadsp())) ? TRUE : FALSE;
 	LOG_VXSNS_DPN_LEAVE(state);
 	return(state);
 }
@@ -158,8 +162,10 @@ SYSCALL BOOL
 vxsns_tex(VP p_excinf)
 {
 	BOOL	state;
+	TCB	*runtsk;
 
 	LOG_VXSNS_TEX_ENTER(p_excinf);
+	runtsk = get_my_tpcb()->runtsk;
 	state = (runtsk != NULL && runtsk->enatex) ? FALSE : TRUE;
 	LOG_VXSNS_TEX_LEAVE(state);
 	return(state);

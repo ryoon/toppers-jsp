@@ -1,11 +1,13 @@
 /* This file is generated from jsp_rename.def by genrename. */
 
-#ifdef _JSP_UNRENAME_H_
-#undef _JSP_UNRENAME_H_
+/* This file is included only when jsp_rename.h has been included. */
+#ifdef _JSP_RENAME_H
+#undef _JSP_RENAME_H
 
 /*
  *  startup.c
  */
+#undef system_start
 #undef iniflg
 
 /*
@@ -17,8 +19,9 @@
  *  cpu_config.c, cpu_support.S, sys_config.c, sys_support.S
  */
 #undef dispatch
+#undef dispatch_and_migrate
 #undef exit_and_dispatch
-#undef cpu_initialize
+#undef dispatch_and_migratecpu_initialize
 #undef cpu_terminate
 #undef sys_initialize
 #undef sys_exit
@@ -27,12 +30,9 @@
 /*
  *  task.c
  */
-#undef runtsk
-#undef schedtsk
-#undef reqflg
-#undef enadsp
-#undef ready_queue
-#undef ready_primap
+#undef p_pcb_table
+#undef tprc_tpcb
+#undef giant_lock
 #undef task_initialize
 #undef search_schedtsk
 #undef make_runnable
@@ -59,13 +59,15 @@
 #undef wobj_change_priority
 
 /*
+ *  task_manage.c
+ */
+#undef migrate_self
+
+/*
  *  time_event.c
  */
-#undef systim_offset
-#undef current_time
-#undef next_time
-#undef next_subtime
-#undef last_index
+#undef p_tevtcb
+#undef p_tevtcb_table
 #undef tmevt_initialize
 #undef tmevt_up
 #undef tmevt_down
@@ -75,11 +77,7 @@
 /*
  *  syslog.c
  */
-#undef syslog_buffer
-#undef syslog_count
-#undef syslog_head
-#undef syslog_tail
-#undef syslog_lost
+#undef syslogcb
 #undef syslog_logmask
 #undef syslog_lowmask
 #undef syslog_initialize
@@ -125,9 +123,16 @@
 #undef call_cychdr
 
 /*
+ *  spinlock.c
+ */
+#undef spinlock_initialize
+#undef get_spncb
+
+/*
  *  interrupt.c
  */
 #undef interrupt_initialize
+#undef configint_initialize
 
 /*
  *  exception.c
@@ -163,9 +168,16 @@
 #undef cycinib_table
 #undef cyccb_table
 #undef tnum_inhno
+#undef spninib_table
+#undef spncb_table
+#undef tmax_spnid
 #undef inhinib_table
 #undef tnum_excno
 #undef excinib_table
+#undef tnum_cfgintno
+#undef cfgintinib_table
+#undef tnum_prcid
+#undef tnum_port
 #undef tmevt_heap
 
 #ifdef LABEL_ASM
@@ -173,6 +185,7 @@
 /*
  *  startup.c
  */
+#undef _system_start
 #undef _iniflg
 
 /*
@@ -184,8 +197,9 @@
  *  cpu_config.c, cpu_support.S, sys_config.c, sys_support.S
  */
 #undef _dispatch
+#undef _dispatch_and_migrate
 #undef _exit_and_dispatch
-#undef _cpu_initialize
+#undef _dispatch_and_migratecpu_initialize
 #undef _cpu_terminate
 #undef _sys_initialize
 #undef _sys_exit
@@ -194,12 +208,9 @@
 /*
  *  task.c
  */
-#undef _runtsk
-#undef _schedtsk
-#undef _reqflg
-#undef _enadsp
-#undef _ready_queue
-#undef _ready_primap
+#undef _p_pcb_table
+#undef _tprc_tpcb
+#undef _giant_lock
 #undef _task_initialize
 #undef _search_schedtsk
 #undef _make_runnable
@@ -226,13 +237,15 @@
 #undef _wobj_change_priority
 
 /*
+ *  task_manage.c
+ */
+#undef _migrate_self
+
+/*
  *  time_event.c
  */
-#undef _systim_offset
-#undef _current_time
-#undef _next_time
-#undef _next_subtime
-#undef _last_index
+#undef _p_tevtcb
+#undef _p_tevtcb_table
 #undef _tmevt_initialize
 #undef _tmevt_up
 #undef _tmevt_down
@@ -242,11 +255,7 @@
 /*
  *  syslog.c
  */
-#undef _syslog_buffer
-#undef _syslog_count
-#undef _syslog_head
-#undef _syslog_tail
-#undef _syslog_lost
+#undef _syslogcb
 #undef _syslog_logmask
 #undef _syslog_lowmask
 #undef _syslog_initialize
@@ -292,9 +301,16 @@
 #undef _call_cychdr
 
 /*
+ *  spinlock.c
+ */
+#undef _spinlock_initialize
+#undef _get_spncb
+
+/*
  *  interrupt.c
  */
 #undef _interrupt_initialize
+#undef _configint_initialize
 
 /*
  *  exception.c
@@ -330,10 +346,19 @@
 #undef _cycinib_table
 #undef _cyccb_table
 #undef _tnum_inhno
+#undef _spninib_table
+#undef _spncb_table
+#undef _tmax_spnid
 #undef _inhinib_table
 #undef _tnum_excno
 #undef _excinib_table
+#undef _tnum_cfgintno
+#undef _cfgintinib_table
+#undef _tnum_prcid
+#undef _tnum_port
 #undef _tmevt_heap
 
 #endif /* LABEL_ASM */
-#endif /* _JSP_UNRENAME_H_ */
+
+
+#endif /* _JSP_RENAME_H */

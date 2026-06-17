@@ -83,6 +83,9 @@ semaphore_initialize()
 	UINT	i;
 	SEMCB	*semcb;
 
+	if (!is_master_proc()) {
+		return;
+	}
 	for (semcb = semcb_table, i = 0; i < TNUM_SEM; semcb++, i++) {
 		queue_initialize(&(semcb->wait_queue));
 		semcb->seminib = &(seminib_table[i]);
@@ -109,11 +112,11 @@ sig_sem(ID semid)
 	CHECK_SEMID(semid);
 	semcb = get_semcb(semid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (!(queue_empty(&(semcb->wait_queue)))) {
 		tcb = (TCB *) queue_delete_next(&(semcb->wait_queue));
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -124,7 +127,7 @@ sig_sem(ID semid)
 	else {
 		ercd = E_QOVR;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_SIG_SEM_LEAVE(ercd);
@@ -143,18 +146,20 @@ isig_sem(ID semid)
 {
 	SEMCB	*semcb;
 	TCB	*tcb;
+	TPCB	*tpcb;
 	ER	ercd;
-    
+
 	LOG_ISIG_SEM_ENTER(semid);
 	CHECK_INTCTX_UNL();
 	CHECK_SEMID(semid);
 	semcb = get_semcb(semid);
 
-	i_lock_cpu();
+	i_acquire_glock();
 	if (!queue_empty(&(semcb->wait_queue))) {
 		tcb = (TCB *) queue_delete_next(&(semcb->wait_queue));
+		tpcb = tcb->tpcb;
 		if (wait_complete(tcb)) {
-			reqflg = TRUE;
+			reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 		}
 		ercd = E_OK;
 	}
@@ -165,7 +170,7 @@ isig_sem(ID semid)
 	else {
 		ercd = E_QOVR;
 	}
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_ISIG_SEM_LEAVE(ercd);
@@ -184,6 +189,7 @@ wai_sem(ID semid)
 {
 	SEMCB	*semcb;
 	WINFO_WOBJ winfo;
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_WAI_SEM_ENTER(semid);
@@ -191,17 +197,18 @@ wai_sem(ID semid)
 	CHECK_SEMID(semid);
 	semcb = get_semcb(semid);
 
-	t_lock_cpu();
+	t_acquire_glock();
+	my_tpcb = get_my_tpcb();
 	if (semcb->semcnt >= 1) {
 		semcb->semcnt -= 1;
 		ercd = E_OK;
 	}
 	else {
-		wobj_make_wait((WOBJCB *) semcb, &winfo);
-		dispatch();
+		wobj_make_wait(my_tpcb, (WOBJCB *) semcb, &winfo);
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_WAI_SEM_LEAVE(ercd);
@@ -226,7 +233,7 @@ pol_sem(ID semid)
 	CHECK_SEMID(semid);
 	semcb = get_semcb(semid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (semcb->semcnt >= 1) {
 		semcb->semcnt -= 1;
 		ercd = E_OK;
@@ -234,7 +241,7 @@ pol_sem(ID semid)
 	else {
 		ercd = E_TMOUT;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_POL_SEM_LEAVE(ercd);
@@ -254,6 +261,7 @@ twai_sem(ID semid, TMO tmout)
 	SEMCB	*semcb;
 	WINFO_WOBJ winfo;
 	TMEVTB	tmevtb;
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_TWAI_SEM_ENTER(semid, tmout);
@@ -262,7 +270,8 @@ twai_sem(ID semid, TMO tmout)
 	CHECK_TMOUT(tmout);
 	semcb = get_semcb(semid);
 
-	t_lock_cpu();
+	t_acquire_glock();
+	my_tpcb = get_my_tpcb();
 	if (semcb->semcnt >= 1) {
 		semcb->semcnt -= 1;
 		ercd = E_OK;
@@ -271,11 +280,11 @@ twai_sem(ID semid, TMO tmout)
 		ercd = E_TMOUT;
 	}
 	else {
-		wobj_make_wait_tmout((WOBJCB *) semcb, &winfo, &tmevtb, tmout);
-		dispatch();
+		wobj_make_wait_tmout(my_tpcb, (WOBJCB *) semcb, &winfo, &tmevtb, tmout);
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_TWAI_SEM_LEAVE(ercd);

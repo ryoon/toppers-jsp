@@ -43,13 +43,15 @@
 
 #include "jsp_kernel.h"
 #include <hw_timer.h>		/* システム・タイマー関係 */
+#include <hw_interpro.h>	/* プロセッサ間割込み関係 */
 #include <hw_serial.h>		/* デバックシリアルコントローラ関係 */
 
 /*
  *  ベクターテーブル
  */
 __attribute__ ((section(".vector"))) 
-const FP vector_table[TMAX_INTNO + NUM_EXCNO + 1] = {
+const FP vector_table[TNUM_PRCID][NUM_VECTORS] = {
+  {
 	(FP)STACKTOP,			/* 0 */
 	(FP)(start),			/* 1 */
 	(FP)(cpu_exc_entry),	/* 2 */
@@ -118,6 +120,79 @@ const FP vector_table[TMAX_INTNO + NUM_EXCNO + 1] = {
  	(FP)(cpu_int_entry),	/* 49 */
  	(FP)(cpu_int_entry),	/* 50 */
  	(FP)(cpu_int_entry)		/* 51 */
+  },
+#if TNUM_PRCID > 1
+  {
+	(FP)STACKTOP-PSTACKSIZE, /* 0 */
+	(FP)(start),			/* 1 */
+	(FP)(cpu_exc_entry),	/* 2 */
+	(FP)(cpu_exc_entry),	/* 3 */
+	(FP)(cpu_exc_entry),	/* 4 */
+	(FP)(cpu_exc_entry),	/* 5 */
+	(FP)(cpu_exc_entry),	/* 6 */
+	(FP)(cpu_exc_entry),	/* 7 */
+	(FP)(cpu_exc_entry),	/* 8 */
+	(FP)(cpu_exc_entry),	/* 9 */
+	(FP)(cpu_exc_entry),	/* 10 */
+	(FP)(cpu_exc_entry),	/* 11 */
+	(FP)(cpu_exc_entry),	/* 12 */
+	(FP)(cpu_exc_entry),	/* 13 */
+	(FP)(pendsvc_handler),	/* 14 */
+ 	(FP)(cpu_int_entry),	/* 15 */
+ 	(FP)(cpu_int_entry),	/* 0 */
+ 	(FP)(cpu_int_entry),	/* 1 */
+ 	(FP)(cpu_int_entry),	/* 2 */
+ 	(FP)(cpu_int_entry),	/* 3 */
+ 	(FP)(cpu_int_entry),	/* 4 */
+ 	(FP)(cpu_int_entry),	/* 5 */
+ 	(FP)(cpu_int_entry),	/* 6 */
+ 	(FP)(cpu_int_entry),	/* 7 */
+ 	(FP)(cpu_int_entry),	/* 8 */
+ 	(FP)(cpu_int_entry),	/* 9 */
+ 	(FP)(cpu_int_entry),	/* 10 */
+ 	(FP)(cpu_int_entry),	/* 11 */
+ 	(FP)(cpu_int_entry),	/* 12 */
+ 	(FP)(cpu_int_entry),	/* 13 */
+ 	(FP)(cpu_int_entry),	/* 14 */
+ 	(FP)(cpu_int_entry),	/* 15 */
+ 	(FP)(cpu_int_entry),	/* 16 */
+ 	(FP)(cpu_int_entry),	/* 17 */
+ 	(FP)(cpu_int_entry),	/* 18 */
+ 	(FP)(cpu_int_entry),	/* 19 */
+ 	(FP)(cpu_int_entry),	/* 20 */
+ 	(FP)(cpu_int_entry),	/* 21 */
+ 	(FP)(cpu_int_entry),	/* 22 */
+ 	(FP)(cpu_int_entry),	/* 23 */
+ 	(FP)(cpu_int_entry),	/* 24 */
+ 	(FP)(cpu_int_entry),	/* 25 */
+ 	(FP)(cpu_int_entry),	/* 26 */
+ 	(FP)(cpu_int_entry),	/* 27 */
+ 	(FP)(cpu_int_entry),	/* 28 */
+ 	(FP)(cpu_int_entry),	/* 29 */
+ 	(FP)(cpu_int_entry),	/* 30 */
+ 	(FP)(cpu_int_entry),	/* 31 */
+ 	(FP)(cpu_int_entry),	/* 32 */
+ 	(FP)(cpu_int_entry),	/* 33 */
+ 	(FP)(cpu_int_entry),	/* 34 */
+ 	(FP)(cpu_int_entry),	/* 35 */
+ 	(FP)(cpu_int_entry),	/* 36 */
+ 	(FP)(cpu_int_entry),	/* 37 */
+ 	(FP)(cpu_int_entry),	/* 38 */
+ 	(FP)(cpu_int_entry),	/* 39 */
+ 	(FP)(cpu_int_entry),	/* 40 */
+ 	(FP)(cpu_int_entry),	/* 41 */
+ 	(FP)(cpu_int_entry),	/* 42 */
+ 	(FP)(cpu_int_entry),	/* 43 */
+ 	(FP)(cpu_int_entry),	/* 44 */
+ 	(FP)(cpu_int_entry),	/* 45 */
+ 	(FP)(cpu_int_entry),	/* 46 */
+ 	(FP)(cpu_int_entry),	/* 47 */
+ 	(FP)(cpu_int_entry),	/* 48 */
+ 	(FP)(cpu_int_entry),	/* 49 */
+ 	(FP)(cpu_int_entry),	/* 50 */
+ 	(FP)(cpu_int_entry)		/* 51 */
+  }
+#endif /* TNUM_PRCID */
 };
 
 UW SystemFrequency;
@@ -128,15 +203,31 @@ UW SystemFrequency;
 void
 sys_initialize(void)
 {
+	UINT	idx = x_prc_index();
+
 	/*
 	 *  システムクロック設定
 	 */
 	SystemFrequency = get_Clock(CLK_SYS);
 
+#if TNUM_PRCID > 1
+	if (idx == 0) {
+		/*
+		 *  コア１起動
+		 */
+		mprc_initialize(start, (UW *)(STACKTOP-PSTACKSIZE), (UW)vector_table[1]);
+	}
+#endif /* TNUM_PRCID > 1 */
+
 	/*
 	 *  バナー出力用のシリアル初期化
 	 */
 	sio_init();
+
+	/*
+	 *  プロセッサ間割込み初期化(コア1を先に初期化しなければならない)
+	 */
+	interpro_init();
 }
 
 /*

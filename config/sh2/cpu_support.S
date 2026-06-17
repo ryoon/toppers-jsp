@@ -118,8 +118,9 @@ _dispatch:
 	mov.l  r13,@-r15
 	mov.l  r14,@-r15
 	sts.l  pr,@-r15
-	mov.l  _runtsk_dis,r2   /* r0 <- runtsk                          */
-	mov.l  @r2,r0
+	mov.l  _p_pcb_table_dis,r0
+	mov.l  @r0,r2
+	mov.l  @(TPCB_runtsk, r2),r0 /* r0 <- runtsk                          */
 	/*
 	 * タスクコントロールブロックTCB中のsp,pcが先頭から60バイトの
 	 * 範囲内にあり、アラインメントが4バイト境界になっていれば、
@@ -196,9 +197,9 @@ dispatcher:
 	/*
 	 * ここには割り込み禁止で来ること
 	 */
-	mov.l  _schedtsk_dis,r1
-	mov.l  _runtsk_dis,r2
-	mov.l  @r1,r7		/* r7 <- schedtsk  */
+	mov.l  _p_pcb_table_dis,r0
+	mov.l  @r0,r2
+	mov.l  @(TPCB_schedtsk, r2),r7	/* r7 <- schedtsk  */
 	mov    #0, r0		/* (b) 　　　　　　*/
 
 	/*
@@ -212,7 +213,7 @@ dispatcher:
 	 * 　　　　　には、実行状態のタスクがない時に、runtskをNULLにして
 	 * 　　　　　おる必要がある。）
 	 */
-	mov.l  r7,@r2               /* runtsk←schedtsk　               */
+	mov.l  r7,@(TPCB_runtsk, r2) /* runtsk←schedtsk　               */
 
 	cmp/eq r7,r0                /* schedtsk があるか？ (a) 末尾参照 */
 	bt     dispatcher_1         /* 無ければジャンプ                 */
@@ -277,7 +278,9 @@ dispatcher_1:
 	mov    #0,r9
 #endif /* SUPPORT_CHG_IPM */
 
-	mov.l  _reqflg_dis,r10
+	mov.l  _p_pcb_table_dis,r2
+	mov.l  @r2,r10
+	add    #TPCB_reqflg,r10
 	mov.l  _intnest_dis,r11
 	    			
 	mov.l  _stacktop_dis,r15  /* スタックを割込みスタックに切替え */
@@ -340,10 +343,8 @@ _waiting_interrupt:
 
 
 	.align 4
-_runtsk_dis:
-	.long _runtsk
-_schedtsk_dis:
-	.long _schedtsk
+_p_pcb_table_dis:
+	.long _p_pcb_table
 _call_texrtn_dis:
 	.long _call_texrtn
 _mask_ipm_dis:
@@ -355,8 +356,6 @@ _stacktop_dis:
 
 _intnest_dis:	  		/* 割込み／CPU例外ネストカウンタ  	*/
 	.long _intnest
-_reqflg_dis:
-	.long _reqflg
 
 #ifdef SUPPORT_CHG_IPM
 _task_intmask_dis:		/* タスクコンテキストの割込みマスク   	*/
@@ -452,8 +451,10 @@ _cpu_exception_entry:
 	mov.l	r1,@r0
 	mov.l	@r15,r15	/* スタック切替え  			*/
 				/* reqflgのチェック                    	*/
-	mov.l	_reqflg_int,r4
-        mov.l	@r4,r5
+	mov.l  _p_pcb_table_int,r2
+	mov.l  @r2,r4
+	add    #TPCB_reqflg,r4
+    mov.l	@r4,r5
 	tst	r5,r5
 	bt   	1f		/*  reqflg=FALSEの場合はret_to_task_excへ */
 	/*  遅延スロットなし  */					
@@ -548,8 +549,10 @@ _interrupt_entry:
 	mov.l	r1,@r0
 	mov.l	@r15,r15	/* スタック切替え  			*/
 				/* reqflgのチェック                    	*/
-	mov.l	_reqflg_int,r4
-        mov.l	@r4,r5
+	mov.l  _p_pcb_table_int,r2
+	mov.l  @r2,r4
+	add    #TPCB_reqflg,r4
+    mov.l	@r4,r5
 	tst	r5,r5
 	bt   	ret_to_task_int	/*  reqflg=FALSEの場合 			*/
 	/*  遅延スロットなし  */					
@@ -628,12 +631,12 @@ _ret_to_int_1:
 	nop
 									
 	.align 4
+_p_pcb_table_int:
+	.long _p_pcb_table
 _stacktop_int:			/* タスク独立部のスタックの初期値  	*/
 	.long  STACKTOP
 _intnest_int:	    		/*  割込み／CPU例外ネストカウンタ  	*/
 	.long  _intnest
-_reqflg_int:
-	.long  _reqflg
 _mask_ipm_int:	    		/*  割込み禁止用マスク  		*/
 	.long  MAX_IPM << 4	/*  ipm以外のビットはゼロで良い	*/
 
@@ -726,20 +729,18 @@ ret_exc:
 	 *　（割込みBでreqflgをセットして、割込みAでreqflgに変化がない場
 	 *　　合）
 	 */
+	mov.l  _p_pcb_table_ret,r0
+	mov.l  @r0,r4
 	mov	#0x0, r0
-	mov.l  _reqflg_ret,r1
-	mov.l	r0, @r1		/* reqflg <- 0			   */ 
-	
-	mov.l  _runtsk_ret,r1   /* r7 <- runtsk                    */
-	mov.l  @r1,r7
-	mov.l  _enadsp_ret,r2   /* enadspのチェック                */
-	mov.l  @r2,r3
+	mov.l  r0, @(TPCB_reqflg, r4)	/* reqflg <- 0			   */ 
+
+	mov.l  @(TPCB_runtsk, r4),r7	/* r7 <- runtsk            */
+	mov.l  @(TPCB_enadsp, r4),r3	/* enadspのチェック        */
 	tst    r3,r3		/* ディスパッチ禁止ならret_int_1へ */
 	bt     ret_int_1
 	/*  遅延スロットなし  */
 
-	mov.l  _schedtsk_ret,r4 /* r5 <- schedtsk                  */
-	mov.l  @r4,r5
+	mov.l  @(TPCB_schedtsk, r4),r5	/* r5 <- schedtsk          */
 	cmp/eq r7,r5            /* runtsk と schedtsk を比較       */
 	bt     ret_int_1	/*  同じならret_int_1へ  	   */
 	/*  遅延スロットなし  */
@@ -863,16 +864,10 @@ ret_to_task_exc:
 	rte
 	nop			/*  遅延スロット  */
 	.align 4
-_reqflg_ret:
-	.long  _reqflg
+_p_pcb_table_ret:
+	.long _p_pcb_table
 _call_texrtn_ret:
 	.long _call_texrtn
-_runtsk_ret:
-	.long _runtsk
-_schedtsk_ret:
-	.long _schedtsk
-_enadsp_ret:
-	.long _enadsp
 ret_int_r_ret:
 	.long ret_int_r
 

@@ -10,11 +10,13 @@
 #undef cpu_exc_entry
 #undef cpu_int_entry
 #undef pendsvc_handler
+#undef spin_lock_error_handler
 #undef start
 #undef enable_exc
 #undef disable_exc
 #undef x_config_int
-#undef int_handler_table
+#undef p_int_table
+#undef p_tspcb_table
 
 #ifdef LABEL_ASM
 
@@ -24,11 +26,13 @@
 #undef _cpu_exc_entry
 #undef _cpu_int_entry
 #undef _pendsvc_handler
+#undef _spin_lock_error_handler
 #undef _start
 #undef _enable_exc
 #undef _disable_exc
 #undef _x_config_int
-#undef _int_handler_table
+#undef _p_int_table
+#undef _p_tspcb_table
 
 #endif /* LABEL_ASM */
 

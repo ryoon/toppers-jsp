@@ -79,7 +79,8 @@ _dispatch:
 	push.l	er4			/*  er4～6を保存		*/
 	push.l	er5
 	push.l	er6
-	mov.l	@_runtsk, er0		/* er0 <- runtsk		*/
+	mov.l   #_p_pcb_table, er1
+	mov.l	@(TPCB_runtsk, er1), er0	/* er0 <- runtsk		*/
 	mov.l	sp, @(TCB_sp, er0)	/* タスクスタックポインタを保存	*/
 	mov.l	#dispatch_r, er1	/* 実行再開番地			*/
 	mov.l	er1, @(TCB_pc, er0)
@@ -89,7 +90,8 @@ dispatch_r:
 	pop.l	er6			/*  er4～6を復元		*/
 	pop.l	er5
 	pop.l	er4
-	mov.l	@_runtsk, er0
+	mov.l   #_p_pcb_table, er2
+	mov.l   @(TPCB_runtsk, er2), er0
 	mov.b	@(TCB_enatex, er0), r1l	/* runtsk->enatex のチェック	*/
 	btst	#TCB_enatex_bit, r1l
 	beq	dispatch_r_1
@@ -125,8 +127,9 @@ dispatcher:
 	 * 　　　　　には、実行状態のタスクがない時に、runtskをNULLにして
 	 * 　　　　　おく必要がある。）
 	 */
-	mov.l	@_schedtsk, er0		/* er0 <- schedtsk		*/
-	mov.l	er0, @_runtsk		/* schedtskをruntskに		*/
+	mov.l   #_p_pcb_table, er1
+	mov.l   @(TPCB_schedtsk, er1), er0	/* er0 <- schedtsk		*/
+	mov.l   er0, @(TPCB_runtsk, er1)	/* schedtskをruntskに	*/
 			/*  実行すべきタスクがなければ、割込み待ちへ分岐  */
 	beq	dispatcher_1
 	mov.l	@(TCB_sp, er0), sp
@@ -178,12 +181,13 @@ dispatcher_2_enable_interrupt:
 #endif /* NO_SLEEP */
 	DISINT                          /* 割り込み禁止 */
 
-	mov.l   @_reqflg, er0           /* reqflgのチェック */
+	mov.l   #_p_pcb_table, er1
+	mov.l   @(TPCB_reqflg, er1), er0	/* reqflgのチェック */
 			/* reqflgはBOOL型 -> int型(32bits) */
 			/*  reqflg==NULLならば、もう1度割込み待ち  */
 	beq     dispatcher_2_enable_interrupt
 	sub.l	er0, er0
-	mov.l   er0, @_reqflg		/* reqflgのクリア */
+	mov.l   er0, @(TPCB_reqflg, er1)	/* reqflgのクリア */
 			/* 割込みネストカウンタをクリア	*/
 	mov.b   r0l, @_intnest
 	bra	dispatcher
@@ -221,11 +225,12 @@ _common_interrupt_process:
 	mov.b   #0, r0l                 /* 割込みネストカウンタのクリア */
 	mov.b   r0l, @_intnest
 	mov.l   @sp, sp                 /* スタック切替 */
-	mov.l   @_reqflg, er0           /* reqflgのチェック */
+	mov.l   #_p_pcb_table, er1
+	mov.l   @(TPCB_reqflg, er1), er0	/* reqflgのチェック */
 	beq     _ret_to_task_int        /* reqflgがFALSEなら */
 									/* ret_to_task_intに飛ぶ */
 	sub.l	er0, er0
-	mov.l   er0, @_reqflg           /* reqflgをクリア */
+	mov.l   er0, @(TPCB_reqflg, er1)	/* reqflgをクリア */
 	bra     ret_int                 /* 出口処理へジャンプ */
 
 	/*
@@ -290,11 +295,12 @@ _ret_to_task_int:
  */
 
 ret_int:
-	mov.l	@_enadsp, er0		/* enadspのチェック		*/
+	mov.l   #_p_pcb_table, er2
+	mov.l	@(TPCB_enadsp, er2), er0	/* enadspのチェック		*/
 	beq	ret_int_1	/* ディスパッチ禁止ならret_int_1へ	*/
 
-	mov.l	@_runtsk, er0		/* er0 <- runtsk		*/
-	mov.l	@_schedtsk, er1		/* er1 <- schedtsk		*/
+	mov.l	@(TPCB_runtsk, er2), er0	/* er0 <- runtsk		*/
+	mov.l	@(TPCB_schedtsk, er2), er1	/* er1 <- schedtsk		*/
 	cmp.l	er0, er1			/* runtsk と schedtsk を比較	*/
 	beq	ret_int_1				/* 同じならret_int_1へ		*/
 
@@ -319,7 +325,8 @@ ret_int_r:
 	 */
 ret_int_1:
 					/*  タスク例外許可状態のチェック */
-	mov.l	@_runtsk, er0
+	mov.l   #_p_pcb_table, er1
+	mov.l	@(TPCB_runtsk, er1), er0
 	mov.b	@(TCB_enatex, er0), r1l
 	btst	#TCB_enatex_bit, r1l	/*  TCB.enatex=0 -> CCR.Z=1  */
 	beq	ret_int_2	/*  タスク例外禁止状態ならジャンプ  */
@@ -375,7 +382,8 @@ _activate_r:
 
 	mov.l	#_ext_tsk, er2
 	push.l	er2
-	mov.l	@_runtsk, er2
+	mov.l   #_p_pcb_table, er1
+	mov.l	@(TPCB_runtsk, er1), er2
 	mov.l	@(TCB_tinib, er2), er2
 	mov.l	@(TINIB_task, er2), er1	/*  タスク起動番地		*/
 					/*  拡張情報（タスクへの引数）	*/

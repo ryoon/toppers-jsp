@@ -49,7 +49,8 @@
  *  ベクターテーブル
  */
 __attribute__ ((section(".vector"))) 
-const FP vector_table[TMAX_INTNO + NUM_EXCNO + 1] = {
+const FP vector_table[TNUM_PRCID][TMAX_INTNO + NUM_EXCNO + 1] = {
+  {
 	(FP)STACKTOP,			/* 0 */
 	(FP)(start),			/* 1 */
 	(FP)(cpu_exc_entry),	/* 2 */
@@ -97,6 +98,7 @@ const FP vector_table[TMAX_INTNO + NUM_EXCNO + 1] = {
  	(FP)(cpu_int_entry),	/* 28 */
  	(FP)(cpu_int_entry),	/* 29 */
  	(FP)(cpu_int_entry)		/* 30 */
+  }
 };
 
 /*

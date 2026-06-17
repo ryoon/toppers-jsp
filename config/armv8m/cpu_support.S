@@ -46,6 +46,7 @@
 #define _MACRO_ONLY
 #include "jsp_kernel.h"
 #include "offset.h"
+#include "sys_asm.inc"
 
 /*
  *  CPU例外エントリ
@@ -116,7 +117,7 @@ cpu_exc_entry_1:		/* 多重割込みの場合 */
 	 */
 cpu_exc_entry_2:
 	mrs r3, ipsr			/* ハンドラアドレスを取得 */
-	ldr r1, =int_handler_table
+	my_int_tbl r1, r2
 	ldr r2, [r1, r3, lsl #2]
 
 	/*
@@ -163,13 +164,25 @@ cpu_int_entry_1:		/* 多重割込みの場合 */
 	 */
 cpu_int_entry_2:
 	mrs r3, ipsr			/* ハンドラアドレスを取得 */
-	ldr r1, =int_handler_table
+	my_int_tbl r1, r2
 	ldr r2, [r1, r3, lsl #2]
 
 	/*
 	 *  割込みハンドラの呼び出し
 	 */
 	blx r2
+
+	my_tpcb r0, r2			/* スピンロック設定の検証 */
+	ldr r2, [r0, #TPCB_locspnid]
+	cbz r2, ret_int			/* スピンロックが設定されていなければスキップ */
+	mov r0, sp				/* スタックポインタを復帰 */
+	ldr r1, [sp, #4]
+	tst r1, #EXC_RETURN_PSP	/* 割込み元がMSPなら多重割込み */
+	beq cpu_int_entry_3		/* 多重割込みならcore_int_entry_1へ */
+	mrs r0, psp
+
+cpu_int_entry_3:			/* スピンロックエラーを表示 */
+	bl spin_lock_error_handler
 
 /*
  *  割込み/例外出口
@@ -216,8 +229,8 @@ ret_int:
 	 *  された場合に，すぐにディスパッチされないという問題が生じるため
 	 *  である．
 	 */
-	ldr r0, =reqflg			/* reqflgがfalseならそのまま戻る */
-	ldr r2, [r0]
+	my_tpcb r0, r2
+	ldr r2, [r0, #TPCB_reqflg]	/* reqflgがfalseならそのまま戻る */
 	cbnz r2, ret_int_2		/* trueならret_int_2へ           */
 
 	/*
@@ -261,7 +274,7 @@ ret_int_2:
 	 *  るため，タスクスタック(PSP)は8byte境界になっている．
 	 */
 	movs r1, #0				/* reqflgをfalseに */
-	str r1, [r0]
+	str r1, [r0, #TPCB_reqflg]
 
 	/*
 	 *  CPUロック状態に移行する．
@@ -295,13 +308,11 @@ ret_int_3:
 	 *  理ルーチンの呼出しが必要な場合に，ディスパッチが必要なくても，
 	 *  reqflgをtrueにするためである．
 	 */
-	ldr r0, =runtsk			/* ディスパッチを行わない場合でも，r1にruntsk の値(TCB) */
-	ldr r1, [r0]			/* が入っている必要があるので，先に読み込む */
-	ldr r0, =enadsp
-	ldr r2, [r0]
-	cbz r2, ret_int_r_1		/* enaflgがfalseならret_int_r_1へ */
-	ldr r0, =schedtsk
-	ldr r2, [r0]
+	my_tpcb r0, r1			/* ディスパッチを行わない場合でも，r1にruntsk の値(TCB) */
+	ldr r1, [r0, #TPCB_runtsk]  /* が入っている必要があるので，先に読み込む */
+	ldr r3, [r0, #TPCB_enadsp]
+	cbz r3, ret_int_r_1		/* enaflgがfalseならret_int_r_1へ */
+	ldr r2, [r0, #TPCB_schedtsk]
 	cmp r1, r2				/* runtskとschedtskが同じなら */
 	beq ret_int_r_1			/*              ret_int_r_1へ */
 #ifdef CONTROL_FPU_REGISTERS
@@ -435,15 +446,16 @@ dispatch:
 dispatch_1:
 	push {r0}				/* 復帰時の判定用にCONTROLを保存 */  
 #endif /* CONTROL_FPU_REGISTERS */
-	ldr r0, =runtsk			/* runtskを読み込む */
-	ldr r1, [r0]
+	my_tpcb r0, r1			/* runtskを読み込む */
+	ldr r1, [r0,#TPCB_runtsk]
 	str sp, [r1,#TCB_sp]	/* タスクスタックを保存 */
 	ldr lr, =dispatch_r		/* 実行再開番地を保存 */
 	str lr, [r1,#TCB_pc]
 
 /* 現在実行中のコンテキストを捨てて、タスクディスパッチャを呼び出す時 */
 exit_and_dispatch:
-	ldr r0, =STACKTOP		/* MSPを初期化   */
+	my_tpcb r1, r0			/* MSPを初期化   */
+	ldr r0, [r1,#TPCB_stacktop]
 	msr msp, r0				/* 使用しているため初期化する  */
 	msr psp, r0				/* pspも初期化 */
 	cpsid i					/* PRIMASK をセット(割込み禁止) */
@@ -469,10 +481,9 @@ dispatcher:
 	bic r3, r3, #CONTROL_FPCA
 	msr control, r3
 #endif /* CONTROL_FPU_REGISTERS */
-	ldr r1, =schedtsk		/* schedtskをruntskに */
-	ldr r0, [r1]
-	ldr r2, =runtsk			/* schedtskをruntskにセット */
-	str r0, [r2]			/* (タスクスイッチの実行) */
+	my_tpcb r1, r0			/* schedtskをruntskに */
+	ldr r0, [r1, #TPCB_schedtsk]
+	str r0, [r1, #TPCB_runtsk]	/* (タスクスイッチの実行) */
 #ifdef	LOG_ANALYSIS
 	push {r0-r3}
 	bl iana_tsk				/* タスク実行情報の設定 */
@@ -486,9 +497,9 @@ dispatcher:
 	ldr pc, [r0,#TCB_pc]	/* 実行再開番地を復帰   */
 
 dispatcher_1:
-	ldr r2, =runtsk
+	my_tpcb r2, r4			/* my_tpcbを読み込む */
 	movs r0, #0				/* r0 <- '0' */
-	str r0, [r2]			/* runtsk = NULL */
+	str r0, [r2, #TPCB_runtsk]	/* runtsk = NULL */
 	movs  r0, #CONTROL_MSP	/* MSPを有効に  */
 	msr control, r0
 	isb						/* control の操作後に必要 */
@@ -500,12 +511,11 @@ dispatcher_2:
 	nop
 	cpsid i					/* PRIMASK をセット */
 
-	ldr r3, =reqflg
-	ldr r0, [r3]			/* reqflgがfalseならdispatcher_2へ */
+	ldr r0, [r2, #TPCB_reqflg]	/* reqflgがfalseならdispatcher_2へ */
 	cmp r0, #0
 	beq dispatcher_2
 	movs r0, #0				/* r0 <- '0' */
-	str r0, [r3]			/* reqflgをfalseに */
+	str r0, [r2, #TPCB_reqflg]	/* reqflgをfalseに */
 	/*
 	 *  CPUロック状態に戻す．iipmの復帰処理はおこなわない．
 	 */
@@ -570,6 +580,39 @@ activate_r:
 	ldr r1, [r2, #TINIB_task]	/* タスク起動番地にジャンプ */
 	bx r1
 
+#if TNUM_PRCID > 1
+
+/*
+ * 自タスクのマイグレーション
+ * 引数
+ * r0 : pcbid
+ */
+	.global dispatch_and_migrate
+	.syntax unified
+	.thumb
+	.thumb_func
+	.type dispatch_and_migrate, %function
+dispatch_and_migrate:
+	stmfd sp!,{r4-r11,lr}         /* レジスタの保存 */
+#ifdef TOPPERS_FPU_CONTEXT
+	mrs   r2, control
+	tst   r2, #CONTROL_FPCA
+	beq   dispatch_and_migrate_1	/* FPU の使用がなければ保存をスキップ */
+	vpush {s16-s31}
+
+dispatch_and_migrate_1:
+	push  {r2}                    /* 復帰時の判定用にCONTROLを保存 */  
+#endif /* TOPPERS_FPU_CONTEXT */
+    my_tpcb r2, r1                      /* runtskを読み込む */
+    ldr   r1, [r2,#TPCB_runtsk]
+	str   sp, [r1, #TCB_sp]
+	ldr   r3, =dispatch_r         /* 実行再開番地を保存 */
+	str   r3, [r1, #TCB_pc]
+	/* アイドル処理用スタックへ切り換え */
+	ldr   sp, [r2, #TPCB_stacktop]
+	b     migrate_self
+
+#endif	/* TNUM_PRCID > 1 */
 
 /*
  *  微少時間待ち

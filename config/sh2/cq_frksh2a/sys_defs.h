@@ -88,6 +88,11 @@ extern ER	ena_int(INTNO intno) throw();
 #define PCLOCK          24000000
 
 /*
+ *  最大の割込み数（仮）
+ */
+#define	TMAX_INTNO	10
+
+/*
  *  タイムティックの定義
  */
 #define	TIC_NUME	1u	/* タイムティックの周期の分子 */

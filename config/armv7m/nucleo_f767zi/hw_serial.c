@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2017-2025 by TOPPERS PROJECT Educational Working Group.
+ *  Copyright (C) 2017-2026 by TOPPERS PROJECT Educational Working Group.
  * 
  *  上記著作権者は，以下の (1)～(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_serial.c 2246 2025-12-09 11:47:42Z roi $
+ *  @(#) $Id: hw_serial.c 2246 2026-03-20 21:39:12Z roi $
  */
 
 /*
@@ -334,7 +334,7 @@ sio_opn_por(ID siopid, VP_INT exinf)
 		goto sio_opn_exit;
 
 	if(siopid == DEFAULT_PORT)
-		sil_dly_nse(1000000);
+		sil_dly_nse(10000);
 
 	/*
 	 *  USART停止

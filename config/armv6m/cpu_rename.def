@@ -4,10 +4,11 @@ ret_exc
 cpu_exc_entry
 cpu_int_entry
 cpu_systic_entry
+pendsvc_handler
+spin_lock_error_handler
 start
 enable_exc
 disable_exc
 x_config_int
-int_handler_table
-ief_systick
-iipm
+p_int_table
+p_tspcb_table

@@ -42,6 +42,7 @@
 
 #include "jsp_kernel.h"
 #include "check.h"
+#include "task.h"
 #include "time_event.h"
 
 /*
@@ -52,15 +53,19 @@
 SYSCALL ER
 set_tim(const SYSTIM *p_systim)
 {
+	TPCB	*my_tpcb;
+	TEVTCB	*tevtcb;
 	ER	ercd;
 
 	LOG_SET_TIM_ENTER(p_systim);
 	CHECK_TSKCTX_UNL();
 
-	t_lock_cpu();
-	systim_offset = *p_systim - current_time;
+	t_acquire_glock();
+	my_tpcb = get_my_tpcb();
+	tevtcb = my_tpcb->tevtcb;
+	tevtcb->systim_offset = *p_systim - tevtcb->current_time;
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_SET_TIM_LEAVE(ercd);
@@ -77,15 +82,19 @@ set_tim(const SYSTIM *p_systim)
 SYSCALL ER
 get_tim(SYSTIM *p_systim)
 {
+	TPCB	*my_tpcb;
+	TEVTCB	*tevtcb;
 	ER	ercd;
 
 	LOG_GET_TIM_ENTER(p_systim);
 	CHECK_TSKCTX_UNL();
 
-	t_lock_cpu();
-	*p_systim = systim_offset + current_time;
+	t_acquire_glock();
+	my_tpcb = get_my_tpcb();
+	tevtcb = my_tpcb->tevtcb;
+	*p_systim = tevtcb->systim_offset + tevtcb->current_time;
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_GET_TIM_LEAVE(ercd, *p_systim);
@@ -104,6 +113,7 @@ get_tim(SYSTIM *p_systim)
 SYSCALL ER
 vxget_tim(SYSUTIM *p_sysutim)
 {
+	TEVTCB	*my_tevtcb;
 	SYSUTIM	utime;
 	SYSTIM	time;
 #if TIC_DENO != 1
@@ -121,12 +131,15 @@ vxget_tim(SYSUTIM *p_sysutim)
 	if (!(locked)) {
 		t_lock_cpu();
 	}
-	time = systim_offset + next_time;
+	t_acquire_pure_glock();
+	my_tevtcb = get_my_tpcb()->tevtcb;
+	time = my_tevtcb->systim_offset + my_tevtcb->next_time;
 #if TIC_DENO != 1
 	subtime = (INT) next_subtime;
 #endif /* TIC_DENO != 1 */
 	clock = hw_timer_get_current();
 	ireq = hw_timer_fetch_interrupt();
+	x_release_pure_glock();
 	if (!(locked)) {
 		t_unlock_cpu();
 	}

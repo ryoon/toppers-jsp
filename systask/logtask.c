@@ -46,7 +46,7 @@
 /*
  *  システムログタスクの出力先のポートID
  */
-static ID	logtask_portid;
+static ID	logtask_portid[TNUM_PRCID];
 
 /*
  *  シリアルインタフェースへの1文字出力
@@ -54,7 +54,7 @@ static ID	logtask_portid;
 static void
 logtask_putc(char c)
 {
-	serial_wri_dat(logtask_portid, &c, 1);
+	serial_wri_dat(logtask_portid[x_prc_index()], &c, 1);
 }
 
 /*
@@ -63,11 +63,12 @@ logtask_putc(char c)
 void
 logtask(VP_INT exinf)
 {
-	logtask_portid = (ID) exinf;
-	serial_opn_por(logtask_portid);
+	UINT	index = x_prc_index();
+	logtask_portid[index] = (ID) exinf;
+	serial_opn_por(logtask_portid[index]);
 	vmsk_log(LOG_UPTO(LOG_NOTICE), LOG_UPTO(LOG_EMERG));
 	syslog_1(LOG_NOTICE, "System logging task is started on port %d.",
-							logtask_portid);
+							logtask_portid[index]);
 	for (;;) {
 		syslog_output(logtask_putc);
 		_syscall(dly_tsk(LOGTASK_INTERVAL));

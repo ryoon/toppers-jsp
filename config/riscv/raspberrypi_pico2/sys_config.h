@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2017-2025 by TOPPERS PROJECT Educational Working Group.
+ *  Copyright (C) 2017-2026 by TOPPERS PROJECT Educational Working Group.
  * 
  *  上記著作権者は，以下の (1)～(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h 1952 2025-12-15 15:02:24Z roi $
+ *  @(#) $Id: sys_config.h 1952 2026-01-13 21:12:44Z roi $
  */
 
 /*
@@ -251,18 +251,26 @@ extern  UW SystemFrequency;
 
 #ifndef _MACRO_ONLY
 
-extern UD compare_time;
-extern W  molecule;
+/*
+ *  タイマ用時間調整データ
+ */
+extern UD compare_time[];
+extern W  molecule[];
 
 /*
- * HARZARD3割込みベクタ
+ *  HARZARD3割込みベクタ
  */
 extern UW ivector[];
 
 /*
  *  割込みハンドラテーブル
  */
-extern const FP *p_int_table[];
+extern FP* const p_int_table[];
+
+/*
+ *  割込み有効化マップ
+ */
+extern UD	interrupt_map[];
 
 /*
  *  PLIC THRESHOLD（ハードウェアの割込み優先度マスク，内部表現）の現在値の読出し
@@ -319,7 +327,7 @@ set_ipriority(INTNO intno, UW priority)
 Inline BOOL
 disable_int(INTNO intno)
 {
-	if(intno > TMAX_INTNO){
+	if(intno > TMAX_INTNO && (interrupt_map[x_prc_index()] & (1 << intno)) == 0){
 		return FALSE;
 	}
 	hazard3_irqarray_clear(RVCSR_MEIFA, (intno / 16), (1 << (intno % 16)));
@@ -335,7 +343,7 @@ disable_int(INTNO intno)
 Inline BOOL
 enable_int(INTNO intno)
 {
-	if(intno > TMAX_INTNO){
+	if(intno > TMAX_INTNO && (interrupt_map[x_prc_index()] & (1 << intno)) == 0){
 		return FALSE;
 	}
 	hazard3_irqarray_clear(RVCSR_MEIFA, (intno / 16), (1 << (intno % 16)));
@@ -367,12 +375,118 @@ probe_int(INTNO intno)
 Inline void
 define_inh(INHNO inhno, FP int_entry)
 {
-	FP *vector_table = (FP *)p_int_table[0];
+	FP *vector_table = (FP *)p_int_table[x_prc_index()];
 
 	if(inhno > TMAX_INTNO)
 		timer_inh(int_entry);
 	else
 		vector_table[inhno] = int_entry;
+}
+
+
+/*
+ *  ロック取得解放関数（マルチコアのみ必要）
+ */
+
+/*
+ *  最大使用可能なスピンロックの数
+ */
+#define	TNUM_SPINLOCKID	30
+
+/*
+ *  カーネル部使用のスピンロック定義
+ */
+#define KERNEL_GLOCK_SPNLOCK	(TADR_SIO_SPNLOCK+(TNUM_SPINLOCKID+1)*4)
+#define KERNEL_TOOL_SPNLOCK		(TADR_SIO_SPNLOCK+TNUM_SPINLOCKID*4)
+
+/*
+ *  スピンロックの初期化
+ */
+Inline void
+x_initialize_spin(ID spnid, LOCK *p_spn_lock)
+{
+	*p_spn_lock = (LOCK)(TADR_SIO_SPNLOCK+(spnid-1)*4);
+}
+
+/*
+ *  ジャイアントロックの初期化（G_LOCKの場合）
+ */
+Inline void
+x_initialize_giant_lock(LOCK *p_giant_lock)
+{
+	*p_giant_lock = (LOCK)KERNEL_GLOCK_SPNLOCK;
+}
+
+/*
+ *  ロック取得失敗時の割込み待ち
+ *
+ *  ロック取得失敗時にスピンを繰り返すのではなく，wfeにより，
+ *  イベント待ちとすることが推奨されている．
+ *  wfeによるイベント待ちの際，割込み応答性を低下させないため，割込みを許
+ *  可した状態て，イベント待ちとするべきである．wfe命令自信は，割込みを禁
+ *  止・許可を操作しないため，別途msr命令により割込みを許可する．
+ *
+ *  その際，msr実行により割込みが許可された直後(wfeを実行する前に)に割込
+ *  みが入り，その後割込みハンドラからのリターン後にwfeになり，イベントを
+ *  逃す可能性が考えられる．
+ *
+ *  しかしながら， 割込みハンドラからのリターン(正確には例外一般からのリタ
+ *  ーン)を行うと，イベントレジスタがセットされ，wfe実行時にイベントレジス
+ *  タがセットされていると，クリアしてwfeから即座にリターンするための問題
+ *  ない．
+ */
+
+/*
+ *  1段目のロック取得（タスク・非タスクコンテキスト共用）
+ */
+Inline void
+x_acquire_lock(LOCK *p_lock)
+{
+	int		locked;
+
+	while(TRUE) {
+		locked = *((volatile int *)*p_lock);
+
+		if(locked != 0){
+			Asm("fence rw, rw" : : : "memory");
+			/* ロック取得成功 */
+			return;
+		}
+	}
+}
+
+#define t_acquire_lock(p_lock) x_acquire_lock(p_lock)
+#define i_acquire_lock(p_lock) x_acquire_lock(p_lock)
+
+/*
+ *  ロックの解放（タスク・非タスクコンテキスト共用）
+ */
+Inline void
+x_release_lock(LOCK *p_lock)
+{
+	*((volatile int *)*p_lock) = 0;
+}
+
+/*
+ *  プロセッサ間通信関数（マルチコアのみ必要）
+ */
+
+/*
+ *  ターゲットプロセッサへの割込み要求（タスク・非タスクコンテキスト共用）
+ */
+Inline void
+x_ipi_raise(ID prcid, UH event)
+{
+	*((volatile int *)TADR_SIO_FIFO_WR) = ((x_prc_index()+1) << 24) | (prcid << 16) | event;
+}
+
+/*
+ *  プロセッサ間通信イベントを取り出す
+ */
+Inline UW
+x_ipi_event(void)
+{
+	return *((volatile UW *)TADR_SIO_FIFO_RD);
 }
 
 /*

@@ -42,6 +42,7 @@
 #define _MACRO_ONLY
 #include "jsp_kernel.h"
 #include "offset.h"
+#include "cpu_asm.inc"
 #include <armv4.h>
 #include <t_config.h>
         
@@ -61,8 +62,8 @@
         .globl exit_and_dispatch
 dispatch:
         stmfd sp!, {r4 - r11,lr}   /* レジスタの保存 */
-        ldr   r0, =runtsk          /* runtskを読み込む */
-        ldr   r1, [r0]
+        my_tpcb r0, r1				/* runtskを読み込む */
+		ldr   r1, [r0, #TPCB_runtsk]
         str   sp, [r1,#TCB_sp]      /* タスクスタックを保存 */
         adr   r2, dispatch_r
         str   r2, [r1,#TCB_pc]      /* 実行再開番地を保存 */
@@ -110,10 +111,9 @@ dispatcher_1:
         /*
          *  ここではシステムモード・割込み禁止状態でなければならない．
          */
-        ldr   r0, =schedtsk   /* schedtsk を読み込む */
-        ldr   r1, [r0]
-        ldr   r2, =runtsk     /* schedtsk を runtskに */
-        str   r1, [r2]        /* schedtsk がいない場合はruntskをNULLに */
+        my_tpcb r0, r1			/* runtskを読み込む */
+		ldr   r1, [r0, #TPCB_schedtsk]
+		str   r1, [r0, #TPCB_runtsk]
         cmp   r1, #0
         beq   dispatcher_2        
 dispatcher_3:           
@@ -173,14 +173,12 @@ ret_exc:
         /*
          *   システムモードで来ること
          */
-        ldr   r2, =runtsk       /* runtsk を読み込む */
-        ldr   r1, [r2]
-        ldr   r2, =enadsp
-        ldr   r0, [r2]
+        my_tpcb r2, r0			/* runtskを読み込む */
+		ldr   r1, [r2, #TPCB_runtsk]
+		ldr   r0, [r2, #TPCB_enadsp]
         cmp   r0, #0
         beq   ret_int_1
-        ldr   r2, =schedtsk
-        ldr   r0, [r2]
+		ldr   r0, [r2, #TPCB_schedtsk]
         cmp   r0, r1            /* schedtsk と runtsk を比較 */
         beq   ret_int_1
         stmfd sp!, {r4-r11}     /* 残りのレジスタを保存 */

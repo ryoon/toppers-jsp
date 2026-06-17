@@ -42,6 +42,8 @@
 
 #define _MACRO_ONLY
 #include "jsp_kernel.h"
+#include "cpu_asm.inc"
+#include "offset.h"
 #include <lpc23xx.h>
 
 #define SCS_Val         0x00000020
@@ -271,12 +273,12 @@ IRQ_callhandler:
         ldmfd   sp!,{r0}
         mov     sp, r0
 
-        ldr     r1, =reqflg    /* Check reqflg */
-        ldr     r0, [r1]
+        my_tpcb r1, r0			/* runtskを読み込む */
+        ldr     r0, [r1, #TPCB_reqflg]	/* Check reqflg */
         cmp     r0, #0
         beq     return_to_task_irq
         mov     r0, #0
-        str     r0, [r1]       /* Clear reqflg */
+        str     r0, [r1, #TPCB_reqflg]	/* Clear reqflg */
         b       ret_int
 
 return_to_task_irq:

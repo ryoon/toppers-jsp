@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2017-2025 by TOPPERS PROJECT Educational Working Group.
+ *  Copyright (C) 2017-2026 by TOPPERS PROJECT Educational Working Group.
  * 
  *  上記著作権者は，以下の (1)～(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: hw_serial.c 2246 2025-12-09 12:20:09Z roi $
+ *  @(#) $Id: hw_serial.c 2246 2026-05-03 09:56:09Z roi $
  */
 
 /*
@@ -307,7 +307,7 @@ sio_opn_por(ID siopid, VP_INT exinf)
 	siopcb->exinf = exinf;
 	base  = siopinib->base;
 	reset = siopinib->reset;
-	sil_dly_nse(10000000);
+	sil_dly_nse(10*1000);
 
 	/*
 	 *  ハードウェアの初期化
@@ -377,9 +377,7 @@ sio_opn_por(ID siopid, VP_INT exinf)
 	sil_wrw_mem((UW *)(base+TOFF_UART_UARTIMSC), UART_UARTIMSC_RTIM);
 	mask = (sil_rew_mem((UW *)(base+TOFF_UART_UARTIFLS)) & (UART_UARTIFLS_TXIFLSEL | UART_UARTIFLS_RXIFLSEL));
 	sil_wrw_mem((UW *)(base+TOFF_UART_UARTIFLS+REG_ALIAS_XOR), mask);
-
 	siopcb->opnflg = TRUE;
-	sil_dly_nse(1000*1000);
 
 	/*
 	 *  シリアルI/O割込みのマスクを解除する．
@@ -387,7 +385,7 @@ sio_opn_por(ID siopid, VP_INT exinf)
 	if (!opnflg) {
 		x_config_int(siopinib->intno_usart, TRUE, siopinib->intpri);
 	}
-	sil_dly_nse(10000);
+	sil_dly_nse(1000);
 
 sio_opn_exit:;
 	return(siopcb);
@@ -560,8 +558,16 @@ sio_dis_cbr(SIOPCB *siopcb, UINT cbrtn)
 void
 sio_snd_chr_pol(char c)
 {
-	const SIOPINIB  *siopinib = &siopinib_table[INDEX_SIOP(DEFAULT_PORT)];
-	UW base = siopinib->base;
+	ID	my_port_id = x_prc_index() + 1;
+	const SIOPINIB  *siopinib;
+	UW	base;
+
+	if (my_port_id > TNUM_PORT) {
+		my_port_id = DEFAULT_PORT;
+	}
+
+	siopinib = &siopinib_table[INDEX_SIOP(my_port_id)];
+	base = siopinib->base;
 
 	sil_wrw_mem((UW *)(base+TOFF_UART_UARTDR), (UW)c);
 	while ((sil_rew_mem((UW *)(base+TOFF_UART_UARTFR)) & UART_UARTFR_TXFF) != 0);
@@ -579,10 +585,16 @@ sio_snd_chr_pol(char c)
 void
 sio_init(void)
 {
-	const SIOPINIB  *siopinib = &siopinib_table[INDEX_SIOP(DEFAULT_PORT)];
-	UW base, reset, clock, mask;
-	UW baud_rate_div, baud_ibrd, baud_fbrd;
+	ID	my_port_id = x_prc_index() + 1;
+	const SIOPINIB  *siopinib;
+	UW	base, reset, clock, mask;
+	UW	baud_rate_div, baud_ibrd, baud_fbrd;
 
+	if (my_port_id > TNUM_PORT) {
+		return;
+	}
+
+	siopinib = &siopinib_table[INDEX_SIOP(my_port_id)];
 	base = siopinib->base;
 	reset = siopinib->reset;
 
@@ -592,7 +604,7 @@ sio_init(void)
 	/*
 	 *  ハードウェアの初期化
 	 */
-	sil_dly_nse(10000000);
+	sil_dly_nse(10*1000);
 	pinmux_setup(siopinib->txpin, IO_BANK0_GPIO_CTRL_FUNCSEL_VALUE_UART);
 	pinmux_setup(siopinib->rxpin, IO_BANK0_GPIO_CTRL_FUNCSEL_VALUE_UART);
 
@@ -657,5 +669,5 @@ sio_init(void)
 	 */
 	mask = (sil_rew_mem((UW *)(base+TOFF_UART_UARTIFLS)) & (UART_UARTIFLS_TXIFLSEL | UART_UARTIFLS_RXIFLSEL));
 	sil_wrw_mem((UW *)(base+TOFF_UART_UARTIFLS+REG_ALIAS_XOR), mask);
-	sil_dly_nse(1000*1000);
+	sil_dly_nse(1000);
 }

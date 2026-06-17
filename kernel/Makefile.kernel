@@ -48,7 +48,7 @@ KERNEL_LCSRCS = task.c wait.c time_event.c syslog.c \
 		task_manage.c task_sync.c task_except.c \
 		semaphore.c eventflag.c dataqueue.c mailbox.c \
 		mempfix.c time_manage.c cyclic.c sys_manage.c \
-		interrupt.c exception.c
+		spinlock.c interrupt.c exception.c
 
 #
 #  上のソースファイルから生成されるオブジェクトファイルの定義
@@ -93,12 +93,15 @@ time_manage = set_tim.o get_tim.o vxget_tim.o
 
 cyclic = cycini.o cycenq.o sta_cyc.o stp_cyc.o cyccal.o
 
+spinlock = spnini.o loc_spn.o iloc_spn.o unl_spn.o iunl_spn.o
+
 sys_manage = rot_rdq.o irot_rdq.o get_tid.o iget_tid.o \
+		chg_pid.o get_pid.o iget_pid.o migrate_self.o \
 		loc_cpu.o iloc_cpu.o unl_cpu.o iunl_cpu.o \
 		dis_dsp.o ena_dsp.o sns_ctx.o sns_loc.o sns_dsp.o \
 		sns_dpn.o vsns_ini.o
 
-interrupt = inhini.o
+interrupt = inhini.o cinini.o
 
 exception = excini.o vxsns_ctx.o vxsns_loc.o \
 		vxsns_dsp.o vxsns_dpn.o vxsns_tex.o
@@ -120,6 +123,7 @@ $(mailbox) $(mailbox:.o=.s) $(mailbox:.o=.d): mailbox.c
 $(mempfix) $(mempfix:.o=.s) $(mempfix:.o=.d): mempfix.c
 $(time_manage) $(time_manage:.o=.s) $(time_manage:.o=.d): time_manage.c
 $(cyclic) $(cyclic:.o=.s) $(cyclic:.o=.d): cyclic.c
+$(spinlock) $(spinlock:.o=.s) $(spinlock:.o=.d): spinlock.c
 $(sys_manage) $(sys_manage:.o=.s) $(sys_manage:.o=.d): sys_manage.c
 $(interrupt) $(interrupt:.o=.s) $(interrupt:.o=.d): interrupt.c
 $(exception) $(exception:.o=.s) $(exception:.o=.d): exception.c

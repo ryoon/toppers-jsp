@@ -44,14 +44,9 @@
 
 #include "jsp_kernel.h"
 #include "check.h"
+#include "task.h"
 #include "time_event.h"
-
-/*
- *  タイムイベントヒープ操作マクロ
- */
-#define	PARENT(index)	((index) >> 1)		/* 親ノードを求める */
-#define	LCHILD(index)	((index) << 1)		/* 右の子ノードを求める */
-#define	TMEVT_NODE(index)	(tmevt_heap[(index) - 1])
+#include "cyclic.h"
 
 /*
  *  イベント発生時刻比較マクロ
@@ -60,39 +55,48 @@
  *  current_time を最小値（最も近い時刻），current_time - 1 が最大値
  *  （最も遠い時刻）とみなして比較する．
  */
-#define	EVTTIM_LT(t1, t2) (((t1) - current_time) < ((t2) - current_time))
-#define	EVTTIM_LE(t1, t2) (((t1) - current_time) <= ((t2) - current_time))
+#define	EVTTIM_LT(t, t1, t2) (((t1) - (t)->current_time) < ((t2) - (t)->current_time))
+#define	EVTTIM_LE(t, t1, t2) (((t1) - (t)->current_time) <= ((t2) - (t)->current_time))
+
+/*
+ *  TEVTCBの数とインデックス番号を定義
+ */
+#ifndef TOPPERS_SYSTIM_GLOBAL
+#if TNUM_PRCID > 1
+#define	TEVTCB_IDX1	1
+#if TNUM_PRCID > 2
+#define	TEVTCB_IDX2	2
+#if TNUM_PRCID > 3
+#define	TEVTCB_IDX3	3
+#endif	/* (3) */
+#endif	/* (2) */
+#endif	/* (1) */
+
+#else	/* TOPPERS_SYSTIM_GLOBAL */
+#define	TEVTCB_IDX1	0
+#define	TEVTCB_IDX2	0
+#define	TEVTCB_IDX3	0
+
+#endif	/* TOPPERS_SYSTIM_GLOBAL */
 
 #ifdef __tmeini
 
 /*
- *  システム時刻のオフセット
+ *  タイムイベントコントロールブロック
  */
-SYSTIM	systim_offset;
-
-/*
- *  現在のシステム時刻（単位: ミリ秒）
- *
- *  厳密には，前のタイムティックのシステム時刻．
- */
-SYSTIM	current_time;
-
-/*
- *  次のタイムティックのシステム時刻（単位: 1ミリ秒）
- */
-SYSTIM	next_time;
-
-/*
- *  システム時刻積算用変数（単位: 1/TIM_DENOミリ秒）
- */
-#if TIC_DENO != 1
-UINT	next_subtime;
-#endif /* TIC_DENO != 1 */
-
-/*
- *  タイムイベントヒープの最後の使用領域のインデックス
- */
-UINT	last_index;
+TEVTCB p_tevtcb[TNUM_TEVTCB];
+TEVTCB* const p_tevtcb_table[TNUM_PRCID] = {
+	&p_tevtcb[0],
+#if TNUM_PRCID > 1
+	&p_tevtcb[TEVTCB_IDX1],
+#endif
+#if TNUM_PRCID > 2
+	&p_tevtcb[TEVTCB_IDX2],
+#endif
+#if TNUM_PRCID > 3
+	&p_tevtcb[TEVTCB_IDX3]
+#endif
+};
 
 /*
  *  タイマモジュールの初期化
@@ -100,16 +104,31 @@ UINT	last_index;
 void
 tmevt_initialize(void)
 {
-	systim_offset = 0;
-	current_time = 0;
+	TPCB	*my_tpcb = get_my_tpcb();
+	TEVTCB	*my_tevtcb;
+	UINT	unum = tmax_tskid + tmax_cycid;
+	UINT	idx = get_prc_index();
+
+	my_tpcb->tevtcb = (TEVTCB*)p_tevtcb_table[idx];
+	my_tevtcb = my_tpcb->tevtcb;
+
+#ifdef TOPPERS_SYSTIM_GLOBAL
+	if (!is_master_proc()) {
+		return;
+	}
+#endif	/* TOPPERS_SYSTIM_GLOBAL */
+
+	my_tevtcb->ptmevt_heap = &tmevt_heap[unum * idx];
+	my_tevtcb->systim_offset = 0;
+	my_tevtcb->current_time = 0;
 #if TIC_DENO == 1
-	next_time = current_time + TIC_NUME;
+	my_tevtcb->next_time = my_tevtcb->current_time + TIC_NUME;
 #else /* TIC_DENO == 1 */
-	next_subtime += TIC_NUME;
-	next_time = current_time + next_subtime / TIC_DENO;
-	next_subtime %= TIC_DENO;
+	my_tevtcb->next_subtime += TIC_NUME;
+	my_tevtcb->next_time = my_tevtcb->current_time + my_tevtcb->next_subtime / TIC_DENO;
+	my_tevtcb->next_subtime %= TIC_DENO;
 #endif /* TIC_DENO == 1 */
-	last_index = 0;
+	my_tevtcb->last_index = 0;
 }
 
 #endif /* __tmeini */
@@ -124,7 +143,7 @@ tmevt_initialize(void)
 #ifdef __tmeup
 
 UINT
-tmevt_up(UINT index, EVTTIM time)
+tmevt_up(TEVTCB *tevtcb, UINT index, EVTTIM time)
 {
 	UINT	parent;
 
@@ -134,15 +153,15 @@ tmevt_up(UINT index, EVTTIM time)
 		 *  ならば，index が挿入位置なのでループを抜ける．
 		 */
 		parent = PARENT(index);
-		if (EVTTIM_LE(TMEVT_NODE(parent).time, time)) {
+		if (EVTTIM_LE(tevtcb, TMEVT_NODE(tevtcb, parent).time, time)) {
 			break;
 		}
 
 		/*
 		 *  親ノードを index の位置に移動させる．
 		 */
-		TMEVT_NODE(index) = TMEVT_NODE(parent);
-		TMEVT_NODE(index).tmevtb->index = index;
+		TMEVT_NODE(tevtcb, index) = TMEVT_NODE(tevtcb, parent);
+		TMEVT_NODE(tevtcb, index).tmevtb->index = index;
 
 		/*
 		 *  index を親ノードの位置に更新．
@@ -164,19 +183,19 @@ tmevt_up(UINT index, EVTTIM time)
 #ifdef __tmedown
 
 UINT
-tmevt_down(UINT index, EVTTIM time)
+tmevt_down(TEVTCB *tevtcb, UINT index, EVTTIM time)
 {
 	UINT	child;
 
-	while ((child = LCHILD(index)) <= last_index) {
+	while ((child = LCHILD(index)) <= tevtcb->last_index) {
 		/*
 		 *  左右の子ノードのイベント発生時刻を比較し，早い方の
 		 *  子ノードの位置を child に設定する．以下の子ノード
 		 *  は，ここで選ばれた方の子ノードのこと．
 		 */
-		if (child + 1 <= last_index
-			&& EVTTIM_LT(TMEVT_NODE(child + 1).time,
-				  TMEVT_NODE(child).time)) {
+		if (child + 1 <= tevtcb->last_index
+			&& EVTTIM_LT(tevtcb, TMEVT_NODE(tevtcb, child + 1).time,
+				  TMEVT_NODE(tevtcb, child).time)) {
 			child = child + 1;
 		}
 
@@ -184,15 +203,15 @@ tmevt_down(UINT index, EVTTIM time)
 		 *  子ノードのイベント発生時刻の方が遅い（または同じ）
 		 *  ならば，index が挿入位置なのでループを抜ける．
 		 */
-		if (EVTTIM_LE(time, TMEVT_NODE(child).time)) {
+		if (EVTTIM_LE(tevtcb, time, TMEVT_NODE(tevtcb, child).time)) {
 			break;
 		}
 
 		/*
 		 *  子ノードを index の位置に移動させる．
 		 */
-		TMEVT_NODE(index) = TMEVT_NODE(child);
-		TMEVT_NODE(index).tmevtb->index = index;
+		TMEVT_NODE(tevtcb, index) = TMEVT_NODE(tevtcb, child);
+		TMEVT_NODE(tevtcb, index).tmevtb->index = index;
 
 		/*
 		 *  index を子ノードの位置に更新．
@@ -213,20 +232,20 @@ tmevt_down(UINT index, EVTTIM time)
 #ifdef __tmeins
 
 void
-tmevtb_insert(TMEVTB *tmevtb, EVTTIM time)
+tmevtb_insert(TEVTCB *tevtcb, TMEVTB *tmevtb, EVTTIM time)
 {
 	UINT	index;
 
 	/*
 	 *  last_index をインクリメントし，そこから上に挿入位置を探す．
 	 */
-	index = tmevt_up(++last_index, time);
+	index = tmevt_up(tevtcb, ++tevtcb->last_index, time);
 
 	/*
 	 *  タイムイベントを index の位置に挿入する．
 	 */ 
-	TMEVT_NODE(index).time = time;
-	TMEVT_NODE(index).tmevtb = tmevtb;
+	TMEVT_NODE(tevtcb, index).time = time;
+	TMEVT_NODE(tevtcb, index).tmevtb = tmevtb;
 	tmevtb->index = index;
 }
 
@@ -238,16 +257,16 @@ tmevtb_insert(TMEVTB *tmevtb, EVTTIM time)
 #ifdef __tmedel
 
 void
-tmevtb_delete(TMEVTB *tmevtb)
+tmevtb_delete(TEVTCB *tevtcb, TMEVTB *tmevtb)
 {
 	UINT	index = tmevtb->index;
 	UINT	parent;
-	EVTTIM	event_time = TMEVT_NODE(last_index).time;
+	EVTTIM	event_time = TMEVT_NODE(tevtcb, tevtcb->last_index).time;
 
 	/*
 	 *  削除によりタイムイベントヒープが空になる場合は何もしない．
 	 */
-	if (--last_index == 0) {
+	if (--tevtcb->last_index == 0) {
 		return;
 	}
 
@@ -261,32 +280,32 @@ tmevtb_delete(TMEVTB *tmevtb)
 	 *  のイベント発生時刻より前の場合には，上に向かって挿入位置を
 	 *  探す．そうでない場合には，下に向かって探す．
 	 */
-	if (index > 1 && EVTTIM_LT(event_time,
-				TMEVT_NODE(parent = PARENT(index)).time)) {
+	if (index > 1 && EVTTIM_LT(tevtcb, event_time,
+				TMEVT_NODE(tevtcb, parent = PARENT(index)).time)) {
 		/*
 		 *  親ノードを index の位置に移動させる．
 		 */
-		TMEVT_NODE(index) = TMEVT_NODE(parent);
-		TMEVT_NODE(index).tmevtb->index = index;
+		TMEVT_NODE(tevtcb, index) = TMEVT_NODE(tevtcb, parent);
+		TMEVT_NODE(tevtcb, index).tmevtb->index = index;
 
 		/*
 		 *  削除したノードの親ノードから上に向かって挿入位置を
 		 *  探す．
 		 */
-		index = tmevt_up(parent, event_time);
+		index = tmevt_up(tevtcb, parent, event_time);
 	}
 	else {
 		/*
 		 *  削除したノードから下に向かって挿入位置を探す．
 		 */
-		index = tmevt_down(index, event_time);
+		index = tmevt_down(tevtcb, index, event_time);
 	}
 
 	/*
 	 *  最後のノードを index の位置に挿入する．
 	 */ 
-	TMEVT_NODE(index) = TMEVT_NODE(last_index + 1);
-	TMEVT_NODE(index).tmevtb->index = index;
+	TMEVT_NODE(tevtcb, index) = TMEVT_NODE(tevtcb, tevtcb->last_index + 1);
+	TMEVT_NODE(tevtcb, index).tmevtb->index = index;
 }
 
 #endif /* __tmedel */
@@ -295,15 +314,15 @@ tmevtb_delete(TMEVTB *tmevtb)
  *  タイムイベントヒープの先頭のノードの削除
  */
 Inline void
-tmevtb_delete_top(void)
+tmevtb_delete_top(TEVTCB *tevtcb)
 {
 	UINT	index;
-	EVTTIM	event_time = TMEVT_NODE(last_index).time;
+	EVTTIM	event_time = TMEVT_NODE(tevtcb, tevtcb->last_index).time;
 
 	/*
 	 *  削除によりタイムイベントヒープが空になる場合は何もしない．
 	 */
-	if (--last_index == 0) {
+	if (--tevtcb->last_index == 0) {
 		return;
 	}
 
@@ -314,13 +333,13 @@ tmevtb_delete_top(void)
 	 *  ので，最後のノードを挿入すべき位置へ向けて空ノードを移動さ
 	 *  せる．
 	 */
-	index = tmevt_down(1, event_time);
+	index = tmevt_down(tevtcb, 1, event_time);
 
 	/*
 	 *  最後のノードを index の位置に挿入する．
 	 */ 
-	TMEVT_NODE(index) = TMEVT_NODE(last_index + 1);
-	TMEVT_NODE(index).tmevtb->index = index;
+	TMEVT_NODE(tevtcb, index) = TMEVT_NODE(tevtcb, tevtcb->last_index + 1);
+	TMEVT_NODE(tevtcb, index).tmevtb->index = index;
 }
 
 /*
@@ -334,51 +353,54 @@ tmevtb_delete_top(void)
 SYSCALL ER
 isig_tim(void)
 {
+	TEVTCB	*tevtcb;
 	TMEVTB	*tmevtb;
 	ER	ercd;
 
 	LOG_ISIG_TIM_ENTER();
 	CHECK_INTCTX_UNL();
-	i_lock_cpu();
+	i_acquire_glock();
+
+	tevtcb = get_my_tpcb()->tevtcb;
 
 	/*
 	 *  next_time よりイベント発生時刻の早い（または同じ）タイムイ
 	 *  ベントを，タイムイベントヒープから削除し，コールバック関数
 	 *  を呼び出す．
 	 */
-	while (last_index > 0 && EVTTIM_LE(TMEVT_NODE(1).time, next_time)) {
-		tmevtb = TMEVT_NODE(1).tmevtb;
-		tmevtb_delete_top();
+	while (tevtcb->last_index > 0 && EVTTIM_LE(tevtcb, TMEVT_NODE(tevtcb, 1).time, tevtcb->next_time)) {
+		tmevtb = TMEVT_NODE(tevtcb, 1).tmevtb;
+		tmevtb_delete_top(tevtcb);
 		(*(tmevtb->callback))(tmevtb->arg);
 
 		/*
 		 *  ここで優先度の高い割込みを受け付ける．
 		 */
-		i_unlock_cpu();
-		i_lock_cpu();
+		i_release_glock();
+		i_acquire_glock();
 	}
 
 	/*
 	 *  current_time を更新する．
 	 */
-	current_time = next_time;
+	tevtcb->current_time = tevtcb->next_time;
 
 	/*
 	 *  next_time，next_subtime を更新する．
 	 */
 #if TIC_DENO == 1
-	next_time = current_time + TIC_NUME;
+	tevtcb->next_time = tevtcb->current_time + TIC_NUME;
 #else /* TIC_DENO == 1 */
-	next_subtime += TIC_NUME % TIC_DENO;
-	next_time = current_time + TIC_NUME / TIC_DENO;
-	if (next_subtime >= TIC_DENO) {
-		next_subtime -= TIC_DENO;
-		next_time += 1u;
+	tevtcb->next_subtime += TIC_NUME % TIC_DENO;
+	tevtcb->next_time = tevtcb->current_time + TIC_NUME / TIC_DENO;
+	if (tevtcb->next_subtime >= TIC_DENO) {
+		tevtcb->next_subtime -= TIC_DENO;
+		tevtcb->next_time += 1u;
 	}
 #endif /* TIC_DENO == 1 */
 
 	ercd = E_OK;
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_ISIG_TIM_LEAVE(ercd);

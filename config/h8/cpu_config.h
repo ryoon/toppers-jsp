@@ -76,6 +76,21 @@ typedef struct task_context_block {
 
 
 /*
+ *  マルチプロセッサ処理モデルの実現
+ *
+ *  コア番号は標準実装．
+ *  その他はシングルコアの場合、実装は不要．
+ */
+
+/*
+ *  コア番号を取り出す
+ */
+#define	x_prc_index()	(0)
+
+#define t_prc_index()	x_prc_index()
+#define i_prc_index()	x_prc_index()
+
+/*
  *  割込みマスク操作ライブラリ
  */
 

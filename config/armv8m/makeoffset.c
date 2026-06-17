@@ -65,6 +65,14 @@ makeoffset()
     OFFSET_DEF(TCB, texptn);
     OFFSET_DEF2(TCB, tskctxb.sp, sp);
     OFFSET_DEF2(TCB, tskctxb.pc, pc);
+
+	OFFSET_DEF(TPCB, runtsk);
+	OFFSET_DEF(TPCB, schedtsk);
+	OFFSET_DEF(TPCB, reqflg);
+	OFFSET_DEF(TPCB, enadsp);
+	OFFSET_DEF(TPCB, locspnid);
+
+	OFFSET_DEF2(TPCB, sys_tpcb.stacktop, stacktop);
 }
 
 UW	BIT_REF_4 = 0x12345678;
@@ -78,5 +86,5 @@ TCB	BIT_BB_TCB_enatex = {
 #endif /* __ARMEL__ */
                { NULL, NULL }, NULL, 0, 0,
                FALSE, FALSE, TRUE,
-               0, NULL, {NULL, NULL }
+               0, NULL, NULL, {NULL, NULL }, 0
 };

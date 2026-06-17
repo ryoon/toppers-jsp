@@ -52,11 +52,23 @@
 #define TCNT_SYSLOG_BUFFER	32	/* ログバッファのサイズ */
 #endif /* TCNT_SYSLOG_BUFFER */
 
-extern SYSLOG	syslog_buffer[];	/* ログバッファ */
-extern UINT	syslog_count;		/* ログバッファ中のログの数 */
-extern UINT	syslog_head;		/* 先頭のログの格納位置 */
-extern UINT	syslog_tail;		/* 次のログの格納位置 */
-extern UINT	syslog_lost;		/* 失われたログの数 */
+/*
+ *  システムログコントロールブロック
+ */
+typedef struct syslog_control_block{
+	SYSLOG	buffer[TCNT_SYSLOG_BUFFER];	/* ログバッファ */
+	UINT	count;		/* ログバッファ中のログの数 */
+	UINT	head;		/* 先頭のログの格納位置 */
+	UINT	tail;		/* 次のログの格納位置 */
+	UINT	lost;		/* 失われたログの数 */
+	UINT	logmask;		/* ログバッファに記録すべき重要度 */
+	UINT	lowmask;		/* 低レベル出力すべき重要度*/
+}SYSLOGCB;
+
+/*
+ *  ログバッファとそれにアクセスするためのポインタ(kernel_cfg.c)
+ */
+extern SYSLOGCB syslogcb[];
 
 /*
  *  出力すべきログ情報の重要度（ビットマップ）
@@ -65,6 +77,30 @@ extern UINT	syslog_logmask;		/* ログバッファに記録すべき重要度 */
 extern UINT	syslog_lowmask;		/* 低レベル出力すべき重要度 */
 
 #ifndef OMIT_SYSLOG
+
+/*
+ *  システムログ用スピンロック設定
+ */
+Inline void
+syslog_spn_lock(void)
+{
+#ifdef KERNEL_TOOL_SPNLOCK
+	LOCK tool_lock = (LOCK)KERNEL_TOOL_SPNLOCK;
+	x_acquire_lock(&tool_lock);
+#endif /* KERNEL_TOOL_SPNLOCK */
+}
+
+/*
+ *  システムログ用スピンロック解除
+ */
+Inline void
+syslog_spn_unlock(void)
+{
+#ifdef KERNEL_TOOL_SPNLOCK
+	LOCK tool_lock = (LOCK)KERNEL_TOOL_SPNLOCK;
+	x_release_lock(&tool_lock);
+#endif /* KERNEL_TOOL_SPNLOCK */
+}
 
 /*
  *  システムログ機能の初期化

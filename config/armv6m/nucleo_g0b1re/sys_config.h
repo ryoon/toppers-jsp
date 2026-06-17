@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2017-2025 by TOPPERS PROJECT Educational Working Group.
+ *  Copyright (C) 2017-2026 by TOPPERS PROJECT Educational Working Group.
  * 
  *  上記著作権者は，以下の (1)～(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.h 1952 2025-12-12 18:07:47Z roi $
+ *  @(#) $Id: sys_config.h 1952 2026-03-22 21:06:04Z roi $
  */
 
 /*
@@ -165,9 +165,24 @@ extern  UW SystemFrequency;
 #ifndef _MACRO_ONLY
 
 /*
+ *  マルチプロセッサ処理モデルの実現
+ *
+ *  コア番号は標準実装．
+ *  その他はシングルコアの場合、実装は不要．
+ */
+
+/*
+ *  コア番号を取り出す
+ */
+#define	x_prc_index()	(0)
+
+#define t_prc_index()	x_prc_index()
+#define i_prc_index()	x_prc_index()
+
+/*
  *  ベクターテーブル
  */
-extern const FP vector_table[];
+extern const FP vector_table[][TMAX_INTNO + 16 + 1];
 
 /*
  *  ターゲットシステム依存の初期化
@@ -194,6 +209,11 @@ extern void	sys_putc(char c) throw();
  *  起動クロックの取り出し
  */
 extern UW sysclock_init_value(void);
+
+/*
+ *  システムクロックコンフィギュレーション
+ */
+extern ER sysclock_config(int mode);
 
 /*
  *  システムクロックの変更

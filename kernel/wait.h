@@ -54,10 +54,10 @@
  *  ィールドを設定する．
  */
 Inline void
-make_wait(WINFO *winfo)
+make_wait(TPCB *tpcb, WINFO *winfo)
 {
-	make_non_runnable(runtsk);
-	runtsk->winfo = winfo;
+	make_non_runnable(tpcb->runtsk);
+	tpcb->runtsk->winfo = winfo;
 	winfo->tmevtb = NULL;
 }
 
@@ -69,7 +69,7 @@ make_wait(WINFO *winfo)
  *  ルド，WINFO の tmevtbフィールドを設定する．また，タイムイベントブ
  *  ロックを登録する．
  */
-extern void	make_wait_tmout(WINFO *winfo, TMEVTB *tmevtb, TMO tmout);
+extern void	make_wait_tmout(TPCB *tpcb, WINFO *winfo, TMEVTB *tmevtb, TMO tmout);
 
 /*
  *  待ち解除
@@ -153,9 +153,9 @@ typedef struct wait_object_waiting_information {
  *  につなぐ．また，待ち情報ブロック（WINFO）の wobjcb を設定する．
  *  wobj_make_wait_tmout は，タイムイベントブロックの登録も行う．
  */
-extern void	wobj_make_wait(WOBJCB *wobjcb, WINFO_WOBJ *winfo);
-extern void	wobj_make_wait_tmout(WOBJCB *wobjcb, WINFO_WOBJ *winfo,
-					TMEVTB *tmevtb, TMO tmout);
+extern void	wobj_make_wait(TPCB *tpcb, WOBJCB *wobjcb, WINFO_WOBJ *winfo);
+extern void	wobj_make_wait_tmout(TPCB *tpcb, WOBJCB *wobjcb,
+					 WINFO_WOBJ *winfo, TMEVTB *tmevtb, TMO tmout);
 
 /*
  *  タスク優先度変更時の処理
@@ -163,6 +163,6 @@ extern void	wobj_make_wait_tmout(WOBJCB *wobjcb, WINFO_WOBJ *winfo,
  *  同期・通信オブジェクトに対する待ち状態にあるタスクの優先度が変更さ
  *  れた場合に，待ちキューの中でのタスクの位置を修正する．
  */
-extern void	wobj_change_priority(WOBJCB *wobjcb, TCB *tcb);
+extern void	wobj_change_priority(TCB *tcb, WOBJCB *wobjcb);
 
 #endif /* _WAIT_H_ */

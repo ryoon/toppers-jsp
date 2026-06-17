@@ -48,6 +48,8 @@
 #include "queue.h"
 #include "time_event.h"
 
+typedef struct task_processor_control_block TPCB;
+
 /*
  *  タスク優先度の内部表現・外部表現変換マクロ
  */
@@ -192,71 +194,117 @@ typedef struct task_control_block {
 	unsigned int	enatex : 1;		/* タスク例外処理許可状態 */
 
 	TEXPTN	texptn;		/* 保留例外要因 */
+	TPCB	*tpcb;		/* 動作するプロセッサのTPCB */
 	WINFO	*winfo;		/* 待ち情報ブロックへのポインタ */
 	CTXB	tskctxb;	/* タスクコンテキストブロック */
+	ID		locspnid;	/* タスクで設定したスピンロック */
 } TCB;
 
 /*
- *  実行状態のタスク
- *
- *  実行状態のタスク（＝プロセッサがコンテキストを持っているタスク）の
- *  TCB を指すポインタ．実行状態のタスクがない場合は NULL にする．
- *  サービスコールの処理中で，自タスク（サービスコールを呼び出したタス
- *  ク）に関する情報を参照する場合は runtsk を使う．runtsk を書き換え
- *  るのは，ディスパッチャ（と初期化処理）のみである．
+ *		タスク用プロセッサ管理ブロック
  */
-extern TCB	*runtsk;
+struct task_processor_control_block {
 
-/*
- *  最高優先順位のタスク
- *
- *  実行できるタスクの中で最高優先順位のタスクの TCB を指すポインタ．実
- *  行できるタスクがない場合は NULL にする．
- *  ディスパッチ禁止状態など，ディスパッチが保留されている間は，runtsk
- *  と一致しているとは限らない．
- */
-extern TCB	*schedtsk;
+	/*
+	 *		タスク関連
+	 */
 
-/*
- *  ディスパッチ／タスク例外処理ルーチン起動要求フラグ
- *
- *  割込みハンドラ／CPU例外ハンドラの出口処理に，ディスパッチまたは
- *  タスク例外処理ルーチンの起動を要求することを示すフラグ．
- */
-extern BOOL	reqflg;
+	/*
+	 *  実行状態のタスク
+	 *
+	 *  実行状態のタスク（＝プロセッサがコンテキストを持っているタスク）の
+	 *  TCBを指すポインタ．実行状態のタスクがない場合はNULLにする．
+	 *
+	 *  サービスコールの処理中で，自タスク（サービスコールを呼び出したタス
+	 *  ク）に関する情報を参照する場合はruntskを使う．runtskを書き換え
+	 *  るのは，ディスパッチャ（と初期化処理）のみである．
+	 */
+	TCB		 *runtsk;
 
-/*
- *  ディスパッチ許可状態
- *
- *  ディスパッチ許可状態である（すなわち，ディスパッチ禁止状態でない）
- *  ことを示すフラグ．
- */
-extern BOOL	enadsp;
+	/*
+	 *  最高優先順位のタスク
+	 *
+	 *  実行できるタスクの中で最高優先順位のタスクのTCBを指すポインタ．実
+	 *  行できるタスクがない場合はNULLにする．
+	 *
+	 *  ディスパッチ禁止状態など，ディスパッチが保留されている間はruntsk
+	 *  と一致しているとは限らない．
+	 */
+	TCB		*schedtsk;
 
-/*
- *  レディキュー
- *
- *  レディキューは，実行できる状態のタスクを管理するためのキューである．
- *  実行状態のタスクも管理しているため，レディ（実行可能）キューという
- *  名称は正確ではないが，レディキューという名称が定着しているため，こ
- *  の名称で呼ぶことにする．
- *
- *  レディキューは，優先度ごとのタスクキューで構成されている．タスクの
- *  TCBは，該当する優先度のキューに登録される．
- */
-extern QUEUE	ready_queue[TNUM_TPRI];
+	/*
+	 *  ディスパッチ／タスク例外処理ルーチン起動要求フラグ
+	 *
+	 *  割込みハンドラ／CPU例外ハンドラの出口処理に，ディスパッチまたは
+	 *  タスク例外処理ルーチンの起動を要求することを示すフラグ．
+	 */
+	BOOL	reqflg;
 
-/*
- *  レディキューサーチのためのビットマップ
- *
- *  レディキューのサーチを効率よく行うために，優先度ごとのタスクキュー
- *  にタスクが入っているかどうかを示すビットマップを用意している．ビッ
- *  トマップを使うことで，メモリアクセスの回数を減らすことができるが，
- *  ビット操作命令が充実していないプロセッサで，優先度の段階数が少ない
- *  場合には，ビットマップ操作のオーバーヘッドのために，逆に効率が落ち
- *  る可能性もある．
- */
-extern UINT	ready_primap;
+	/*
+	 *  ディスパッチ許可状態
+	 *
+	 *  ディスパッチ許可状態である（すなわち，ディスパッチ禁止状態でない）
+	 *  ことを示すフラグ．
+	 */
+	BOOL	enadsp;
+
+	/*
+	 *  スピンロック取得しているか
+	 *
+	 *  スピンロックを取得してなければ'0'，スピンロックを取得していれば，
+	 *  取得しているスピンロックのIDを保持する．
+	 *  多重にロックは掛けられないのでIDの管理で十分．
+	 */
+	ID		locspnid;
+
+	/*
+	 *  レディキューサーチのためのビットマップ
+	 *
+	 *  レディキューのサーチを効率よく行うために，優先度ごとのタスクキュー
+	 *  にタスクが入っているかどうかを示すビットマップを用意している．ビッ
+	 *  トマップを使うことで，メモリアクセスの回数を減らすことができるが，
+	 *  ビット操作命令が充実していないプロセッサで，優先度の段階数が少ない
+	 *  場合には，ビットマップ操作のオーバーヘッドのために，逆に効率が落ち
+	 *  る可能性もある．
+	 */
+	UINT	ready_primap;
+
+	/*
+	 *  タイムイベントコントロールブロックへのポインタ
+	 */ 
+	TEVTCB   *tevtcb;
+
+#ifndef OMIT_SYSTEM_TPCB
+	/*
+	 *  ターゲット依存のプロセッサコントロールブロック
+	 */
+	STPCB	sys_tpcb;
+#endif /* OMIT_SYSTEM_TPCB */
+
+	/*
+	 *  構造体アクセス時のオフセットサイズに制限があるターゲットがある
+	 *  ため，使用頻度が低いデータ構造と，サイズが大きいデータ構造は後
+	 *  ろに配置する．
+	 */
+
+	/*
+	 *  プロセッサID
+	 */
+	ID		 prcid;
+
+	/*
+	 *  レディキュー
+	 *
+	 *  レディキューは，実行できる状態のタスクを管理するためのキューである．
+	 *  実行状態のタスクも管理しているため，レディ（実行可能）キューという
+	 *  名称は正確ではないが，レディキューという名称が定着しているため，こ
+	 *  の名称で呼ぶことにする．
+	 *
+	 *  レディキューは，優先度ごとのタスクキューで構成されている．タスクの
+	 *  TCBは，該当する優先度のキューに登録される．
+	 */
+	QUEUE	 ready_queue[TNUM_TPRI];
+};
 
 /*
  *  タスクIDの最大値（kernel_cfg.c）
@@ -279,6 +327,39 @@ extern const ID	torder_table[];
 extern TCB	tcb_table[];
 
 /*
+ *  TPCBへのアクセステーブル（kernel_cfg.c）
+ */
+extern TPCB* const p_pcb_table[];
+extern TPCB tprc_tpcb[];
+
+/*
+ *  カーネルで対応のプロセッサ数（kernel_cfg.c）
+ */
+extern const UINT tnum_prcid;
+
+/*
+ *  カーネルで使用するポート数（kernel_cfg.c）
+ */
+extern const UINT tnum_port;
+
+#if TNUM_PRCID > 1
+
+/*
+ *  ジャイアントロック
+ */
+extern LOCK giant_lock;
+
+#endif	/* TNUM_PRCID > 1 */
+
+/*
+ *  カーネル用プロセッサ間イベント定義
+ */
+#define IPI_EVENT_EXTKERNEL	0x8000	/* カーネル終了 */
+#define IPI_EVENT_DISPATCH	0x4000	/* ディスパッチ要求 */
+#define IPI_EVENT_TEXCEPT	0x2000	/* タスク例外要求 */
+
+
+/*
  *  タスクの数
  */
 #define TNUM_TSK	((UINT)(tmax_tskid - TMIN_TSKID + 1))
@@ -288,12 +369,271 @@ extern TCB	tcb_table[];
  */
 #define INDEX_TSK(tskid)	((UINT)((tskid) - TMIN_TSKID))
 #define get_tcb(tskid)		(&(tcb_table[INDEX_TSK(tskid)]))
-#define get_tcb_self(tskid)	((tskid) == TSK_SELF ? runtsk : get_tcb(tskid))
+#define get_tcb_self(tskid, my_tpcb)	((tskid) == TSK_SELF ? (my_tpcb)->runtsk : get_tcb(tskid))
 
 /*
  *  TCBからタスクIDを取り出すためのマクロ
  */
 #define	TSKID(tcb)	((ID)(((tcb) - tcb_table) + TMIN_TSKID))
+
+/*
+ *  プロセッサIDからTCBを取り出すためのマクロ
+ */
+#define INDEX_PRC(prcid)	((UINT)((prcid) - TMIN_PRCID))
+
+/*
+ *  プロセッサINDEXからプロセッサIDへの変換
+ */
+#define ID_PRC(prcindex)	((UINT)((prcindex) + TMIN_PRCID))
+
+/*
+ *  ハンドラ番号または属性からプロセッサID部を取り出す
+ */
+#define PRCID_ATRIBUTE(atr)	(((atr) >> 16) & 0xfu)
+
+/*
+ *  属性からプロセッサID部を取り出す
+ */
+#define GET_INI_PRCID(atr)	(VALID_PRCID(PRCID_ATRIBUTE((atr))) ? \
+				PRCID_ATRIBUTE((atr)) : MASTER_PRCID)
+
+/*
+ *  カーネル内のプロセッサインデックス取得関数
+ */
+#if TNUM_PRCID > 1
+#define get_prc_index	x_prc_index
+#else	/* TNUM_PRCID > 1 */
+#define	get_prc_index()	(0)
+#endif	/* TNUM_PRCID > 1 */
+
+/*
+ *  プロセッサIDからプロセッサコントロールブロックの取得
+ */
+Inline TPCB*
+get_pure_tpcb(UINT idx)
+{
+	return (TPCB*)p_pcb_table[idx];
+}
+
+/*
+ *  自プロセッサのプロセッサコントロールブロックの取得
+ */
+Inline TPCB*
+get_my_tpcb(void)
+{
+#ifndef USE_LOCAL_MY_TPCB
+	return (TPCB*)p_pcb_table[get_prc_index()];
+#else	/* USE_LOCAL_MY_TPCB */
+	return (TPCB*)get_my_local_tpcb();
+#endif	/* USE_LOCAL_MY_TPCB */
+}
+
+/*
+ *  マスタープロセッサ判定
+ */
+Inline BOOL
+is_master_proc(void)
+{
+	return get_prc_index() == 0;
+}
+
+#ifndef OMIT_SYSTEM_TPCB
+
+/*
+ *  自プロセッサのプロセッサ依存プロセッサコントロールブロックの取得
+ */
+Inline STPCB*
+get_my_stpcb(void)
+{
+	return &((get_my_tpcb())->sys_tpcb);
+}
+
+#endif /* OMIT_SYSTEM_TPCB */
+
+/*
+ *  ディスパッチ許可状態の取得
+ */
+Inline BOOL
+get_enadsp(void)
+{
+	return get_my_tpcb()->enadsp;
+}
+
+/*
+ *  ジャイアントロックの初期化
+ */
+Inline void
+x_initialize_glock()
+{
+#if TNUM_PRCID > 1
+	if (is_master_proc()) {
+		x_initialize_giant_lock(&giant_lock);
+	}
+#endif	/* TNUM_PRCID > 1 */
+}
+
+/*
+ *  ジャイアントロックの取得（タスクコンテキスト）
+ */
+Inline void
+t_acquire_pure_glock()
+{
+#if TNUM_PRCID > 1
+	t_acquire_lock(&giant_lock);
+#endif	/* TNUM_PRCID > 1 */
+}
+
+/*
+ *  ジャイアントロックの取得（非タスクコンテキスト）
+ */
+Inline void
+i_acquire_pure_glock()
+{
+#if TNUM_PRCID > 1
+	i_acquire_lock(&giant_lock);
+#endif	/* TNUM_PRCID > 1 */
+}
+
+/*
+ *  ジャイアントロックの解放（タスクコンテキスト）
+ */
+Inline void
+x_release_pure_glock()
+{
+#if TNUM_PRCID > 1
+	x_release_lock(&giant_lock);
+#endif	/* TNUM_PRCID > 1 */
+}
+
+/*
+ *  タスクロックの取得（タスクコンテキスト）
+ */
+Inline void
+t_acquire_glock()
+{
+	t_lock_cpu();
+	t_acquire_pure_glock();
+}
+
+/*
+ * タスクロックの取得（非タスクコンテキスト）
+ */
+Inline void
+i_acquire_glock()
+{
+	i_lock_cpu();
+	i_acquire_pure_glock();
+}
+
+/*
+ *		タスクロック解放関数
+ */
+
+/*
+ *  タスクロックの解放（タスクコンテキスト）
+ */ 
+Inline void
+t_release_glock()
+{
+	x_release_pure_glock();
+	t_unlock_cpu();
+}
+
+/*
+ *  タスクロックの解放（タスクコンテキスト）
+ */ 
+Inline void
+i_release_glock()
+{
+	x_release_pure_glock();
+	i_unlock_cpu();
+}
+
+/*
+ *  オブジェクトロックの取得（タスクコンテキスト）
+ */
+Inline void
+t_acquire_migrate_glock()
+{
+	TPCB *my_tpcb;
+
+	while(TRUE) {
+		t_acquire_glock();
+		/* 自タスクがマイグレートした場合を考慮してp_pcbをロック取得後に取得 */
+		my_tpcb = get_my_tpcb();
+		if (!TSTAT_RUNNABLE(my_tpcb->runtsk->tstat)) { 
+			/* RUNNABLEでない場合 */
+			t_release_glock();
+		} else {
+			break;
+		}
+	}
+}
+
+/*
+ *  マルチプロセッサ用ディスパッチ関数
+ */
+
+/*
+ *  自他のプロセッサへのreqflg設定
+ */
+Inline BOOL
+reqest_task_event(TPCB *tpcb, UH event)
+{
+#if TNUM_PRCID > 1
+	if (tpcb == get_my_tpcb()) {
+		if (event == IPI_EVENT_DISPATCH) {
+			tpcb->reqflg = TRUE;
+		}
+		return TRUE;
+	}
+	else {
+		x_ipi_raise(tpcb->prcid, event);
+		return FALSE;
+	}
+#else	/* TNUM_PRCID > 1 */
+	tpcb->reqflg = TRUE;
+	return TRUE;
+#endif	/* TNUM_PRCID > 1 */
+}
+
+/*
+ *  自他のプロセッサへのディスパッチ要求
+ */
+Inline void
+multi_core_dispatch(TPCB *tpcb)
+{
+#if TNUM_PRCID > 1
+	x_release_pure_glock();
+	if (tpcb == get_my_tpcb()) {
+		dispatch();
+	}
+	else{
+		x_ipi_raise(tpcb->prcid, IPI_EVENT_DISPATCH);
+	}
+	t_acquire_pure_glock();
+#else	/* TNUM_PRCID > 1 */
+	dispatch();
+#endif	/* TNUM_PRCID > 1 */
+}
+
+/*
+ *  カーネルの終了要求
+ */
+Inline void
+multi_kernel_exit(void)
+{
+#if TNUM_PRCID > 1
+	UINT	idx;
+
+	for(idx = 0; idx < TNUM_PRCID; idx++){
+		if (idx != get_prc_index()) {
+			x_ipi_raise(ID_PRC(idx), IPI_EVENT_EXTKERNEL);
+		}
+	}
+#endif /* TNUM_PRCID > 1 */
+}
+
 
 /*
  *  タスク管理モジュールの初期化
@@ -306,7 +646,7 @@ extern void	task_initialize(void);
  *  レディキュー中の最高優先順位のタスクをサーチし，そのTCBへのポインタ
  *  を返す．レディキューが空の場合には，この関数を呼び出してはならない．
  */
-extern TCB	*search_schedtsk(void);
+extern TCB	*search_schedtsk(TPCB *tpcb);
 
 /*
  *  実行できる状態への移行
@@ -356,7 +696,7 @@ extern BOOL	make_active(TCB *tcb);
  *  が重ならないようにできる．また，コンパイラが自動的にインライン展開
  *  するのを避けるために，ext_tsk とは別のファイルに入れている．
  */
-extern void	exit_task(void);
+extern void	exit_task(TPCB *tpcb);
 
 /*
  *  レディキュー中のタスクの優先度の変更
@@ -375,7 +715,7 @@ extern BOOL	change_priority(TCB *tcb, UINT newpri);
  *  また，必要な場合には最高優先順位のタスクを変更し，ディスパッチが保
  *  留されていなければ TRUE を返す．そうでない場合は FALSE を返す．
  */
-extern BOOL	rotate_ready_queue(UINT pri);
+extern BOOL	rotate_ready_queue(UINT pri, TPCB *tpcb);
 
 /*
  *  タスク例外処理ルーチンの呼出し
@@ -406,5 +746,12 @@ extern void	call_texrtn(void);
  *  ばよい．
  */
 extern void	calltex(void);
+
+/*
+ *  マルチコアカーネル専用関数
+ *
+ *  自プロセッサのタスクを他のプロセッサに移行するための関数
+ */
+extern void dispatch_and_migrate(ID pcbid);
 
 #endif /* _TASK_H_ */

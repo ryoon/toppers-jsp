@@ -215,6 +215,20 @@ DECLARE_API(CRE_CYC,"CRE_CYC")
     p.getToken("}");
 }
 
+DECLARE_API(CRE_SPN,"CRE_SPN")
+{
+    Token token;
+    Directory * node;
+
+    p.getToken(token);
+    node = allocate(container[OBJECTTREE], token, SPINLOCK);
+    (*node)["position"] = p.getStreamLocation();
+
+    p.getToken(",","{",NULL);
+    parseParameters(p,node,"spnatr");
+    p.getToken("}",NULL);
+}
+
 DECLARE_API(DEF_INH,"DEF_INH")
 {
     Token token;
@@ -240,6 +254,20 @@ DECLARE_API(DEF_EXC,"DEF_EXC")
 
     p.getToken(",","{",NULL);
     parseParameters(p,node,"excatr,exchdr");
+    p.getToken("}");
+}
+
+DECLARE_API(CFG_INT,"CFG_INT")
+{
+    Token token;
+    Directory * node;
+
+    p.getToken(token);
+    node = allocate(container[OBJECTTREE], token, CONFIGINT, false);
+    (*node)["position"] = p.getStreamLocation();
+
+    p.getToken(",","{",NULL);
+    parseParameters(p,node,"intatr,intpri");
     p.getToken("}");
 }
 

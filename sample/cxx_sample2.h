@@ -143,6 +143,12 @@
 #define RAISE_CPU_EXCEPTION  Asm("mcr p15, 0, r1, c2, c0, 0");
 #define STACK_SIZE           4096 
 
+#elif defined(ARMV7A)
+
+#define CPUEXC1              2		/* software exception */
+#define RAISE_CPU_EXCEPTION  Asm("svc #0");
+#define STACK_SIZE           4096 
+
 #elif defined(RISCV)
 
 #define CPUEXC1              3		/* BREAKPOINT */

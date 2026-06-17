@@ -95,6 +95,9 @@ mempfix_initialize()
 	UINT	i;
 	MPFCB	*mpfcb;
 
+	if (!is_master_proc()) {
+		return;
+	}
 	for (mpfcb = mpfcb_table, i = 0; i < TNUM_MPF; mpfcb++, i++) {
 		queue_initialize(&(mpfcb->wait_queue));
 		mpfcb->mpfinib = &(mpfinib_table[i]);
@@ -142,6 +145,7 @@ get_mpf(ID mpfid, VP *p_blk)
 {
 	MPFCB	*mpfcb;
 	WINFO_MPF winfo;
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_GET_MPF_ENTER(mpfid, p_blk);
@@ -149,19 +153,20 @@ get_mpf(ID mpfid, VP *p_blk)
 	CHECK_MPFID(mpfid);
 	mpfcb = get_mpfcb(mpfid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (mempfix_get_block(mpfcb, p_blk)) {
 		ercd = E_OK;
 	}
 	else {
-		wobj_make_wait((WOBJCB *) mpfcb, (WINFO_WOBJ *) &winfo);
-		dispatch();
+		my_tpcb = get_my_tpcb();
+		wobj_make_wait(my_tpcb, (WOBJCB *) mpfcb, (WINFO_WOBJ *) &winfo);
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
 			*p_blk = winfo.blk;
 		}
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_GET_MPF_LEAVE(ercd, *p_blk);
@@ -186,14 +191,14 @@ pget_mpf(ID mpfid, VP *p_blk)
 	CHECK_MPFID(mpfid);
 	mpfcb = get_mpfcb(mpfid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (mempfix_get_block(mpfcb, p_blk)) {
 		ercd = E_OK;
 	}
 	else {
 		ercd = E_TMOUT;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_PGET_MPF_LEAVE(ercd, *p_blk);
@@ -213,6 +218,7 @@ tget_mpf(ID mpfid, VP *p_blk, TMO tmout)
 	MPFCB	*mpfcb;
 	WINFO_MPF winfo;
 	TMEVTB	tmevtb;
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_TGET_MPF_ENTER(mpfid, p_blk, tmout);
@@ -221,7 +227,7 @@ tget_mpf(ID mpfid, VP *p_blk, TMO tmout)
 	CHECK_TMOUT(tmout);
 	mpfcb = get_mpfcb(mpfid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (mempfix_get_block(mpfcb, p_blk)) {
 		ercd = E_OK;
 	}
@@ -229,15 +235,16 @@ tget_mpf(ID mpfid, VP *p_blk, TMO tmout)
 		ercd = E_TMOUT;
 	}
 	else {
-		wobj_make_wait_tmout((WOBJCB *) mpfcb, (WINFO_WOBJ *) &winfo,
+		my_tpcb = get_my_tpcb();
+		wobj_make_wait_tmout(my_tpcb, (WOBJCB *) mpfcb, (WINFO_WOBJ *) &winfo,
 						&tmevtb, tmout);
-		dispatch();
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
 			*p_blk = winfo.blk;
 		}
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_TGET_MPF_LEAVE(ercd, *p_blk);
@@ -258,7 +265,7 @@ rel_mpf(ID mpfid, VP blk)
 	TCB	*tcb;
 	FREEL	*free;
 	ER	ercd;
-    
+
 	LOG_REL_MPF_ENTER(mpfid, blk);
 	CHECK_TSKCTX_UNL();
 	CHECK_MPFID(mpfid);
@@ -268,12 +275,12 @@ rel_mpf(ID mpfid, VP blk)
 			&& ((char *)(blk) - (char *)(mpfcb->mpfinib->mpf))
 					% mpfcb->mpfinib->blksz == 0);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (!(queue_empty(&(mpfcb->wait_queue)))) {
 		tcb = (TCB *) queue_delete_next(&(mpfcb->wait_queue));
 		((WINFO_MPF *)(tcb->winfo))->blk = blk;
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -283,7 +290,7 @@ rel_mpf(ID mpfid, VP blk)
 		mpfcb->freelist = free;
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_REL_MPF_LEAVE(ercd);

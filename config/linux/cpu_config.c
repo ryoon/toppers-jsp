@@ -55,20 +55,20 @@ IMS     task_sigmask;
  *  非タスクコンテキストでの割込みマスク
  */
 IMS	int_sigmask;
-BOOL	ctx_flag;
 
 void
 dispatch()
 {
     sigset_t waitmask;
+	TPCB *tpcb = &tprc_tpcb[0];
     sigemptyset(&waitmask);
     sigaddset(&waitmask,SIGUSR1);
-    if (enadsp && (!runtsk || (runtsk != schedtsk
-                        && _setjmp(runtsk->tskctxb.env) == 0))) {
-        while (!(runtsk = schedtsk)) {
+    if (tpcb->enadsp && (!tpcb->runtsk || (tpcb->runtsk != tpcb->schedtsk
+                        && _setjmp(tpcb->runtsk->tskctxb.env) == 0))) {
+        while (!(tpcb->runtsk = tpcb->schedtsk)) {
             sigsuspend(&waitmask);
         }
-        _longjmp(runtsk->tskctxb.env, 1);
+        _longjmp(tpcb->runtsk->tskctxb.env, 1);
         
     }else{
         calltex();
@@ -80,8 +80,8 @@ dispatch()
 void
 task_polling()
 {
-	if(reqflg){
-		reqflg = 0;
+	if(tprc_tpcb[0].reqflg){
+		tprc_tpcb[0].reqflg = 0;
 		dispatch();
 	}
 }
@@ -97,7 +97,7 @@ task_polling()
 void
 exit_and_dispatch() 
 {                   
-    runtsk = 0;
+    tprc_tpcb[0].runtsk = 0;
     dispatch();
 }
 
@@ -196,6 +196,7 @@ get_ims(IMS *p_ims)
 void
 activate_r()
 {
+	TPCB *tpcb = &tprc_tpcb[0];
     /*
      *  シグナルマスクを設定して，タスクを起動する．
      */
@@ -206,7 +207,7 @@ activate_r()
     sigemptyset(&set);
     sigprocmask(SIG_SETMASK,&set,((void *)0));
 #endif /* SUPPORT_CHG_IMS */
-    (*runtsk->tinib->task)(runtsk->tinib->exinf);
+    (*tpcb->runtsk->tinib->task)(tpcb->runtsk->tinib->exinf);
     
     ext_tsk();
 }

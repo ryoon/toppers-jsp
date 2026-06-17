@@ -106,9 +106,32 @@ typedef struct task_context_block {
 } CTXB;
 
 /*
+ *  ARMV8M依存プロセッサコントロールブロック
+ */
+typedef struct system_processor_control_block {
+	/*
+	 *  CPUロックフラグ実現のための変数
+	 *
+	 *  これらの変数は，CPUロック状態の時のみ書き換えてもよいとする．
+	 *  インライン関数中で，アクセスの順序が変化しないよう，volatile を指定．
+	 */
+	volatile UW	interrupt_map; /* 割込み有効化マップ */
+
+	/*
+	 *  アイドル処理用のスタックの初期値
+	 */
+	VP* stacktop;
+} STPCB;
+
+/*
+ *  STPCBの保存テーブル
+ */
+extern STPCB *p_tspcb_table[];
+
+/*
  *  割込みハンドラテーブル
  */
-extern FP int_handler_table[NUM_INTNO + NUM_EXCNO];
+extern FP* const p_int_table[];
 
 /*
  *  例外の許可
@@ -133,6 +156,15 @@ extern void disable_exc(EXCNO excno);
  */
 
 /*
+ *  STPCBを取り出す
+ */
+Inline STPCB *
+get_sys_stpcb(void)
+{
+	return p_tspcb_table[x_prc_index()];
+}
+
+/*
  *  コンテキストの参照
  *
  *  割込みネストレベルをスタックの種類で判定する．
@@ -140,6 +172,7 @@ extern void disable_exc(EXCNO excno);
 Inline BOOL
 sense_context(void)
 {
+#ifndef OMIT_PSP
 	/*
 	 *  PSPが有効ならタスクコンテキスト，MSPが有効なら非タスクコンテキスト
 	 *  とする． 
@@ -150,6 +183,9 @@ sense_context(void)
 	else {
 		return TRUE;
 	}
+#else /* OMIT_PSP */
+	return get_sys_stpcb()->inest_lvl != 0;
+#endif /* OMIT_PSP */
 }
 
 /*
@@ -332,7 +368,8 @@ probe_int(INTNO intno)
 Inline void
 define_inh(INHNO inhno, FP int_entry)
 {
-	int_handler_table[inhno + NUM_EXCNO] = int_entry;
+	FP *p_int_handler = (FP *)p_int_table[x_prc_index()];
+	p_int_handler[inhno + NUM_EXCNO] = int_entry;
 }
 
 /*
@@ -344,12 +381,13 @@ define_inh(INHNO inhno, FP int_entry)
 Inline void
 define_exc(EXCNO excno, FP exc_entry)
 {
+	FP *p_int_handler = (FP *)p_int_table[x_prc_index()];
 	/*
 	 *  一部の例外は許可を行う必要がある
 	 */
 	enable_exc(excno);
 
-	int_handler_table[excno] = exc_entry;
+	p_int_handler[excno] = exc_entry;
 }
 
 
@@ -490,6 +528,11 @@ extern void cpu_exc_entry(void);
  *  割込み・ベクター関数
  */
 extern void cpu_int_entry(void);
+
+/*
+ *  スピンロックエラーが発生した場合のハンドラ
+ */
+extern void spin_lock_error_handler(void *p_excinf);
 
 /*
  *  PendSVCハンドラ

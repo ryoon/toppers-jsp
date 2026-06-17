@@ -47,7 +47,10 @@
 /*
  *  割込みハンドラテーブル
  */
-FP int_handler_table[NUM_INTNO + NUM_EXCNO];
+static FP int_handler_table[TNUM_PRCID][NUM_INTNO + NUM_EXCNO];
+FP* const p_int_table[TNUM_PRCID] = {
+	int_handler_table[0]
+};
 
 
 #ifndef OMIT_DEFAULT_INT_HANDLER
@@ -65,6 +68,7 @@ default_int_handler(void *p_excinf)
 	syslog(LOG_EMERG, "\nUnregistered Exception occurs.");
 	syslog(LOG_EMERG, "Excno = 0x%08X, PC = 0x%08X, XPSR = 0x%08X, iipm = 0x%08X, p_excinf = 0x%08X",
 		   excno, pc, xpsr, basepri, p_excinf);	
+
 
 	while(1);
 }
@@ -101,7 +105,7 @@ cpu_initialize(void)
 	 */
 #ifndef OMIT_DEFAULT_INT_HANDLER
 	for(i = 0 ; i < (NUM_INTNO + NUM_EXCNO) ; i++){
-		int_handler_table[i] = (FP)default_int_handler;
+		int_handler_table[0][i] = (FP)default_int_handler;
 	}
 #endif
 	/*

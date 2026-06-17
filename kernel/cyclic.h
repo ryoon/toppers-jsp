@@ -47,6 +47,19 @@
 #include "time_event.h"
 
 /*
+ *  設定の属性からプロセッサIDを取り出す
+ */
+#ifndef TOPPERS_SYSTIM_GLOBAL
+
+#define CYCLIC_PRCID	GET_INI_PRCID
+
+#else	/* TOPPERS_SYSTIM_GLOBAL */
+
+#define	CYCLIC_PRCID(n)	(is_master_proc() ? MASTER_PRCID : 16)
+
+#endif	/* TOPPERS_SYSTIM_GLOBAL */
+
+/*
  *  周期ハンドラ初期化ブロック
  */
 typedef struct cyclic_handler_initialization_block {
@@ -65,7 +78,13 @@ typedef struct cyclic_handler_control_block {
 	BOOL	cycsta;		/* 周期ハンドラの動作状態 */
 	EVTTIM	evttim;		/* 次に周期ハンドラを起動する時刻 */
 	TMEVTB	tmevtb;		/* タイムイベントブロック */
+	TPCB	*tpcb;		/* 動作するプロセッサのTPCB */
 } CYCCB;
+
+/*
+ *  周期ハンドラIDの最大値（kernel_cfg.c）
+ */
+extern const ID	tmax_cycid;
 
 /*
  *  周期ハンドラ機能の初期化

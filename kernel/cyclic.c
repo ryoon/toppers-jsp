@@ -44,12 +44,9 @@
 
 #include "jsp_kernel.h"
 #include "check.h"
+#include "task.h"
+#include "spinlock.h"
 #include "cyclic.h"
-
-/*
- *  周期ハンドラIDの最大値（kernel_cfg.c）
- */
-extern const ID	tmax_cycid;
 
 /*
  *  周期ハンドラ初期化ブロックのエリア（kernel_cfg.c）
@@ -86,10 +83,22 @@ void
 cyclic_initialize()
 {
 	UINT	i;
+	const CYCINIB	*cycinib;
 	CYCCB	*cyccb;
+	TPCB	*tpcb;
+	UINT	idx = x_prc_index();
+	ID	prcid;
 
+	tpcb = get_my_tpcb();
 	for (cyccb = cyccb_table, i = 0; i < TNUM_CYC; cyccb++, i++) {
-		cyccb->cycinib = &(cycinib_table[i]);
+		cycinib = &(cycinib_table[i]);
+		prcid = CYCLIC_PRCID(cycinib->cycatr);
+		/* 自コアに割り付けれた周期ハンドラの初期化 */
+		if (prcid != ID_PRC(idx)){
+			continue;
+		}
+		cyccb->cycinib = cycinib;
+		cyccb->tpcb = tpcb;
 		if ((cyccb->cycinib->cycatr & TA_STA) != 0) {
 			cyccb->cycsta = TRUE;
 			tmevtb_enqueue_cyc(cyccb,
@@ -111,7 +120,7 @@ cyclic_initialize()
 void
 tmevtb_enqueue_cyc(CYCCB *cyccb, EVTTIM evttim)
 {
-	tmevtb_enqueue_evttim(&(cyccb->tmevtb), evttim,
+	tmevtb_enqueue_evttim(cyccb->tpcb->tevtcb, &(cyccb->tmevtb), evttim,
 				(CBACK) call_cychdr, (VP) cyccb);
 	cyccb->evttim = evttim;
 }
@@ -134,16 +143,16 @@ sta_cyc(ID cycid)
 	CHECK_CYCID(cycid);
 	cyccb = get_cyccb(cycid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (cyccb->cycsta) {
-		tmevtb_dequeue(&(cyccb->tmevtb));
+		tmevtb_dequeue(cyccb->tpcb->tevtcb, &(cyccb->tmevtb));
 	}
 	else {
 		cyccb->cycsta = TRUE;
 	}
-	tmevtb_enqueue_cyc(cyccb, base_time + cyccb->cycinib->cyctim);
+	tmevtb_enqueue_cyc(cyccb, base_time(cyccb->tpcb->tevtcb) + cyccb->cycinib->cyctim);
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_STA_CYC_LEAVE(ercd);
@@ -168,13 +177,13 @@ stp_cyc(ID cycid)
 	CHECK_CYCID(cycid);
 	cyccb = get_cyccb(cycid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (cyccb->cycsta) {
 		cyccb->cycsta = FALSE;
-		tmevtb_dequeue(&(cyccb->tmevtb));
+		tmevtb_dequeue(cyccb->tpcb->tevtcb, &(cyccb->tmevtb));
 	}
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_STP_CYC_LEAVE(ercd);
@@ -203,11 +212,11 @@ call_cychdr(CYCCB *cyccb)
 	/*
 	 *  周期ハンドラを，CPUロック解除状態で呼び出す．
 	 */
-	i_unlock_cpu();
+	i_release_glock();
 	LOG_CYC_ENTER(cyccb);
 	(*((CYCHDR)(cyccb->cycinib->cychdr)))(cyccb->cycinib->exinf);
 	LOG_CYC_LEAVE(cyccb);
-	i_lock_cpu();
+	i_acquire_glock();
 }
 
 #endif /* __cyccal */

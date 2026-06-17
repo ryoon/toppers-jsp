@@ -43,6 +43,7 @@
 #define _MACRO_ONLY
 #include <sys_defs.h>
 #include <cpu_defs.h>
+#include "sys_asm.inc"
 #include <t_config.h>
 
 
@@ -67,13 +68,23 @@ start:
 	movs  r0, #CONTROL_MSP  /* MSPを有効に  */
 	msr   control, r0
 	isb                     /* control の操作後に必要 */
-	ldr  r1,=STACKTOP
+    my_prcidx r0
+	ldr  r1,=(STACKTOP-PSTACKSIZE)
 	msr  msp, r1
 #ifdef ARMV8M
 	ldr  r1,=HEAP_TOP
 	msr  msplim, r1
 #endif
+	cmp  r0, #0
+	bne  start_1
+	ldr  r1,=STACKTOP
+	msr  msp, r1
+#ifdef ARMV8M
+	ldr  r1,=(STACKTOP-PSTACKSIZE)
+	msr  msplim, r1
+#endif
 
+start_1:
 #ifdef FPU_ENABLE
 	/*
 	 *  FPUの有効化
@@ -92,7 +103,10 @@ start:
 	str r0, [r1] 
 #endif /* FPU_ENABLE */
 
-start_1:
+    my_prcidx r0
+	cmp  r0, #0
+	bne  start_6
+
 	/*
 	 *  BSSセクション初期化
 	 */
@@ -145,6 +159,7 @@ start_5:
 	 */
 	bl  software_init_hook
 
+start_6:
 	bl  kernel_start
 
 l_end:

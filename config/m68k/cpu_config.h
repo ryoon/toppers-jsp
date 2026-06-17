@@ -284,7 +284,8 @@ asm(".text				\n" \
 "	btst.b #4, (%sp)		\n" /* 戻り先が割込みモードなら */ \
 "	jbeq 1f				\n" /*           すぐにリターン */ \
 "	or.w #0x0700, %sr		\n" /* 割込み禁止 */ \
-"	tst.l _kernel_reqflg		\n" /* reqflg が TRUE であれば */ \
+"	move.l _kernel_p_pcb_table, %a0 \n"	/* A0 ← pcb_table */ \
+"	tst.l TPCB_reqflg(a0)		\n" /* reqflg が TRUE であれば */ \
 "	jbne _kernel_ret_int		\n" /*              ret_int へ */ \
 "1:	rte				\n")
 
@@ -319,7 +320,8 @@ asm(".text				\n" \
 "	and.w #0x1000, %d0		\n" /* 元が割込みモードなら */ \
 "	jbeq 1f				\n" /*       すぐにリターン */ \
 "	or.w #0x1700, %sr		\n" /* マスタモード・割込み禁止 */ \
-"	tst.l _kernel_reqflg		\n" /* reqflg が TRUE であれば */ \
+"	move.l _kernel_p_pcb_table, %a0 \n"	/* A0 ← pcb_table */ \
+"	tst.l TPCB_reqflg(a0)		\n" /* reqflg が TRUE であれば */ \
 "	jbne _kernel_ret_exc		\n" /*              ret_exc へ */ \
 "1:	movem.l (%sp)+, %d0-%d1/%a0-%a1	\n" /* スクラッチレジスタを復帰 */ \
 "	rte				\n")

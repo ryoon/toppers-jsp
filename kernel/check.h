@@ -97,6 +97,16 @@
 }
 
 /*
+ *  サービスコール不正使用のチェック（E_ILUSE）
+ */
+#define CHECK_ILUSE(exp) {					\
+	if (!(exp)) {						\
+		ercd = E_ILUSE;				\
+		goto exit;					\
+	}							\
+}
+
+/*
  *  その他のパラメータエラーのチェック（E_PAR）
  */
 #define CHECK_PAR(exp) {					\
@@ -129,6 +139,12 @@
 
 #define VALID_CYCID(cycid) \
 	(TMIN_CYCID <= (cycid) && (cycid) <= tmax_cycid)
+
+#define VALID_SPNID(spnid) \
+	(TMIN_SPNID <= (spnid) && (spnid) <= tmax_spnid)
+
+#define VALID_PRCID(prcid) \
+	(TMIN_PRCID <= (prcid) && (prcid) <= TNUM_PRCID)
 
 /*
  *  オブジェクトIDのチェック（E_ID）
@@ -189,6 +205,20 @@
 	}							\
 }
 
+#define CHECK_SPNID(cycid) {					\
+	if (!VALID_SPNID(cycid)) {				\
+		ercd = E_ID;					\
+		goto exit;					\
+	}							\
+}
+
+#define CHECK_PRCID_INI(prcid) {				\
+	if (!(VALID_PRCID(prcid) || (prcid) == TPRC_INI)) {	\
+		ercd = E_ID;					\
+		goto exit;					\
+	}							\
+}
+
 /*
  *  呼出しコンテキストのチェック（E_CTX）
  */
@@ -227,7 +257,7 @@
  *  ディスパッチ保留状態でないかのチェック（E_CTX）
  */
 #define CHECK_DISPATCH() {					\
-	if (sense_context() || t_sense_lock() || !(enadsp)) {	\
+	if (sense_context() || t_sense_lock() || !(get_enadsp())) {	\
 		ercd = E_CTX;					\
 		goto exit;					\
 	}							\
@@ -239,16 +269,6 @@
 #define CHECK_CTX(exp) {					\
 	if (!(exp)) {						\
 		ercd = E_CTX;					\
-		goto exit;					\
-	}							\
-}
-
-/*
- *  自タスクを指定していないかのチェック（E_ILUSE）
- */
-#define CHECK_NONSELF(tcb) {					\
-	if ((tcb) == runtsk) {					\
-		ercd = E_ILUSE;					\
 		goto exit;					\
 	}							\
 }

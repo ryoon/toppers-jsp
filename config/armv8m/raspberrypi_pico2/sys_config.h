@@ -170,9 +170,16 @@ extern  UW SystemFrequency;
 #define TADR_SIO_FIFO_ST        0xD0000050
   #define SIO_FIFO_ST_VLD           0x00000001	/* VLD (0): Value is 1 if this core's RX FIFO is not empty (i */
   #define SIO_FIFO_ST_RDY           0x00000002	/* RDY (1): Value is 1 if this core's TX FIFO is not full (i */
+  #define SIO_FIFO_ST_WOF           0x00000004	/* WOF (0): Sticky flag indicating the TX FIFO was written when full */
+  #define SIO_FIFO_ST_ROE           0x00000008	/* ROE (0): Sticky flag indicating the RX FIFO was read when empty */
 #define TADR_SIO_FIFO_WR        0xD0000054	/* (W)  Write access to this core's TX FIFO */
 #define TADR_SIO_FIFO_RD        0xD0000058	/* (R)  Read access to this core's RX FIFO */
 #define TADR_SIO_SPNLOCK        0xD0000100
+
+/*
+ *  割込みクリアペンディングレジスタ
+ */
+#define TADR_NVIC_ICER0         0xE000E280	/* IRQ 0 to 31 Clear-Pending Register */
 
 /*
  *  ターゲット定義のオブジェクト属性
@@ -214,13 +221,152 @@ extern  UW SystemFrequency;
 #define SIL_DLY_TIM1    30
 #define SIL_DLY_TIM2    27
 
+/*
+ *  ベクタの数（アラインを考慮）
+ */
+#define	NUM_VECTORS		96
 
 #ifndef _MACRO_ONLY
 
 /*
+ *  マルチプロセッサ処理モデルの実現
+ *
+ *  コア番号は標準実装．
+ *  その他はシングルコアの場合、実装は不要．
+ */
+
+/*
+ *  コア番号を取り出す
+ */
+Inline UINT
+x_prc_index(void)
+{
+	UINT index = *((volatile UW *)(TADR_SIO_CPUID));
+	return ((index == 0) ? 0 : 1);
+}
+
+#define t_prc_index()	x_prc_index()
+#define i_prc_index()	x_prc_index()
+
+
+/*
+ *  ロック取得解放関数（マルチコアのみ必要）
+ */
+
+/*
+ *  最大使用可能なスピンロックの数
+ */
+#define	TNUM_SPINLOCKID	30
+
+/*
+ *  カーネル部使用のスピンロック定義
+ */
+#define KERNEL_GLOCK_SPNLOCK	(TADR_SIO_SPNLOCK+(TNUM_SPINLOCKID+1)*4)
+#define KERNEL_TOOL_SPNLOCK		(TADR_SIO_SPNLOCK+TNUM_SPINLOCKID*4)
+
+/*
+ *  スピンロックの初期化
+ */
+Inline void
+x_initialize_spin(ID spnid, LOCK *p_spn_lock)
+{
+	*p_spn_lock = (LOCK)(TADR_SIO_SPNLOCK+(spnid-1)*4);
+}
+
+/*
+ *  ジャイアントロックの初期化（G_LOCKの場合）
+ */
+Inline void
+x_initialize_giant_lock(LOCK *p_giant_lock)
+{
+	*p_giant_lock = (LOCK)KERNEL_GLOCK_SPNLOCK;
+}
+
+/*
+ *  ロック取得失敗時の割込み待ち
+ *
+ *  ロック取得失敗時にスピンを繰り返すのではなく，wfeにより，
+ *  イベント待ちとすることが推奨されている．
+ *  wfeによるイベント待ちの際，割込み応答性を低下させないため，割込みを許
+ *  可した状態て，イベント待ちとするべきである．wfe命令自信は，割込みを禁
+ *  止・許可を操作しないため，別途msr命令により割込みを許可する．
+ *
+ *  その際，msr実行により割込みが許可された直後(wfeを実行する前に)に割込
+ *  みが入り，その後割込みハンドラからのリターン後にwfeになり，イベントを
+ *  逃す可能性が考えられる．
+ *
+ *  しかしながら， 割込みハンドラからのリターン(正確には例外一般からのリタ
+ *  ーン)を行うと，イベントレジスタがセットされ，wfe実行時にイベントレジス
+ *  タがセットされていると，クリアしてwfeから即座にリターンするための問題
+ *  ない．
+ */
+
+/*
+ *  1段目のロック取得（タスク・非タスクコンテキスト共用）
+ */
+Inline void
+x_acquire_lock(LOCK *p_lock)
+{
+	int		locked;
+
+	while(TRUE) {
+		locked = *((volatile int *)*p_lock);
+
+		if(locked != 0){
+			Asm("dmb":::"memory");
+			/* ロック取得成功 */
+			return;
+		}
+	}
+}
+
+#define t_acquire_lock(p_lock) x_acquire_lock(p_lock)
+#define i_acquire_lock(p_lock) x_acquire_lock(p_lock)
+
+/*
+ *  ロックの解放（タスク・非タスクコンテキスト共用）
+ */
+Inline void
+x_release_lock(LOCK *p_lock)
+{
+	*((volatile int *)*p_lock) = 0;
+}
+
+/*
+ *  プロセッサ間通信関数（マルチコアのみ必要）
+ */
+
+/*
+ *  割込み要求のクリア
+ */
+Inline void
+x_ipi_clear_int(INTNO intno)
+{
+	*((volatile int *)TADR_NVIC_ICER0 + (intno >> 5)) = (1 << (intno & 0x1f));
+}
+
+/*
+ *  ターゲットプロセッサへの割込み要求（タスク・非タスクコンテキスト共用）
+ */
+Inline void
+x_ipi_raise(ID prcid, UH event)
+{
+	*((volatile int *)TADR_SIO_FIFO_WR) = ((x_prc_index()+1) << 24) | (prcid << 16) | event;
+}
+
+/*
+ *  プロセッサ間通信イベントを取り出す
+ */
+Inline UW
+x_ipi_event(void)
+{
+	return *((volatile UW *)TADR_SIO_FIFO_RD);
+}
+
+/*
  *  ベクターテーブル
  */
-extern const FP vector_table[];
+extern const FP vector_table[][NUM_VECTORS];
 
 /*
  *  ターゲットシステム依存の初期化

@@ -3,7 +3,7 @@
  * 
  *  Copyright (C) 2003-2005 by 
  *                     GJ Business Division RICOH COMPANY,LTD. JAPAN
- *  Copyright (C) 2015-2023 by TOPPERS PROJECT Educational Working Group.
+ *  Copyright (C) 2015-2026 by TOPPERS PROJECT Educational Working Group.
  * 
  *  上記著作権者は，Free Software Foundation によって公表されている 
  *  GNU General Public License の Version 2 に記述されている条件か，以
@@ -31,7 +31,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: stdio.h,v 1.8 2023/10/26 05:45:08 roi Exp $
+ *  @(#) $Id: stdio.h,v 1.9 2026/03/24 09:30:08 roi Exp $
  */
 /*
  * Copyright (c) 1990 The Regents of the University of California.
@@ -119,6 +119,17 @@ typedef struct __msFILE {
 
 #define	BUFSIZ	1024
 #define	EOF	(-1)
+
+/* fseek parameters */
+#ifndef SEEK_SET
+#define	SEEK_SET	0	/* set file offset to offset */
+#endif
+#ifndef SEEK_CUR
+#define	SEEK_CUR	1	/* set file offset to current plus offset */
+#endif
+#ifndef SEEK_END
+#define	SEEK_END	2	/* set file offset to EOF plus offset */
+#endif
 
 extern FILE _iob[];
 #define  stdin   (&_iob[0])	/* FILE input */

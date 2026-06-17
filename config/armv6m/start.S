@@ -42,6 +42,7 @@
  */
 #define _MACRO_ONLY
 #include <sys_defs.h>
+#include "sys_asm.inc"
 #include <t_config.h>
 
 
@@ -66,6 +67,11 @@ start:
 	movs  r0, #CONTROL_MSP  /* MSPを有効に  */
 	msr   control, r0
 	isb                     /* control の操作後に必要 */
+    my_prcidx r0
+	ldr  r1,=(STACKTOP-PSTACKSIZE)
+	msr  msp, r1
+	cmp  r0, #0
+	bne  start_6
 	ldr  r1,=STACKTOP
 	msr  msp, r1
 
@@ -122,6 +128,7 @@ start_5:
 	 */
 	bl  software_init_hook
 
+start_6:
 	bl  kernel_start
 
 l_end:

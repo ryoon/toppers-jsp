@@ -43,6 +43,8 @@
 #ifndef _TIME_EVENT_H_
 #define _TIME_EVENT_H_
 
+typedef struct time_event_control_block TEVTCB;
+
 /*
  *  イベント発生時刻のデータ型の定義
  *
@@ -78,37 +80,49 @@ typedef struct time_event_node {
 } TMEVTN;
 
 /*
- *  タイムイベントヒープ（kernel_cfg.c）
+ *  タイムイベントコントロールブロック
  */
-extern TMEVTN	tmevt_heap[];
+struct time_event_control_block{
+	/*
+	 *  現在のシステム時刻（単位: 1ミリ秒）
+	 *
+	 *  システム起動時に0に初期化され，以降，タイムティックが供給される度に
+	 *  単調に増加する．
+	 */
+	SYSTIM	current_time;
 
-/*
- *  システム時刻のオフセット
- */
-extern SYSTIM	systim_offset;
+	/*
+	 *  システム時刻のオフセット
+	 */
+	SYSTIM	systim_offset;
 
-/*
- *  現在のシステム時刻（単位: ミリ秒）
- *
- *  システム起動時に 0 に初期化され，以降，isig_tim が呼ばれる度に単調
- *  に増加する．set_tim によって変更されない．
- */
-extern SYSTIM	current_time;
+	/*
+	 *  次のタイムティックのシステム時刻（単位: 1ミリ秒）
+	 */
+	SYSTIM	next_time;
 
-/*
- *  次のタイムティックのシステム時刻（単位: 1ミリ秒）
- */
-extern SYSTIM	next_time;
+	/*
+	 *  システム時刻積算用変数（単位: 1/TIC_DENOミリ秒）
+	 *
+	 *  次のタイムティックのシステム時刻の下位桁を示す（上位桁はnext_time）．
+	 *  TIC_DENOが1の時は，下位桁は常に0であるため，この変数は必要ない．
+	 */
+#if TIC_DENO != 1U
+	UINT	next_subtime;
+#endif /* TIC_DENO != 1U */
 
-/*
- *  システム時刻積算用変数（単位: 1/TIM_DENOミリ秒）
- *
- *  次のタイムティックのシステム時刻の下位桁を示す（上位桁は next_time）．
- *  TIC_DENO が 1 の時は，下位桁は常に 0 であるため，この変数は必要ない．
- */
-#if TIC_DENO != 1
-extern UINT	next_subtime;
-#endif /* TIC_DENO != 1 */
+	/*
+	 *  タイムイベントヒープの最後の使用領域のインデックス
+	 *
+	 *  タイムイベントヒープに登録されているタイムイベントの数に一致する．
+	 */
+	UINT	last_index;
+
+	/*
+	 *  タイムイベントヒープへのポインタ
+	 */
+	TMEVTN  *ptmevt_heap;
+};
 
 /*
  *  相対時間のベース時刻（単位: 1ミリ秒）
@@ -117,17 +131,42 @@ extern UINT	next_subtime;
  *  時は，next_time を EVTTIM に変換したものに一致する．
  */
 #if TIC_DENO == 1
-#define	base_time	((EVTTIM) next_time)
+#define	base_time(t)	((EVTTIM) (t)->next_time)
 #else /* TIC_DENO == 1 */
-#define	base_time	((EVTTIM)(next_time + (next_subtime > 0 ? 1 : 0)))
+#define	base_time(t)	((EVTTIM)((t)->next_time + ((t)->next_subtime > 0 ? 1 : 0)))
 #endif /* TIC_DENO == 1 */
 
 /*
- *  タイムイベントヒープの最後の使用領域のインデックス
- *
- *  タイムイベントヒープに登録されているタイムイベントの数に一致する．
+ *  タイムイベントヒープ操作マクロ
  */
-extern UINT	last_index;
+#define	PARENT(index)	((index) >> 1)		/* 親ノードを求める */
+#define	LCHILD(index)	((index) << 1)		/* 右の子ノードを求める */
+#define	TMEVT_NODE(t, index)	(((t)->ptmevt_heap)[(index) - 1])
+
+/*
+ *  使用するTEVTCBの数を定義する
+ */
+#ifndef TOPPERS_SYSTIM_GLOBAL
+#define	TNUM_TEVTCB	TNUM_PRCID
+#else
+#define	TNUM_TEVTCB	1
+#endif
+
+/*
+ *  タイムイベントヒープ（kernel_cfg.c）
+ */
+extern TMEVTN	tmevt_heap[];
+
+/*
+ *  TEVTCBテーブル
+ */
+extern TEVTCB p_tevtcb[TNUM_TEVTCB];
+
+/*
+ *  TEVTCB へのアクセステーブル
+ */
+extern TEVTCB* const p_tevtcb_table[];
+
 
 /*
  *  タイムイベント管理モジュールの初期化
@@ -137,14 +176,14 @@ extern void	tmevt_initialize(void);
 /*
  *  タイムイベントの挿入位置の探索
  */
-extern UINT	tmevt_up(UINT index, EVTTIM time);
-extern UINT	tmevt_down(UINT index, EVTTIM time);
+extern UINT	tmevt_up(TEVTCB *tevtcb, UINT index, EVTTIM time);
+extern UINT	tmevt_down(TEVTCB *tevtcb, UINT index, EVTTIM time);
 
 /*
  *  タイムイベントヒープへの登録と削除
  */
-extern void	tmevtb_insert(TMEVTB *tmevtb, EVTTIM time);
-extern void	tmevtb_delete(TMEVTB *tmevtb);
+extern void	tmevtb_insert(TEVTCB *tevtcb, TMEVTB *tmevtb, EVTTIM time);
+extern void	tmevtb_delete(TEVTCB *tevtcb, TMEVTB *tmevtb);
 
 /*
  *  タイムイベントブロックの登録（相対時間指定）
@@ -153,13 +192,13 @@ extern void	tmevtb_delete(TMEVTB *tmevtb);
  *  び出されるように，タイムイベントブロック tmevtb を登録する．
  */
 Inline void
-tmevtb_enqueue(TMEVTB *tmevtb, RELTIM time, CBACK callback, VP arg)
+tmevtb_enqueue(TEVTCB *tevtcb, TMEVTB *tmevtb, RELTIM time, CBACK callback, VP arg)
 {
 	assert(time <= TMAX_RELTIM);
 
 	tmevtb->callback = callback;
 	tmevtb->arg = arg;
-	tmevtb_insert(tmevtb, base_time + time);
+	tmevtb_insert(tevtcb, tmevtb, base_time(tevtcb) + time);
 }
 
 /*
@@ -169,20 +208,20 @@ tmevtb_enqueue(TMEVTB *tmevtb, RELTIM time, CBACK callback, VP arg)
  *  び出されるように，タイムイベントブロック tmevtb を登録する．
  */
 Inline void
-tmevtb_enqueue_evttim(TMEVTB *tmevtb, EVTTIM time, CBACK callback, VP arg)
+tmevtb_enqueue_evttim(TEVTCB *tevtcb, TMEVTB *tmevtb, EVTTIM time, CBACK callback, VP arg)
 {
 	tmevtb->callback = callback;
 	tmevtb->arg = arg;
-	tmevtb_insert(tmevtb, time);
+	tmevtb_insert(tevtcb, tmevtb, time);
 }
 
 /*
  *  タイムイベントブロックの登録解除
  */
 Inline void
-tmevtb_dequeue(TMEVTB *tmevtb)
+tmevtb_dequeue(TEVTCB *tevtcb, TMEVTB *tmevtb)
 {
-	tmevtb_delete(tmevtb);
+	tmevtb_delete(tevtcb, tmevtb);
 }
 
 #endif /* _TIME_EVENT_H_ */

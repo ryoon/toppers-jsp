@@ -45,6 +45,13 @@
 #include <soc.h>
 #include <hw_serial.h>		/* デバックシリアルコントローラ関係 */
 
+/*
+ *  システム部のビルド条件判定
+ */
+#if TNUM_PRCID != 1
+#error	"Illegal number of prossores (TNUM_PRCID must be 1)";
+#endif
+
 #define TOFF_CLINT_MTIME    0xBFF8
 
 FP vector_table[TNUM_PRCID][TMAX_INTNO+1];
@@ -58,6 +65,7 @@ static void
 machine_interrupt(unsigned long mcause, void *p_excinf)
 {
 	unsigned long hart_id = x_prc_index();
+	STPCB *stpcb = get_sys_stpcb();
 	UW	int_num = sil_rew_mem((UW *)(SYSTEM_PLIC_CTRL+TOFF_PLIC_CLAIM+(hart_id * NUM_PLIC_THRESHOLD)));
 	UB	threshold = (UB)current_ithreshold();
 	void (*volatile handler)(void);
@@ -69,7 +77,7 @@ machine_interrupt(unsigned long mcause, void *p_excinf)
 		if((handler = (void (*volatile)(void))vector_table[hart_id][int_num]) != NULL){
 			priority = current_ipriority(int_num);
 			set_ithreshold((UW)priority);
-			set_csr(mie, kernel_mie);
+			set_csr(mie, stpcb->kernel_mie);
 			sil_wrw_mem((UW *)(SYSTEM_PLIC_CTRL+TOFF_PLIC_CLAIM+(hart_id * NUM_PLIC_THRESHOLD)), int_num);
 			handler();
 			clear_csr(mie, KERNEL_MIE);

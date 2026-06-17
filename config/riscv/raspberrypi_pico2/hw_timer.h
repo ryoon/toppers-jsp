@@ -115,11 +115,11 @@ hw_current_timer_value(void)
  *  ターゲット値の書き込み
  */
 Inline void
-hw_set_target_timer_value(CLOCK mtimecmp)
+hw_set_target_timer_value(UINT idx, CLOCK mtimecmp)
 {
 	sil_wrw_mem((UW *)(TADR_SIO_MTIMECMP+4), (UW)(mtimecmp >> 32));
 	sil_wrw_mem((UW *)(TADR_SIO_MTIMECMP), (UW)mtimecmp);
-	_kernel_compare_time = mtimecmp;
+	_kernel_compare_time[idx] = mtimecmp;
 }
 
 /*
@@ -128,20 +128,21 @@ hw_set_target_timer_value(CLOCK mtimecmp)
 Inline void
 hw_timer_int_clear(void)
 {
+	UINT	idx = x_prc_index();
 	UD	mtimecmp;
 	W   difference;
 
-	mtimecmp = _kernel_compare_time;
+	mtimecmp = _kernel_compare_time[idx];
 	do{
 		mtimecmp += TO_CLOCK(TIC_NUME, TIC_DENO);
-		if(_kernel_molecule >= DENOMINATOR(TIC_NUME, TIC_DENO)){
+		if(_kernel_molecule[idx] >= DENOMINATOR(TIC_NUME, TIC_DENO)){
 			mtimecmp++;
-			_kernel_molecule -= DENOMINATOR(TIC_NUME, TIC_DENO);
+			_kernel_molecule[idx] -= DENOMINATOR(TIC_NUME, TIC_DENO);
 		}
-		_kernel_molecule += REMAINDER(TIC_NUME, TIC_DENO);
+		_kernel_molecule[idx] += REMAINDER(TIC_NUME, TIC_DENO);
 		difference = mtimecmp - hw_current_timer_value();
 	}while(difference <= 0);
-	hw_set_target_timer_value(mtimecmp);
+	hw_set_target_timer_value(idx, mtimecmp);
 }
 
 /*
@@ -151,14 +152,15 @@ hw_timer_int_clear(void)
 Inline void
 hw_timer_initialize(void)
 {
+	UINT	idx = x_prc_index();
 	CLOCK	mtimecmp;
 
 	/*
 	 *  タイマ周期を設定し，タイマの動作を開始する．
 	 */
 	mtimecmp = hw_current_timer_value() + TO_CLOCK(TIC_NUME, TIC_DENO);
-	hw_set_target_timer_value(mtimecmp);
-	_kernel_molecule = REMAINDER(TIC_NUME, TIC_DENO);
+	hw_set_target_timer_value(idx, mtimecmp);
+	_kernel_molecule[idx] = REMAINDER(TIC_NUME, TIC_DENO);
 }
 
 /*
@@ -182,7 +184,7 @@ hw_timer_get_current(void)
 {
 	CLOCK	clk;
 
-	clk = hw_current_timer_value() - (_kernel_compare_time - TO_CLOCK(TIC_NUME, TIC_DENO));
+	clk = hw_current_timer_value() - (_kernel_compare_time[x_prc_index()] - TO_CLOCK(TIC_NUME, TIC_DENO));
 	return(clk);
 }
 
@@ -192,7 +194,7 @@ hw_timer_get_current(void)
 Inline BOOL
 hw_timer_fetch_interrupt(void)
 {
-	return hw_current_timer_value() >= _kernel_compare_time;
+	return hw_current_timer_value() >= _kernel_compare_time[x_prc_index()];
 }
 
 #endif /* _MACRO_ONLY */

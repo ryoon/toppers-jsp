@@ -1,4 +1,5 @@
 # startup.c
+system_start
 iniflg
 
 # banner.c
@@ -6,20 +7,18 @@ print_banner
 
 # cpu_config.c, cpu_support.S, sys_config.c, sys_support.S
 dispatch
+dispatch_and_migrate
 exit_and_dispatch
-cpu_initialize
+dispatch_and_migratecpu_initialize
 cpu_terminate
 sys_initialize
 sys_exit
 sys_putc
 
 # task.c
-runtsk
-schedtsk
-reqflg
-enadsp
-ready_queue
-ready_primap
+p_pcb_table
+tprc_tpcb
+giant_lock
 task_initialize
 search_schedtsk
 make_runnable
@@ -43,12 +42,12 @@ wobj_make_wait
 wobj_make_wait_tmout
 wobj_change_priority
 
+# task_manage.c
+migrate_self
+
 # time_event.c
-systim_offset
-current_time
-next_time
-next_subtime
-last_index
+p_tevtcb
+p_tevtcb_table
 tmevt_initialize
 tmevt_up
 tmevt_down
@@ -56,11 +55,7 @@ tmevtb_insert
 tmevtb_delete
 
 # syslog.c
-syslog_buffer
-syslog_count
-syslog_head
-syslog_tail
-syslog_lost
+syslogcb
 syslog_logmask
 syslog_lowmask
 syslog_initialize
@@ -93,8 +88,13 @@ cyclic_initialize
 tmevtb_enqueue_cyc
 call_cychdr
 
+# spinlock.c
+spinlock_initialize
+get_spncb
+
 # interrupt.c
 interrupt_initialize
+configint_initialize
 
 # exception.c
 exception_initialize
@@ -126,7 +126,14 @@ tmax_cycid
 cycinib_table
 cyccb_table
 tnum_inhno
+spninib_table
+spncb_table
+tmax_spnid
 inhinib_table
 tnum_excno
 excinib_table
+tnum_cfgintno
+cfgintinib_table
+tnum_prcid
+tnum_port
 tmevt_heap

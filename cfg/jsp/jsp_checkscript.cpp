@@ -217,6 +217,7 @@ void CheckScriptGenerator::body(Directory & container)
 		        "#include \"dataqueue.h\"\n"
 		        "#include \"mailbox.h\"\n"
 		        "#include \"mempfix.h\"\n"
+		        "#include \"spinlock.h\"\n"
 		        "#include \"cyclic.h\"\n"
 		        "#include \"../kernel/exception.h\"\n"
 		        "#include \"interrupt.h\"\n"
@@ -231,6 +232,7 @@ void CheckScriptGenerator::body(Directory & container)
         "\tDEFS(TMAX_TPRI);\n\tDEFS(TMIN_TPRI);\n\n"
         "\tDEFS(TMAX_MPRI);\n\tDEFS(TMIN_MPRI);\n\n"
 //      "\tDEFS(TMAX_MAXSEM);\n\n"
+        "\tDEFS(TNUM_PRCID);\n\tDEFS(TNUM_PRCID);\n\n"
 #ifndef JSP_FREERTOS
         "\tDEFS(TMAX_RELTIM);\n\n"
 #endif	/* JSP_FREERTOS */
@@ -243,8 +245,10 @@ void CheckScriptGenerator::body(Directory & container)
     createScriptEntry(container[OBJECTTREE "/" MAILBOX], out, "mbxatr,maxmpri");
     createScriptEntry(container[OBJECTTREE "/" FIXEDSIZEMEMORYPOOL], out, "fixed_memorypool", "mpfatr,blksz,mpf,limit");
     createScriptEntry(container[OBJECTTREE "/" CYCLICHANDLER], out, "cyclic_handler", "cycatr,exinf,cychdr,cyctim,cycphs");
+    createScriptEntry(container[OBJECTTREE "/" SPINLOCK], out, "spnatr");
     createScriptEntry(container[OBJECTTREE "/" INTERRUPTHANDLER], out, "interrupt_handler", "inhno,inhatr,inthdr", false);
     createScriptEntry(container[OBJECTTREE "/" EXCEPTIONHANDLER], out, "cpu_exception_handler", "excno,excatr,exchdr", false);
+    createScriptEntry(container[OBJECTTREE "/" CONFIGINT], out, "configint","intno,intatr,intpri", false);
 
     insertMagic();
 

@@ -95,6 +95,9 @@ dataqueue_initialize(void)
 	UINT	i;
 	DTQCB	*dtqcb;
 
+	if (!is_master_proc()) {
+		return;
+	}
 	for (dtqcb = dtqcb_table, i = 0; i < TNUM_DTQ; dtqcb++, i++) {
 		queue_initialize(&(dtqcb->swait_queue));
 		dtqcb->dtqinib = &(dtqinib_table[i]);
@@ -225,6 +228,7 @@ snd_dtq(ID dtqid, VP_INT data)
 	DTQCB	*dtqcb;
 	WINFO_DTQ winfo;
 	TCB	*tcb;
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_SND_DTQ_ENTER(dtqid, data);
@@ -232,10 +236,10 @@ snd_dtq(ID dtqid, VP_INT data)
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if ((tcb = send_data_rwait(dtqcb, data)) != NULL) {
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -243,12 +247,13 @@ snd_dtq(ID dtqid, VP_INT data)
 		ercd = E_OK;
 	}
 	else {
+		my_tpcb = get_my_tpcb();
 		winfo.data = data;
-		wobj_make_wait((WOBJCB *) dtqcb, (WINFO_WOBJ *) &winfo);
-		dispatch();
+		wobj_make_wait(my_tpcb, (WOBJCB *) dtqcb, (WINFO_WOBJ *) &winfo);
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_SND_DTQ_LEAVE(ercd);
@@ -274,10 +279,10 @@ psnd_dtq(ID dtqid, VP_INT data)
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if ((tcb = send_data_rwait(dtqcb, data)) != NULL) {
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -287,7 +292,7 @@ psnd_dtq(ID dtqid, VP_INT data)
 	else {
 		ercd = E_TMOUT;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_PSND_DTQ_LEAVE(ercd);
@@ -313,10 +318,10 @@ ipsnd_dtq(ID dtqid, VP_INT data)
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
 
-	i_lock_cpu();
+	i_acquire_glock();
 	if ((tcb = send_data_rwait(dtqcb, data)) != NULL) {
 		if (wait_complete(tcb)) {
-			reqflg = TRUE;
+			reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 		}
 		ercd = E_OK;
 	}
@@ -326,7 +331,7 @@ ipsnd_dtq(ID dtqid, VP_INT data)
 	else {
 		ercd = E_TMOUT;
 	}
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_IPSND_DTQ_LEAVE(ercd);
@@ -347,6 +352,7 @@ tsnd_dtq(ID dtqid, VP_INT data, TMO tmout)
 	WINFO_DTQ winfo;
 	TMEVTB	tmevtb;
 	TCB	*tcb;
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_TSND_DTQ_ENTER(dtqid, data, tmout);
@@ -355,12 +361,11 @@ tsnd_dtq(ID dtqid, VP_INT data, TMO tmout)
 	CHECK_TMOUT(tmout);
 	dtqcb = get_dtqcb(dtqid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if ((tcb = send_data_rwait(dtqcb, data)) != NULL) {
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
-		ercd = E_OK;
 	}
 	else if (enqueue_data(dtqcb, data)) {
 		ercd = E_OK;
@@ -369,13 +374,14 @@ tsnd_dtq(ID dtqid, VP_INT data, TMO tmout)
 		ercd = E_TMOUT;
 	}
 	else {
+		my_tpcb = get_my_tpcb();
 		winfo.data = data;
-		wobj_make_wait_tmout((WOBJCB *) dtqcb, (WINFO_WOBJ *) &winfo,
+		wobj_make_wait_tmout(my_tpcb, (WOBJCB *) dtqcb, (WINFO_WOBJ *) &winfo,
 						&tmevtb, tmout);
-		dispatch();
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_TSND_DTQ_LEAVE(ercd);
@@ -402,17 +408,17 @@ fsnd_dtq(ID dtqid, VP_INT data)
 	dtqcb = get_dtqcb(dtqid);
 	CHECK_ILUSE(dtqcb->dtqinib->dtqcnt > 0);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if ((tcb = send_data_rwait(dtqcb, data)) != NULL) {
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 	}
 	else {
 		force_enqueue_data(dtqcb, data);
 	}
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_FSND_DTQ_LEAVE(ercd);
@@ -439,17 +445,17 @@ ifsnd_dtq(ID dtqid, VP_INT data)
 	dtqcb = get_dtqcb(dtqid);
 	CHECK_ILUSE(dtqcb->dtqinib->dtqcnt > 0);
 
-	i_lock_cpu();
+	i_acquire_glock();
 	if ((tcb = send_data_rwait(dtqcb, data)) != NULL) {
 		if (wait_complete(tcb)) {
-			reqflg = TRUE;
+			reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 		}
 	}
 	else {
 		force_enqueue_data(dtqcb, data);
 	}
 	ercd = E_OK;
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_IFSND_DTQ_LEAVE(ercd);
@@ -468,7 +474,8 @@ rcv_dtq(ID dtqid, VP_INT *p_data)
 {
 	DTQCB	*dtqcb;
 	WINFO_DTQ winfo;
-	TCB	*tcb;
+	TCB	*tcb, *runtsk;
+	TPCB	*my_tpcb;
 	VP_INT	data;
 	ER	ercd;
 
@@ -477,36 +484,38 @@ rcv_dtq(ID dtqid, VP_INT *p_data)
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (dequeue_data(dtqcb, p_data)) {
 		if ((tcb = receive_data_swait(dtqcb, &data)) != NULL) {
 			enqueue_data(dtqcb, data);
 			if (wait_complete(tcb)) {
-				dispatch();
+				multi_core_dispatch(tcb->tpcb);
 			}
 		}
 		ercd = E_OK;
 	}
 	else if ((tcb = receive_data_swait(dtqcb, p_data)) != NULL) {
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
 	else {
+		my_tpcb = get_my_tpcb();
+		runtsk = my_tpcb->runtsk;
 		runtsk->tstat = (TS_WAITING | TS_WAIT_WOBJ);
-		make_wait(&(winfo.winfo));
+		make_wait(my_tpcb, &(winfo.winfo));
 		queue_insert_prev(&(dtqcb->rwait_queue),
 					&(runtsk->task_queue));
 		winfo.wobjcb = (WOBJCB *) dtqcb;
 		LOG_TSKSTAT(runtsk);
-		dispatch();
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
 			*p_data = winfo.data;
 		}
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_RCV_DTQ_LEAVE(ercd, *p_data);
@@ -533,26 +542,26 @@ prcv_dtq(ID dtqid, VP_INT *p_data)
 	CHECK_DTQID(dtqid);
 	dtqcb = get_dtqcb(dtqid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (dequeue_data(dtqcb, p_data)) {
 		if ((tcb = receive_data_swait(dtqcb, &data)) != NULL) {
 			enqueue_data(dtqcb, data);
 			if (wait_complete(tcb)) {
-				dispatch();
+				multi_core_dispatch(tcb->tpcb);
 			}
 		}
 		ercd = E_OK;
 	}
 	else if ((tcb = receive_data_swait(dtqcb, p_data)) != NULL) {
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
 	else {
 		ercd = E_TMOUT;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_PRCV_DTQ_LEAVE(ercd, *p_data);
@@ -572,7 +581,8 @@ trcv_dtq(ID dtqid, VP_INT *p_data, TMO tmout)
 	DTQCB	*dtqcb;
 	WINFO_DTQ winfo;
 	TMEVTB	tmevtb;
-	TCB	*tcb;
+	TCB	*tcb, *runtsk;
+	TPCB	*my_tpcb;
 	VP_INT	data;
 	ER	ercd;
 
@@ -582,19 +592,19 @@ trcv_dtq(ID dtqid, VP_INT *p_data, TMO tmout)
 	CHECK_TMOUT(tmout);
 	dtqcb = get_dtqcb(dtqid);
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (dequeue_data(dtqcb, p_data)) {
 		if ((tcb = receive_data_swait(dtqcb, &data)) != NULL) {
 			enqueue_data(dtqcb, data);
 			if (wait_complete(tcb)) {
-				dispatch();
+				multi_core_dispatch(tcb->tpcb);
 			}
 		}
 		ercd = E_OK;
 	}
 	else if ((tcb = receive_data_swait(dtqcb, p_data)) != NULL) {
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -602,19 +612,21 @@ trcv_dtq(ID dtqid, VP_INT *p_data, TMO tmout)
 		ercd = E_TMOUT;
 	}
 	else {
-		runtsk->tstat = (TS_WAITING | TS_WAIT_WOBJ);
-		make_wait_tmout(&(winfo.winfo), &tmevtb, tmout);
+		my_tpcb = get_my_tpcb();
+		my_tpcb->runtsk->tstat = (TS_WAITING | TS_WAIT_WOBJ);
+		make_wait_tmout(my_tpcb, &(winfo.winfo), &tmevtb, tmout);
+		runtsk = my_tpcb->runtsk;
 		queue_insert_prev(&(dtqcb->rwait_queue),
 					&(runtsk->task_queue));
 		winfo.wobjcb = (WOBJCB *) dtqcb;
 		LOG_TSKSTAT(runtsk);
-		dispatch();
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
 			*p_data = winfo.data;
 		}
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_TRCV_DTQ_LEAVE(ercd, *p_data);

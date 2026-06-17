@@ -12,9 +12,8 @@
 #undef trap_nest
 #undef m_interrupt_handlers
 #undef x_config_int
-#undef lock_flag
-#undef inest_lvl
-#undef kernel_mie
+#undef spin_lock_error_handler
+#undef p_tspcb_table
 
 #ifdef LABEL_ASM
 
@@ -26,9 +25,8 @@
 #undef _trap_nest
 #undef _m_interrupt_handlers
 #undef _x_config_int
-#undef _lock_flag
-#undef _inest_lvl
-#undef _kernel_mie
+#undef _spin_lock_error_handler
+#undef _p_tspcb_table
 
 #endif /* LABEL_ASM */
 

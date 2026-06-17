@@ -327,7 +327,7 @@ define_exc(EXCNO excno, FP exchdr)
 #define	INTHDR_ENTRY(inthdr)      \
 void inthdr##_entry(void){        \
      inthdr();                           /* 割り込みハンドラを呼び出す */ \
-     if(_kernel_reqflg)                  /* regflg がTRUEであれば      */ \
+     if(_kernel_tprc_tpcb[0].reqflg)     /* regflg がTRUEであれば      */ \
        raise(SIGUSR1);                   /* ディスパッチャを呼び出す   */ \
 }                                      
 
@@ -345,7 +345,7 @@ void inthdr##_entry(void){        \
 #define	EXCHDR_ENTRY(exchdr)	  \
 void exchdr##_entry(VP sp){        \
      exchdr(sp);                         /* 割り込みハンドラを呼び出す */ \
-     if(_kernel_reqflg)                  /* regflg がTRUEであれば      */ \
+     if(_kernel_tprc_tpcb[0].reqflg)     /* regflg がTRUEであれば      */ \
        raise(SIGUSR1);                   /* ディスパッチャを呼び出す   */ \
 }
 

@@ -42,6 +42,7 @@
 
 #undef OMIT_SYSLOG
 #include "jsp_kernel.h"
+#include "task.h"
 #include "time_event.h"
 #include "syslog.h"
 
@@ -54,19 +55,10 @@
 #ifdef __logini
 
 /*
- *  ログバッファとそれにアクセスするためのポインタ
- */
-SYSLOG	syslog_buffer[TCNT_SYSLOG_BUFFER];	/* ログバッファ */
-UINT	syslog_count;			/* ログバッファ中のログの数 */
-UINT	syslog_head;			/* 先頭のログの格納位置 */
-UINT	syslog_tail;			/* 次のログの格納位置 */
-UINT	syslog_lost;			/* 失われたログの数 */
-
-/*
  *  出力すべきログ情報の重要度（ビットマップ）
  */
-UINT	syslog_logmask;			/* ログバッファに記録すべき重要度 */
-UINT	syslog_lowmask;			/* 低レベル出力すべき重要度 */
+UINT	syslog_logmask;		/* ログバッファに記録すべき重要度 */
+UINT	syslog_lowmask;		/* 低レベル出力すべき重要度 */
 
 /*
  *  システムログ機能の初期化
@@ -74,13 +66,18 @@ UINT	syslog_lowmask;			/* 低レベル出力すべき重要度 */
 void
 syslog_initialize()
 {
-	syslog_count = 0;
-	syslog_head = syslog_tail = 0;
-	syslog_lost = 0;
+	UINT	index = get_prc_index();
+	SYSLOGCB *psyslogcb;
 
+	if (index <  tnum_port) {
+		psyslogcb = &syslogcb[index];
+		psyslogcb->count = 0;
+		psyslogcb->head = psyslogcb->tail = 0;
+		psyslogcb->lost = 0;
+	}
 	syslog_logmask = 0;
 	syslog_lowmask = LOG_UPTO(LOG_NOTICE);
-}     
+}
 
 #endif /* __logini */
 
@@ -94,33 +91,43 @@ syslog_initialize()
 SYSCALL ER
 vwri_log(UINT prio, SYSLOG *p_log)
 {
+	SYSLOGCB *psyslogcb;
+	UINT	index = get_prc_index();
+	TPCB	*my_tpcb;
 	BOOL	locked;
+
+	if (index >=  tnum_port) {
+		index = 0;
+	}
+	psyslogcb = &syslogcb[index];
 
 	locked = sense_lock();
 	if (!locked) {
 		lock_cpu();
 	}
+	syslog_spn_lock();
 
 	/*
 	 *  ログ時刻の設定
 	 */
-	p_log->logtim = systim_offset + current_time;
+	my_tpcb = get_my_tpcb();
+	p_log->logtim = my_tpcb->tevtcb->systim_offset + my_tpcb->tevtcb->current_time;
 
 	/*
 	 *  ログバッファに記録
 	 */
 	if ((syslog_logmask & LOG_MASK(prio)) != 0) {
-		syslog_buffer[syslog_tail] = *p_log;
-		syslog_tail++;
-		if (syslog_tail >= TCNT_SYSLOG_BUFFER) {
-			syslog_tail = 0;
+		psyslogcb->buffer[psyslogcb->tail] = *p_log;
+		psyslogcb->tail++;
+		if (psyslogcb->tail >= TCNT_SYSLOG_BUFFER) {
+			psyslogcb->tail = 0;
 		}
-		if (syslog_count < TCNT_SYSLOG_BUFFER) {
-			syslog_count++;
+		if (psyslogcb->count < TCNT_SYSLOG_BUFFER) {
+			psyslogcb->count++;
 		}
 		else {
-			syslog_head = syslog_tail;
-			syslog_lost++;
+			psyslogcb->head = psyslogcb->tail;
+			psyslogcb->lost++;
 		}
 	}
 
@@ -131,6 +138,7 @@ vwri_log(UINT prio, SYSLOG *p_log)
 		syslog_print(p_log, sys_putc);
 	}
 
+	syslog_spn_unlock();
 	if (!locked) {
 		unlock_cpu();
 	}
@@ -149,6 +157,7 @@ vwri_log(UINT prio, SYSLOG *p_log)
 SYSCALL ER_UINT
 vrea_log(SYSLOG *p_log)
 {
+	SYSLOGCB *psyslogcb = &syslogcb[get_prc_index()];
 	BOOL	locked;
 	ER_UINT	ercd;
 
@@ -156,19 +165,23 @@ vrea_log(SYSLOG *p_log)
 	if (!locked) {
 		lock_cpu();
 	}
-	if (syslog_count > 0) {
-		*p_log = syslog_buffer[syslog_head];
-		syslog_count--;
-		syslog_head++;
-		if (syslog_head >= TCNT_SYSLOG_BUFFER) {
-			syslog_head = 0;
+	syslog_spn_lock();
+
+	if (psyslogcb->count > 0) {
+		*p_log = psyslogcb->buffer[psyslogcb->head];
+		psyslogcb->count--;
+		psyslogcb->head++;
+		if (psyslogcb->head >= TCNT_SYSLOG_BUFFER) {
+			psyslogcb->head = 0;
 		}
-		ercd = (ER_UINT) syslog_lost;
-		syslog_lost = 0;
+		ercd = (ER_UINT) psyslogcb->lost;
+		psyslogcb->lost = 0;
 	}
 	else {
 		ercd = E_OBJ;
 	}
+
+	syslog_spn_unlock();
 	if (!locked) {
 		unlock_cpu();
 	}
@@ -203,8 +216,12 @@ vmsk_log(UINT logmask, UINT lowmask)
 void
 syslog_terminate()
 {
-	syslog_printf("-- buffered messages --", NULL, sys_putc);
-	syslog_output(sys_putc);
+	UINT	index = get_prc_index();
+
+	if (index <  tnum_port) {
+		syslog_printf("-- buffered messages --", NULL, sys_putc);
+		syslog_output(sys_putc);
+	}
 }
 
 #endif /* __logter */

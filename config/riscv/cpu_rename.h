@@ -11,9 +11,8 @@
 #define trap_nest					_kernel_trap_nest
 #define m_interrupt_handlers		_kernel_m_interrupt_handlers
 #define x_config_int				_kernel_x_config_int
-#define lock_flag					_kernel_lock_flag
-#define inest_lvl					_kernel_inest_lvl
-#define kernel_mie					_kernel_kernel_mie
+#define spin_lock_error_handler		_kernel_spin_lock_error_handler
+#define p_tspcb_table				_kernel_p_tspcb_table
 
 #ifdef LABEL_ASM
 
@@ -25,9 +24,8 @@
 #define _trap_nest					__kernel_trap_nest
 #define _m_interrupt_handlers		__kernel_m_interrupt_handlers
 #define _x_config_int				__kernel_x_config_int
-#define _lock_flag					__kernel_lock_flag
-#define _inest_lvl					__kernel_inest_lvl
-#define _kernel_mie					__kernel_kernel_mie
+#define _spin_lock_error_handler	__kernel_spin_lock_error_handler
+#define _p_tspcb_table				__kernel_p_tspcb_table
 
 #endif /* LABEL_ASM */
 

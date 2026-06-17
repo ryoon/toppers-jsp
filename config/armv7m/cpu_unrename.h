@@ -14,7 +14,7 @@
 #undef enable_exc
 #undef disable_exc
 #undef x_config_int
-#undef int_handler_table
+#undef p_int_table
 
 #ifdef LABEL_ASM
 
@@ -28,7 +28,7 @@
 #undef _enable_exc
 #undef _disable_exc
 #undef _x_config_int
-#undef _int_handler_table
+#undef _p_int_table
 
 #endif /* LABEL_ASM */
 

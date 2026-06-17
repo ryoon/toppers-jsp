@@ -6,6 +6,5 @@ trap_entry
 trap_nest
 m_interrupt_handlers
 x_config_int
-lock_flag
-inest_lvl
-kernel_mie
+spin_lock_error_handler
+p_tspcb_table

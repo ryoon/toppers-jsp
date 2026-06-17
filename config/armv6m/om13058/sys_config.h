@@ -160,9 +160,24 @@ extern  UW SystemFrequency;
 #ifndef _MACRO_ONLY
 
 /*
+ *  マルチプロセッサ処理モデルの実現
+ *
+ *  コア番号は標準実装．
+ *  その他はシングルコアの場合、実装は不要．
+ */
+
+/*
+ *  コア番号を取り出す
+ */
+#define	x_prc_index()	(0)
+
+#define t_prc_index()	x_prc_index()
+#define i_prc_index()	x_prc_index()
+
+/*
  *  ベクターテーブル
  */
-extern const FP vector_table[];
+extern const FP vector_table[][TMAX_INTNO + 16 + 1];
 
 /*
  *  ターゲットシステム依存の初期化

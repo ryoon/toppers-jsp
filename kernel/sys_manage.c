@@ -44,6 +44,61 @@
 #include "check.h"
 #include "task.h"
 
+#ifndef TOPPERS_ROTRDQ_GLOBAL
+#define	NUM_BROADCAST	1
+#else
+#define	NUM_BROADCAST	TNUM_PRCID
+#endif
+
+/*
+ *  タスクコンテキストでの自タスクに対するマイグレーション処理
+ *
+ *  CPUロック，移動元と移動先のタスクロックの取得，コンテキスト
+ *  を保存したのち，非タスクコンテキストのスタックで来ること． 
+ */
+#ifdef __migrate_self
+#if TNUM_PRCID > 1
+
+void
+migrate_self(ID prcid)
+{
+	TCB		*tcb;
+	TPCB	*t_tpcb;
+	TPCB	*f_tpcb;
+
+	f_tpcb = get_my_tpcb();
+	tcb = f_tpcb->runtsk;
+
+	/* 移動先のプロセッサのPCBを取得 */
+	t_tpcb = get_pure_tpcb(INDEX_PRC(prcid));
+
+	if (TSTAT_RUNNABLE(tcb->tstat)) {
+		/* レディーキューから外す */
+		make_non_runnable(tcb);
+		/* pcb の書き換え */
+		tcb->tpcb = t_tpcb;
+		/* 移行先のプロセッサでmake_runnable する*/
+		if (make_runnable(tcb)) {
+			reqest_task_event(t_tpcb, IPI_EVENT_DISPATCH);
+		}
+	}
+	else {
+		/*
+		 * CPUロックかつタスクロックを取得しているため
+		 * 他の状態にはならない
+		 */
+		assert(0);
+	}
+	x_release_pure_glock();
+
+	/* ディスパッチャーへ */
+	exit_and_dispatch();
+	assert(0);
+}
+
+#endif /* TNUM_PRCID > 1 */
+#endif /* ___migrate_self */
+
 /*
  *  タスクの優先順位の回転
  */
@@ -52,20 +107,29 @@
 SYSCALL ER
 rot_rdq(PRI tskpri)
 {
-	UINT	pri;
+	UINT	pri, idx;
 	ER	ercd;
+	TPCB	*tpcb;
+	UINT	n = NUM_BROADCAST;
 
 	LOG_ROT_RDQ_ENTER(tskpri);
 	CHECK_TSKCTX_UNL();
 	CHECK_TPRI_SELF(tskpri);
 
-	t_lock_cpu();
-	pri = (tskpri == TPRI_SELF) ? runtsk->priority : INT_PRIORITY(tskpri);
-	if (rotate_ready_queue(pri)) {
-		dispatch();
-	}
+	t_acquire_glock();
+	pri = (tskpri == TPRI_SELF) ? get_my_tpcb()->runtsk->priority : INT_PRIORITY(tskpri);
+	idx = get_prc_index();
+	do{
+		tpcb = get_pure_tpcb(idx);
+		if (rotate_ready_queue(pri, tpcb)) {
+			multi_core_dispatch(tpcb);
+		}
+		if (++idx >= TNUM_PRCID) {
+			idx = 0;
+		}
+	}while(--n > 0);
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_ROT_RDQ_LEAVE(ercd);
@@ -82,18 +146,28 @@ rot_rdq(PRI tskpri)
 SYSCALL ER
 irot_rdq(PRI tskpri)
 {
+	UINT	idx;
 	ER	ercd;
+	TPCB	*tpcb;
+	UINT	n = NUM_BROADCAST;
 
 	LOG_IROT_RDQ_ENTER(tskpri);
 	CHECK_INTCTX_UNL();
 	CHECK_TPRI(tskpri);
 
-	i_lock_cpu();
-	if (rotate_ready_queue(INT_PRIORITY(tskpri))) {
-		reqflg = TRUE;
-	}
+	i_acquire_glock();
+	idx = get_prc_index();
+	do{
+		tpcb = get_pure_tpcb(idx);
+		if (rotate_ready_queue(INT_PRIORITY(tskpri), tpcb)) {
+			reqest_task_event(tpcb, IPI_EVENT_DISPATCH);
+		}
+		if (++idx >= TNUM_PRCID) {
+			idx = 0;
+		}
+	}while(--n > 0);
 	ercd = E_OK;
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_IROT_RDQ_LEAVE(ercd);
@@ -110,13 +184,15 @@ irot_rdq(PRI tskpri)
 SYSCALL ER
 get_tid(ID *p_tskid)
 {
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_GET_TID_ENTER(p_tskid);
 	CHECK_TSKCTX_UNL();
 
 	t_lock_cpu();
-	*p_tskid = TSKID(runtsk);
+	my_tpcb = get_my_tpcb();
+	*p_tskid = TSKID(my_tpcb->runtsk);
 	ercd = E_OK;
 	t_unlock_cpu();
 
@@ -135,13 +211,15 @@ get_tid(ID *p_tskid)
 SYSCALL ER
 iget_tid(ID *p_tskid)
 {
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_IGET_TID_ENTER(p_tskid);
 	CHECK_INTCTX_UNL();
 
 	i_lock_cpu();
-	*p_tskid = (runtsk == NULL) ? TSK_NONE : TSKID(runtsk);
+	my_tpcb = get_my_tpcb();
+	*p_tskid = (my_tpcb->runtsk == NULL) ? TSK_NONE : TSKID(my_tpcb->runtsk);
 	ercd = E_OK;
 	i_unlock_cpu();
 
@@ -151,6 +229,173 @@ iget_tid(ID *p_tskid)
 }
 
 #endif /* __iget_tid */
+
+/*
+ *  (休止状態の)タスクのプロセッサの変更
+ */
+#ifdef __chg_pid
+
+ER
+chg_pid(ID tskid, ID prcid)
+{
+	TCB	*tcb;
+	TPCB	*t_tpcb, *f_tpcb, *my_tpcb;
+	ER	ercd;
+
+	LOG_CHG_PID_ENTER(tskid, prcid);
+	CHECK_TSKCTX_UNL();
+	CHECK_TSKID_SELF(tskid);
+	CHECK_PRCID_INI(prcid);
+
+	t_acquire_glock();
+	tcb = get_tcb_self(tskid, get_my_tpcb());
+	prcid = (prcid == TPRC_INI) ? GET_INI_PRCID(tcb->tinib->tskatr) : prcid;
+	t_tpcb = get_pure_tpcb(INDEX_PRC(prcid));
+	f_tpcb = tcb->tpcb;
+	my_tpcb = get_my_tpcb();
+	if (TSTAT_RUNNABLE(tcb->tstat)) {
+#ifdef TOPPERS_CHGPID_MIGATE
+		if (f_tpcb != my_tpcb) {
+			/*
+			 * 自タスクと同じプロセッサに割り付けられているタスクでなけれ
+			 * ばエラー． mig_tsk を呼び出したタスクがシステムコール呼出し後，
+			 * マイグレートされた場合にも，ここでエラーとなる
+			 */
+			ercd = E_OBJ;
+		}
+		/* 実行可能状態 */
+		else if(tcb == my_tpcb->runtsk) {
+			/* 自タスクに対して発行 */
+			if (!(my_tpcb->enadsp)) {
+				/* ディスパッチ禁止中ならエラー */
+				ercd = E_CTX;
+			}
+			else if (t_tpcb == my_tpcb) {
+				ercd = E_OK;
+			}
+			else {
+#if TNUM_PRCID > 1
+				/* マイグレーション要求を処理 */
+				x_release_pure_glock();
+				dispatch_and_migrate(prcid);
+				/* ここに戻ってくる時にはロックは解放されている */
+				t_acquire_glock();
+#endif /* TNUM_PRCID > 1 */
+				ercd = E_OK;
+			}
+		} 
+		else {
+			/* 他タスクの場合 */
+			if (t_tpcb == my_tpcb) {
+				ercd = E_OK; 
+			}
+			else {
+				/* 異なるプロセッサを指定 */
+				/* レディーキューから外す */
+				make_non_runnable(tcb);
+				/* pcb の書き換え */
+				tcb->tpcb = t_tpcb;
+				/* 移行先のプロセッサでmake_runnable する*/
+				if (make_runnable(tcb)) {
+					reqest_task_event(t_tpcb, IPI_EVENT_DISPATCH);
+				}
+				ercd = E_OK;
+			}
+		}
+#else /* TOPPERS_CHGPID_MIGATE */
+		ercd = E_OBJ;
+#endif /* TOPPERS_CHGPID_MIGATE */
+	}
+	else if (TSTAT_DORMANT(tcb->tstat)) {
+		/* 休止状態 */
+		tcb->tpcb = t_tpcb;
+		ercd = E_OK;
+	}
+	else {
+		/* 待ち状態 */
+#ifdef TOPPERS_CHGPID_MIGATE
+#ifndef TOPPERS_SYSTIM_GLOBAL
+		/*
+		 *  ローカルタイマ方式で時間待ちの場合
+		 */
+		if (TSTAT_WAITING(tcb->tstat) && tcb->winfo->tmevtb != NULL) {
+			/*
+			 * 時間待ちの場合 グローバルタイマ方式 なら必要なし
+			 */
+			TMEVTB	*tmevtb = tcb->winfo->tmevtb;
+			EVTTIM	time;
+			RELTIM	left_time;
+			/* キューから削除 */
+			time = TMEVT_NODE(f_tpcb->tevtcb, tmevtb->index).time;
+			left_time = (RELTIM)(time - f_tpcb->tevtcb->current_time);
+			tmevtb_dequeue(f_tpcb->tevtcb, tmevtb);
+			/* 移動先のプロセッサのキューに挿入 */
+			tmevtb_insert(t_tpcb->tevtcb, tmevtb, base_time(t_tpcb->tevtcb) + left_time);
+		}
+#endif	/* TOPPERS_SYSTIM_GLOBAL */
+		tcb->tpcb = t_tpcb;
+		ercd = E_OK;
+#else /* TOPPERS_CHGPID_MIGATE */
+		ercd = E_OBJ;
+#endif /* TOPPERS_CHGPID_MIGATE */
+	}
+	t_release_glock();
+
+	exit:
+	LOG_CHG_PID_LEAVE(ercd);
+	return(ercd);
+}
+
+#endif /* __chg_pid */
+
+/*
+ *  実行状態のプロセッサIDの参照
+ */
+#ifdef __get_pid
+
+ER
+get_pid(ID tskid, ID *p_prcid)
+{
+	TCB	*tcb;
+	ER	ercd;
+
+	LOG_GET_PID_ENTER(tskid, p_prcid);
+	CHECK_TSKCTX_UNL();
+	CHECK_TSKID_SELF(tskid);
+
+	tcb = get_tcb_self(tskid, get_my_tpcb());
+	*p_prcid = tcb->tpcb->prcid;
+	ercd = E_OK;
+
+	exit:
+	LOG_GET_PID_LEAVE(ercd, *p_prcid);
+	return(ercd);
+}
+
+#endif /* __get_pid */
+
+/*
+ *  実行状態のプロセッサIDの参照（非タスクコンテキスト用）
+ */
+#ifdef __iget_pid
+
+ER_ID
+iget_pid(ID *p_prcid)
+{
+	ER_ID	ercd;
+
+	LOG_IGET_PID_ENTER(p_prcid);
+	CHECK_INTCTX_UNL();
+
+	*p_prcid = get_my_tpcb()->prcid;
+	ercd = E_OK;
+
+	exit:
+	LOG_IGET_PID_LEAVE(ercd, *p_prcid);
+	return(ercd);
+}
+
+#endif /* __iget_pid */
 
 /*
  *  CPUロック状態への移行
@@ -219,7 +464,7 @@ unl_cpu(void)
 	LOG_UNL_CPU_ENTER();
 	CHECK_TSKCTX();
 
-	if (t_sense_lock()) {
+	if (t_sense_lock() && ((get_my_tpcb())->locspnid == 0)) {
 		t_unlock_cpu();
 	}
 	ercd = E_OK;
@@ -248,7 +493,7 @@ iunl_cpu(void)
 	LOG_IUNL_CPU_ENTER();
 	CHECK_INTCTX();
 
-	if (i_sense_lock()) {
+	if (i_sense_lock() && ((get_my_tpcb())->locspnid == 0)) {
 		i_unlock_cpu();
 	}
 	ercd = E_OK;
@@ -268,15 +513,16 @@ iunl_cpu(void)
 SYSCALL ER
 dis_dsp(void)
 {
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_DIS_DSP_ENTER();
 	CHECK_TSKCTX_UNL();
 
-	t_lock_cpu();
-	enadsp = FALSE;
+	t_acquire_glock();
+	my_tpcb->enadsp = FALSE;
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_DIS_DSP_LEAVE(ercd);
@@ -293,18 +539,20 @@ dis_dsp(void)
 SYSCALL ER
 ena_dsp(void)
 {
+	TPCB	*my_tpcb;
 	ER	ercd;
 
 	LOG_ENA_DSP_ENTER();
 	CHECK_TSKCTX_UNL();
 
-	t_lock_cpu();
-	enadsp = TRUE;
-	if (runtsk != schedtsk) {
-		dispatch();
+	t_acquire_glock();
+	my_tpcb = get_my_tpcb();
+	my_tpcb->enadsp = TRUE;
+	if (my_tpcb->runtsk != my_tpcb->schedtsk) {
+		multi_core_dispatch(my_tpcb);
 	}
 	ercd = E_OK;
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_ENA_DSP_LEAVE(ercd);
@@ -360,7 +608,7 @@ sns_dsp(void)
 	BOOL	state;
 
 	LOG_SNS_DSP_ENTER();
-	state = !(enadsp) ? TRUE : FALSE;
+	state = !(get_enadsp()) ? TRUE : FALSE;
 	LOG_SNS_DSP_LEAVE(state);
 	return(state);
 }
@@ -375,10 +623,12 @@ sns_dsp(void)
 SYSCALL BOOL
 sns_dpn(void)
 {
+	TPCB	*my_tpcb;
 	BOOL	state;
 
 	LOG_SNS_DPN_ENTER();
-	state = (sense_context() || sense_lock() || !(enadsp)) ? TRUE : FALSE;
+	my_tpcb = get_my_tpcb();
+	state = (sense_context() || sense_lock() || !(my_tpcb->enadsp)) ? TRUE : FALSE;
 	LOG_SNS_DPN_LEAVE(state);
 	return(state);
 }

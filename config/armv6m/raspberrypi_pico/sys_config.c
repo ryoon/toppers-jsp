@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c 2246 2025-11-04 10:56:48Z roi $
+ *  @(#) $Id: sys_config.c 2246 2025-12-15 16:15:58Z roi $
  */
 
 /*
@@ -44,12 +44,14 @@
 #include "jsp_kernel.h"
 #include <hw_timer.h>		/* システム・タイマー関係 */
 #include <hw_serial.h>		/* デバックシリアルコントローラ関係 */
+#include <hw_interpro.h>	/* プロセッサ間通信割込み関係 */
 
 /*
  *  ベクターテーブル
  */
 __attribute__ ((section(".vector"))) 
-const FP vector_table[TMAX_INTNO + NUM_EXCNO + 1] = {
+const FP vector_table[TNUM_PRCID][NUM_VECTORS] = {
+  {
 	(FP)STACKTOP,			/* 0 */
 	(FP)(start),			/* 1 */
 	(FP)(cpu_exc_entry),	/* 2 */
@@ -92,6 +94,53 @@ const FP vector_table[TMAX_INTNO + NUM_EXCNO + 1] = {
  	(FP)(cpu_int_entry),	/* 23 */
  	(FP)(cpu_int_entry),	/* 24 */
  	(FP)(cpu_int_entry)		/* 25 */
+  },
+#if TNUM_PRCID > 1
+  {
+	(FP)STACKTOP-PSTACKSIZE, /* 0 */
+	(FP)(start),			/* 1 */
+	(FP)(cpu_exc_entry),	/* 2 */
+	(FP)(cpu_exc_entry),	/* 3 */
+	(FP)(cpu_exc_entry),	/* 4 */
+	(FP)(cpu_exc_entry),	/* 5 */
+	(FP)(cpu_exc_entry),	/* 6 */
+	(FP)(cpu_exc_entry),	/* 7 */
+	(FP)(cpu_exc_entry),	/* 8 */
+	(FP)(cpu_exc_entry),	/* 9 */
+	(FP)(cpu_exc_entry),	/* 10 */
+	(FP)(cpu_exc_entry),	/* 11 */
+	(FP)(cpu_exc_entry),	/* 12 */
+	(FP)(cpu_exc_entry),	/* 13 */
+	(FP)(pendsvc_handler),	/* 14 */
+ 	(FP)(cpu_systic_entry),	/* 15 */
+ 	(FP)(cpu_int_entry),	/* 0 */
+ 	(FP)(cpu_int_entry),	/* 1 */
+ 	(FP)(cpu_int_entry),	/* 2 */
+ 	(FP)(cpu_int_entry),	/* 3 */
+ 	(FP)(cpu_int_entry),	/* 4 */
+ 	(FP)(cpu_int_entry),	/* 5 */
+ 	(FP)(cpu_int_entry),	/* 6 */
+ 	(FP)(cpu_int_entry),	/* 7 */
+ 	(FP)(cpu_int_entry),	/* 8 */
+ 	(FP)(cpu_int_entry),	/* 9 */
+ 	(FP)(cpu_int_entry),	/* 10 */
+ 	(FP)(cpu_int_entry),	/* 11 */
+ 	(FP)(cpu_int_entry),	/* 12 */
+ 	(FP)(cpu_int_entry),	/* 13 */
+ 	(FP)(cpu_int_entry),	/* 14 */
+ 	(FP)(cpu_int_entry),	/* 15 */
+ 	(FP)(cpu_int_entry),	/* 16 */
+ 	(FP)(cpu_int_entry),	/* 17 */
+ 	(FP)(cpu_int_entry),	/* 18 */
+ 	(FP)(cpu_int_entry),	/* 19 */
+ 	(FP)(cpu_int_entry),	/* 20 */
+ 	(FP)(cpu_int_entry),	/* 21 */
+ 	(FP)(cpu_int_entry),	/* 22 */
+ 	(FP)(cpu_int_entry),	/* 23 */
+ 	(FP)(cpu_int_entry),	/* 24 */
+ 	(FP)(cpu_int_entry)		/* 25 */
+  },
+#endif /* TNUM_PRCID > 1 */
 };
 
 /*
@@ -100,15 +149,36 @@ const FP vector_table[TMAX_INTNO + NUM_EXCNO + 1] = {
 void
 sys_initialize(void)
 {
-	/*
-	 *  システムクロック設定
-	 */
-	SystemFrequency = get_Clock(CLK_SYS);
+	volatile static BOOL pass = 0;
+	UINT	idx = x_prc_index();
+
+	if(idx == 0){
+		/*
+		 *  システムクロック設定
+		 */
+		SystemFrequency = get_Clock(CLK_SYS);
+	}
+
+#if TNUM_PRCID > 1
+	if(idx == 0){
+		/*
+		 *  コア１起動
+		 */
+		mprc_initialize(start, (UW *)(STACKTOP-PSTACKSIZE), (UW)vector_table[1]);
+		while(pass){}	/* コア1初期化まで待つ */
+	}
+#endif /* TNUM_PRCID > 1 */
 
 	/*
 	 *  バナー出力用のシリアル初期化
 	 */
 	sio_init();
+
+	/*
+	 *  プロセッサ間割込み初期化(コア1を先に初期化しなければならない)
+	 */
+	interpro_init();
+	pass = idx;
 }
 
 /*

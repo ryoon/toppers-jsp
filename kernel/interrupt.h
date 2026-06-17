@@ -44,6 +44,25 @@
 #define _INTERRUPT_H_
 
 /*
+ *  設定の割込み属性からプロセッサIDを取り出す
+ */
+#if TNUM_PRCID > 1
+
+#define	INTNO_PRCID(a)	((((a) >> 16) == 0) ? MASTER_PRCID : ((a) >> 16))
+
+#else /* TNUM_PRCID > 1 */
+
+#define	INTNO_PRCID(a)	ID_PRC(get_prc_index())
+
+#endif /* TNUM_PRCID > 1 */
+
+/*
+ *  設定の割込み属性から対応プロセッサIDを取り出す
+ */
+#define	INTREQ_PRCID(a)	((((a) & TA_PRCALL) != 0) ? ID_PRC(get_prc_index()) : INTNO_PRCID((a)))
+
+
+/*
  *  割込みハンドラ初期化ブロック
  */
 typedef struct interrupt_handler_initialization_block {
@@ -52,9 +71,21 @@ typedef struct interrupt_handler_initialization_block {
 	FP	inthdr;		/* 割込みハンドラの起動番地 */
 } INHINIB;
 
+
+/*
+ *  割込み設定初期化ブロック
+ */
+typedef struct configint_initialization_block {
+	INTNO	intno;		/* 割込み番号 */
+	ATR	intatr;		/* 割込み属性 */
+	PRI	intpri;		/* 割込み優先順位 */
+} CFGINTINIB;
+
 /*
  *  割込み管理機能の初期化
  */
 extern void	interrupt_initialize(void);
+
+extern void configint_initialize(void);
 
 #endif /* _INTERRUPT_H_ */

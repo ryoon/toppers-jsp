@@ -40,7 +40,7 @@
  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
 
- @(#) $Id: cpp.txt,v 1.00 2025/12/29 13:31:25 roi Exp $
+ @(#) $Id: cpp.txt,v 1.00 2025/11/06 09:58:25 roi Exp $
 ------------------------------------------------------------------------
 
 このドキュメントでは，TOPPERS/JSPのC++言語の対応に関して解説する．
@@ -72,19 +72,28 @@
         nucleo_f401reを対象とした場合、以下のコンフィギュレーション設定で
         プログラムを生成可能．
         configure -C armv7m -S nucleo_f401re -A cxx_sample2 -l c++
-        newlibrt.cに標準入出力機能を使用するため、そのまま、ビルド、
-        実行可能である．
-        タスクモニタを使用した場合、タスクモニタのSMALL_STDIOが
-        標準入出力機能を肩代わりする．
+        標準入出力機能を使用するため、Makefileに以下の修正が必要となる．
 
---------------------------
-1.3 エラー等
---------------------------
+        $ diff Makefile Makefile.org
+        104,106c104,106
+        < COPTS := $(COPTS) -DUSE_STDIO
+        < CDEFS := $(CDEFS)
+        < INCLUDES := -I. -I$(SRCDIR)/include -I$(SRCDIR)/monitor $(INCLUDES)
+        ---
+        > COPTS := $(COPTS)
+        > CDEFS := $(CDEFS)
+        > INCLUDES := -I. -I$(SRCDIR)/include $(INCLUDES)
+        127,132d126
+        <
+        < #
+        < #  STDIOの取り込み
+        < #
+        < STASK_DIR := $(STASK_DIR):$(SRCDIR)/monitor/stdio
+        < STASK_COBJS := $(STASK_COBJS) stddev.o printf.o sprintf.o
 
-C++言語はmalloc関数を用いて、メモリヒープを行う．
-ヒープ領域が小さくてアロケーション・エラーが発生した場合は、
-fwriteを使用して「termante called without an active exception」を表示して
-abort()するので注意、
+        標準入出力機能はタスクモニタのものを使用する．
+        タスクモニタを設定した場合は、タスクモニタが標準入出力機能を
+        肩代わりするため、上記の変更は不要．
 
 ----------
 ２．その他

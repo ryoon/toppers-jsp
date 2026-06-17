@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2017-2025 by TOPPERS PROJECT Educational Working Group.
+ *  Copyright (C) 2017-2026 by TOPPERS PROJECT Educational Working Group.
  * 
  *  上記著作権者は，以下の (1)～(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_defs.h 2246 2025-11-20 17:59:05Z roi $
+ *  @(#) $Id: sys_defs.h 2246 2026-01-03 15:10:35Z roi $
  */
 
 #ifndef _SYS_DEFS_H_
@@ -65,6 +65,32 @@
 #ifndef TNUM_PRCID
 #define TNUM_PRCID	1
 #endif /* TNUM_PRCID */
+
+/*
+ *  マルチコア・カーネル設定定義（シングルコアでは設定不要）
+ *  設定条件：TNUM_PRCIDが2以上であること
+ *  通常はコア毎にSYSTICを供給するが、
+ *  TOPPERS_SYSTIM_GLOBAL:この設定でマスターコアのSYSTIC
+ *  で全てのコアの時間制御を行う
+ *  TNUM_PRCIDとTOPPERS_SYSTIM_GLOBALの設定により、
+ *  ビルドされるカーネル・ライブラリィは異なるので注意
+ */
+//#define TOPPERS_SYSTIM_GLOBAL
+
+/*
+ *  マルチコア・カーネル設定定義（シングルコアでは設定不要）
+ *  設定条件：TNUM_PRCIDが2以上であること
+ *  タスク優先度の回転を全てのプロセッサ上のタスクを対象と
+ *  する
+ */
+//#define TOPPERS_ROTRDQ_GLOBAL
+
+/*
+ *  マルチコア・カーネル設定定義（シングルコアでは設定不要）
+ *  設定条件：TNUM_PRCIDが2以上であること
+ *  chg_pidサービスコールでマイグレーション処理を行う
+ */
+#define TOPPERS_CHGPID_MIGATE
 
 /*
  *  スタック定義

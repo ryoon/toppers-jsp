@@ -119,22 +119,59 @@ typedef struct task_context_block {
 
 
 /*
- *  CPUロックフラグ実現のための変数
- *
- *  これらの変数は，CPUロック状態の時のみ書き換えてよいものとする．
+ *  RISC-V依存プロセッサコントロールブロック
  */
-extern volatile BOOL			lock_flag;	/* CPUロックフラグの値を保持する変数 */
-extern volatile UH				inest_lvl;	/* 割込みネストを保存する変数 */
-extern volatile unsigned long	kernel_mie;	/* デフォルトのMIE値を保存する変数 */
+typedef struct system_processor_control_block {
+	/*
+	 *  CPUロックフラグ実現のための変数
+	 *
+	 *  これらの変数は，CPUロック状態の時のみ書き換えてもよいとする．
+	 *  インライン関数中で，アクセスの順序が変化しないよう，volatile を指定．
+	 */
+	volatile BOOL	lock_flag;  /* CPUロックフラグの値を保持する変数 */
+	volatile UH		inest_lvl;  /* 割込みネストを保存する変数 */
+	volatile unsigned long	kernel_mie;	/* デフォルトのMIE値を保存する変数 */
+	volatile unsigned long	saved_trap;	/* MACHINE TRAPデータの保存変数 */
+
+	/*
+	 *  アイドル処理用のスタックの初期値
+	 */
+	VP* stacktop;
+} STPCB;
+
+/*
+ *  STPCBの保存テーブル
+ */
+extern STPCB *p_tspcb_table[];
+
+/*
+ *  マルチプロセッサ処理モデルの実現
+ *
+ *  コア番号は標準実装．
+ *  その他はシングルコアの場合、実装は不要．
+ */
 
 /*
  *  コア番号を取り出す(RISC-V標準)
  */
-Inline UW
+Inline UINT
 x_prc_index(void)
 {
 	return read_csr(mhartid);
 }
+
+#define t_prc_index()	x_prc_index()
+#define i_prc_index()	x_prc_index()
+
+/*
+ *  STPCBを取り出す
+ */
+Inline STPCB *
+get_sys_stpcb(void)
+{
+	return p_tspcb_table[x_prc_index()];
+}
+
 
 /*
  *  TOPPERS標準割込み処理モデルの実現
@@ -160,7 +197,7 @@ x_prc_index(void)
 Inline BOOL
 sense_context(void)
 {
-	return inest_lvl != 0;
+	return get_sys_stpcb()->inest_lvl != 0;
 }
 
 /*
@@ -169,7 +206,7 @@ sense_context(void)
 Inline BOOL
 sense_lock(void)
 {
-	return(lock_flag);
+	return get_sys_stpcb()->lock_flag;
 }
 
 #define t_sense_lock()	sense_lock()
@@ -211,7 +248,7 @@ Inline void
 x_lock_cpu(void)
 {
 	disable_int_status(KERNEL_MIE);
-	lock_flag = TRUE;
+	get_sys_stpcb()->lock_flag = TRUE;
 }
 
 #define t_lock_cpu()	x_lock_cpu()
@@ -229,12 +266,13 @@ x_lock_cpu(void)
 Inline void
 x_unlock_cpu(void)
 {
-	lock_flag = FALSE;
-	enable_int_status(kernel_mie);
+	get_sys_stpcb()->lock_flag = FALSE;
+	enable_int_status(get_sys_stpcb()->kernel_mie);
 }
 
 #define t_unlock_cpu()	x_unlock_cpu()
 #define i_unlock_cpu()	x_unlock_cpu()
+
 
 /*
  *  例外ベクタテーブルの構造の定義
@@ -252,6 +290,11 @@ typedef struct exc_vector_entry {
  *  ければならない．
  */
 extern void	dispatch(void);
+
+/*
+ *  自タスクのマイグレーション（cpu_support.S）
+ */
+extern void dispatch_and_migrate(ID prcid);
 
 /*
  *  現在のコンテキストを捨ててディスパッチ（cpu_support.S）
@@ -287,6 +330,11 @@ extern void machine_timer_handler(void);
 extern volatile EXCVE m_interrupt_handlers[TNUM_PRCID][NUM_MACHNE_INTNO];
 
 /*
+ *  スピンロックエラーが発生した場合のハンドラ
+ */
+extern void spin_lock_error_handler(unsigned long mcause, void *p_excinf);
+
+/*
  *  MACHINEタイマの割込みハンドラ
  */
 extern FP (*default_timer_handler)(void);
@@ -300,7 +348,7 @@ extern FP (*default_timer_handler)(void);
 Inline void
 define_exc(EXCNO excno, FP exc_entry)
 {
-	m_interrupt_handlers[0][excno].exc_handler = exc_entry;
+	m_interrupt_handlers[x_prc_index()][excno].exc_handler = exc_entry;
 }
 
 /*
@@ -309,7 +357,7 @@ define_exc(EXCNO excno, FP exc_entry)
 Inline void
 machine_inh(INHNO inhno, FP int_entry)
 {
-	m_interrupt_handlers[0][inhno+16].exc_handler = int_entry;
+	m_interrupt_handlers[x_prc_index()][inhno+16].exc_handler = int_entry;
 }
 
 /*
@@ -369,7 +417,7 @@ asm(".text							\n" \
 Inline BOOL
 exc_sense_context(void *p_excinf)
 {
-	return inest_lvl > 1;
+	return get_sys_stpcb()->inest_lvl > 1;
 }
 
 /*

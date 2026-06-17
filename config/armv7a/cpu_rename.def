@@ -1,0 +1,15 @@
+activate_r
+ret_int
+ret_exc
+default_exc_handler
+default_undef_handler
+default_swi_handler
+default_prefetchabort_handler
+default_dataabort_handler
+spin_lock_error_handler
+start
+x_config_int
+p_exch_table
+p_inth_table
+p_tspcb_table
+vector_table

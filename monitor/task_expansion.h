@@ -72,7 +72,7 @@ typedef struct t_rdtq{
 /*
  *  タスクの実行状態構造体定義
  */
-#define	MAX_TASK_LOG	8		/* タスクログテーブルの数 */
+#define	MAX_TASK_LOG	10		/* タスクログテーブルの数 */
 #define	ANA_STIC		10		/* サブチック値 */
 
 typedef struct t_tlog{

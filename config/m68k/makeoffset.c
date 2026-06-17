@@ -61,6 +61,11 @@ makeoffset()
 	OFFSET_DEF(TCB, texptn);
 	OFFSET_DEF2(TCB, tskctxb.msp, msp);
 	OFFSET_DEF2(TCB, tskctxb.pc, pc);
+
+	OFFSET_DEF(TPCB, runtsk);
+	OFFSET_DEF(TPCB, schedtsk);
+	OFFSET_DEF(TPCB, reqflg);
+	OFFSET_DEF(TPCB, enadsp);
 }
 
 UW	BIT_REF_4 = 0x12345678;

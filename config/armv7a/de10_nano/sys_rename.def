@@ -1,0 +1,6 @@
+sys_mmu_init
+sys_putc
+x_ipi_raise
+mprc_initialize
+prc2_boot
+prc2_boot_end

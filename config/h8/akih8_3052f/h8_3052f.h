@@ -99,8 +99,6 @@
 
 #define IRQ_ADI			60		/* A/D */
 
-#define	TMAX_INTNO		60
-
 /* register address */
 
 /* I/O ports */

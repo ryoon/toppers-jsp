@@ -44,6 +44,7 @@
 #define	_MACRO_ONLY
 #include "jsp_kernel.h"
 #include "offset.h"
+#include "sys_asm.inc"
 
 #if defined(__riscv64)
 #define LREG                ld
@@ -114,7 +115,8 @@ trap_entry:
 	SREG t5, 20*REGSIZE(sp)
 	SREG t6, 21*REGSIZE(sp)
 
-	li t5, STACKTOP					/* スタック切り替え */
+	my_tpcb t3, t6					/* tpcbを取り込む */
+	LREG t5, TPCB_stacktop(t3)		/* スタック切り替え */
 	mv t4, sp						/* ユーザースタックをt4にコピー */
 	mv sp, t5						/* システムスタックを設定 */
 
@@ -169,8 +171,8 @@ trap_entry:
 	call handle_trap				/* MACHINEハンドラを呼び出す */
 	add sp, sp, 16
 
-	la t5, reqflg					/* reqflgがfalseであればret_int_3へ */
-	LREG t6, 0(t5)
+    my_tpcb t3, t6					/* my_tpcbを読み込む */
+	LREG t6, TPCB_reqflg(t3)		/* reqflgがfalseであればret_int_3へ */
 	beqz t6, ret_int_3
 
 	LREG a0, 6*REGSIZE(sp)			/* スクラッチレジスタを復帰 */
@@ -253,25 +255,20 @@ trap_entry:
 	SFREG ft11, 41*REGSIZE(sp)
 #endif
 
-	la a0, reqflg					/* reqflgをfalseに */
-	SREG zero, 0(a0)
-	la a1, lock_flag				/* loc_flagをtrueに */
+    my_tpcb a1, a0					/* my_tpcbを読み込む */
+	SREG zero, TPCB_reqflg(a1)		/* reqflgをfalseに */
 	li a2, TRUE
-	SREG a2, 0(a1)
+	SREG a2, TPCB_lock_flag(a1)
 
-	la a1, runtsk					/* runtskをa0に */
-	LREG a0, 0(a1)
-	la a2, enadsp					/* enadspがfalseならret_int_1へ */
-	lw a3, 0(a2)
-	beqz a3, ret_int_1
-	la a2, schedtsk					/* runtskとschedtskが同じなら */
-	LREG a3, 0(a2)
+	LREG a0, TPCB_runtsk(a1)		/* runtskをa0に */
+	LREG a2, TPCB_enadsp(a1)		/* enadspがfalseならret_int_1へ */
+	beqz a2, ret_int_1
+	LREG a3, TPCB_schedtsk(a1)		/* runtskとschedtskが同じなら */
 	beq a0, a3, ret_int_1			/* ret_int_1へ */
 
 	LREG a3, 0*REGSIZE(sp)			/* mstatusの取り出し */
 	csrw mstatus, a3				/* mstatusの復帰 */
-	la a2, lock_flag				/* CPUロック解除 */
-	SREG zero, 0(a2)
+	SREG zero, TPCB_lock_flag(a1)	/* CPUロック解除 */
 
 	addi sp, sp, -SAVEREG3*REGSIZE	/* call先セーブのレジスタを保存 */
 	SREG gp, 0*REGSIZE(sp)
@@ -360,8 +357,8 @@ ret_int_2:
 	 *  う準備する．割込み優先度マスクは，MRET命令により元の値に戻るた
 	 *  め，lock_flagをfalseにしておけばよい．
 	 */
-	la a0, lock_flag				/* CPUロック解除の準備 */
-	SREG zero, 0(a0)
+    my_tpcb a0, a2					/* my_tpcbをa0に読み込む */
+	SREG zero, TPCB_lock_flag(a0)	/* CPUロック解除の準備 */
 
 ret_int_3:
 	LREG a1, 3*REGSIZE(sp)			/* mieの取り出し */
@@ -527,23 +524,22 @@ dispatch:
 	SFREG fs10, 25*REGSIZE(sp)
 	SFREG fs11, 26*REGSIZE(sp)
 #endif
-	la a1, runtsk					/* runtskをa0に */
-	LREG a0, 0(a1)
+    my_tpcb a2, a0					/* my_tpcbを読み込む */
+	LREG a0, TPCB_runtsk(a2)		/* runtskをA0に */
 	SREG sp, TCB_sp(a0)				/* タスクスタックを保存 */
 	la a1, dispatch_r
 	SREG a1, TCB_pc(a0)				/* 実行再開番地を保存 */
 
 /* 現在実行中のコンテキストを捨てて、タスクディスパッチャを呼び出す時 */
 exit_and_dispatch:
-	la a2, inest_lvl
-	sh zero, 0(a2)					/* ネストカウンタをクリア */
+    my_tpcb a2, a0					/* my_tpcbを読み込む */
+	sh  zero, TPCB_inest_lvl(a2)	/* ネストカウンタをクリア */
 
 dispatcher:
 	/* ここには CPUロック（割り込み禁止）で来ること */
-	la a1, schedtsk					/* schedtskをa0に取り出す */
-	LREG a0, 0(a1)
-	la a2, runtsk					/* schedtskをruntskにセット */
-	SREG a0, 0(a2)					/* (タスクスイッチの実行) */
+    my_tpcb a2, a0					/* my_tpcbを読み込む */
+	LREG a0, TPCB_schedtsk(a2)		/* schedtskをa0に取り出す */
+	SREG a0, TPCB_runtsk(a2)		/* schedtskをruntskにセット(タスクスイッチの実行) */
 #ifdef	LOG_ANALYSIS
 	addi sp, sp, -4*REGSIZE
 	SREG a0, 2*REGSIZE(sp)			/* スクラッチレジスタを保存 */
@@ -569,38 +565,34 @@ dispatcher_1:
 	 *  という二つの意味がある．
 	 */ 
 dispatcher_2:
-	la a2, runtsk
-	SREG zero, 0(a2)				/* runtsk = NULL */
+    my_tpcb a2, a0					/* my_tpcbを読み込む */
+	SREG zero, TPCB_runtsk(a2)		/* runtsk = NULL */
 
 	/*
 	 *  CPUロック状態を解除する準備をする．
 	 */
 	csrr a5, mie					/* mieをa5に保存 */
-	la a3, lock_flag				/* CPUロック解除状態に */
-	SREG zero, 0(a3)
+	SREG zero, TPCB_lock_flag(a2)	/* CPUロック解除状態に */
 
-	li sp, STACKTOP					/* スタック切り替え */
-	la a3, inest_lvl				/* inest_lvl = 1 */
-	li a1, 1
-	sh a1, 0(a3)
+	LREG sp, TPCB_stacktop(a2)		/* スタック切り替え */
+	li a1, 1						/* inest_lvl = 1 */
+	sh a1, TPCB_inest_lvl(a2)
 	la a1, trap_nest
 	csrw mtvec, a1					/* trap_nestを設定 */
 
 dispatcher_3:
-	la a1, kernel_mie				/* 割込み待ち */
-	LREG a2, 0(a1)
-	csrs mie, a2
+	LREG a3, TPCB_kernel_mie(a2)	/* 割込み待ち */
+	csrs mie, a3
 	nop
 	nop
 	csrw mie, a5					/* 元の状態に戻す */
 
-	la a2, reqflg					/* reqflgがfalseならdispatcher_2へ */
-	LREG a1, 0(a2)
+	LREG a1, TPCB_reqflg(a2)		/* reqflgがfalseならdispatcher_2へ */
 	beqz a1, dispatcher_3
 	SREG zero, 0(a2)				/* reqflgをfalseに */
 	la a1, trap_entry
 	csrw mtvec, a1					/* trap_entryに戻す */
-	sh zero, 0(a3)					/* inest_lvl = 0 */
+	sh zero, TPCB_inest_lvl(a2)		/* inest_lvl = 0 */
 
 	/*
 	 *  CPUロック状態に戻す．割込み待ちの間に実行した割込みハンドラによ
@@ -608,9 +600,8 @@ dispatcher_3:
 	 *  要がある．dispatcherが実行される時は，mieがゼロとなっているため
 	 *  ここではmieを元の状態に戻せばよい．
 	 */
-	la a3, lock_flag				/* CPUロック状態に */
 	li a1, TRUE
-	SREG a1, 0(a3)
+	SREG a1, TPCB_lock_flag(a2)		/* CPUロック状態に */
 	j dispatcher
 
 #endif	/* DEFAULT_INTERRUPT */
@@ -657,7 +648,8 @@ dispatch_r:
 	andi a1, a1, TCB_enatex_mask
 	beqz a1, dispatch_r_1
 	LREG a1, TCB_texptn(a0)			/* texptnが0ならリターン */
-	bnez a1, call_texrtn			/* タスク例外処理ルーチンの呼出し */
+	beqz a1, dispatch_r_1
+	jal call_texrtn					/* タスク例外処理ルーチンの呼出し */
 dispatch_r_1:
 	ret
 
@@ -670,8 +662,8 @@ dispatch_r_1:
 	.global activate_r
 	.type activate_r, %function
 activate_r:
-	la a1, lock_flag				/* CPUロック解除状態に */
-	SREG zero, 0(a1)
+	my_tpcb a1, a2					/* my_tpcbを読み込む */
+	SREG zero, TPCB_lock_flag(a1)	/* CPUロック解除状態に */
 	la ra, ext_tsk					/* ext_tskを戻り番地に設定 */
 	li a2, KERNEL_MIE
 	csrrs a2, mie, a2				/* 割込み許可 */
@@ -680,6 +672,41 @@ activate_r:
 	LREG a2, TINIB_task(a1)			/* タスクの起動番地をa2に */
 	la ra, ext_tsk					/* タスクからの戻り番地を設定 */
 	jr a2
+
+#if TNUM_PRCID > 1
+
+/*
+ * 自タスクのマイグレーション
+ * 引数
+ * a0 : pcbid
+ */
+	.global dispatch_and_migrate
+	.type dispatch_and_migrate, %function
+dispatch_and_migrate:
+	addi sp, sp, -SAVEREG1*REGSIZE	/* レジスタ保存領域を確保 */
+	SREG ra, 0*REGSIZE(sp)			/* returnアドレスを保存 */
+	SREG gp, 1*REGSIZE(sp)			/* call先セーブのレジスタを保存 */
+	SREG tp, 2*REGSIZE(sp)
+	SREG s0, 3*REGSIZE(sp)
+	SREG s1, 4*REGSIZE(sp)
+	SREG s2, 5*REGSIZE(sp)
+	SREG s3, 6*REGSIZE(sp)
+	SREG s4, 7*REGSIZE(sp)
+	SREG s5, 8*REGSIZE(sp)
+	SREG s6, 9*REGSIZE(sp)
+	SREG s7, 10*REGSIZE(sp)
+	SREG s8, 11*REGSIZE(sp)
+	SREG s9, 12*REGSIZE(sp)
+	SREG s10, 13*REGSIZE(sp)
+	SREG s11, 14*REGSIZE(sp)
+    my_tpcb a1, a2					/* my_tpcbを読み込む */
+	LREG a2, TPCB_runtsk(a1)		/* runtskをA0に */
+	SREG sp, TCB_sp(a2)				/* タスクスタックを保存 */
+	la t0, dispatch_r
+	SREG t0, TCB_pc(a2)				/* 実行再開番地を保存 */
+	j migrate_self
+
+#endif	/* TNUM_PRCID > 1 */
 
 /*
  *  微少時間待ち（本来はSILのターゲット依存部）

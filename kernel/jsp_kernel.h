@@ -69,12 +69,14 @@
  *  オブジェクトIDの最小値の定義
  */
 #define	TMIN_TSKID	1	/* タスクIDの最小値 */
+#define	TMIN_PRCID	1	/* プロセッサIDの最小値 */
 #define	TMIN_SEMID	1	/* セマフォIDの最小値 */
 #define	TMIN_FLGID	1	/* フラグIDの最小値 */
 #define	TMIN_DTQID	1	/* データキューIDの最小値 */
 #define	TMIN_MBXID	1	/* メールボックスIDの最小値 */
 #define	TMIN_MPFID	1	/* 固定長メモリプールIDの最小値 */
 #define	TMIN_CYCID	1	/* 周期ハンドラIDの最小値 */
+#define TMIN_SPNID	1	/* スピンロックIDの最小値 */
 
 /*
  *  優先度の段階数の定義
@@ -111,6 +113,11 @@ extern void	call_terrtn(void);
  *  起動メッセージの表示（banner.c）
  */
 extern void	print_banner(void);
+
+/*
+ *  システムスタート処理
+ */
+extern void system_start(ID prcid);
 
 /*
  *  カーネルの終了処理（startup.c）

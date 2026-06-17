@@ -106,8 +106,7 @@ typedef struct task_context_block {
 /*
  *  割込みハンドラテーブル
  */
-extern const FP *p_int_table[];
-extern FP int_handler_table[];
+extern FP* const p_int_table[];
 
 /*
  *  例外の許可
@@ -118,6 +117,22 @@ extern void enable_exc(EXCNO excno);
  *  例外の禁止
  */
 extern void disable_exc(EXCNO excno);
+
+
+/*
+ *  マルチプロセッサ処理モデルの実現
+ *
+ *  コア番号は標準実装．
+ *  その他はシングルコアの場合、実装は不要．
+ */
+
+/*
+ *  コア番号を取り出す
+ */
+#define	x_prc_index()	(0)
+
+#define t_prc_index()	x_prc_index()
+#define i_prc_index()	x_prc_index()
 
 
 /*
@@ -331,7 +346,8 @@ probe_int(INTNO intno)
 Inline void
 define_inh(INHNO inhno, FP int_entry)
 {
-	int_handler_table[inhno + NUM_EXCNO] = int_entry;
+	FP *p_int_handler = (FP *)p_int_table[0];
+	p_int_handler[inhno + NUM_EXCNO] = int_entry;
 }
 
 /*
@@ -343,12 +359,13 @@ define_inh(INHNO inhno, FP int_entry)
 Inline void
 define_exc(EXCNO excno, FP exc_entry)
 {
+	FP *p_int_handler = (FP *)p_int_table[0];
 	/*
 	 *  一部の例外は許可を行う必要がある
 	 */
 	enable_exc(excno);
 
-	int_handler_table[excno] = exc_entry;
+	p_int_handler[excno] = exc_entry;
 }
 
 

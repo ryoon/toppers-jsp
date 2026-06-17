@@ -5,7 +5,7 @@
  * 
  *  Copyright (C) 2000-2003 by Embedded and Real-Time Systems Laboratory
  *                              Toyohashi Univ. of Technology, JAPAN
- *  Copyright (C) 2017-2025 by TOPPERS PROJECT Educational Working Group.
+ *  Copyright (C) 2017-2026 by TOPPERS PROJECT Educational Working Group.
  * 
  *  上記著作権者は，以下の (1)～(4) の条件か，Free Software Foundation 
  *  によって公表されている GNU General Public License の Version 2 に記
@@ -34,7 +34,7 @@
  *  含めて，いかなる保証も行わない．また，本ソフトウェアの利用により直
  *  接的または間接的に生じたいかなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: sys_config.c 2246 2025-12-15 14:52:07Z roi $
+ *  @(#) $Id: sys_config.c 2246 2026-01-13 21:12:17Z roi $
  */
 
 /*
@@ -44,16 +44,27 @@
 #include "jsp_kernel.h"
 #include <hw_timer.h>		/* システム・タイマー関係 */
 #include <hw_serial.h>		/* デバックシリアルコントローラ関係 */
+#include <hw_interpro.h>	/* プロセッサ間通信割込み関係 */
 
+/*
+ *  システム部のビルド条件判定
+ */
+#if TNUM_PRCID > 2
+#error	"Illegal number of prossores (TNUM_PRCID should be 1 or 2)";
+#endif
 
 static FP vector_table[TNUM_PRCID][TMAX_INTNO+1];
-const FP *p_int_table[TNUM_PRCID] = {
+FP* const p_int_table[TNUM_PRCID] = {
 	vector_table[0],
+#if TNUM_PRCID >= 2
+	vector_table[1]
+#endif
 };
 
 UW SystemFrequency;
-UD compare_time;
-W  molecule;
+UD compare_time[TNUM_PRCID];
+W  molecule[TNUM_PRCID];
+UD interrupt_map[TNUM_PRCID];
 
 /*
  *  ターゲット依存の初期化
@@ -61,6 +72,7 @@ W  molecule;
 void
 sys_initialize(void)
 {
+	UINT	idx = x_prc_index();
 	UW	i, hi, lo;
 
 	/*
@@ -93,8 +105,13 @@ sys_initialize(void)
 	 *  デフォルト割込みハンドラの設定
 	 */
 	for(i = 0 ; i <= TMAX_INTNO ; i++){
-		vector_table[0][i] = default_hazard3_handler;
+		vector_table[x_prc_index()][i] = default_hazard3_handler;
 	}
+
+	/*
+	 *  割込み有効化マップの初期化
+	 */
+	interrupt_map[idx] = 0;
 
 	/*
 	 *  割込みスレシュホールドを0に設定
@@ -102,11 +119,31 @@ sys_initialize(void)
 	set_ithreshold(0);
 
 	/*
+	 *  プロセッサ間割込み初期化
+	 */
+	interpro_init();
+
+	/*
 	 *  タイマーコンペア値設定
 	 */
 	hi = sil_rew_mem((UW *)(TADR_SIO_MTIME+4));
 	lo = sil_rew_mem((UW *)(TADR_SIO_MTIME));
-	compare_time = ((UD)hi << 32) | lo;
+	compare_time[idx] = ((UD)hi << 32) | lo;
+
+#if TNUM_PRCID > 1
+	if(idx == 0){
+		/*
+		 *  コア１起動
+		 */
+		mprc_initialize(start, (UW *)(STACKTOP-PSTACKSIZE), (UW)ivector+1);
+	}
+#ifndef TOPPERS_SYSTIM_GLOBAL
+	else{
+		hw_timer_initialize();
+	}
+#endif /* TOPPERS_SYSTIM_GLOBAL */
+#endif /* TNUM_PRCID > 1 */
+
 	x_config_int(INTNO_TIMER, TRUE, INTPRI_TIMER);
 }
 
@@ -116,6 +153,11 @@ sys_initialize(void)
 void
 sys_exit(void)
 {
+	/*
+	 *  プロセッサ間割込み終了
+	 */
+	interpro_term();
+
 	/*
 	 *  すべての割込みをマスクする．
 	 */
@@ -165,6 +207,10 @@ x_config_int(INTNO intno, BOOL active, PRI intpri)
 	assert(intno <= TMAX_INTNO);
 	assert(TMIN_INTPRI <= intpri && intpri <= TMAX_INTPRI);
 
+	/*
+	 *  実行履歴を残す
+	 */
+	interrupt_map[x_prc_index()] |= 1 << intno;
 	/*
 	 *  割込みのマスク
 	 *

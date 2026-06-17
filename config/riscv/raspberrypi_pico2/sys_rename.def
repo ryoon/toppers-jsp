@@ -4,3 +4,4 @@ default_hazard3_handler
 sys_putc
 compare_time
 molecule
+interrupt_map

@@ -43,18 +43,19 @@
 #include "check.h"
 #include "task.h"
 
-/*
- *  CPUロックフラグ実現のための変数
- */
-volatile BOOL			lock_flag;	/* CPUロックフラグの値を保持する変数 */
-volatile UH				inest_lvl;	/* 割込みネストを保存する変数 */
-volatile unsigned long	kernel_mie;	/* デフォルトのMIE値を保存する変数 */
-static unsigned long	saved_trap;	/* MACHINE TRAPデータの保存変数 */
+#ifdef OMIT_SYSTEM_TPCB
+#error "Not support STPCB type."
+#endif
 
 /*
  *  MACHINE割込みハンドラ領域のテーブル
  */
 volatile EXCVE m_interrupt_handlers[TNUM_PRCID][NUM_MACHNE_INTNO];
+
+/*
+ *  TPCBへのポインタテーブル
+ */
+STPCB *p_tspcb_table[TNUM_PRCID];
 
 /*
  *  MACHINEタイマ用割込みハンドラ
@@ -82,29 +83,43 @@ default_int_handler(unsigned long mcause, void *p_excinf)
 }
 #endif /* OMIT_DEFAULT_INT_HANDLER */
 
+static void
+init_intmodel(STPCB *stpcb, UINT idx)
+{
+	assert(stpcb != NULL);
+	assert(idx < TNUM_PRCID);
+
+	p_tspcb_table[idx] = stpcb;
+	stpcb->lock_flag = TRUE;
+	stpcb->inest_lvl = 0;
+	stpcb->kernel_mie = KERNEL_MIE;
+	stpcb->saved_trap = read_csr(mtvec);
+	stpcb->stacktop  = (VP*)(STACKTOP - (PSTACKSIZE * idx));
+}
+
 /*
  *  プロセッサ依存の初期化
  */
 void
 cpu_initialize(void)
 {
+	STPCB *my_stpcb = get_my_stpcb();
+	UW	idx = x_prc_index();
 	int  i;
 
 	/*
 	 *  CPUロックフラグ実現のための変数の初期化
 	 */
-	lock_flag  = TRUE;
-	kernel_mie = KERNEL_MIE;
+	init_intmodel(my_stpcb, idx);
 	disable_int_status(KERNEL_MIE);
 	set_csr(mie, MIP_MSIP);
-	inest_lvl  = 0;
 
 	/*
 	 *  例外ベクタテーブルの初期化
 	 */
 #ifndef OMIT_DEFAULT_INT_HANDLER
 	for(i = 0 ; i < NUM_MACHNE_INTNO ; i++){
-		m_interrupt_handlers[0][i].exc_handler = (FP)default_int_handler;
+		m_interrupt_handlers[x_prc_index()][i].exc_handler = (FP)default_int_handler;
 	}
 #endif
 	default_timer_handler = NULL;
@@ -115,7 +130,7 @@ cpu_initialize(void)
 	machine_inh(IRQ_M_TIMER, (FP)machine_timer_handler);
 #endif
 
-	saved_trap = read_csr(mtvec);
+	my_stpcb->saved_trap = read_csr(mtvec);
 	write_csr(mtvec, &trap_entry);
 	ena_intm();
 
@@ -142,7 +157,8 @@ cpu_initialize(void)
 void
 cpu_terminate(void)
 {
-	write_csr(mtvec, saved_trap);
+	STPCB *my_stpcb = get_my_stpcb();
+	write_csr(mtvec, my_stpcb->saved_trap);
 }
 
 /*
@@ -152,10 +168,13 @@ UH
 handle_trap(unsigned long mcause, void *p_excinf)
 {
 	UW      intno = mcause & MCAUSE_CAUSE;
+	UW      idx   = x_prc_index();
+	TPCB	*tpcb = get_pure_tpcb(idx);
+	STPCB   *my_stpcb = get_my_stpcb();
 	void    (*func)(unsigned long, void *);
 
 #ifdef DEFAULT_INTERRUPT
-	if(inest_lvl++ == 0)
+	if(my_stpcb->inest_lvl++ == 0)
 		write_csr(mtvec, &trap_nest);
 #endif
 	if((long)mcause < 0){
@@ -164,19 +183,21 @@ handle_trap(unsigned long mcause, void *p_excinf)
 	}
 	ena_intm();
 	if(intno < NUM_MACHNE_INTNO){
-		func = (void(*)(unsigned long, void *))m_interrupt_handlers[0][intno].exc_handler;
+		func = (void(*)(unsigned long, void *))m_interrupt_handlers[idx][intno].exc_handler;
 		if(func != NULL)
 			func(mcause, p_excinf);
+		if(tpcb->locspnid != 0)
+			spin_lock_error_handler(32, p_excinf);
 	}
 	else{
 		syslog(LOG_EMERG, "Irrigal machine Exception mcause = %08X", (int)intno);
 	}
 	disable_int_status(KERNEL_MIE);
 #ifdef DEFAULT_INTERRUPT
-	if(--inest_lvl == 0)
+	if(--my_stpcb->inest_lvl == 0)
 		write_csr(mtvec, &trap_entry);
 #endif
-	return inest_lvl;
+	return my_stpcb->inest_lvl;
 }
 
 #ifdef DEFAULT_INTERRUPT
@@ -187,18 +208,38 @@ handle_trap(unsigned long mcause, void *p_excinf)
 void
 machine_timer_handler(void)
 {
+	STPCB   *my_stpcb = get_my_stpcb();
 	UB  threshold = (UB)current_ithreshold();
-	kernel_mie &= ~MIP_MTIP;
+	my_stpcb->kernel_mie &= ~MIP_MTIP;
 	set_ithreshold((UW)INTPRI_TIMER);
-	set_csr(mie, kernel_mie);
+	set_csr(mie, my_stpcb->kernel_mie);
 	if(default_timer_handler != NULL)
 		default_timer_handler();
 	clear_csr(mie, KERNEL_MIE);
 	set_ithreshold((UW)threshold);
-	kernel_mie |= MIP_MTIP;
+	my_stpcb->kernel_mie |= MIP_MTIP;
 }
 
 #endif
+
+/*
+ *  スピンロックエラーが発生した場合のハンドラ
+ */
+void
+spin_lock_error_handler(unsigned long mcause, void *p_excinf)
+{
+	unsigned long mstatus = *(((unsigned long *)p_excinf) + P_EXCINF_OFFSET_MSTATUS);
+	unsigned long pc      = *(((unsigned long *)p_excinf) + P_EXCINF_OFFSET_PC);
+	unsigned long excno   = mcause & MCAUSE_CAUSE;
+
+	if((long)mcause < 0)
+		excno += NUM_MACHNE_EXCNO;
+	syslog(LOG_EMERG, "\nSpin Lock error Interrupt occurs.");
+	syslog(LOG_EMERG, "Excno = 0x%02X, PC = 0x%X, mstatus = 0x%X, p_excinf = 0x%X",
+		   excno, pc, mstatus, p_excinf);
+
+	while(1);
+}
 
 /*
  *  割込み発生許可処理

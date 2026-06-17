@@ -56,6 +56,7 @@ use Getopt::Std;
 #  -p <perl>		perl のパス名（明示的に指定する場合）
 #  -l <lang>		プログラミング言語（現時点ではC++のみサポート）
 #  -d <dir>		テンプレートディレクトリを指定（デフォルトはsample）
+#  -O <define>	コンパイル定義を設定する（デフォルトはなし）
 
 #  使用例(1)
 #
@@ -65,11 +66,16 @@ use Getopt::Std;
 #
 #  % ../configure -C linux
 #	アプリケーションプログラムは sample1 になる．
+#
+#  使用例(3)
+#
+#  % ../configure -C armv6m -S raspberrypi_pico -A mp_sample1 -O -DTNUM_PRCID=2
+#	アプリケーションプログラムは mp_sample1、マルチコアカーネルになる．
 
 #
 #  オプションの処理
 #
-getopt("CSTAULDPpld");
+getopt("CSTAULDOPpld");
 unless ($opt_C) {
 	print STDERR "configure: -C option is mandatory\n";
 	exit(1);
@@ -85,6 +91,7 @@ $prefix = $opt_P ? $opt_P : "/usr/local";
 $perl = opt_p ? $opt_p : get_path("perl", ("/usr/local/bin", "/usr/bin"));
 $lang = $opt_l ? $opt_l : "";
 $templatedir = $opt_d ? $opt_d : "sample";
+$cdefine = $opt_O ? $opt_O : "";
 
 #
 #  オブジェクトファイル名の拡張子を返す
@@ -228,6 +235,7 @@ $vartable{"PREFIX"} = $prefix;
 $vartable{"OBJEXT"} = get_objext();
 $vartable{"PERL"} = $perl;
 $vartable{"LANG"} = $lang;
+$vartable{"CDEFINE"} = $cdefine;
 
 #
 #  ディレクトリのチェック

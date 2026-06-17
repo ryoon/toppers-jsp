@@ -50,13 +50,14 @@
 #ifdef __waimake
 
 void
-make_wait_tmout(WINFO *winfo, TMEVTB *tmevtb, TMO tmout)
+make_wait_tmout(TPCB *tpcb, WINFO *winfo, TMEVTB *tmevtb, TMO tmout)
 {
+	TCB *runtsk = tpcb->runtsk;
 	make_non_runnable(runtsk);
 	runtsk->winfo = winfo;
 	if (tmout > 0) {
 		winfo->tmevtb = tmevtb;
-		tmevtb_enqueue(tmevtb, (RELTIM) tmout,
+		tmevtb_enqueue(tpcb->tevtcb, tmevtb, (RELTIM) tmout,
 					(CBACK) wait_tmout, (VP) runtsk);
 	}
 	else {
@@ -104,7 +105,7 @@ BOOL
 wait_complete(TCB *tcb)
 {
 	if (tcb->winfo->tmevtb != NULL) {
-		tmevtb_dequeue(tcb->winfo->tmevtb);
+		tmevtb_dequeue(tcb->tpcb->tevtcb, tcb->winfo->tmevtb);
 	}
 	tcb->winfo->wercd = E_OK;
 	return(make_non_wait(tcb));
@@ -125,7 +126,7 @@ wait_tmout(TCB *tcb)
 	}
 	tcb->winfo->wercd = E_TMOUT;
 	if (make_non_wait(tcb)) {
-		reqflg = TRUE;
+		reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 	}
 }
 
@@ -137,7 +138,7 @@ wait_tmout_ok(TCB *tcb)
 {
 	tcb->winfo->wercd = E_OK;
 	if (make_non_wait(tcb)) {
-		reqflg = TRUE;
+		reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 	}
 }
 
@@ -152,7 +153,7 @@ void
 wait_cancel(TCB *tcb)
 {
 	if (tcb->winfo->tmevtb != NULL) {
-		tmevtb_dequeue(tcb->winfo->tmevtb);
+		tmevtb_dequeue(tcb->tpcb->tevtcb, tcb->winfo->tmevtb);
 	}
 	if ((tcb->tstat & TS_WAIT_WOBJ) != 0) {
 		queue_delete(&(tcb->task_queue));
@@ -193,7 +194,7 @@ queue_insert_tpri(TCB *tcb, QUEUE *queue)
  *  実行中のタスクの同期・通信オブジェクトの待ちキューへの挿入
  */
 Inline void
-wobj_queue_insert(WOBJCB *wobjcb)
+wobj_queue_insert(TCB *runtsk, WOBJCB *wobjcb)
 {
 	if ((wobjcb->wobjinib->wobjatr & TA_TPRI) != 0) {
 		queue_insert_tpri(runtsk, &(wobjcb->wait_queue));
@@ -210,11 +211,12 @@ wobj_queue_insert(WOBJCB *wobjcb)
 #ifdef __wobjwai
 
 void
-wobj_make_wait(WOBJCB *wobjcb, WINFO_WOBJ *winfo)
+wobj_make_wait(TPCB *tpcb, WOBJCB *wobjcb, WINFO_WOBJ *winfo)
 {
+	TCB	*runtsk = tpcb->runtsk;
 	runtsk->tstat = (TS_WAITING | TS_WAIT_WOBJ | TS_WAIT_WOBJCB);
-	make_wait(&(winfo->winfo));
-	wobj_queue_insert(wobjcb);
+	make_wait(tpcb, &(winfo->winfo));
+	wobj_queue_insert(runtsk, wobjcb);
 	winfo->wobjcb = wobjcb;
 	LOG_TSKSTAT(runtsk);
 }
@@ -223,14 +225,14 @@ wobj_make_wait(WOBJCB *wobjcb, WINFO_WOBJ *winfo)
 #ifdef __wobjwaitmo
 
 void
-wobj_make_wait_tmout(WOBJCB *wobjcb, WINFO_WOBJ *winfo,
+wobj_make_wait_tmout(TPCB *tpcb, WOBJCB *wobjcb, WINFO_WOBJ *winfo,
 					TMEVTB *tmevtb, TMO tmout)
 {
-	runtsk->tstat = (TS_WAITING | TS_WAIT_WOBJ | TS_WAIT_WOBJCB);
-	make_wait_tmout(&(winfo->winfo), tmevtb, tmout);
-	wobj_queue_insert(wobjcb);
+	tpcb->runtsk->tstat = (TS_WAITING | TS_WAIT_WOBJ | TS_WAIT_WOBJCB);
+	make_wait_tmout(tpcb, &(winfo->winfo), tmevtb, tmout);
+	wobj_queue_insert(tpcb->runtsk, wobjcb);
 	winfo->wobjcb = wobjcb;
-	LOG_TSKSTAT(runtsk);
+	LOG_TSKSTAT(tpcb->runtsk);
 }
 
 #endif /* __wobjwaitmo */
@@ -240,7 +242,7 @@ wobj_make_wait_tmout(WOBJCB *wobjcb, WINFO_WOBJ *winfo,
 #ifdef __wobjpri
 
 void
-wobj_change_priority(WOBJCB *wobjcb, TCB *tcb)
+wobj_change_priority(TCB *tcb, WOBJCB *wobjcb)
 {
 	if ((wobjcb->wobjinib->wobjatr & TA_TPRI) != 0) {
 		queue_delete(&(tcb->task_queue));

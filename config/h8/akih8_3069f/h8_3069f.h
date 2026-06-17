@@ -113,8 +113,6 @@
 #define IRQ_TXI2		62		/* SCI2 TXI */
 #define IRQ_TEI2		63		/* SCI2 TEI */
 
-#define	TMAX_INTNO		63
-
 /* 
  * register address 
  *　　内部I/Oレジスタ(1) 0xfe,e000～0xfe,e0ff

@@ -54,25 +54,30 @@ ras_tex(ID tskid, TEXPTN rasptn)
 {
 	TCB	*tcb;
 	ER	ercd;
+	TPCB	*tpcb;
 
 	LOG_RAS_TEX_ENTER(tskid, rasptn);
 	CHECK_TSKCTX_UNL();
 	CHECK_TSKID_SELF(tskid);
 	CHECK_PAR(rasptn != 0);
-	tcb = get_tcb_self(tskid);
+	tcb = get_tcb_self(tskid, get_my_tpcb());
 
-	t_lock_cpu();
+	t_acquire_glock();
+	tpcb = tcb->tpcb;
 	if (TSTAT_DORMANT(tcb->tstat) || tcb->tinib->texrtn == NULL) {
 		ercd = E_OBJ;
 	}
 	else {
 		tcb->texptn |= rasptn;
-		if (tcb == runtsk && runtsk->enatex) {
-			call_texrtn();
+		if (reqest_task_event(tcb->tpcb, IPI_EVENT_TEXCEPT)) {
+			if (tcb == tpcb->runtsk && tpcb->runtsk->enatex) {
+				call_texrtn();
+				tpcb = get_my_tpcb();
+			}
 		}
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_RAS_TEX_LEAVE(ercd);
@@ -98,18 +103,19 @@ iras_tex(ID tskid, TEXPTN rasptn)
 	CHECK_PAR(rasptn != 0);
 	tcb = get_tcb(tskid);
 
-	i_lock_cpu();
+	i_acquire_glock();
 	if (TSTAT_DORMANT(tcb->tstat) || tcb->tinib->texrtn == NULL) {
 		ercd = E_OBJ;
 	}
 	else {
+		TPCB *tpcb = tcb->tpcb;
 		tcb->texptn |= rasptn;
-		if (tcb == runtsk && runtsk->enatex) {
-			reqflg = TRUE;
+		if (tcb == tpcb->runtsk && tpcb->runtsk->enatex) {
+			reqest_task_event(tcb->tpcb, IPI_EVENT_DISPATCH);
 		}
 		ercd = E_OK;
 	}
-	i_unlock_cpu();
+	i_release_glock();
 
     exit:
 	LOG_IRAS_TEX_LEAVE(ercd);
@@ -126,12 +132,14 @@ iras_tex(ID tskid, TEXPTN rasptn)
 SYSCALL ER
 dis_tex()
 {
+	TCB	*runtsk;
 	ER	ercd;
 
 	LOG_DIS_TEX_ENTER();
 	CHECK_TSKCTX_UNL();
 
-	t_lock_cpu();
+	t_acquire_glock();
+	runtsk = get_my_tpcb()->runtsk;
 	if (runtsk->tinib->texrtn == NULL) {
 		ercd = E_OBJ;
 	}
@@ -139,7 +147,7 @@ dis_tex()
 		runtsk->enatex = FALSE;
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_DIS_TEX_LEAVE(ercd);
@@ -157,11 +165,15 @@ SYSCALL ER
 ena_tex()
 {
 	ER	ercd;
+	TCB	*runtsk;
+	TPCB	*my_tpcb;
 
 	LOG_ENA_TEX_ENTER();
 	CHECK_TSKCTX_UNL();
 
-	t_lock_cpu();
+	t_acquire_glock();
+	my_tpcb = get_my_tpcb();
+	runtsk = my_tpcb->runtsk;
 	if (runtsk->tinib->texrtn == NULL) {
 		ercd = E_OBJ;
 	}
@@ -172,7 +184,7 @@ ena_tex()
 		}
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_ENA_TEX_LEAVE(ercd);
@@ -189,9 +201,11 @@ ena_tex()
 SYSCALL BOOL
 sns_tex()
 {
+	TCB	*runtsk;
 	BOOL	state;
 
 	LOG_SNS_TEX_ENTER();
+	runtsk = get_my_tpcb()->runtsk;
 	state = (runtsk != NULL && runtsk->enatex) ? FALSE : TRUE;
 	LOG_SNS_TEX_LEAVE(state);
 	return(state);

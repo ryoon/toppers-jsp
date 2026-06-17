@@ -33,7 +33,7 @@
  *  ない．また，本ソフトウェアの利用により直接的または間接的に生じたい
  *  かなる損害に関しても，その責任を負わない．
  * 
- *  @(#) $Id: task_expansion.c,v 1.5 2025/11/22 18:50:25 roi Exp $
+ *  @(#) $Id: task_expansion.c,v 1.6 2025/12/08 13:56:45 roi Exp $
  */
 
 /*
@@ -156,9 +156,9 @@ ref_dtq(ID dtqid, T_RDTQ *pk_rdtq)
  *  割込み中でも使用でき、共通化できるように
  *  インライン関数とする．
  */
-Inline SYSTIM get_systime(void)
+Inline SYSTIM get_systime(TEVTCB *tevtcb)
 {
-	return systim_offset + next_time;
+	return tevtcb->systim_offset + tevtcb->next_time;
 }
 
 
@@ -169,8 +169,8 @@ Inline SYSTIM get_systime(void)
  */
 
 static T_TLOG tsk_log[MAX_TASK_LOG+1];
-static ID     check_tskid;
-static SYSTIM check_time;
+static ID     check_tskid[TNUM_PRCID];
+static SYSTIM check_time[TNUM_PRCID];
 static SYSTIM pervious_time;
 
 /*
@@ -183,6 +183,9 @@ static SYSTIM pervious_time;
 void iana_tsk(void)
 {
 	T_TLOG  *t;
+	UINT	idx = get_prc_index();
+	TPCB	*my_tpcb = get_pure_tpcb(idx);
+	TEVTCB	*tevtcb = my_tpcb->tevtcb;
 	SYSTIM  time;
 #if TIC_DENO != 1
 	INT     subtime;
@@ -195,12 +198,12 @@ void iana_tsk(void)
 	 * vxget_timと同等の記述をここにおく。
 	 */
 #if TIC_DENO != 1
-	subtime = (INT) next_subtime;
+	subtime = (INT) tevtcb->next_subtime;
 #endif /* TIC_DENO != 1 */
 	clock = hw_timer_get_current();
 	ireq = hw_timer_fetch_interrupt();
 
-	time = get_systime() * ANA_STIC;
+	time = get_systime(tevtcb) * ANA_STIC;
 #if TIC_DENO != 1
 	time += subtime * ANA_STIC / TIC_DENO;
 #endif /* TIC_DENO != 1 */
@@ -210,20 +213,20 @@ void iana_tsk(void)
 	}
 	time += clock * ANA_STIC / TIMER_CLOCK;
 
-	if(check_tskid < 0)
+	if(check_tskid[idx] < 0)
 		t = &tsk_log[0];
-	else if(check_tskid < MAX_TASK_LOG)
-		t = &tsk_log[check_tskid];
+	else if(check_tskid[idx] < MAX_TASK_LOG)
+		t = &tsk_log[check_tskid[idx]];
 	else
 		t = &tsk_log[MAX_TASK_LOG];
 	t->runcount++;
-	t->runtimes += time - check_time;
+	t->runtimes += time - check_time[idx];
 
-	if(runtsk)
-		check_tskid = TSKID(runtsk);
+	if(my_tpcb->runtsk)
+		check_tskid[idx] = TSKID(my_tpcb->runtsk);
 	else
-		check_tskid = 0;
-	check_time = time;
+		check_tskid[idx] = 0;
+	check_time[idx] = time;
 }
 
 /*
@@ -235,7 +238,7 @@ INT get_tsklog(T_TPRM * pprm)
 	INT num_item=0;
 
 	get_tim(&pprm->currtime);
-	t_lock_cpu();
+	t_acquire_glock();
 	pprm->pervtime = pervious_time;
 	pervious_time  = pprm->currtime;
 	for(no = 0 ; no <= tmax_tskid && no <= MAX_TASK_LOG ; no++){
@@ -251,7 +254,7 @@ INT get_tsklog(T_TPRM * pprm)
 		tsk_log[no].runcount = 0;
 		tsk_log[no].runtimes = 0;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 	return num_item;
 }
 

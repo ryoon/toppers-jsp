@@ -98,21 +98,35 @@ typedef struct task_context_block {
     FP    pc;        /* プログラムカウンタ */
 } CTXB;
 
+/*
+ *  ARMV4M依存プロセッサコントロールブロック
+ */
+typedef struct system_processor_control_block {
+	/*
+	 *  CPUロックフラグ実現のための変数
+	 *
+	 *  これらの変数は，CPUロック状態の時のみ書き換えてもよいとする．
+	 *  インライン関数中で，アクセスの順序が変化しないよう，volatile を指定．
+	 */
+	volatile UB	ief_systick;  /* SysTickの割込み要求許可フラグの状態 */
+	volatile UB	iipm;		  /* 現在の割込み優先度マスクの値 */
+	volatile UW	interrupt_map; /* 割込み有効化マップ */
+
+	/*
+	 *  アイドル処理用のスタックの初期値
+	 */
+	VP* stacktop;
+} STPCB;
 
 /*
- *  割込み要求禁止フラグの実現のための変数
+ *  STPCBの保存テーブル
  */
-extern UB	ief_systick;		/* SysTickの割込み要求許可フラグの状態 */
-
-/*
- *  割込み優先度マスク実現のための変数
- */
-extern UB	iipm;		/* 現在の割込み優先度マスクの値 */ 
+extern STPCB *p_tspcb_table[];
 
 /*
  *  割込みハンドラテーブル
  */
-extern FP int_handler_table[];
+extern FP* const p_int_table[];
 
 /*
  *  例外の許可
@@ -258,6 +272,7 @@ set_int_priority(UB intno, UB priority)
 Inline BOOL
 disable_int(INTNO intno)
 {
+	STPCB *tspcb = p_tspcb_table[x_prc_index()];
 	UW tmp;
 
 	/*
@@ -271,7 +286,7 @@ disable_int(INTNO intno)
 		tmp = sil_rew_mem((void *)SYSTIC_CONTROL_STATUS);
 		tmp &= ~SYSTIC_TICINT;
 		sil_wrw_mem((void *)SYSTIC_CONTROL_STATUS, tmp);
-		ief_systick = 0U;
+		tspcb->ief_systick = 0U;
 	}
 	else {
 		sil_wrw_mem((void *)(NVIC_CLRENA0), (1 << (intno & 0x1f)));
@@ -289,6 +304,7 @@ disable_int(INTNO intno)
 Inline BOOL
 enable_int(INTNO intno)
 {
+	STPCB *tspcb = p_tspcb_table[x_prc_index()];
 	UW tmp;
 
 	/*
@@ -299,14 +315,18 @@ enable_int(INTNO intno)
 	}
 
 	if (intno == IRQ_VECTOR_SYSTICK) {
-		if (get_exc_priority(EXCNO_SYSTICK) < iipm || iipm == 0) {
+		if (get_exc_priority(EXCNO_SYSTICK) < tspcb->iipm || tspcb->iipm == 0) {
 			tmp = sil_rew_mem((void *)SYSTIC_CONTROL_STATUS);
-			tmp |= SYSTIC_TICINT;;
+			tmp |= SYSTIC_TICINT;
 			sil_wrw_mem((void *)SYSTIC_CONTROL_STATUS, tmp);
 		}
-		ief_systick = 1U;
+		tspcb->ief_systick = 1U;
 	}
-	else if (get_int_priority(intno) < iipm || iipm == 0 ) {
+	else if ((tspcb->interrupt_map & (1 << intno)) == 0) {
+		/* 初期化されていない場合 */
+		return FALSE;
+	}
+	else if (get_int_priority(intno) < tspcb->iipm || tspcb->iipm == 0 ) {
 		sil_wrw_mem((void *)(NVIC_SETENA0), (1 << (intno & 0x1f)));
 	}
 
@@ -338,7 +358,8 @@ probe_int(INTNO intno)
 Inline void
 define_inh(INHNO inhno, FP int_entry)
 {
-	int_handler_table[inhno + NUM_EXCNO] = int_entry;
+	FP *p_int_handler = (FP *)p_int_table[x_prc_index()];
+	p_int_handler[inhno + NUM_EXCNO] = int_entry;
 }
 
 /*
@@ -350,12 +371,13 @@ define_inh(INHNO inhno, FP int_entry)
 Inline void
 define_exc(EXCNO excno, FP exc_entry)
 {
+	FP *p_int_handler = (FP *)p_int_table[x_prc_index()];
 	/*
 	 *  一部の例外は許可を行う必要がある
 	 */
 	enable_exc(excno);
 
-	int_handler_table[excno] = exc_entry;
+	p_int_handler[excno] = exc_entry;
 }
 
 
@@ -377,11 +399,12 @@ define_exc(EXCNO excno, FP exc_entry)
 Inline void
 set_iipm(IPM ipm)
 {
+	STPCB *tspcb = p_tspcb_table[x_prc_index()];
 	UW i, tmp;
 
 	assert(VALID_INTPRI_CHGIPM(ipm));
 	tmp = sil_rew_mem((void *)SYSTIC_CONTROL_STATUS);
-	if (get_exc_priority(EXCNO_SYSTICK) < ipm && ief_systick == 1U) {
+	if (get_exc_priority(EXCNO_SYSTICK) < ipm && tspcb->ief_systick == 1U) {
 		tmp |= SYSTIC_TICINT;
 	}else{
 		tmp &= ~SYSTIC_TICINT;
@@ -395,7 +418,7 @@ set_iipm(IPM ipm)
 			tmp |= 1 << i;
 	}
 	sil_wrw_mem((void *)NVIC_SETENA0, tmp);
-	iipm = ipm;
+	tspcb->iipm = ipm;
 }
 
 /*
@@ -405,7 +428,9 @@ set_iipm(IPM ipm)
 Inline PRI
 get_iipm(void)
 {
-	return iipm;
+	STPCB *tspcb = p_tspcb_table[x_prc_index()];
+
+	return tspcb->iipm;
 }
 
 /*
@@ -506,6 +531,11 @@ extern void x_config_int(INTNO intno, BOOL active, PRI intpri);
  *  エクセプション・ベクター関数
  */
 extern void cpu_exc_entry(void);
+
+/*
+ *  スピンロックエラーが発生した場合のハンドラ
+ */
+extern void spin_lock_error_handler(void *p_excinf);
 
 /*
  *  PendSvcベクター関数

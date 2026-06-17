@@ -65,6 +65,18 @@ makeoffset()
     OFFSET_DEF(TCB, texptn);
     OFFSET_DEF2(TCB, tskctxb.sp, sp);
     OFFSET_DEF2(TCB, tskctxb.pc, pc);
+
+	OFFSET_DEF(TPCB, runtsk);
+	OFFSET_DEF(TPCB, schedtsk);
+	OFFSET_DEF(TPCB, reqflg);
+	OFFSET_DEF(TPCB, enadsp);
+	OFFSET_DEF(TPCB, locspnid);
+
+	OFFSET_DEF2(TPCB, sys_tpcb.lock_flag, lock_flag);
+	OFFSET_DEF2(TPCB, sys_tpcb.inest_lvl, inest_lvl);
+	OFFSET_DEF2(TPCB, sys_tpcb.kernel_mie, kernel_mie);
+	OFFSET_DEF2(TPCB, sys_tpcb.saved_trap, saved_trap);
+	OFFSET_DEF2(TPCB, sys_tpcb.stacktop, stacktop);
 }
 
 UW	BIT_REF_4 = 0x12345678;
@@ -74,13 +86,10 @@ UB	BIT_REF_1 = 0x12;
 #if SIL_ENDIAN == SIL_ENDIAN_LITTLE	/* リトルエンディアンプロセッサ */
 
 TCB	BIT_LB_TCB_enatex = {
-
 #else /* SIL_ENDIAN == SIL_ENDIAN_LITTLE */
 TCB	BIT_BB_TCB_enatex = {
-
 #endif /* SIL_ENDIAN == SIL_ENDIAN_LITTLE */
-
                { NULL, NULL }, NULL, 0, 0,
                FALSE, FALSE, TRUE,
-               0, NULL, {NULL, NULL }
+               0, NULL, NULL, {NULL, NULL }, 0
 };

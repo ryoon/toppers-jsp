@@ -9,13 +9,14 @@
 #define cpu_exc_entry				_kernel_cpu_exc_entry
 #define cpu_int_entry				_kernel_cpu_int_entry
 #define cpu_systic_entry			_kernel_cpu_systic_entry
+#define pendsvc_handler				_kernel_pendsvc_handler
+#define spin_lock_error_handler		_kernel_spin_lock_error_handler
 #define start						_kernel_start
 #define enable_exc					_kernel_enable_exc
 #define disable_exc					_kernel_disable_exc
 #define x_config_int				_kernel_x_config_int
-#define int_handler_table			_kernel_int_handler_table
-#define ief_systick					_kernel_ief_systick
-#define iipm						_kernel_iipm
+#define p_int_table					_kernel_p_int_table
+#define p_tspcb_table				_kernel_p_tspcb_table
 
 #ifdef LABEL_ASM
 
@@ -25,13 +26,14 @@
 #define _cpu_exc_entry				__kernel_cpu_exc_entry
 #define _cpu_int_entry				__kernel_cpu_int_entry
 #define _cpu_systic_entry			__kernel_cpu_systic_entry
+#define _pendsvc_handler			__kernel_pendsvc_handler
+#define _spin_lock_error_handler	__kernel_spin_lock_error_handler
 #define _start						__kernel_start
 #define _enable_exc					__kernel_enable_exc
 #define _disable_exc				__kernel_disable_exc
 #define _x_config_int				__kernel_x_config_int
-#define _int_handler_table			__kernel_int_handler_table
-#define _ief_systick				__kernel_ief_systick
-#define _iipm						__kernel_iipm
+#define _p_int_table				__kernel_p_int_table
+#define _p_tspcb_table				__kernel_p_tspcb_table
 
 #endif /* LABEL_ASM */
 

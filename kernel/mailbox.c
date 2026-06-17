@@ -92,6 +92,9 @@ mailbox_initialize()
 	UINT	i;
 	MBXCB	*mbxcb;
 
+	if (!is_master_proc()) {
+		return;
+	}
 	for (mbxcb = mbxcb_table, i = 0; i < TNUM_MBX; mbxcb++, i++) {
 		queue_initialize(&(mbxcb->wait_queue));
 		mbxcb->mbxinib = &(mbxinib_table[i]);
@@ -135,7 +138,7 @@ snd_mbx(ID mbxid, T_MSG *pk_msg)
 	MBXCB	*mbxcb;
 	TCB	*tcb;
 	ER	ercd;
-    
+
 	LOG_SND_MBX_ENTER(mbxid, pk_msg);
 	CHECK_TSKCTX_UNL();
 	CHECK_MBXID(mbxid);
@@ -144,12 +147,12 @@ snd_mbx(ID mbxid, T_MSG *pk_msg)
 		|| (TMIN_MPRI <= MSGPRI(pk_msg)
 			&& MSGPRI(pk_msg) <= mbxcb->mbxinib->maxmpri));
 
-	t_lock_cpu();
+	t_acquire_glock();
 	if (!(queue_empty(&(mbxcb->wait_queue)))) {
 		tcb = (TCB *) queue_delete_next(&(mbxcb->wait_queue));
 		((WINFO_MBX *)(tcb->winfo))->pk_msg = pk_msg;
 		if (wait_complete(tcb)) {
-			dispatch();
+			multi_core_dispatch(tcb->tpcb);
 		}
 		ercd = E_OK;
 	}
@@ -168,7 +171,7 @@ snd_mbx(ID mbxid, T_MSG *pk_msg)
 		mbxcb->last = pk_msg;
 		ercd = E_OK;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_SND_MBX_LEAVE(ercd);
@@ -187,28 +190,30 @@ rcv_mbx(ID mbxid, T_MSG **ppk_msg)
 {
 	MBXCB	*mbxcb;
 	WINFO_MBX winfo;
+	TPCB	*my_tpcb;
 	ER	ercd;
-    
+
 	LOG_RCV_MBX_ENTER(mbxid, ppk_msg);
 	CHECK_DISPATCH();
 	CHECK_MBXID(mbxid);
 	mbxcb = get_mbxcb(mbxid);
-    
-	t_lock_cpu();
+
+	t_acquire_glock();
 	if (mbxcb->head != NULL) {
 		*ppk_msg = mbxcb->head;
 		mbxcb->head = (*ppk_msg)->next;
 		ercd = E_OK;
 	}
 	else {
-		wobj_make_wait((WOBJCB *) mbxcb, (WINFO_WOBJ *) &winfo);
-		dispatch();
+		my_tpcb = get_my_tpcb();
+		wobj_make_wait(my_tpcb, (WOBJCB *) mbxcb, (WINFO_WOBJ *) &winfo);
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
 			*ppk_msg = winfo.pk_msg;
 		}
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_RCV_MBX_LEAVE(ercd, *ppk_msg);
@@ -227,13 +232,13 @@ prcv_mbx(ID mbxid, T_MSG **ppk_msg)
 {
 	MBXCB	*mbxcb;
 	ER	ercd;
-    
+
 	LOG_PRCV_MBX_ENTER(mbxid, ppk_msg);
 	CHECK_TSKCTX_UNL();
 	CHECK_MBXID(mbxid);
 	mbxcb = get_mbxcb(mbxid);
-    
-	t_lock_cpu();
+
+	t_acquire_glock();
 	if (mbxcb->head != NULL) {
 		*ppk_msg = mbxcb->head;
 		mbxcb->head = (*ppk_msg)->next;
@@ -242,7 +247,7 @@ prcv_mbx(ID mbxid, T_MSG **ppk_msg)
 	else {
 		ercd = E_TMOUT;
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_PRCV_MBX_LEAVE(ercd, *ppk_msg);
@@ -262,15 +267,16 @@ trcv_mbx(ID mbxid, T_MSG **ppk_msg, TMO tmout)
 	MBXCB	*mbxcb;
 	WINFO_MBX winfo;
 	TMEVTB	tmevtb;
+	TPCB	*my_tpcb;
 	ER	ercd;
-    
+
 	LOG_TRCV_MBX_ENTER(mbxid, ppk_msg, tmout);
 	CHECK_DISPATCH();
 	CHECK_MBXID(mbxid);
 	CHECK_TMOUT(tmout);
 	mbxcb = get_mbxcb(mbxid);
-    
-	t_lock_cpu();
+
+	t_acquire_glock();
 	if (mbxcb->head != NULL) {
 		*ppk_msg = mbxcb->head;
 		mbxcb->head = (*ppk_msg)->next;
@@ -280,15 +286,16 @@ trcv_mbx(ID mbxid, T_MSG **ppk_msg, TMO tmout)
 		ercd = E_TMOUT;
 	}
 	else {
-		wobj_make_wait_tmout((WOBJCB *) mbxcb, (WINFO_WOBJ *) &winfo,
+		my_tpcb = get_my_tpcb();
+		wobj_make_wait_tmout(my_tpcb, (WOBJCB *) mbxcb, (WINFO_WOBJ *) &winfo,
 						&tmevtb, tmout);
-		dispatch();
+		multi_core_dispatch(my_tpcb);
 		ercd = winfo.winfo.wercd;
 		if (ercd == E_OK) {
 			*ppk_msg = winfo.pk_msg;
 		}
 	}
-	t_unlock_cpu();
+	t_release_glock();
 
     exit:
 	LOG_TRCV_MBX_LEAVE(ercd, *ppk_msg);

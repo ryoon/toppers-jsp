@@ -9,6 +9,7 @@
 #define sys_putc					_kernel_sys_putc
 #define compare_time				_kernel_compare_time
 #define molecule					_kernel_molecule
+#define interrupt_map				_kernel_interrupt_map
 
 #ifdef LABEL_ASM
 
@@ -18,6 +19,7 @@
 #define _sys_putc					__kernel_sys_putc
 #define _compare_time				__kernel_compare_time
 #define _molecule					__kernel_molecule
+#define _interrupt_map				__kernel_interrupt_map
 
 #endif /* LABEL_ASM */
 
